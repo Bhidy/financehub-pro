@@ -7,7 +7,7 @@
 
 | Location | Holds | Notes |
 |---|---|---|
-| **Hetzner backend** `/opt/starta/.env` | `GROQ/CEREBRAS/MISTRAL/OPENAI/ANTHROPIC_API_KEY`, `DATABASE_URL`, `SECRET_KEY`, email/Stripe keys | the AI chatbot + API read these |
+| **Hetzner backend** `/opt/starta/.env` | `GROQ/MISTRAL/OPENAI/ANTHROPIC_API_KEY`, `DATABASE_URL`, `SECRET_KEY`, email/Stripe keys | the AI chatbot + API read these |
 | **Vercel** project `finhub` env | `NEXT_PUBLIC_API_URL`, `DATABASE_URL`, `GOOGLE_CLIENT_ID/SECRET`, `NEXT_PUBLIC_WS_URL` | frontend + serverless routes |
 | **Local** `frontend/.env*`, repo `.env` | dev copies | gitignored — never commit |
 
@@ -41,7 +41,6 @@ For each secret: **(1) mint new** (keep old alive) → **(2) update every place 
 | Secret | Mint at | Update | Restart | Verify |
 |---|---|---|---|---|
 | `GROQ_API_KEY` | console.groq.com | Hetzner `/opt/starta/.env` | backend container | chatbot replies |
-| `CEREBRAS_API_KEY` | cloud.cerebras.ai | Hetzner `.env` | backend | chatbot |
 | `MISTRAL_API_KEY` | console.mistral.ai | Hetzner `.env` | backend | chatbot |
 | `OPENAI_API_KEY` | platform.openai.com | Hetzner `.env` | backend | chatbot |
 | `DATABASE_URL` (Supabase pwd) | Supabase → Database → reset password | Hetzner `.env` **+** Vercel env | backend + redeploy frontend | `/api/v1/market-summary` → 200 |

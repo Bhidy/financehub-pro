@@ -58,7 +58,7 @@ const EGX_HOLIDAYS = new Set<string>([
     // 2026 — best-effort; keep in lockstep with pipeline_watchdog.py EGX_HOLIDAYS.
     '2026-01-07', '2026-01-25', '2026-04-12', '2026-04-13', '2026-04-25',
     '2026-05-01', '2026-06-16', '2026-06-17', '2026-06-18', '2026-06-30',
-    '2026-07-23', '2026-08-25', '2026-08-26', '2026-10-06',
+    '2026-07-02', '2026-07-23', '2026-08-25', '2026-08-26', '2026-10-06',
 ]);
 const SESSION_OPEN_MIN = 6 * 60;        // 06:00 UTC, in minutes-from-midnight
 const SESSION_CLOSE_MIN = 13 * 60 + 15; // 13:15 UTC

@@ -59,7 +59,7 @@ EGX_HOLIDAYS = {
     # 2026 — best-effort; update from the official EGX calendar.
     "2026-01-07", "2026-01-25", "2026-04-12", "2026-04-13", "2026-04-25",
     "2026-05-01", "2026-06-16", "2026-06-17", "2026-06-18", "2026-06-30",
-    "2026-07-23", "2026-08-25", "2026-08-26", "2026-10-06",
+    "2026-07-02", "2026-07-23", "2026-08-25", "2026-08-26", "2026-10-06",
 }
 SESSION_OPEN_UTC = time(6, 0)
 SESSION_CLOSE_UTC = time(13, 15)
@@ -152,11 +152,20 @@ HEAL_COOLDOWN_MIN = 45  # never re-dispatch a corrective workflow within this wi
 
 
 def _gh(args, timeout=30):
-    """Best-effort gh CLI call -> stdout (str) or None. Never raises."""
+    """Best-effort gh CLI call -> stdout (str) or None. Never raises.
+    On failure it LOGS the gh error to stderr: a swallowed error meant a
+    dispatch-failed heal was undiagnosable (was it a 403 token-scope issue, a
+    transient GitHub 5xx, or a bad workflow name?). Now the reason is in the log."""
     try:
         r = subprocess.run(["gh", *args], capture_output=True, text=True, timeout=timeout)
-        return r.stdout if r.returncode == 0 else None
-    except Exception:
+        if r.returncode == 0:
+            return r.stdout
+        err = (r.stderr or r.stdout or "").strip()
+        tail = err.splitlines()[-1] if err else "no output"
+        print(f"gh {' '.join(args[:2])} failed (rc={r.returncode}): {tail}", file=sys.stderr)
+        return None
+    except Exception as e:
+        print(f"gh {' '.join(args[:2])} error: {type(e).__name__}: {e}", file=sys.stderr)
         return None
 
 

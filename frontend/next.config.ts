@@ -121,7 +121,33 @@ const nextConfig = {
 
   // Redirect legacy /home path to root
   async redirects() {
+    // Every raw .html file 308s to its clean route: each public page used to
+    // be live at 2-3 duplicate URLs (/News, /news.html, ...) with no
+    // canonicals — confirmed duplicate-content defect. Redirects run BEFORE
+    // rewrites, so external .html requests redirect while the internal
+    // rewrites (/ -> /home.html) still resolve.
+    const htmlTwins: Array<[string, string]> = [
+      ['/index.html', '/'],
+      ['/home.html', '/'],
+      ['/news.html', '/News'],
+      ['/news-article.html', '/News'],
+      ['/learn.html', '/Learn'],
+      ['/learn-topic.html', '/Learn'],
+      ['/marketplace.html', '/Funds'],
+      ['/fund-details.html', '/Funds'],
+      ['/fund-compare.html', '/Funds/Compare'],
+      ['/market-pulse.html', '/Market-Pulse'],
+      ['/portfolio.html', '/Portfolio'],
+      ['/portfolio-detail.html', '/Portfolio'],
+      ['/privacy.html', '/privacy'],
+      ['/terms.html', '/terms'],
+    ];
     return [
+      ...htmlTwins.map(([source, destination]) => ({
+        source,
+        destination,
+        permanent: true,
+      })),
       {
         source: '/home',
         destination: '/',
@@ -138,42 +164,36 @@ const nextConfig = {
   // Headers for security
   async headers() {
     return [
-      {
-        source: '/',
+      // HTML pages: allow short CDN caching with revalidation instead of the
+      // previous no-store (deploys purge Vercel's static cache automatically,
+      // so no-store only cost TTFB without preventing staleness).
+      ...['/', '/home.html', '/Market-Pulse', '/market-pulse.html'].map((source) => ({
+        source,
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+            value: 'public, max-age=0, s-maxage=300, stale-while-revalidate=600',
           },
         ],
-      },
-      {
-        source: '/home.html',
+      })),
+      // Versioned static assets (?v= cache-busting is already in use): give
+      // the CDN and browsers a real TTL — these previously shipped no
+      // long-lived Cache-Control at all.
+      ...['/assets/:path*', '/logos/:path*', '/data/:path*'].map((source) => ({
+        source,
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
           },
         ],
-      },
-      {
-        source: '/Market-Pulse',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
-          },
-        ],
-      },
-      {
-        source: '/market-pulse.html',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
-          },
-        ],
-      },
+      })),
+      // Private surfaces: keep crawlers out at the header level (robots.txt
+      // disallow alone does not de-index already-discovered URLs).
+      ...['/admin/:path*', '/login', '/register', '/forgot-password', '/settings'].map((source) => ({
+        source,
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      })),
       {
         // CORS for the bundled mobile app (origin capacitor://localhost) and any
         // cross-origin API client. CapacitorHttp is the primary native fix; this
@@ -185,6 +205,8 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Methods', value: 'GET,POST,PUT,PATCH,DELETE,OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
           { key: 'Access-Control-Max-Age', value: '86400' },
+          // 63 API routes were fully indexable (no robots.txt existed).
+          { key: 'X-Robots-Tag', value: 'noindex' },
         ],
       },
       {

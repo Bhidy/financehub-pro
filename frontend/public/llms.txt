@@ -9,6 +9,7 @@
 > NAVs update twice daily; financial statements weekly.
 
 ## Companies
+- [EGX companies directory](https://startamarkets.com/companies): all Egyptian Exchange listed companies with price, sector and market cap, updated daily
 - [Company pages](https://startamarkets.com/symbol/COMI): per-symbol live price, key statistics, financials, dividends, technicals and news (URL pattern: /symbol/{TICKER})
 
 ## Mutual funds
@@ -25,5 +26,7 @@
 - [Market pulse](https://startamarkets.com/Market-Pulse): live EGX market overview
 
 ## Optional
+- [About & methodology](https://startamarkets.com/about)
+- [Contact](https://startamarkets.com/contact)
 - [Privacy](https://startamarkets.com/privacy)
 - [Terms](https://startamarkets.com/terms)

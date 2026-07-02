@@ -43,10 +43,13 @@ export default function PublicPageShell({
             <footer className="mt-12 border-t border-slate-200 bg-white">
                 <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-6 text-sm text-slate-500">
                     <p>© {new Date().getFullYear()} Starta Markets — EGX market intelligence in Arabic &amp; English.</p>
-                    <nav aria-label="Footer" className="flex gap-4">
+                    <nav aria-label="Footer" className="flex flex-wrap gap-4">
+                        <Link href="/companies" className="hover:text-teal-600">EGX Companies</Link>
                         <Link href="/News" className="hover:text-teal-600">News</Link>
                         <Link href="/Funds" className="hover:text-teal-600">Funds</Link>
                         <Link href="/Learn" className="hover:text-teal-600">Learn</Link>
+                        <Link href="/about" className="hover:text-teal-600">About</Link>
+                        <Link href="/contact" className="hover:text-teal-600">Contact</Link>
                         <Link href="/privacy" className="hover:text-teal-600">Privacy</Link>
                         <Link href="/terms" className="hover:text-teal-600">Terms</Link>
                     </nav>

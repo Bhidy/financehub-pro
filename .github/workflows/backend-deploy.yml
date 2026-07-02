@@ -120,6 +120,7 @@ jobs:
           SYNC_LLM_KEYS: ${{ inputs.sync_llm_keys }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           ENVF="$APP_DIR/.env"
           touch "$ENVF"
@@ -146,6 +147,16 @@ jobs:
           printf 'ADMIN_API_TOKEN=%s\n' "$ADMIN_API_TOKEN" >> "$ENVF.tmp"
           mv "$ENVF.tmp" "$ENVF"
           echo "ADMIN_API_TOKEN: synced from GitHub secret"
+          # DISCORD_WEBHOOK_URL: synced whenever the GitHub secret is set. Purely
+          # additive alerting config (notification_service.py posts backend alerts
+          # to Discord); writing it only ever ENABLES notifications, never breaks a
+          # running service, so it is always kept in sync rather than gated.
+          if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+            grep -v '^DISCORD_WEBHOOK_URL=' "$ENVF" > "$ENVF.tmp" || true
+            printf 'DISCORD_WEBHOOK_URL=%s\n' "$DISCORD_WEBHOOK_URL" >> "$ENVF.tmp"
+            mv "$ENVF.tmp" "$ENVF"
+            echo "DISCORD_WEBHOOK_URL: synced from GitHub secret"
+          fi
           # DATABASE_URL: synced ONLY on explicit request (sync_database_url),
           # to propagate a DB password rotation. Opt-in because the GitHub
           # secret and the box could legitimately drift in connection form —

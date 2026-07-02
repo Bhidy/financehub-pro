@@ -1477,13 +1477,13 @@
                 .slice(0, 4);
 
             container.innerHTML = peers.map((fund) => `
-                <article class="surface-card cursor-pointer rounded-[1.8rem] p-5 transition-transform hover:-translate-y-1" onclick="window.location.href='/Fund?id=${encodeURIComponent(fund.fund_id)}'">
+                <article class="surface-card cursor-pointer rounded-[1.8rem] p-5 transition-transform hover:-translate-y-1" onclick="window.location.href='/Funds/${encodeURIComponent(fund.fund_id)}'">
                     <div class="flex items-start gap-4">
                         <div class="h-12 w-12 overflow-hidden rounded-2xl border border-border bg-surface p-2 shadow-sm">
                             <img src="${escapeHtml(fund.logo_url || '/assets/funds/starta-fund-placeholder.svg')}" alt="${escapeHtml(getManagerName(fund))}" class="h-full w-full rounded-xl object-contain" style="transform:scale(${Math.max(Number(fund.logo_scale || 1), 1.45)}); transform-origin:center center;">
                         </div>
                         <div>
-                            <h4 class="text-base font-display font-bold tracking-[-0.03em] text-main">${escapeHtml(getFundName(fund))}</h4>
+                            <h4 class="text-base font-display font-bold tracking-[-0.03em] text-main"><a href="/Funds/${encodeURIComponent(fund.fund_id)}" onclick="event.stopPropagation();">${escapeHtml(getFundName(fund))}</a></h4>
                             <p class="mt-2 text-sm text-muted">${escapeHtml(getManagerName(fund))}</p>
                         </div>
                     </div>

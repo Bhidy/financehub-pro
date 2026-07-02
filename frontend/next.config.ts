@@ -61,62 +61,63 @@ const nextConfig = {
   },
 
   // Canonical Home page mapping.
-  // Serves the static landing page at the root URL.
+  // Serves the static landing pages at clean URLs.
+  //
+  // /News/:id and /Learn/:slug rewrites are GONE: those are now real
+  // server-rendered App Router routes (app/News/[id], app/Learn/[slug]).
+  // /Funds/Compare must run beforeFiles so it wins over app/Funds/[id].
   async rewrites() {
-    return [
-      {
-        source: '/',
-        destination: '/home.html',
-      },
-      {
-        source: '/privacy',
-        destination: '/privacy.html',
-      },
-      {
-        source: '/terms',
-        destination: '/terms.html',
-      },
-      {
-        source: '/Funds',
-        destination: '/marketplace.html',
-      },
-      {
-        source: '/Fund',
-        destination: '/fund-details.html',
-      },
-      {
-        source: '/Funds/Compare',
-        destination: '/fund-compare.html',
-      },
-      {
-        source: '/Learn',
-        destination: '/learn.html',
-      },
-      {
-        source: '/Learn/:slug',
-        destination: '/learn-topic.html',
-      },
-      {
-        source: '/News',
-        destination: '/news.html',
-      },
-      {
-        source: '/News/:id',
-        destination: '/news-article.html',
-      },
-      {
-        source: '/Market-Pulse',
-        destination: '/market-pulse.html',
-      },
-      {
-        source: '/Portfolio',
-        destination: '/portfolio.html',
-      },
-      {
-        source: '/Portfolio/:id',
-        destination: '/portfolio-detail.html',
-      },
-    ];
+    return {
+      beforeFiles: [
+        {
+          source: '/Funds/Compare',
+          destination: '/fund-compare.html',
+        },
+      ],
+      afterFiles: [
+        {
+          source: '/',
+          destination: '/home.html',
+        },
+        {
+          source: '/privacy',
+          destination: '/privacy.html',
+        },
+        {
+          source: '/terms',
+          destination: '/terms.html',
+        },
+        {
+          source: '/Funds',
+          destination: '/marketplace.html',
+        },
+        {
+          source: '/Fund',
+          destination: '/fund-details.html',
+        },
+        {
+          source: '/Learn',
+          destination: '/learn.html',
+        },
+        {
+          source: '/News',
+          destination: '/news.html',
+        },
+        {
+          source: '/Market-Pulse',
+          destination: '/market-pulse.html',
+        },
+        {
+          source: '/Portfolio',
+          destination: '/portfolio.html',
+        },
+        {
+          source: '/Portfolio/:id',
+          destination: '/portfolio-detail.html',
+        },
+      ],
+      fallback: [],
+    };
   },
 
   // Redirect legacy /home path to root

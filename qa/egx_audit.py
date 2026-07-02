@@ -212,7 +212,7 @@ async def suite_write_contract():
                 None, None, None,                  # market_cap, pe_ratio, dividend_yield
                 None, None, None, None, None, None,  # pb, beta, fwd_pe, float%, float, holders
                 None, None,                        # high_52w, low_52w
-                "qa")
+                "qa", "EGP")                       # source, currency ($20, PR #133)
             await conn.execute(tvh.SQL_UPSERT_OHLC,
                 probe, date(2000, 1, 1), 1.0, 1.0, 1.0, 1.0, 0, "qa")
             check("prices-cycle SQL matches market_tickers + ohlc_data schema", True)
@@ -225,7 +225,7 @@ async def suite_write_contract():
                 "INSERT INTO market_tickers (symbol, market_code, last_price) VALUES ($1, NULL, 1.0)", probe2)
             await conn.execute(tvh.SQL_UPSERT_MARKET_TICKER,
                 probe2, "QA Probe", "QA Sector", 2.0, 0.0, 0.0, 0, None, None, None,
-                None, None, None, None, None, None, None, None, "qa")
+                None, None, None, None, None, None, None, None, "qa", "EGP")
             check("upsert over NULL-market_code row UPDATEs (no dup-key)", True)
         except asyncpg.ReadOnlySQLTransactionError:
             # DB is read-only (Supabase platform incident/standby). The execute-

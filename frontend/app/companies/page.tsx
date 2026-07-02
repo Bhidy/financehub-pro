@@ -89,7 +89,7 @@ export default async function CompaniesPage() {
                             <th className="px-4 py-3">Company</th>
                             <th className="px-4 py-3">Symbol</th>
                             <th className="px-4 py-3">Sector</th>
-                            <th className="px-4 py-3 text-right">Price (EGP)</th>
+                            <th className="px-4 py-3 text-right">Price</th>
                             <th className="px-4 py-3 text-right">Change</th>
                             <th className="px-4 py-3 text-right">Market Cap (EGP)</th>
                         </tr>
@@ -111,7 +111,7 @@ export default async function CompaniesPage() {
                                 </td>
                                 <td className="px-4 py-2.5 text-slate-500">{t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 text-right font-semibold">
-                                    {t.last_price !== null ? t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 }) : '—'}
+                                    {t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}
                                 </td>
                                 <td className={`px-4 py-2.5 text-right font-semibold ${
                                     t.change_percent === null ? 'text-slate-400' : t.change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'
@@ -127,7 +127,7 @@ export default async function CompaniesPage() {
 
             <p className="mt-4 text-xs text-slate-500">
                 Source: Egyptian Exchange via TradingView. Prices refresh every 15 minutes during EGX trading hours
-                (Sunday–Thursday). Market caps in Egyptian pounds.
+                (Sunday–Thursday). Market caps in Egyptian pounds. Prices are in EGP unless a currency code is shown (some EGX lines trade in USD).
             </p>
         </PublicPageShell>
     );

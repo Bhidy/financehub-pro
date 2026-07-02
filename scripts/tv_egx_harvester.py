@@ -81,7 +81,7 @@ SQL_UPSERT_MARKET_TICKER = """
         beta, forward_pe, float_shares_percent, float_shares, shareholders_count,
         high_52w, low_52w, source, currency,
         updated_at, last_updated)
-    VALUES ($1,'EGX',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,'EGP', now(), now())
+    VALUES ($1,'EGX',$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20, now(), now())
     ON CONFLICT (symbol) DO UPDATE SET
         market_code = EXCLUDED.market_code,
         name_en     = COALESCE(EXCLUDED.name_en,     market_tickers.name_en),
@@ -102,10 +102,10 @@ SQL_UPSERT_MARKET_TICKER = """
         high_52w    = COALESCE(EXCLUDED.high_52w, market_tickers.high_52w),
         low_52w     = COALESCE(EXCLUDED.low_52w,  market_tickers.low_52w),
         source      = EXCLUDED.source,
-        -- Everything this harvester writes is EGX and therefore EGP. The table
-        -- default is a legacy 'SAR' (Tadawul era), which the EGX30 index row
-        -- inherited on insert — pin it here so rows self-heal every cycle.
-        currency    = 'EGP',
+        -- Per-line TRADING currency from TradingView: most lines are EGP but
+        -- EGX has USD-denominated lines (FAITA/EGBE/VLMRA...). The table
+        -- default was a legacy 'SAR' (Tadawul era) — rows self-heal each cycle.
+        currency    = EXCLUDED.currency,
         updated_at  = now(),
         last_updated = now()
 """
@@ -340,7 +340,7 @@ async def cycle_prices(conn):
                 s.get("float_shares_percent"), s.get("float_shares"),
                 int(sh_count) if sh_count is not None else None,
                 s.get("high_52w"), s.get("low_52w"),
-                s.get("source", src))
+                s.get("source", src), s.get("currency") or "EGP")
 
             # today's forming candle -> ohlc_data (only if we have a full OHLC from the scanner)
             if s.get("open") and s.get("high") and s.get("low") and s.get("bar_time"):
@@ -384,7 +384,7 @@ async def cycle_prices(conn):
                 None, None, None,                    # market_cap, pe_ratio, dividend_yield
                 None, None, None, None, None, None,  # pb, beta, fwd_pe, float%, float, holders
                 None, None,                          # high_52w, low_52w (n/a for the index row)
-                "tradingview")
+                "tradingview", "EGP")
             logger.info("prices: EGX30 index upserted: %.2f (%.2f%%)",
                         _finite(ix.get("close")) or 0, _finite(ix.get("change")) or 0)
     except Exception as e:

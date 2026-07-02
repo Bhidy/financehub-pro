@@ -51,20 +51,31 @@ async function companyEntries(): Promise<Entry[]> {
     // dataset is empty, so the sitemap must only advertise URLs that resolve
     // (the post-deploy audit caught exactly this class of dead-URL defect
     // in the funds segment).
+    // Single-pass CTEs instead of correlated EXISTS: the per-row subquery
+    // version cost 71.8s at the origin (audit finding) because UPPER(symbol)
+    // defeats the indexes — one DISTINCT scan per table is ~constant.
     const result = await db.query(
-        `SELECT t.symbol,
+        `WITH fin AS (SELECT DISTINCT UPPER(symbol) AS s FROM egx_financials),
+              div1 AS (SELECT DISTINCT UPPER(symbol) AS s FROM dividend_history),
+              div2 AS (SELECT DISTINCT UPPER(symbol) AS s FROM egx_dividends
+                       WHERE div_yield > 0 OR amount_recent IS NOT NULL OR amount_upcoming IS NOT NULL),
+              tech AS (SELECT DISTINCT UPPER(symbol) AS s FROM egx_technicals),
+              hist AS (SELECT DISTINCT UPPER(symbol) AS s FROM ohlc_data)
+         SELECT t.symbol,
                 GREATEST(
                     COALESCE(t.last_updated, 'epoch'::timestamptz),
                     COALESCE(t.updated_at, 'epoch'::timestamptz)
                 ) AS lastmod,
-                EXISTS(SELECT 1 FROM egx_financials f WHERE UPPER(f.symbol) = t.symbol) AS has_fin,
-                (EXISTS(SELECT 1 FROM dividend_history d WHERE UPPER(d.symbol) = t.symbol)
-                 OR EXISTS(SELECT 1 FROM egx_dividends e WHERE UPPER(e.symbol) = t.symbol AND e.div_yield IS NOT NULL)) AS has_div,
-                EXISTS(SELECT 1 FROM egx_technicals x WHERE UPPER(x.symbol) = t.symbol) AS has_tech,
-                EXISTS(SELECT 1 FROM ohlc_data o WHERE UPPER(o.symbol) = t.symbol) AS has_hist
+                (t.symbol IN (SELECT s FROM fin)) AS has_fin,
+                (t.symbol IN (SELECT s FROM div1) OR t.symbol IN (SELECT s FROM div2)) AS has_div,
+                (t.symbol IN (SELECT s FROM tech)) AS has_tech,
+                (t.symbol IN (SELECT s FROM hist)) AS has_hist
          FROM market_tickers t
          WHERE t.last_price IS NOT NULL
            AND COALESCE(t.sector_name,'') <> 'Index' -- EGX30 index row is not a company page
+           AND NOT (t.symbol LIKE '%.CA' AND EXISTS (
+               SELECT 1 FROM market_tickers b
+               WHERE b.symbol = REPLACE(t.symbol, '.CA', '') AND b.last_price IS NOT NULL))
          ORDER BY t.symbol`
     );
     return result.rows.flatMap((r: any) => {
@@ -162,7 +173,7 @@ export async function GET(
         return new NextResponse(render(entries), {
             headers: {
                 'Content-Type': 'application/xml; charset=utf-8',
-                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+                'Cache-Control': 'public, max-age=3600, s-maxage=21600, stale-while-revalidate=86400',
             },
         });
     } catch (error: any) {

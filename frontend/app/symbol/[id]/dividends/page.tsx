@@ -107,14 +107,14 @@ export default async function DividendsPage({ params }: Props) {
     ]);
     if (!ticker) notFound();
     const divYield = num(summary, 'div_yield');
-    // QUALITY GATE: 404 only when the page has NOTHING to show — no history rows,
-    // no summary yield, AND no payout amount. A stock can have a known dividend
-    // amount (amount_recent/upcoming from TradingView) with a null computed yield;
-    // the body renders amount-based cards for exactly that case, so gating on
-    // yield alone 404'd pages that would have shown valid content.
-    const hasPayoutAmount = num(summary, 'amount_recent') !== null
-        || num(summary, 'amount_upcoming') !== null;
-    if (history.length === 0 && divYield === null && !hasPayoutAmount) notFound();
+    // QUALITY GATE (union of #132 + the phase-2 audit fix): 404 only when the
+    // page has NOTHING real to show — no payment records, no positive trailing
+    // yield, and no known payout amount (recent or upcoming). A zero yield with
+    // no records is nothing (audit: those were 200ing and sitemapped at scale);
+    // a known amount with a null/zero computed yield is real content (#132).
+    const recentAmount = num(summary, 'amount_recent');
+    const upcomingAmount = num(summary, 'amount_upcoming');
+    if (history.length === 0 && !(divYield !== null && divYield > 0) && recentAmount === null && upcomingAmount === null) notFound();
 
     const name = ticker.name_en || symbol;
     const pagePath = `${symbolPath(symbol)}/dividends`;

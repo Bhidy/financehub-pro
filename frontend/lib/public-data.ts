@@ -62,6 +62,20 @@ export type Ticker = {
 
 const TICKER_NUM = ['last_price', 'change_percent', 'volume', 'market_cap', 'pe_ratio', 'pb_ratio', 'dividend_yield'];
 
+/**
+ * A few upstream rows carry raw provider tuples instead of company names
+ * ("EIUD.CA,0P0000TP7J,28746876") — indexing those as titles is data
+ * corruption in the SERP. Null them out; callers fall back to the symbol.
+ */
+const PROVIDER_TUPLE = /^[A-Z0-9._-]+,0P[0-9A-Z]+,\d+$/;
+function cleanName(row: Record<string, unknown>): Record<string, unknown> {
+    for (const k of ['name_en', 'name_ar']) {
+        const v = row[k];
+        if (typeof v === 'string' && PROVIDER_TUPLE.test(v.trim())) row[k] = null;
+    }
+    return row;
+}
+
 function toNum(row: Record<string, unknown>, fields: string[]): Record<string, unknown>;
 function toNum(row: Record<string, unknown> | null, fields: string[]): Record<string, unknown> | null;
 function toNum(row: Record<string, unknown> | null, fields: string[]) {
@@ -83,7 +97,8 @@ export const getTicker = cache(async (symbol: string): Promise<Ticker | null> =>
          FROM market_tickers WHERE symbol = $1`,
         [symbol.toUpperCase()]
     );
-    return (toNum(result.rows[0] || null, TICKER_NUM) as Ticker) || null;
+    const row = result.rows[0] ? cleanName(result.rows[0]) : null;
+    return (toNum(row, TICKER_NUM) as Ticker) || null;
 });
 
 /** Key statistics (stock_stats_view — already absolute EGP). */
@@ -131,7 +146,7 @@ export const getSectorPeers = cache(async (sector: string, excludeSymbol: string
          LIMIT $3`,
         [sector, excludeSymbol.toUpperCase(), limit]
     );
-    return result.rows.map((r: Record<string, unknown>) => toNum(r, TICKER_NUM)) as Ticker[];
+    return result.rows.map((r: Record<string, unknown>) => toNum(cleanName(r), TICKER_NUM)) as Ticker[];
 });
 
 export type Fund = Record<string, unknown> & {
@@ -286,7 +301,7 @@ export const getMovers = cache(async (limit = 10): Promise<{ gainers: Ticker[]; 
         db.query(`SELECT ${cols} FROM market_tickers WHERE last_price IS NOT NULL AND change_percent IS NOT NULL AND COALESCE(sector_name,'') <> 'Index' ORDER BY change_percent::numeric ASC LIMIT $1`, [limit]),
         db.query(`SELECT ${cols} FROM market_tickers WHERE last_price IS NOT NULL AND COALESCE(sector_name,'') <> 'Index' ORDER BY volume::numeric DESC NULLS LAST LIMIT $1`, [limit]),
     ]);
-    const numify = (rows: Array<Record<string, unknown>>) => rows.map((r) => toNum(r, TICKER_NUM)) as Ticker[];
+    const numify = (rows: Array<Record<string, unknown>>) => rows.map((r) => toNum(cleanName(r), TICKER_NUM)) as Ticker[];
     return { gainers: numify(gainers.rows), losers: numify(losers.rows), active: numify(active.rows) };
 });
 
@@ -311,10 +326,14 @@ export const getAllTickers = cache(async (): Promise<Ticker[]> => {
         `SELECT symbol, name_en, name_ar, last_price, change_percent, volume,
                 sector_name, market_cap, pe_ratio, pb_ratio, dividend_yield,
                 currency, isin, logo_url, last_updated
-         FROM market_tickers
+         FROM market_tickers t
          WHERE last_price IS NOT NULL
            AND COALESCE(sector_name,'') <> 'Index' -- EGX30 is an index, not a listed company
+           -- .CA duplicate listings: keep only the primary ticker when both exist
+           AND NOT (t.symbol LIKE '%.CA' AND EXISTS (
+               SELECT 1 FROM market_tickers b
+               WHERE b.symbol = REPLACE(t.symbol, '.CA', '') AND b.last_price IS NOT NULL))
          ORDER BY market_cap::numeric DESC NULLS LAST`
     );
-    return result.rows.map((r: Record<string, unknown>) => toNum(r, TICKER_NUM)) as Ticker[];
+    return result.rows.map((r: Record<string, unknown>) => toNum(cleanName(r), TICKER_NUM)) as Ticker[];
 });

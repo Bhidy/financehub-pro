@@ -45,7 +45,7 @@ export async function generateMetadata(
     }
     const name = ticker.name_en || symbol;
     const price = ticker.last_price !== null
-        ? `EGP ${ticker.last_price.toLocaleString("en-EG", { maximumFractionDigits: 2 })}`
+        ? `${ticker.currency || "EGP"} ${ticker.last_price.toLocaleString("en-EG", { maximumFractionDigits: 2 })}`
         : null;
     // Compact SERP-friendly copy (audit flagged 105/222-char overruns on long
     // legal names): title ends at "Stock Price", description hard-capped ~160.

@@ -38,13 +38,16 @@ const num = (stats: Stats | null, key: string): number | null => {
 export function buildSymbolFaq(ticker: Ticker, stats: Stats | null, asOf: string | null): Array<{ q: string; a: string }> {
     const symbol = ticker.symbol.toUpperCase();
     const name = ticker.name_en || symbol;
+    // Per-line TRADING currency: most EGX lines are EGP but some (FAITA, EGBE,
+    // VLMRA...) trade in USD — labeling those EGP is a misleading price.
+    const cur = ticker.currency || 'EGP';
     const faq: Array<{ q: string; a: string }> = [];
 
     const price = ticker.last_price ?? num(stats, 'last_price');
     if (price !== null) {
         faq.push({
             q: `What is ${name} (${symbol}) share price today?`,
-            a: `${name} last traded at EGP ${fmtNum(price)} on the Egyptian Exchange${asOf ? ` (as of ${asOf}, Cairo time)` : ''}. Prices update every 15 minutes during EGX trading hours.`,
+            a: `${name} last traded at ${cur} ${fmtNum(price)} on the Egyptian Exchange${asOf ? ` (as of ${asOf}, Cairo time)` : ''}. Prices update every 15 minutes during EGX trading hours.`,
         });
     }
     const mcap = ticker.market_cap ?? num(stats, 'market_cap');
@@ -93,8 +96,9 @@ export default function SymbolSeoSection({
         : null;
     const faq = buildSymbolFaq(ticker, stats, asOf);
 
+    const cur = ticker.currency || 'EGP';
     const statRows: Array<[string, string | null]> = [
-        ['Last price', ticker.last_price !== null ? `EGP ${fmtNum(ticker.last_price)}` : null],
+        ['Last price', ticker.last_price !== null ? `${cur} ${fmtNum(ticker.last_price)}` : null],
         ['Market cap', fmtEgp(ticker.market_cap ?? num(stats, 'market_cap'))],
         ['P/E (trailing)', fmtNum(ticker.pe_ratio ?? num(stats, 'pe_ratio'))],
         ['Forward P/E', fmtNum(num(stats, 'forward_pe'))],

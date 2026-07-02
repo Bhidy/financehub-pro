@@ -508,7 +508,9 @@ export default function SymbolDetailPage() {
     const [svgElement, setSvgElement] = useState<SVGSVGElement | null>(null);
 
     const isEgx = useMemo(() => symbol.match(/^[a-zA-Z]/) !== null, [symbol]);
-    const currency = isEgx ? "EGP" : "SAR";
+    // Statements/fundamentals are reported in the market currency (TV
+    // fundamental_currency_code = EGP for every EGX line).
+    const fundamentalsCurrency = isEgx ? "EGP" : "SAR";
     const marketName = isEgx ? "EGX" : "Tadawul";
 
     const [lang, setLang] = useState<"en" | "ar">("en");
@@ -569,6 +571,11 @@ export default function SymbolDetailPage() {
         const arr = Array.isArray(tickers) ? tickers : [];
         return arr.find((t: Ticker) => t.symbol === symbol);
     }, [tickers, symbol]);
+
+    // Per-line TRADING currency (market_tickers.currency, fed from TradingView):
+    // most EGX lines are EGP, but FAITA/EGBE/VLMRA trade in USD — labeling those
+    // EGP is a misleading price. Fundamentals stay in fundamentalsCurrency.
+    const currency = (stockData as any)?.currency || fundamentalsCurrency;
 
     // logo: use screener logo_url field if available from tickers
     const logoUrl = useMemo(() => {
@@ -971,8 +978,8 @@ export default function SymbolDetailPage() {
                                         <MetricCard label={t.pe_ratio} value={peRatio > 0 ? peRatio.toFixed(2) : "-"} icon={Target} color="text-amber-500" />
                                         <MetricCard label={t.forward_pe} value={forwardPe > 0 ? forwardPe.toFixed(2) : "-"} icon={Target} color="text-amber-400" />
                                         <MetricCard label={t.pb_ratio} value={pbRatio > 0 ? pbRatio.toFixed(2) : "-"} icon={FileText} color="text-indigo-500" />
-                                        <MetricCard label={`${lang === "ar" ? "ربحية السهم" : "EPS"} (${epsDisplay.basis})`} value={epsDisplay.v !== 0 ? `${currency} ${epsDisplay.v.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
-                                        <MetricCard label={t.bvps} value={bookValue > 0 ? `${currency} ${bookValue.toFixed(2)}` : "-"} icon={BookOpen} color="text-blue-500" />
+                                        <MetricCard label={`${lang === "ar" ? "ربحية السهم" : "EPS"} (${epsDisplay.basis})`} value={epsDisplay.v !== 0 ? `${fundamentalsCurrency} ${epsDisplay.v.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
+                                        <MetricCard label={t.bvps} value={bookValue > 0 ? `${fundamentalsCurrency} ${bookValue.toFixed(2)}` : "-"} icon={BookOpen} color="text-blue-500" />
                                         <MetricCard label={`${lang === "ar" ? "الإيرادات" : "Revenue"} (${revenueDisplay.basis})`} value={revenueDisplay.v > 0 ? formatCurrency(revenueDisplay.v, currency) : "-"} icon={BarChart3} color="text-teal-500" />
                                         <MetricCard label={`${lang === "ar" ? "صافي الدخل" : "Net Income"} (${netIncomeDisplay.basis})`} value={netIncomeDisplay.v !== 0 ? formatCurrency(netIncomeDisplay.v, currency) : "-"} icon={Award} color="text-emerald-500" />
                                         <MetricCard label={t.total_debt} value={totalDebt > 0 ? formatCurrency(totalDebt, currency) : "-"} icon={TrendDown} color="text-rose-500" />
@@ -1001,11 +1008,11 @@ export default function SymbolDetailPage() {
                             <div className="space-y-6">
                                 {cardSeries && cardSeries.rows.length >= 2 && (
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <MiniBarChart title={lang === "ar" ? "الإيرادات السنوية" : "Revenue (Annual)"} color="#14b8a6" currency={currency} lang={lang}
+                                        <MiniBarChart title={lang === "ar" ? "الإيرادات السنوية" : "Revenue (Annual)"} color="#14b8a6" currency={fundamentalsCurrency} lang={lang}
                                             data={cardSeries.rows.map((y: any) => ({ year: y.fiscal_year, value: y.revenue != null ? Number(y.revenue) : null }))} />
-                                        <MiniBarChart title={lang === "ar" ? "صافي الدخل السنوي" : "Net Income (Annual)"} color="#10b981" currency={currency} lang={lang}
+                                        <MiniBarChart title={lang === "ar" ? "صافي الدخل السنوي" : "Net Income (Annual)"} color="#10b981" currency={fundamentalsCurrency} lang={lang}
                                             data={cardSeries.rows.map((y: any) => ({ year: y.fiscal_year, value: y.net_income != null ? Number(y.net_income) : null }))} />
-                                        <MiniBarChart title={lang === "ar" ? "إجمالي الأصول السنوي" : "Total Assets (Annual)"} color="#6366f1" currency={currency} lang={lang}
+                                        <MiniBarChart title={lang === "ar" ? "إجمالي الأصول السنوي" : "Total Assets (Annual)"} color="#6366f1" currency={fundamentalsCurrency} lang={lang}
                                             data={cardSeries.rows.map((y: any) => ({ year: y.fiscal_year, value: y.total_assets != null ? Number(y.total_assets) : null }))} />
                                     </div>
                                 )}
@@ -1024,7 +1031,7 @@ export default function SymbolDetailPage() {
                                     );
                                 }
                                 const col = (v: any) => (v != null ? formatCurrency(v, currency) : "-");
-                                const ps = (v: any) => (v != null ? `${currency} ${Number(v).toFixed(2)}` : "-");
+                                const ps = (v: any) => (v != null ? `${fundamentalsCurrency} ${Number(v).toFixed(2)}` : "-");
                                 return (
                                     <div className="premium-glass rounded-3xl p-8 space-y-6">
                                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-200/10 pb-6">
@@ -1032,7 +1039,7 @@ export default function SymbolDetailPage() {
                                                 <h3 className="text-xl font-extrabold flex items-center gap-2">
                                                     <FileText className="w-5 h-5 text-[#14b8a6]" /> {lang === "ar" ? "الملخص المالي" : "Financial Summary"}
                                                 </h3>
-                                                <p className="text-xs text-slate-400 font-bold uppercase mt-1">{lang === "ar" ? "سنوي · " : "Annual · "}{currency}</p>
+                                                <p className="text-xs text-slate-400 font-bold uppercase mt-1">{lang === "ar" ? "سنوي · " : "Annual · "}{fundamentalsCurrency}</p>
                                             </div>
                                         </div>
                                         <div className="overflow-x-auto">
@@ -1162,7 +1169,7 @@ export default function SymbolDetailPage() {
                                         {tvEstimates.target_average > 0 && lastPrice > 0 && (
                                             <AnalystTargetBar low={Number(tvEstimates.target_low) || Number(tvEstimates.target_average)}
                                                 avg={Number(tvEstimates.target_average)} high={Number(tvEstimates.target_high) || Number(tvEstimates.target_average)}
-                                                current={lastPrice} currency={currency} lang={lang} />
+                                                current={lastPrice} currency={fundamentalsCurrency} lang={lang} />
                                         )}
                                         <RecommendationDistribution buy={Number(tvEstimates.rec_buy) || 0} over={Number(tvEstimates.rec_over) || 0}
                                             hold={Number(tvEstimates.rec_hold) || 0} under={Number(tvEstimates.rec_under) || 0} sell={Number(tvEstimates.rec_sell) || 0}
@@ -1170,9 +1177,9 @@ export default function SymbolDetailPage() {
                                         <div className="premium-glass rounded-3xl p-6 md:p-8">
                                             <SectionHeader icon={TrendingUp} title={lang === "ar" ? "توقعات الأرباح" : "Earnings Forecasts"} color="text-emerald-500" />
                                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                <MetricCard label={t.fc_eps_next} value={tvEstimates.eps_fcst_next_fq ? `${currency} ${Number(tvEstimates.eps_fcst_next_fq).toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
+                                                <MetricCard label={t.fc_eps_next} value={tvEstimates.eps_fcst_next_fq ? `${fundamentalsCurrency} ${Number(tvEstimates.eps_fcst_next_fq).toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
                                                 <MetricCard label={t.fc_rev_next} value={tvEstimates.rev_fcst_next_fq ? formatCurrency(Number(tvEstimates.rev_fcst_next_fq), currency) : "-"} icon={BarChart3} color="text-[#14b8a6]" />
-                                                <MetricCard label={t.fc_eps_y} value={tvEstimates.eps_fcst_next_fy ? `${currency} ${Number(tvEstimates.eps_fcst_next_fy).toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-400" />
+                                                <MetricCard label={t.fc_eps_y} value={tvEstimates.eps_fcst_next_fy ? `${fundamentalsCurrency} ${Number(tvEstimates.eps_fcst_next_fy).toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-400" />
                                             </div>
                                         </div>
                                     </>
@@ -1194,7 +1201,7 @@ export default function SymbolDetailPage() {
                                         <MetricCard label={t.pe_ratio} value={peRatio > 0 ? peRatio.toFixed(2) : "-"} icon={Target} color="text-amber-500" />
                                         <MetricCard label={t.forward_pe} value={forwardPe > 0 ? forwardPe.toFixed(2) : "-"} icon={Target} color="text-amber-400" />
                                         <MetricCard label={t.pb_ratio} value={pbRatio > 0 ? pbRatio.toFixed(2) : "-"} icon={FileText} color="text-indigo-500" />
-                                        <MetricCard label={`${lang === "ar" ? "ربحية السهم" : "EPS"} (${epsDisplay.basis})`} value={epsDisplay.v !== 0 ? `${currency} ${epsDisplay.v.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
+                                        <MetricCard label={`${lang === "ar" ? "ربحية السهم" : "EPS"} (${epsDisplay.basis})`} value={epsDisplay.v !== 0 ? `${fundamentalsCurrency} ${epsDisplay.v.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
                                     </div>
                                 </div>
 
@@ -1202,8 +1209,8 @@ export default function SymbolDetailPage() {
                                 <div className="premium-glass rounded-3xl p-8">
                                     <SectionHeader icon={DollarSign} title={t.per_share} color="text-emerald-500" />
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                        <MetricCard label={`${lang === "ar" ? "ربحية السهم" : "EPS"} (${epsDisplay.basis})`} value={epsDisplay.v !== 0 ? `${currency} ${epsDisplay.v.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
-                                        <MetricCard label={t.bvps} value={bookValue > 0 ? `${currency} ${bookValue.toFixed(2)}` : "-"} icon={BookOpen} color="text-blue-500" />
+                                        <MetricCard label={`${lang === "ar" ? "ربحية السهم" : "EPS"} (${epsDisplay.basis})`} value={epsDisplay.v !== 0 ? `${fundamentalsCurrency} ${epsDisplay.v.toFixed(2)}` : "-"} icon={DollarSign} color="text-emerald-500" />
+                                        <MetricCard label={t.bvps} value={bookValue > 0 ? `${fundamentalsCurrency} ${bookValue.toFixed(2)}` : "-"} icon={BookOpen} color="text-blue-500" />
                                         <MetricCard label={t.dps} value={dividendRate > 0 ? `${currency} ${dividendRate.toFixed(2)}` : "-"} icon={Wallet} color="text-teal-500" />
                                     </div>
                                 </div>

@@ -1,0 +1,48 @@
+name: Hetzner Infra Monitor
+
+# Watches the backend VPS itself (the last blind spot) via the Hetzner Cloud API.
+# Runs on a GitHub-hosted runner ON PURPOSE: it must keep working even when the
+# self-hosted runner (which lives on that same box) is down. Alerts once per
+# server state change. Always exits 0.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: hetzner-infra-monitor
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest        # GitHub-hosted: independent of the Hetzner box
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Restore host state
+        uses: actions/cache@v4
+        with:
+          path: .hetzner_state.json
+          key: hetzner-state-${{ github.run_id }}
+          restore-keys: |
+            hetzner-state-
+
+      - name: Probe Hetzner host status
+        env:
+          HETZNER_API_TOKEN: ${{ secrets.HETZNER_API_TOKEN }}
+          HETZNER_STATE_FILE: .hetzner_state.json
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/hetzner_infra.py

@@ -2153,7 +2153,7 @@ function SignUpForm({ lang, onAuthed, setScreen, startGoogle }: { lang: Lang; on
     e.preventDefault();
     if (!name.trim()) { setError(lang === "ar" ? "أدخل اسمك." : "Enter your full name."); return; }
     if (!email.trim()) { setError(lang === "ar" ? "أدخل بريدك الإلكتروني." : "Enter your email."); return; }
-    if (password.length < 6) { setError(lang === "ar" ? "كلمة المرور 6 أحرف على الأقل." : "Password must be at least 6 characters."); return; }
+    if (password.length < 8) { setError(lang === "ar" ? "كلمة المرور 8 أحرف على الأقل." : "Password must be at least 8 characters."); return; }
     if (password !== confirm) { setError(lang === "ar" ? "كلمتا المرور غير متطابقتين." : "Passwords don't match."); return; }
     setLoading(true); setError("");
     const r = await authSignup(email, password, name);
@@ -2170,7 +2170,7 @@ function SignUpForm({ lang, onAuthed, setScreen, startGoogle }: { lang: Lang; on
       </>) : null}
       <AuthField label={lang === "ar" ? "الاسم الكامل" : "Full name"} type="text" autoComplete="name" value={name} onChange={setName} placeholder={lang === "ar" ? "محمد بهيدي" : "Mohamed Bhidy"} />
       <AuthField label={lang === "ar" ? "البريد الإلكتروني" : "Email"} type="email" autoComplete="email" inputMode="email" value={email} onChange={setEmail} placeholder="you@email.com" />
-      <AuthField label={lang === "ar" ? "كلمة المرور" : "Password"} type="password" autoComplete="new-password" value={password} onChange={setPassword} placeholder={lang === "ar" ? "6 أحرف على الأقل" : "At least 6 characters"} />
+      <AuthField label={lang === "ar" ? "كلمة المرور" : "Password"} type="password" autoComplete="new-password" value={password} onChange={setPassword} placeholder={lang === "ar" ? "8 أحرف على الأقل" : "At least 6 characters"} />
       <AuthField label={lang === "ar" ? "تأكيد كلمة المرور" : "Confirm password"} type="password" autoComplete="new-password" value={confirm} onChange={setConfirm} placeholder="••••••••" />
       {error ? <div className={styles.authError}>{error}</div> : null}
       <button type="submit" className={styles.authSubmit} disabled={loading}>{loading ? (lang === "ar" ? "جارٍ الإنشاء…" : "Creating…") : (lang === "ar" ? "إنشاء حساب" : "Create account")}</button>
@@ -2205,7 +2205,7 @@ function ForgotForm({ lang, setScreen, onAuthed }: { lang: Lang; setScreen: (s: 
   };
   const reset = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword.length < 6) { setError(lang === "ar" ? "كلمة المرور 6 أحرف على الأقل." : "Password must be at least 6 characters."); return; }
+    if (newPassword.length < 8) { setError(lang === "ar" ? "كلمة المرور 8 أحرف على الأقل." : "Password must be at least 8 characters."); return; }
     setLoading(true); setError("");
     const r = await authResetPassword(resetToken, newPassword);
     if (!r.ok) { setLoading(false); setError(r.error || ""); return; }
@@ -2236,7 +2236,7 @@ function ForgotForm({ lang, setScreen, onAuthed }: { lang: Lang; setScreen: (s: 
       {step === "reset" && (
         <form onSubmit={reset}>
           <p className={styles.authSub}>{lang === "ar" ? "اختر كلمة مرور جديدة." : "Choose a new password."}</p>
-          <AuthField label={lang === "ar" ? "كلمة المرور الجديدة" : "New password"} type="password" autoComplete="new-password" value={newPassword} onChange={setNewPassword} placeholder={lang === "ar" ? "6 أحرف على الأقل" : "At least 6 characters"} />
+          <AuthField label={lang === "ar" ? "كلمة المرور الجديدة" : "New password"} type="password" autoComplete="new-password" value={newPassword} onChange={setNewPassword} placeholder={lang === "ar" ? "8 أحرف على الأقل" : "At least 6 characters"} />
           {error ? <div className={styles.authError}>{error}</div> : null}
           <button type="submit" className={styles.authSubmit} disabled={loading}>{loading ? (lang === "ar" ? "جارٍ الحفظ…" : "Saving…") : (lang === "ar" ? "تعيين كلمة المرور" : "Set new password")}</button>
         </form>

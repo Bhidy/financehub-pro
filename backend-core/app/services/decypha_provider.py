@@ -18,8 +18,12 @@ logger = logging.getLogger("DecyphaProvider")
 
 class DecyphaProvider:
     def __init__(self):
-        self.email = os.environ.get("DECYPHA_EMAIL", "m.mostafa@mubasher.net")
-        self.password = os.environ.get("DECYPHA_PASSWORD", "bhidy1234")
+        # No hardcoded credential fallback — this repo is public, so a default
+        # here is a live credential leak. Creds come from env only; sync_funds
+        # already fails closed if they're missing (Decypha is soft-fail / not
+        # load-bearing — fund NAV comes from Mubasher, not Decypha).
+        self.email = os.environ.get("DECYPHA_EMAIL") or os.environ.get("DECYPHA_USERNAME")
+        self.password = os.environ.get("DECYPHA_PASSWORD")
         self.cookie = os.environ.get("DECYPHA_COOKIE") # Optional override
         
     async def sync_funds(self):

@@ -48,8 +48,8 @@ class RegisterRequest(BaseModel):
     
     @validator('password')
     def validate_password(cls, v):
-        if len(v) < 6:
-            raise ValueError('Password must be at least 6 characters')
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters')
         return v
 
 class UserUpdate(BaseModel):
@@ -62,8 +62,8 @@ class PasswordChange(BaseModel):
 
     @validator('new_password')
     def validate_password(cls, v):
-        if len(v) < 6:
-            raise ValueError('Password must be at least 6 characters')
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters')
         return v
 
 class GuestUsageResponse(BaseModel):

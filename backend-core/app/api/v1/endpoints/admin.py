@@ -1672,7 +1672,7 @@ async def upload_decypha_funds(file: UploadFile = File(...)):
         }
     except Exception as e:
         logger.error(f"Upload failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/debug/trigger_decypha", dependencies=[Depends(require_admin_token)])
 async def debug_trigger_decypha(background_tasks: BackgroundTasks):

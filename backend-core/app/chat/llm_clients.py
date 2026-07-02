@@ -1,14 +1,16 @@
 """
 Multi-Provider LLM Client (Restored)
 =====================================
-Provides resilient LLM access with automatic failover between providers.
-Priority: Groq → Mistral → Anthropic (Claude)
+Provides LLM access via Groq — the sole AI provider.
+
+The multi-provider scaffold (provider list + failover loop) is intentionally
+kept so a fallback could be re-added later by appending to get_providers(),
+but today Groq is the ONLY configured provider.
 
 Strategy:
-1. Try primary provider (Groq - fastest, free tier)
-2. If rate limited or failed, try Mistral
-3. Final fallback to Anthropic Claude (paid)
-4. Only give up after ALL providers exhausted
+1. Use Groq (llama-3.3-70b-versatile, then llama-3.1-8b-instant as model fallback).
+2. If Groq is unavailable/rate-limited, the caller gets None and the response
+   degrades gracefully (data cards still render; only the LLM narrative is skipped).
 """
 
 import os
@@ -34,16 +36,11 @@ class LLMProvider:
 
 # Provider configurations
 def get_providers() -> List[LLMProvider]:
-    """Get all configured providers in priority order.
-    
-    Priority:
-    1. Groq (fastest inference, 100K tokens/day free)
-    2. Mistral (reliable, 1B tokens/month)
-    3. Anthropic Claude (paid unlimited, highest quality but currently 400 errors)
-    """
+    """Get the configured LLM provider(s). Groq is the sole AI provider."""
     providers = []
-    
-    # PRIMARY: Groq (fastest inference)
+
+    # Groq — the only AI provider. Primary model llama-3.3-70b-versatile, with
+    # llama-3.1-8b-instant as an in-provider model fallback.
     if groq_key := settings.GROQ_API_KEY:
         providers.append(LLMProvider(
             name="groq",
@@ -52,27 +49,7 @@ def get_providers() -> List[LLMProvider]:
             models=["llama-3.3-70b-versatile", "llama-3.1-8b-instant"],
             timeout=8.0
         ))
-    
-    # FALLBACK 1: Mistral (reliable)
-    if mistral_key := settings.MISTRAL_API_KEY:
-        providers.append(LLMProvider(
-            name="mistral",
-            base_url="https://api.mistral.ai/v1",
-            api_key=mistral_key,
-            models=["mistral-small-latest"],
-            timeout=10.0
-        ))
-    
-    # FALLBACK 2: Anthropic Claude (paid, highest quality)
-    if anthropic_key := settings.ANTHROPIC_API_KEY:
-        providers.append(LLMProvider(
-            name="anthropic",
-            base_url="https://api.anthropic.com/v1",
-            api_key=anthropic_key,
-            models=["claude-3-5-sonnet-20241022"],
-            timeout=12.0
-        ))
-    
+
     return providers
 
 
@@ -155,12 +132,7 @@ class MultiProviderLLM:
         max_tokens: int,
         temperature: float
     ) -> Optional[str]:
-        """Make the actual API call to a provider."""
-        
-        # Handle Anthropic (Claude) separately - different API format
-        if provider.name == "anthropic":
-            return await self._call_anthropic(provider, model, messages, max_tokens, temperature)
-        
+        """Make the actual API call to a provider (Groq / OpenAI-compatible)."""
         headers = {
             "Authorization": f"Bearer {provider.api_key}",
             "Content-Type": "application/json"
@@ -188,76 +160,10 @@ class MultiProviderLLM:
                 raise Exception(f"{response.status_code}: {body}")
             
             data = response.json()
-            
+
             content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
             return content.strip() if content else None
-    
-    async def _call_anthropic(
-        self,
-        provider: LLMProvider,
-        model: str,
-        messages: List[Dict[str, str]],
-        max_tokens: int,
-        temperature: float
-    ) -> Optional[str]:
-        """
-        Call Anthropic's Claude API with proper format.
-        Claude uses /v1/messages with different request structure.
-        """
-        headers = {
-            "x-api-key": provider.api_key,
-            "anthropic-version": "2023-06-01",
-            "Content-Type": "application/json"
-        }
-        
-        # Extract system message if present (Claude wants it separate)
-        system_content = None
-        user_messages = []
-        for msg in messages:
-            if msg["role"] == "system":
-                system_content = msg["content"]
-            else:
-                user_messages.append(msg)
-        
-        # Ensure at least one user message exists
-        if not user_messages:
-            user_messages = [{"role": "user", "content": "Analyze this data."}]
-        
-        payload = {
-            "model": model,
-            "max_tokens": max_tokens,
-            "messages": user_messages
-        }
-        
-        # Add system message if present
-        if system_content:
-            payload["system"] = system_content
-        
-        async with httpx.AsyncClient(timeout=provider.timeout) as client:
-            response = await client.post(
-                f"{provider.base_url}/messages",
-                headers=headers,
-                json=payload
-            )
-            
-            if response.status_code == 429:
-                raise Exception(f"429 Rate Limit Exceeded")
-            
-            if response.status_code != 200:
-                # Log the actual error body for debugging
-                error_body = response.text[:300]
-                logger.error(f"[Anthropic] {response.status_code} error body: {error_body}")
-                raise Exception(f"{response.status_code}: {error_body}")
-            
-            data = response.json()
-            
-            # Claude returns content array with text blocks
-            content_blocks = data.get("content", [])
-            if content_blocks and len(content_blocks) > 0:
-                text_content = content_blocks[0].get("text", "")
-                return text_content.strip() if text_content else None
-            return None
-    
+
     def get_status(self) -> Dict[str, Any]:
         """Get provider status for debugging."""
         return {

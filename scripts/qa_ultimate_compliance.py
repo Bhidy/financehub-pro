@@ -542,7 +542,7 @@ def validate(test: dict, data: dict) -> Tuple[List[str], List[str]]:
     full_text = get_text(data)
 
     if is_llm_error(data) and test.get("allow_llm_error"):
-        warns.append("LLM quota exhausted — transient (Groq/Mistral)")
+        warns.append("LLM quota exhausted — transient (Groq)")
         return issues, warns
 
     if "success" in checks:

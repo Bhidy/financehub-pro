@@ -26,7 +26,12 @@ permissions:
 
 jobs:
   probe:
-    runs-on: [self-hosted, linux, x64, hetzner]
+    # GitHub-hosted: our most critical monitor must NOT queue behind heavy data
+    # jobs on the single self-hosted runner (and must keep running even if that
+    # runner/box is down). Confirmed safe — supabase-mgmt-monitor reports the DB
+    # network restrictions are OPEN (any IP), so the pooler connection works from
+    # GitHub-hosted dynamic IPs. Free on a public repo.
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5

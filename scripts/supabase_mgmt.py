@@ -108,7 +108,7 @@ def main():
         print(f"   network restrictions: HTTP {stn} (assume open)")
 
     # 2) ADVISORS — Supabase auditing itself
-    alert_lines = []
+    alert_lines, err_keys = [], []
     for kind in ("security", "performance"):
         st2, lints, raw = _advisor(kind)
         if st2 != 200:
@@ -128,10 +128,31 @@ def main():
         if errs:
             alert_lines.append(f"{kind} advisor: {len(errs)} ERROR-level finding(s)")
             alert_lines += [f"  • {l.get('title') or l.get('name')}" for l in errs[:8]]
+            err_keys += [f"{kind}:{l.get('name') or l.get('title')}:{(l.get('metadata') or {}).get('name','')}" for l in errs]
 
-    if alert_lines:
-        _alert("🟠 Supabase Advisor: ERROR-level findings",
+    # Dedup: alert only when the SET of ERROR findings CHANGES vs the last run
+    # (persisted in MGMT_STATE_FILE via the workflow's Actions cache). Prevents
+    # the daily sweep from re-pinging the same findings every day.
+    fp = "|".join(sorted(set(err_keys)))
+    prev = ""
+    state_file = os.environ.get("MGMT_STATE_FILE")
+    if state_file:
+        try:
+            with open(state_file) as f:
+                prev = (json.load(f) or {}).get("fp", "")
+        except Exception:
+            prev = ""
+    if alert_lines and fp != prev:
+        _alert("🟠 Supabase Advisor: ERROR-level findings changed",
                "\n".join([f"project {PROJECT_REF}", ""] + alert_lines))
+    elif alert_lines:
+        print(f"   (advisor ERRORs unchanged since last run — no re-alert; {len(err_keys)} error(s))")
+    if state_file:
+        try:
+            with open(state_file, "w") as f:
+                json.dump({"fp": fp}, f)
+        except Exception as e:  # noqa: BLE001
+            print(f"[warn] could not persist mgmt state: {e}", file=sys.stderr)
     return 0
 
 

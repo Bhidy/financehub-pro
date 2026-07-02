@@ -56,3 +56,18 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEALTH_STATE_FILE: .health_state.json
         run: python scripts/db_health_probe.py
+
+      # Infra early-warning via the Prometheus Metrics API (service_role key).
+      # Sees what a DB connection can't: disk %, memory, connection count — so a
+      # disk-full read-only is caught BEFORE it happens. Never fails the job.
+      - name: Infra metrics (disk / memory / connections)
+        if: ${{ always() }}
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_PROJECT_REF: kgjpkphfjmmiyjsgsaup
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/supabase_metrics.py

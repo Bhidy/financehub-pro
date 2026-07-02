@@ -83,6 +83,7 @@ seconds.
 | `SUPABASE_SERVICE_ROLE_KEY` | **Metrics API** (Prometheus): disk %, CPU, mem, connections vs pooler cap | ✅ present (2026-07-02). Powers the `db-health-monitor` infra step (`scripts/supabase_metrics.py`). **God-key** — bypasses RLS; secret-only, never client-side. |
 | `DISCORD_WEBHOOK_URL` | Alerts | Needs explicit User-Agent (see playbook C). |
 | `WATCHDOG_DISPATCH_TOKEN` | Watchdog self-heal `gh workflow run` | Needs `actions:write`. |
+| `HETZNER_API_TOKEN` | **Hetzner Cloud API** (project "Starta"): server status/type/IP, reboot/resize | ✅ present (2026-07-02). Read&Write, project-scoped (blast radius = the 1 backend server). Used by `hetzner-infra-monitor.yml`. |
 | `NOTIFICATION_EMAIL`, `SMTP_PASSWORD` | Email alert fallback | |
 | `GROQ_API_KEY`, `ADMIN_API_TOKEN` | AI chat / admin | Rotated 2026-07-02. |
 
@@ -100,7 +101,8 @@ seconds.
 | Monitor (workflow) | Watches | Cadence | Alerts |
 |---|---|---|---|
 | `db-health-monitor.yml` (`scripts/db_health_probe.py`) | DB writable/recovery/size/connections/freshness **+ Supabase status API** | ~10 min | Discord, once per state transition (dedup via Actions cache) |
-| `supabase-mgmt-monitor.yml` (`scripts/supabase_mgmt.py`) | PAT validity, project status, **Security + Performance Advisors** | daily 06:00 UTC | Discord on ERROR-level security findings |
+| `supabase-mgmt-monitor.yml` (`scripts/supabase_mgmt.py`) | PAT validity, project status, network-restrictions, **Security + Performance Advisors** | daily 06:00 UTC (GitHub-hosted) | Discord on ERROR-level security findings |
+| `hetzner-infra-monitor.yml` (`scripts/hetzner_infra.py`) | The backend VPS via the Hetzner Cloud API: server running/off, type, IP, reboots | ~30 min (GitHub-hosted) | Discord on server state change |
 | `pipeline-watchdog.yml` (`scripts/pipeline_watchdog.py`) | Every dataset's freshness SLA, schedule liveness of all crons, runner disk; auto-heals via dispatch | ~hourly | Discord + honest RED exit when a problem is unhealed |
 | `*-freshness-monitor.yml` | Per-domain freshness (stocks/funds) | scheduled | Discord |
 | `backend-deploy.yml` | Health-gated backend deploy w/ auto-rollback | on dispatch | GitHub issue on failure |
@@ -126,9 +128,9 @@ Alert channels (in `notify.send_alert` order): **Discord → generic webhook →
 
 **Gaps + what's needed:**
 1. **Infra-metrics early warning** — ✅ **DONE** (2026-07-02): `scripts/supabase_metrics.py` scrapes the Prometheus Metrics API (`https://<ref>.supabase.co/customer/v1/privileged/metrics`, Basic auth `service_role`) for disk %, memory, connections and alerts *before* a disk-full/connection-exhaustion read-only. Runs inside `db-health-monitor.yml`.
-2. **Kill the single-runner SPOF** — add a 2nd self-hosted runner OR move lightweight monitors (db-health, supabase-mgmt, freshness) to GitHub-hosted `ubuntu-latest` so monitoring never queues behind heavy data jobs and never drops.
+2. **Kill the single-runner SPOF** — 🔄 **in progress** (2026-07-02): API-only monitors moved to GitHub-hosted `ubuntu-latest` (`supabase-mgmt-monitor`, `hetzner-infra-monitor` — free on a public repo). `db-health-monitor` moves too once `supabase-mgmt-monitor` confirms network restrictions are OPEN (it now reports them); if an IP allowlist exists, DB-touching monitors stay on the fixed-IP self-hosted runner. `pipeline-watchdog` stays self-hosted (its runner-disk check watches the box).
 3. **Synthetic end-to-end uptime** — a monitor that hits `startamarkets.com` + the backend API every N min and asserts 200 + sane payload (nothing currently proves the *live* app is up/correct).
-4. **Host visibility** — Hetzner SSH access (add a key) OR accept backend is managed only via `backend-deploy.yml`. Decision needed to remove the blind spot.
+4. **Host visibility** — ✅ **DONE** (2026-07-02): `scripts/hetzner_infra.py` watches the VPS via the Hetzner Cloud API (`HETZNER_API_TOKEN`, project-scoped to Starta) — server running/off, type, reboots. Raw SSH remains denied/break-glass; ad-hoc box shell still only via `ops-inspect.yml`.
 5. **Secret hygiene** — enable GitHub secret-scanning + push-protection and a rotation calendar (repo is public; keys have leaked before).
 
 Keep this file current: when a new incident class appears, add a playbook here in the SAME session you fix it.

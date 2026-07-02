@@ -23,7 +23,10 @@ permissions:
 
 jobs:
   probe:
-    runs-on: [self-hosted, linux, x64, hetzner]
+    # GitHub-hosted (free on a public repo): API-only, needs no DB pooler or the
+    # Hetzner box, so it must NOT queue behind heavy data jobs on the single
+    # self-hosted runner. Kills that SPOF for this monitor.
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5

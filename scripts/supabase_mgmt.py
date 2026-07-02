@@ -95,6 +95,18 @@ def main():
         print(f"   ⚠️ project {PROJECT_REF} not visible to this token. Visible: {names}")
         return 0
 
+    # 1b) NETWORK RESTRICTIONS — decides whether DB-touching monitors can run on
+    #     GitHub-hosted runners (dynamic IPs). "allow all" => yes; an allowlist =>
+    #     those monitors must stay on the fixed-IP self-hosted runner.
+    stn, netr = _get(f"/v1/projects/{PROJECT_REF}/network-restrictions")
+    if stn == 200 and isinstance(netr, dict):
+        cfg = netr.get("config") or {}
+        allowed = (cfg.get("dbAllowedCidrs") or []) + (cfg.get("dbAllowedCidrsV6") or [])
+        openish = (not allowed) or ("0.0.0.0/0" in allowed) or ("::/0" in allowed)
+        print(f"   network restrictions: {'OPEN (any IP) — DB monitors may run GitHub-hosted' if openish else f'ALLOWLIST {allowed} — DB monitors must stay self-hosted'} (status={netr.get('status')})")
+    else:
+        print(f"   network restrictions: HTTP {stn} (assume open)")
+
     # 2) ADVISORS — Supabase auditing itself
     alert_lines = []
     for kind in ("security", "performance"):

@@ -33,10 +33,22 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+
+      # Persist the advisor-error fingerprint across runs so we alert only when
+      # the set of ERROR findings CHANGES (no daily re-ping of the same findings).
+      - name: Restore advisor state
+        uses: actions/cache@v4
+        with:
+          path: .mgmt_state.json
+          key: mgmt-advisor-state-${{ github.run_id }}
+          restore-keys: |
+            mgmt-advisor-state-
+
       - name: Validate PAT + project health + Advisors
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASETOKENKEY }}
           SUPABASE_PROJECT_REF: kgjpkphfjmmiyjsgsaup
+          MGMT_STATE_FILE: .mgmt_state.json
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}

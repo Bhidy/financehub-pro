@@ -1,0 +1,26 @@
+name: Apply View Security (migration 007)
+
+# One-shot, idempotent: sets security_invoker=on for public views (closes the
+# "Security Definer View" advisor errors) and verifies none are left. WRITE —
+# dispatch intentionally.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Apply + verify view security_invoker
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASETOKENKEY }}
+          SUPABASE_PROJECT_REF: kgjpkphfjmmiyjsgsaup
+        run: python scripts/apply_view_security.py

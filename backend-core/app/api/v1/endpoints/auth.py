@@ -48,8 +48,8 @@ class RegisterRequest(BaseModel):
     
     @validator('password')
     def validate_password(cls, v):
-        if len(v) < 12:
-            raise ValueError('Password must be at least 12 characters')
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters')
         return v
 
 class UserUpdate(BaseModel):
@@ -62,8 +62,8 @@ class PasswordChange(BaseModel):
 
     @validator('new_password')
     def validate_password(cls, v):
-        if len(v) < 12:
-            raise ValueError('Password must be at least 12 characters')
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters')
         return v
 
 class GuestUsageResponse(BaseModel):
@@ -557,8 +557,8 @@ class AdminPasswordReset(BaseModel):
 
     @validator('new_password')
     def validate_password(cls, v):
-        if len(v) < 12:
-            raise ValueError('Password must be at least 12 characters')
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters')
         return v
 
 @router.post("/admin/reset-user-password")

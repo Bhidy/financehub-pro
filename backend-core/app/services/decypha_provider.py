@@ -22,7 +22,7 @@ class DecyphaProvider:
         # here is a live credential leak. Creds come from env only; sync_funds
         # already fails closed if they're missing (Decypha is soft-fail / not
         # load-bearing — fund NAV comes from Mubasher, not Decypha).
-        self.email = os.environ.get("DECYPHA_EMAIL")
+        self.email = os.environ.get("DECYPHA_EMAIL") or os.environ.get("DECYPHA_USERNAME")
         self.password = os.environ.get("DECYPHA_PASSWORD")
         self.cookie = os.environ.get("DECYPHA_COOKIE") # Optional override
         

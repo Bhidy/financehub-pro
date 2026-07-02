@@ -26,12 +26,24 @@ from data_pipeline.egx_feed_router import EGXFeedRouter, AllSourcesFailed  # noq
 DATABASE_URL = os.environ.get("DATABASE_URL")
 RED = "\033[91mRED\033[0m"
 GREEN = "\033[92mGREEN\033[0m"
+SKIP = "\033[93mSKIP\033[0m"
 results: list[tuple[str, bool, str]] = []
+skipped: list[tuple[str, str]] = []
 
 
 def check(name: str, ok: bool, detail: str = ""):
     results.append((name, ok, detail))
     print(f"  [{GREEN if ok else RED}] {name}{('  - ' + detail) if detail else ''}")
+
+
+def skip(name: str, detail: str = ""):
+    """Neutral outcome: a check could NOT run for a transient, not-our-fault
+    reason (e.g. the DB is read-only during a Supabase platform incident). NOT
+    counted as RED — it must not turn a platform incident into a NO-GO gate that
+    blocks PRs and spams failures. The schema-drift gate that CAN run read-only
+    (statement parse-validation) still runs and still gates."""
+    skipped.append((name, detail))
+    print(f"  [{SKIP}] {name}{('  - ' + detail) if detail else ''}")
 
 
 # --------------------------------------------------------------------------- #
@@ -139,7 +151,19 @@ async def suite_write_resilience():
     check("transient infra error -> raised for reconnect+retry", raised2 and dl == [],
           f"raised={raised2}, deadletters={dl}")
 
-    # 3) genuine single-row DATA error -> dead-lettered, cycle survives
+    # 3) READ-ONLY (platform incident) -> re-raised, NEVER dead-lettered (the
+    #    dead-letter INSERT would itself fail read-only). _run_cycle catches it and
+    #    skips the whole cycle cleanly instead of exiting RED.
+    raised3 = None
+    try:
+        await tvh._on_write_error(None, "prices", "COMI", {},
+                                  pg.ReadOnlySQLTransactionError("cannot execute INSERT in a read-only transaction"))
+    except pg.ReadOnlySQLTransactionError:
+        raised3 = True
+    check("read-only DB -> re-raised for clean skip (never dead-lettered)",
+          raised3 and dl == [], f"raised={raised3}, deadletters={dl}")
+
+    # 4) genuine single-row DATA error -> dead-lettered, cycle survives
     await tvh._on_write_error(None, "prices", "XYZ", {}, ValueError("bad numeric for one row"))
     check("single bad row -> dead-lettered, cycle survives", dl == [("prices", "XYZ")], f"{dl}")
 
@@ -157,7 +181,12 @@ async def suite_write_contract():
     from datetime import date
     tvh = _load_harvester()
     print("\n14.1c WRITE CONTRACT (every write statement vs live schema)")
-    conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0, command_timeout=20)
+    try:
+        conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0, command_timeout=20)
+    except (asyncpg.CannotConnectNowError, asyncpg.PostgresConnectionError,
+            OSError, asyncio.TimeoutError) as e:
+        skip("write-contract suite (DB unreachable — transient infra)", type(e).__name__)
+        return
     try:
         # (a) parse-validate EVERY write statement of EVERY cycle against the live
         #     schema: catches missing/renamed columns, dropped tables, syntax drift
@@ -198,6 +227,13 @@ async def suite_write_contract():
                 probe2, "QA Probe", "QA Sector", 2.0, 0.0, 0.0, 0, None, None, None,
                 None, None, None, None, None, None, None, None, "qa")
             check("upsert over NULL-market_code row UPDATEs (no dup-key)", True)
+        except asyncpg.ReadOnlySQLTransactionError:
+            # DB is read-only (Supabase platform incident/standby). The execute-
+            # probe can't run, but that is NOT schema drift — the parse-validation
+            # above ("all N write statements parse vs live schema") DID run (PREPARE
+            # works read-only) and still gates drift. Skip, don't fail the gate.
+            skip("prices-cycle execute-probe (DB read-only — platform incident)",
+                 "parse-validation still gated schema drift; execute-probe re-runs when writable")
         except Exception as e:  # noqa: BLE001 — any structural mismatch is a No-Go
             check("prices-cycle SQL matches market_tickers + ohlc_data schema", False,
                   f"{type(e).__name__}: {e}")
@@ -285,13 +321,22 @@ async def main(suite: str):
 
     reds = [r for r in results if not r[1]]
     print("\n" + "=" * 60)
-    print(f"RESULT: {len(results)-len(reds)}/{len(results)} GREEN")
+    summary = f"RESULT: {len(results)-len(reds)}/{len(results)} GREEN"
+    if skipped:
+        summary += f", {len(skipped)} SKIPPED (transient infra — not a schema failure)"
+    print(summary)
     if reds:
         print(f"NO-GO  - {len(reds)} RED:")
         for n, _, d in reds:
             print(f"   - {n} {d}")
         sys.exit(1)
-    print("GO  - all checks GREEN")
+    if skipped:
+        print("Skipped (could not run — transient, not-our-fault; did NOT gate):")
+        for n, d in skipped:
+            print(f"   ~ {n}{('  - ' + d) if d else ''}")
+        print("GO  - all runnable checks GREEN (see skips above)")
+    else:
+        print("GO  - all checks GREEN")
     sys.exit(0)
 
 

@@ -86,8 +86,12 @@ def _send_discord(title: str, message: str, timeout: int = 15) -> str:
                 "color": 0xE74C3C,
             }]
         }).encode()
+        # Discord 403s webhook POSTs sent with the default "Python-urllib/x.y"
+        # User-Agent — it must be an explicit UA. (This was the real cause of the
+        # watchdog's 'discord: http 403' alerts; the webhook itself is valid.)
         req = urllib.request.Request(
-            url, data=body, headers={"Content-Type": "application/json"}
+            url, data=body,
+            headers={"Content-Type": "application/json", "User-Agent": "StartaWatchdog/1.0 (+https://startamarkets.com)"}
         )
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             code = resp.getcode()
@@ -234,7 +238,8 @@ def _send_webhook(title: str, message: str, timeout: int = 15) -> str:
         return "skip(no url)"
     try:
         body = json.dumps({"text": f"🚨 {title}\n{message}"[:3900]}).encode()
-        req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+        req = urllib.request.Request(url, data=body,
+            headers={"Content-Type": "application/json", "User-Agent": "StartaWatchdog/1.0 (+https://startamarkets.com)"})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             code = resp.getcode()
         return "ok" if (code is not None and 200 <= code < 300) else f"http {code}"

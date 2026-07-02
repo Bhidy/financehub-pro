@@ -267,7 +267,7 @@ def _post_discord(title, lines, color):
             "description": "\n".join(lines)[:3900],
             "color": color,
         }]}).encode()
-        req = urllib.request.Request(DISCORD, data=body, headers={"Content-Type": "application/json"})
+        req = urllib.request.Request(DISCORD, data=body, headers={"Content-Type": "application/json", "User-Agent": "Starta/1.0 (+https://startamarkets.com)"})
         urllib.request.urlopen(req, timeout=15).read()
     except Exception as e:
         print(f"discord post failed: {e}", file=sys.stderr)

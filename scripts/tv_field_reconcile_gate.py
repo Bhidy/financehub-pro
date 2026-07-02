@@ -116,7 +116,7 @@ def discord(title: str, lines: list[str], color: int):
     body = json.dumps({"embeds": [{"title": title, "description": "\n".join(lines)[:3900],
                                    "color": color}]}).encode()
     try:
-        req = urllib.request.Request(hook, data=body, headers={"Content-Type": "application/json"})
+        req = urllib.request.Request(hook, data=body, headers={"Content-Type": "application/json", "User-Agent": "Starta/1.0 (+https://startamarkets.com)"})
         urllib.request.urlopen(req, timeout=15, context=_CTX)
     except Exception as e:  # alerting must never mask the gate result
         print(f"   (Discord alert failed: {e})")

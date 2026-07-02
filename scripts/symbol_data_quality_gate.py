@@ -208,7 +208,7 @@ def main():
             if len(all_v) > 15:
                 body += f"\n…and {len(all_v)-15} more."
             data = json.dumps({"content": body}).encode()
-            req = urllib.request.Request(hook, data=data, headers={"Content-Type": "application/json"})
+            req = urllib.request.Request(hook, data=data, headers={"Content-Type": "application/json", "User-Agent": "Starta/1.0 (+https://startamarkets.com)"})
             with urllib.request.urlopen(req, timeout=20) as resp:
                 status = resp.status
             if status < 300:

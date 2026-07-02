@@ -67,6 +67,7 @@ class NotificationService:
                 response = client.post(
                     self.discord_webhook_url,
                     json={"content": content},
+                    headers={"User-Agent": "Starta/1.0 (+https://startamarkets.com)"},
                     timeout=10
                 )
                 if response.status_code == 204:

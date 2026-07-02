@@ -42,7 +42,7 @@ def run_sql(sql):
 
 LEFT = ("select c.relname from pg_class c join pg_namespace n on n.oid=c.relnamespace "
         "where n.nspname='public' and c.relkind='v' "
-        "and not ('security_invoker=true' = any(coalesce(c.reloptions,'{}'))) order by 1")
+        "and coalesce(array_to_string(c.reloptions,','),'') !~* 'security_invoker=(on|true|1)' order by 1")
 
 
 def main():

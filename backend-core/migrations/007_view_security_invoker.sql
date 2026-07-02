@@ -19,7 +19,7 @@ BEGIN
     FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = 'public'
       AND c.relkind = 'v'
-      AND NOT ('security_invoker=true' = ANY (coalesce(c.reloptions, '{}')))
+      AND coalesce(array_to_string(c.reloptions, ','), '') !~* 'security_invoker=(on|true|1)'
   LOOP
     EXECUTE format('ALTER VIEW public.%I SET (security_invoker = on)', v.relname);
     RAISE NOTICE 'security_invoker=on -> public.%', v.relname;

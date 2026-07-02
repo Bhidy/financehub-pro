@@ -30,7 +30,9 @@ export default function robots(): MetadataRoute.Robots {
                 disallow: DISALLOW,
             },
         ],
-        sitemap: `${SITE_URL}/sitemap.xml`,
-        host: SITE_URL,
+        // Both sitemaps listed: the Google News sitemap is not in the index
+        // (news-specific format), so robots.txt is its discovery path until
+        // Search Console submission happens.
+        sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/news-sitemap.xml`],
     };
 }

@@ -46,8 +46,10 @@ export default async function CompaniesPage() {
     const itemListJsonLd = {
         '@context': 'https://schema.org',
         '@type': 'ItemList',
-        name: 'Egyptian Exchange (EGX) listed companies',
-        numberOfItems: tickers.length,
+        // numberOfItems must match the serialized list (audit: declaring 307
+        // while emitting 100 is inconsistent) — this block covers the top 100.
+        name: 'Egyptian Exchange (EGX) listed companies — top 100 by market cap',
+        numberOfItems: Math.min(tickers.length, 100),
         itemListOrder: 'https://schema.org/ItemListOrderDescending',
         itemListElement: tickers.slice(0, 100).map((t, i) => ({
             '@type': 'ListItem',

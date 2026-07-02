@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getNewsArticle, getLatestNews, type NewsArticle } from '@/lib/public-data';
 import { sanitizeNewsText } from '@/lib/news-display';
-import { SITE_URL, newsPath, idFromParam } from '@/lib/seo';
+import { SITE_URL, newsPath, idFromParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -45,7 +45,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const headline = sanitizeNewsText(article.headline) || 'Egypt Market Update';
     const paragraphs = cleanBody(article);
     const description = (paragraphs.join(' ').slice(0, 155) || headline).trim();
-    const canonical = newsPath(article.id, headline);
+    // encodeURI: Arabic slugs must be percent-encoded in link/meta URLs.
+    const canonical = encodeURI(newsPath(article.id, headline));
     const arabic = isArabic(article);
     return {
         title: headline,
@@ -75,8 +76,11 @@ export default async function NewsArticlePage({ params }: Props) {
     const canonicalPath = newsPath(article.id, headline);
 
     // 308 any non-canonical form (bare id, stale/wrong slug) to the canonical.
-    if (`/News/${idParam}` !== canonicalPath) {
-        permanentRedirect(canonicalPath);
+    // Encoding-aware: route params arrive percent-encoded (Arabic slugs), and
+    // the Location header must be encoded too — raw unicode there 500s.
+    const redirectTarget = canonicalRedirectTarget(`/News/${idParam}`, canonicalPath);
+    if (redirectTarget) {
+        permanentRedirect(redirectTarget);
     }
 
     const arabic = isArabic(article);
@@ -99,9 +103,16 @@ export default async function NewsArticlePage({ params }: Props) {
         datePublished: publishedIso,
         dateModified: publishedIso,
         inLanguage: arabic ? 'ar' : 'en',
-        mainEntityOfPage: { '@type': 'WebPage', '@id': SITE_URL + canonicalPath },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': absUrl(canonicalPath) },
         ...(article.image_url ? { image: [article.image_url] } : {}),
-        publisher: { '@id': `${SITE_URL}/#organization` },
+        // Inline node (not an @id reference): Google resolves JSON-LD per page,
+        // and the #organization node only exists on the homepage.
+        publisher: {
+            '@type': 'Organization',
+            name: 'Starta Markets',
+            url: SITE_URL,
+            logo: { '@type': 'ImageObject', url: `${SITE_URL}/app-icon.png` },
+        },
         author: { '@type': 'Organization', name: 'Starta Markets Newsroom', url: SITE_URL },
         ...(paragraphs.length ? { articleBody: paragraphs.join('\n\n').slice(0, 5000) } : {}),
         ...(article.symbol

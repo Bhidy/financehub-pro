@@ -52,6 +52,26 @@ export function idFromParam(param: string): number | null {
     return Number.isInteger(id) && id > 0 ? id : null;
 }
 
+/**
+ * Canonicalization guard for dynamic routes with unicode (Arabic) slugs.
+ * Route params arrive PERCENT-ENCODED while our canonical paths carry raw
+ * unicode — naive string comparison always mismatches for Arabic slugs and a
+ * redirect to a raw-unicode Location header 500s. Returns the encoded redirect
+ * target when the request truly differs from canonical, else null.
+ */
+export function canonicalRedirectTarget(requestPath: string, canonicalPath: string): string | null {
+    let decoded = requestPath;
+    try {
+        decoded = decodeURIComponent(requestPath);
+    } catch {
+        // malformed escapes: fall through and compare raw
+    }
+    if (decoded === canonicalPath || requestPath === canonicalPath || requestPath === encodeURI(canonicalPath)) {
+        return null;
+    }
+    return encodeURI(canonicalPath);
+}
+
 /** Escape a string for inclusion in XML text/attribute content. */
 export function xmlEscape(s: string): string {
     return s

@@ -1,0 +1,27 @@
+name: Apply RLS Gap (migration 006)
+
+# One-shot, idempotent: applies backend-core/migrations/006_rls_gap_tables.sql via
+# the Supabase Management API (PAT), then verifies RLS is on for all 11 tables and
+# the 3 internal ops tables are no longer anon-readable. Safe to re-run. WRITE —
+# dispatch intentionally. Fails (red) if the apply or verification fails.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Apply + verify RLS gap migration
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASETOKENKEY }}
+          SUPABASE_PROJECT_REF: kgjpkphfjmmiyjsgsaup
+        run: python scripts/apply_rls_gap.py

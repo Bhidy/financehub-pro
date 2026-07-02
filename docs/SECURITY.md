@@ -24,14 +24,19 @@ The repo `Bhidy/financehub-pro` was **PUBLIC from Dec 2025**; secrets leaked via
 - `GEMINI.md`: an `sk-…` key (now redacted in HEAD).
 - `scripts/*.exp` (≈18 files): hardcoded the **Hetzner SSH root password** (also reused as the old Postgres password). **FULLY REMEDIATED 2026-06 — see below.**
 
-**Done:** repo set **PRIVATE**; `.gitignore` hardened.
+**Done:** `.gitignore` hardened. ⚠️ The repo was set private in 2026-06 but is **PUBLIC again** (verified 2026-07-02 — see `CANONICAL_STATE.md` §4); treat everything ever committed as compromised.
 
 **SSH password — FULLY REMEDIATED 2026-06:**
 - SSH **password authentication DISABLED** on the server (`PasswordAuthentication no`, `PermitRootLogin prohibit-password`; key-only) → the leaked password is now **useless for remote access**. Key auth (`~/.ssh/starta_deploy`) verified working.
 - All **47 `scripts/*.exp` deleted**; password removed from `GEMINI.md` and `scripts/verify_compare_fix.py`; legacy Hetzner Postgres confirmed retired (no `:5432` listener — prod is Supabase).
 - Git history **purged** of the password value (history rewrite + force-push).
 
-**STILL TO ROTATE (separate, higher-effort — these leaked in git history during the public period and are NOT yet rotated):** `DATABASE_URL`/Postgres creds, `SECRET_KEY`, `OPENAI_API_KEY`, `GROQ_API_KEY`, and the `sk-…` key once in `GEMINI.md`. Each needs provider-side rotation + updating Vercel env **and** the server `.env`.
+**ROTATION LEDGER (updated 2026-07-02):**
+- ✅ `SECRET_KEY` — **ROTATED 2026-07-02** via `backend-deploy.yml` dispatch with `rotate_secret_key=true` (health gate passed; `/health` 200 and auth returns 401-on-bad-creds, not 5xx). Old JWTs invalidated by design.
+- ✅ Cerebras key (leaked in history; provider removed from code in #98) — **REVOKED at cloud.cerebras.ai 2026-07-02** (API returns 401; only an unused placeholder key remains because Cerebras refuses to delete the last key).
+- ❌ `DATABASE_URL`/Postgres password — still pending. Sanctioned path (no SSH needed): Supabase → reset password → `gh secret set DATABASE_URL` → dispatch `backend-deploy.yml` with `sync_database_url=true` → update Vercel env + redeploy frontend.
+- ❌ `GROQ_API_KEY` — still pending (mint at console.groq.com; lives only in the server `.env`).
+- ❌ `OPENAI_API_KEY` (embeddings only) and the `sk-…` key once in `GEMINI.md` — still pending.
 
 **Public for ~5 months = assume harvested by bots. Rotate all of these:**
 
@@ -42,8 +47,8 @@ For each secret: **(1) mint new** (keep old alive) → **(2) update every place 
 |---|---|---|---|---|
 | `GROQ_API_KEY` | console.groq.com | Hetzner `/opt/starta/.env` | backend container | chatbot replies |
 | `OPENAI_API_KEY` | platform.openai.com | Hetzner `.env` | backend | chatbot |
-| `DATABASE_URL` (Supabase pwd) | Supabase → Database → reset password | Hetzner `.env` **+** Vercel env | backend + redeploy frontend | `/api/v1/market-summary` → 200 |
-| `SECRET_KEY` (JWT) | random 32+ bytes | Hetzner `.env` | backend | login works *(logs users out)* |
+| `DATABASE_URL` (Supabase pwd) | Supabase → Database → reset password | `gh secret set DATABASE_URL` → dispatch `backend-deploy.yml` with `sync_database_url=true` **+** Vercel env | (deploy restarts it) + redeploy frontend | `/api/v1/market-summary` → 200 |
+| `SECRET_KEY` (JWT) | ✅ done 2026-07-02 | dispatch `backend-deploy.yml` with `rotate_secret_key=true` | (deploy restarts it) | login works *(logs users out)* |
 | **Hetzner SSH password** | `passwd` on the VPS | your records (stop using `.exp`) | — | ssh in |
 
 > AI keys are **only** on Hetzner (chatbot runs there), not Vercel. `verify after each` — I (or you) curl the endpoint before revoking the old key.

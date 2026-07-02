@@ -1,3 +1,15 @@
+"""
+DEPRECATED — DO NOT RUN (2026-07-03 production audit).
+
+This script backfilled market_tickers.name_ar from ticker_aliases — a fuzzy
+SEARCH table, not an identity source — and joined WRONG companies onto
+symbols (EXPA got "اكسلنس"/Excellence; ARAB got the unrelated Arab African
+International Bank). name_ar is now refreshed weekly from TradingView's
+symbol-keyed ar-localized descriptions by refresh_company_names.py
+(.github/workflows/company-names-refresh.yml). The alias-INJECTION half of
+this script (MANUAL_ALIASES -> ticker_aliases) is still conceptually fine for
+chat search, but never derive display names from aliases again.
+"""
 import asyncio
 import os
 from dotenv import load_dotenv

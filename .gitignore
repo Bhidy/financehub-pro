@@ -64,3 +64,6 @@ db_backup_*.sql
 # macOS / debug artifacts
 .DS_Store
 debug_*.json
+
+# Playwright MCP scratch output
+.playwright-mcp/

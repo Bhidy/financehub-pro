@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
         // Server-side fetch to Python Backend
         const response = await fetch(targetUrl, {
             method: 'GET',
+            signal: AbortSignal.timeout(15000), // don't hang on a slow/sleeping backend (L-4)
             headers: {
                 'Accept': 'application/json',
                 'User-Agent': 'Starta-NextJS-Proxy/1.0'

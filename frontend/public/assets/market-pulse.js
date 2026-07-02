@@ -1064,6 +1064,7 @@
 
         // ── Phase 4: Full render with live data ──────────────────────────
         render();
+        setLastUpdated();
 
         // ── Phase 5: Persist to session cache for instant next visit ─────
         saveToCache({ stocks: state.stocks, summary: state.summary, index: state.index, news: state.news, history: state.history });
@@ -1073,6 +1074,46 @@
             loadSelectedSymbolNews(),
             loadProfile(state.selected)
         ]);
+    }
+
+    // ── M-1 / M-3: keep the live market fresh without a manual reload ─────
+    // Market Pulse used to fetch once on load and then freeze. This refresher
+    // re-pulls only the live-changing datasets (quotes, breadth, EGX30) on an
+    // interval and whenever the tab regains focus, then stamps the UI with the
+    // last-updated time. History/news/profile are intentionally excluded — they
+    // move slowly, so the heavy work stays on the initial load.
+    let _mpRefreshBusy = false;
+    async function refreshLiveMarket() {
+        if (_mpRefreshBusy || document.hidden) return;
+        _mpRefreshBusy = true;
+        try {
+            const res = await Promise.allSettled([
+                request("/api/v1/egx/stocks?limit=300"),
+                request("/api/v1/market-summary"),
+                request("/api/v1/egx30/index")
+            ]);
+            if (res[0].status === "fulfilled" && Array.isArray(res[0].value)) state.stocks = res[0].value;
+            if (res[1].status === "fulfilled" && res[1].value) state.summary = res[1].value;
+            if (res[2].status === "fulfilled" && res[2].value) state.index = res[2].value;
+            if (!state.stocks.some((s) => s.symbol === state.selected) && state.stocks.length)
+                state.selected = state.stocks[0].symbol;
+            render();
+            setLastUpdated();
+            saveToCache({ stocks: state.stocks, summary: state.summary, index: state.index, news: state.news, history: state.history });
+        } catch (_) {
+            /* transient network blip — keep showing last-good data, retry next tick */
+        } finally {
+            _mpRefreshBusy = false;
+        }
+    }
+
+    function setLastUpdated(date) {
+        const el = byId("mpUpdated");
+        if (!el) return;
+        const d = date || new Date();
+        const pad = (n) => String(n).padStart(2, "0");
+        const label = state.lang === "ar" ? "آخر تحديث" : "Updated";
+        el.textContent = `${label} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     }
 
     function updateAddBtnTitle() {
@@ -1585,4 +1626,12 @@
     const stored = localStorage.getItem("starta-lang") || localStorage.getItem("lang");
     setLanguage(stored === "ar" ? "ar" : "en", false);
     loadMarket();
+
+    // M-1: background refresh so the dashboard never silently goes stale.
+    // 60s cadence (backend market-summary caches at s-maxage=60); paused while
+    // the tab is hidden and re-fired the moment it regains focus.
+    setInterval(refreshLiveMarket, 60000);
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) refreshLiveMarket();
+    });
 }());

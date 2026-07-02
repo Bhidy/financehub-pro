@@ -116,7 +116,9 @@
         var cardsHtml = metrics.map(function (item) {
             var p = item.p, m = item.m;
             var retClass = m.totalReturn >= 0 ? 'pf-pos' : 'pf-neg';
-            var updated = new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: '2-digit', month: 'short' });
+            var updated = PFStore.pricesUpdatedAt
+                ? new Date(PFStore.pricesUpdatedAt).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+                : new Date().toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: '2-digit', month: 'short' });
             var displayName = (lang === 'ar' && p.nameAr) ? p.nameAr : p.name;
             return '<div class="pf-card pf-portfolio-card" data-id="' + p.id + '">' +
                 '<div class="card-name">' +
@@ -155,12 +157,18 @@
             createCard('◈', t('createWatchlist'), t('createWatchlistDesc'), 'watchlist'),
         ].join('');
 
+        var offlineBanner = PFStore.pricesOffline
+            ? '<div class="pf-offline-note" role="status" style="margin:0 0 0.75rem;padding:0.5rem 0.85rem;border:1px solid var(--c-border);border-radius:8px;background:rgba(220,38,38,0.08);color:var(--c-text-muted);font-size:0.72rem;">' +
+                (lang === 'ar' ? '⚠︎ تعذّر تحديث الأسعار المباشرة — القيم المعروضة قد تكون تقديرية.' : '⚠︎ Live prices unavailable — values shown may be estimated.') +
+              '</div>'
+            : '';
         root.innerHTML =
             '<div class="pf-list">' +
                 '<div class="pf-list-head">' +
                     '<div><h1 class="display">' + t('title') + '</h1><p>' + t('sub') + '</p></div>' +
                     '<button id="newPfBtn" class="pf-btn pf-btn--primary">+ ' + t('newPortfolio') + '</button>' +
                 '</div>' +
+                offlineBanner +
                 '<div class="pf-list-grid">' + cardsHtml + createHtml + '</div>' +
             '</div>';
 
@@ -662,6 +670,15 @@
     render();
     PFStore.refreshPrices().then(function () {
         render();
+    });
+
+    // M-1: keep portfolio values live — re-pull prices every 60s and whenever
+    // the tab regains focus, instead of freezing at the first load.
+    setInterval(function () {
+        if (!document.hidden) PFStore.refreshPrices(true).then(render);
+    }, 60000);
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) PFStore.refreshPrices(true).then(render);
     });
 
 }());

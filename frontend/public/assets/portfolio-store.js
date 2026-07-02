@@ -131,10 +131,14 @@
 
     // Async: fetch live prices from the real EGX API and merge into PRICES map.
     // Safe to call multiple times — skips if already fetched in this session.
-    function refreshPrices() {
-        if (_pricesFetched) return Promise.resolve();
+    // force=true re-pulls even if already fetched this session (used by the
+    // periodic refresher so portfolio values stay live instead of freezing at
+    // the first load). Tracks pricesUpdatedAt (real fetch time, for the "Updated"
+    // stamp) and pricesOffline (surfaced to the user, no longer a silent failure).
+    function refreshPrices(force) {
+        if (_pricesFetched && !force) return Promise.resolve();
         return fetch('/api/v1/egx/stocks?limit=500', { cache: 'no-store' })
-            .then(function (r) { return r.ok ? r.json() : []; })
+            .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)); })
             .then(function (stocks) {
                 if (!Array.isArray(stocks)) return;
                 stocks.forEach(function (s) {
@@ -146,8 +150,13 @@
                     if (pp > 0) PREV_PRICES[sym] = pp;
                 });
                 _pricesFetched = true;
+                if (global.PFStore) { global.PFStore.pricesUpdatedAt = Date.now(); global.PFStore.pricesOffline = false; }
             })
-            .catch(function () {}); // Silently fall back to seeded prices
+            .catch(function () {
+                // Keep the seeded fallback prices, but flag the outage so the UI
+                // can tell the user the values may be stale (M-4).
+                if (global.PFStore) global.PFStore.pricesOffline = true;
+            });
     }
 
     // Start fetching immediately when the store loads
@@ -377,6 +386,7 @@
         generateChartData: generateChartData,
         symMeta: symMeta, lastPrice: lastPrice,
         refreshPrices: refreshPrices,
+        pricesUpdatedAt: 0, pricesOffline: false,
         fmt: fmt, SYMBOLS: SYMBOLS,
         PRICES: PRICES, PREV_PRICES: PREV_PRICES
     };

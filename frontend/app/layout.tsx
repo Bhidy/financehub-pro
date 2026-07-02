@@ -68,6 +68,11 @@ export const metadata: Metadata = {
   description: "Your AI Market Analyst for MENA Markets",
   manifest: "/manifest.json",
   themeColor: "#0f172a",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

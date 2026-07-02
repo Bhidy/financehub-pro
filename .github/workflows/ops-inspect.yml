@@ -1,0 +1,54 @@
+# Read-only inspection of the Hetzner box via the self-hosted runner.
+# Exists because laptop -> server SSH is blocked at the network edge
+# (docs/CANONICAL_STATE.md section 2) - this is the sanctioned way to answer
+# "what does the box actually run on a schedule?" without touching any state.
+name: Ops - Inspect Runner Host
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why this inspection is being run"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 5
+    steps:
+      - name: Host identity
+        run: |
+          set +e
+          echo "== whoami / hostname / id =="
+          whoami; hostname; id
+      - name: Crontabs
+        run: |
+          set +e
+          echo "== crontab -l (runner user) =="
+          crontab -l 2>&1
+          echo "== sudo -n crontab -l (root, non-interactive) =="
+          sudo -n crontab -l 2>&1
+          echo "== /etc/crontab =="
+          cat /etc/crontab 2>&1
+          echo "== /etc/cron.d/* =="
+          for f in /etc/cron.d/*; do echo "--- $f"; cat "$f" 2>&1; done
+          echo "== /var/spool/cron visibility =="
+          ls -la /var/spool/cron/crontabs 2>&1
+      - name: Systemd timers
+        run: |
+          set +e
+          echo "== systemctl list-timers --all =="
+          systemctl list-timers --all --no-pager 2>&1 | head -40
+      - name: Runtime state (read-only)
+        run: |
+          set +e
+          echo "== docker ps =="
+          docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}' 2>&1
+          echo "== ls /opt/starta =="
+          ls -la /opt/starta 2>&1
+          echo "== ls /opt/starta/scripts (if present) =="
+          ls -la /opt/starta/scripts 2>&1

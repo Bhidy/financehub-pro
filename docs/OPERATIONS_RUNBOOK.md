@@ -80,7 +80,7 @@ seconds.
 |---|---|---|
 | `DATABASE_URL` | Supabase Postgres (pooler, port 6543) for all jobs/monitors | **Rotated 2026-07-02** — the local `.env` still has the OLD password, so local DB connects FAIL with `password authentication failed`. Use CI or the PAT run-SQL instead. |
 | `SUPABASETOKENKEY` | **Supabase Management API** (PAT): project health, advisors, run-SQL (no DB pw), backups/PITR, read-replicas, resize, config | Account-wide credential. Used by `supabase-mgmt-monitor.yml`. |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Metrics API** (Prometheus): disk %, CPU, mem, connections vs pooler cap | Add if absent — infra early-warning layer. |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Metrics API** (Prometheus): disk %, CPU, mem, connections vs pooler cap | ✅ present (2026-07-02). Powers the `db-health-monitor` infra step (`scripts/supabase_metrics.py`). **God-key** — bypasses RLS; secret-only, never client-side. |
 | `DISCORD_WEBHOOK_URL` | Alerts | Needs explicit User-Agent (see playbook C). |
 | `WATCHDOG_DISPATCH_TOKEN` | Watchdog self-heal `gh workflow run` | Needs `actions:write`. |
 | `NOTIFICATION_EMAIL`, `SMTP_PASSWORD` | Email alert fallback | |
@@ -125,7 +125,7 @@ Alert channels (in `notify.send_alert` order): **Discord → generic webhook →
 **Have:** DB-health monitoring, Management-API/Advisors monitoring, freshness/schedule watchdog, read-only resilience, multi-channel alerting, health-gated backend deploy with rollback.
 
 **Gaps + what's needed:**
-1. **Infra-metrics early warning** — needs `SUPABASE_SERVICE_ROLE_KEY` → scrape the Prometheus Metrics API (`https://<ref>.supabase.co/customer/v1/privileged/metrics`) for disk %, CPU, connections; alert *before* a disk-full/connection-exhaustion read-only. *(in progress)*
+1. **Infra-metrics early warning** — ✅ **DONE** (2026-07-02): `scripts/supabase_metrics.py` scrapes the Prometheus Metrics API (`https://<ref>.supabase.co/customer/v1/privileged/metrics`, Basic auth `service_role`) for disk %, memory, connections and alerts *before* a disk-full/connection-exhaustion read-only. Runs inside `db-health-monitor.yml`.
 2. **Kill the single-runner SPOF** — add a 2nd self-hosted runner OR move lightweight monitors (db-health, supabase-mgmt, freshness) to GitHub-hosted `ubuntu-latest` so monitoring never queues behind heavy data jobs and never drops.
 3. **Synthetic end-to-end uptime** — a monitor that hits `startamarkets.com` + the backend API every N min and asserts 200 + sane payload (nothing currently proves the *live* app is up/correct).
 4. **Host visibility** — Hetzner SSH access (add a key) OR accept backend is managed only via `backend-deploy.yml`. Decision needed to remove the blind spot.

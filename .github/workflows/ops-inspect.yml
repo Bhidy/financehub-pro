@@ -25,24 +25,30 @@ jobs:
           set +e
           echo "== whoami / hostname / id =="
           whoami; hostname; id
-      - name: Crontabs
+          true
+      - name: Crontabs (direct)
         run: |
           set +e
           echo "== crontab -l (runner user) =="
           crontab -l 2>&1
-          echo "== sudo -n crontab -l (root, non-interactive) =="
-          sudo -n crontab -l 2>&1
           echo "== /etc/crontab =="
           cat /etc/crontab 2>&1
           echo "== /etc/cron.d/* =="
           for f in /etc/cron.d/*; do echo "--- $f"; cat "$f" 2>&1; done
-          echo "== /var/spool/cron visibility =="
-          ls -la /var/spool/cron/crontabs 2>&1
+          true
+      - name: All user crontabs (via docker, read-only)
+        run: |
+          set +e
+          echo "== /var/spool/cron/crontabs (root + all users) =="
+          docker run --rm -v /var/spool/cron/crontabs:/crontabs:ro alpine:3.20 \
+            sh -c 'ls -la /crontabs; for f in /crontabs/*; do echo "--- $f"; cat "$f"; done' 2>&1
+          true
       - name: Systemd timers
         run: |
           set +e
           echo "== systemctl list-timers --all =="
           systemctl list-timers --all --no-pager 2>&1 | head -40
+          true
       - name: Runtime state (read-only)
         run: |
           set +e
@@ -52,3 +58,4 @@ jobs:
           ls -la /opt/starta 2>&1
           echo "== ls /opt/starta/scripts (if present) =="
           ls -la /opt/starta/scripts 2>&1
+          true

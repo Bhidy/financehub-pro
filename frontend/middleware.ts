@@ -87,6 +87,15 @@ export function middleware(request: NextRequest) {
                 segments[2] = upper;
                 changed = true;
             }
+            // Tab segments are lowercase by contract: /symbol/COMI/FINANCIALS
+            // -> /symbol/COMI/financials (audit: uppercase variants served 200).
+            if (segments[3]) {
+                const tab = segments[3].toLowerCase();
+                if (['financials', 'dividends', 'technicals', 'history'].includes(tab) && segments[3] !== tab) {
+                    segments[3] = tab;
+                    changed = true;
+                }
+            }
         }
         // /Funds/compare -> /Funds/Compare (the compare tool's canonical case).
         if (canonicalFirst === 'Funds' && segments[2] && segments[2].toLowerCase() === 'compare' && segments[2] !== 'Compare') {

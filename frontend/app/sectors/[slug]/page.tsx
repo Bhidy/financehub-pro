@@ -153,7 +153,7 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
                             <th className="px-4 py-3">#</th>
                             <th className="px-4 py-3">Company</th>
                             <th className="px-4 py-3">Symbol</th>
-                            <th className="px-4 py-3 text-right">Price (EGP)</th>
+                            <th className="px-4 py-3 text-right">Price</th>
                             <th className="px-4 py-3 text-right">Change</th>
                             <th className="px-4 py-3 text-right">Market Cap (EGP)</th>
                         </tr>
@@ -174,7 +174,7 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
                                     <Link href={symbolPath(t.symbol)} className="hover:text-teal-600">{t.symbol}</Link>
                                 </td>
                                 <td className="px-4 py-2.5 text-right font-semibold">
-                                    {t.last_price !== null ? t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 }) : '—'}
+                                    {t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}
                                 </td>
                                 <td className={`px-4 py-2.5 text-right font-semibold ${
                                     t.change_percent === null ? 'text-slate-400' : t.change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'

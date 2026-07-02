@@ -68,7 +68,7 @@ _PRICE_COLS = [
     "price_earnings_forward_fy", "float_shares_percent_current",
     "float_shares_outstanding_current", "number_of_shareholders",
     "price_52_week_high", "price_52_week_low",
-    "sector", "time", "last_bar_update_time",
+    "sector", "time", "last_bar_update_time", "currency",
 ]
 
 
@@ -263,7 +263,10 @@ class TradingViewEGXClient:
                 "low_52w": _finite(d.get("price_52_week_low")),
                 "sector_name": d.get("sector") or "",
                 "market_code": "EGX",
-                "currency": "EGP",
+                # Per-line TRADING currency from TV ("EGP" for most lines, "USD"
+                # for the dual-currency lines like FAITA/EGBE/VLMRA). Market caps
+                # stay EGP (TV fundamental_currency_code is EGP for all of them).
+                "currency": (d.get("currency") or "EGP"),
                 # extras (ignored by the legacy consumer, used by the new ohlc upsert)
                 "bar_time": d.get("time"),
                 "last_bar_update_time": d.get("last_bar_update_time"),

@@ -76,6 +76,7 @@ jobs:
       - name: Run watchdog (detect + heal)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           GH_TOKEN: ${{ secrets.WATCHDOG_DISPATCH_TOKEN || secrets.GITHUB_TOKEN }}
           # notify.py tries GH_TOKEN then GITHUB_TOKEN for the issue channel, so a
           # dispatch-only PAT above can never silence the last-resort alerts.

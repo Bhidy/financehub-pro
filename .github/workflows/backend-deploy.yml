@@ -39,6 +39,11 @@ on:
         required: false
         default: false
         type: boolean
+      sync_llm_keys:
+        description: 'Overwrite GROQ_API_KEY / OPENAI_API_KEY in the server .env from GitHub secrets (use right after an LLM key rotation; only non-empty secrets are written)'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -106,12 +111,15 @@ jobs:
           fi
           echo "✅ preflight OK" | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - name: Provision required env (SECRET_KEY, ADMIN_API_TOKEN, DATABASE_URL)
+      - name: Provision required env (SECRET_KEY, ADMIN_API_TOKEN, DATABASE_URL, LLM keys)
         env:
           ADMIN_API_TOKEN: ${{ secrets.ADMIN_API_TOKEN }}
           ROTATE_SECRET_KEY: ${{ inputs.rotate_secret_key }}
           SYNC_DATABASE_URL: ${{ inputs.sync_database_url }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SYNC_LLM_KEYS: ${{ inputs.sync_llm_keys }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           ENVF="$APP_DIR/.env"
           touch "$ENVF"
@@ -152,6 +160,32 @@ jobs:
             printf 'DATABASE_URL=%s\n' "$DATABASE_URL" >> "$ENVF.tmp"
             mv "$ENVF.tmp" "$ENVF"
             echo "DATABASE_URL: synced from GitHub secret (explicit request)"
+          fi
+          # LLM keys: synced ONLY on explicit request (sync_llm_keys), to
+          # propagate a Groq/OpenAI key rotation. These live only on the box
+          # (not synced on normal deploys), so this is the sanctioned no-SSH
+          # path to rotate them. Each key is written only if its secret is
+          # non-empty, so you can rotate one without clearing the other.
+          if [ "$SYNC_LLM_KEYS" = "true" ]; then
+            wrote=0
+            if [ -n "$GROQ_API_KEY" ]; then
+              grep -v '^GROQ_API_KEY=' "$ENVF" > "$ENVF.tmp" || true
+              printf 'GROQ_API_KEY=%s\n' "$GROQ_API_KEY" >> "$ENVF.tmp"
+              mv "$ENVF.tmp" "$ENVF"
+              echo "GROQ_API_KEY: synced from GitHub secret (explicit request)"
+              wrote=1
+            fi
+            if [ -n "$OPENAI_API_KEY" ]; then
+              grep -v '^OPENAI_API_KEY=' "$ENVF" > "$ENVF.tmp" || true
+              printf 'OPENAI_API_KEY=%s\n' "$OPENAI_API_KEY" >> "$ENVF.tmp"
+              mv "$ENVF.tmp" "$ENVF"
+              echo "OPENAI_API_KEY: synced from GitHub secret (explicit request)"
+              wrote=1
+            fi
+            if [ "$wrote" -eq 0 ]; then
+              echo "::error::sync_llm_keys requested but both GROQ_API_KEY and OPENAI_API_KEY GitHub secrets are empty."
+              exit 1
+            fi
           fi
           chmod 600 "$ENVF"
 

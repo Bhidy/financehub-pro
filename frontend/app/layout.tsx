@@ -60,16 +60,37 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  interactiveWidget: "resizes-content"
+  interactiveWidget: "resizes-content",
+  themeColor: "#0f172a",
 };
 
 export const metadata: Metadata = {
-  title: "Starta",
-  description: "Your AI Market Analyst for MENA Markets",
+  metadataBase: new URL("https://startamarkets.com"),
+  title: {
+    default: "Starta Markets — Egyptian Exchange Stocks, Funds & Market Intelligence",
+    template: "%s | Starta Markets",
+  },
+  description:
+    "Live EGX stock prices, 20 years of financials, mutual-fund NAVs and returns, Egyptian market news, and an AI market analyst — in Arabic and English.",
+  // Self-referencing canonical on every app route (resolved against
+  // metadataBase + the current path; strips query params).
+  alternates: { canonical: "./" },
+  openGraph: {
+    type: "website",
+    siteName: "Starta Markets",
+    locale: "en_US",
+    url: "./",
+    images: [{ url: "/og-default.png", width: 1200, height: 630, alt: "Starta Markets" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
   manifest: "/manifest.json",
-  themeColor: "#0f172a",
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
     shortcut: "/icon.svg",
     apple: "/icon.svg",
   },

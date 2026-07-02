@@ -1,0 +1,29 @@
+# Starta Markets
+
+> Bilingual (Arabic/English) market-intelligence platform for the Egyptian
+> Exchange (EGX): live prices, 20 years of financial statements, technicals
+> and analyst estimates for 300+ listed companies; NAV and performance for
+> Egyptian mutual funds (history back to 2010); EGX market news in Arabic and
+> English; and a beginner investing academy. All figures in EGP unless stated.
+> Prices refresh every 15 minutes during EGX trading hours (Sun–Thu); fund
+> NAVs update twice daily; financial statements weekly.
+
+## Companies
+- [Company pages](https://startamarkets.com/symbol/COMI): per-symbol live price, key statistics, financials, dividends, technicals and news (URL pattern: /symbol/{TICKER})
+
+## Mutual funds
+- [Funds marketplace](https://startamarkets.com/Funds): Egyptian mutual funds with NAV, returns and fees, in Arabic and English
+
+## News
+- [EGX market news](https://startamarkets.com/News): Arabic and English coverage of the Egyptian market, ~30 articles/day
+
+## Learn
+- [Investing academy](https://startamarkets.com/Learn): bilingual beginner guides (stock market, mutual funds, NAV, dividends, risk)
+
+## Tools
+- [AI market analyst](https://startamarkets.com/AiChat): ask about any EGX stock or fund in Arabic or English
+- [Market pulse](https://startamarkets.com/Market-Pulse): live EGX market overview
+
+## Optional
+- [Privacy](https://startamarkets.com/privacy)
+- [Terms](https://startamarkets.com/terms)

@@ -10,7 +10,7 @@ export async function generateMetadata(
     const { id } = await params;
     const symbol = (id || "").toUpperCase();
     return {
-        title: symbol ? `${symbol} · Starta` : "Starta",
+        title: symbol ? `${symbol} — EGX Stock Price, Financials & News` : "Starta",
         description: symbol ? `${symbol} — live EGX price, financials, technicals and news on Starta.` : undefined,
     };
 }

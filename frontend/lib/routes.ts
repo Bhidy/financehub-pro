@@ -14,11 +14,9 @@ export type MarketCode = 'EGX' | 'TADAWUL' | 'SAU' | string | null | undefined;
 export function getCompanyProfileRoute(symbol: string, marketCode: MarketCode): string {
     if (!symbol) return '/';
 
-    // Egypt stocks use /egx/{symbol} route
-    if (marketCode === 'EGX') {
-        return `/egx/${symbol}`;
-    }
-
-    // All other markets (Saudi, etc.) use /symbol/{symbol} route
-    return `/symbol/${symbol}`;
+    // The canonical company page for EVERY market is /symbol/{SYMBOL}.
+    // (An /egx/{symbol} App Router route never existed — the old EGX branch
+    // here sent global-search users to live 404s.)
+    void marketCode;
+    return `/symbol/${symbol.toUpperCase()}`;
 }

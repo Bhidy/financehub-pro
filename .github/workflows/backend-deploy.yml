@@ -29,6 +29,16 @@ on:
         description: 'Why this deploy (shown in the run list)'
         required: false
         default: 'manual deploy'
+      rotate_secret_key:
+        description: 'Force-generate a NEW SECRET_KEY (invalidates every active JWT session)'
+        required: false
+        default: false
+        type: boolean
+      sync_database_url:
+        description: 'Overwrite DATABASE_URL in the server .env from the GitHub secret (use right after a DB password rotation)'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -96,16 +106,20 @@ jobs:
           fi
           echo "✅ preflight OK" | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - name: Provision required env (SECRET_KEY, ADMIN_API_TOKEN)
+      - name: Provision required env (SECRET_KEY, ADMIN_API_TOKEN, DATABASE_URL)
         env:
           ADMIN_API_TOKEN: ${{ secrets.ADMIN_API_TOKEN }}
+          ROTATE_SECRET_KEY: ${{ inputs.rotate_secret_key }}
+          SYNC_DATABASE_URL: ${{ inputs.sync_database_url }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           ENVF="$APP_DIR/.env"
           touch "$ENVF"
           # SECRET_KEY: generate once if missing/placeholder (config.py refuses to
-          # boot without it). NOTE: generating a new key invalidates existing JWTs
-          # (15-min access / 7-day refresh) — acceptable one-time cost.
-          if ! grep -q '^SECRET_KEY=..*' "$ENVF" || grep -q '^SECRET_KEY=placeholder' "$ENVF"; then
+          # boot without it), or on demand via the rotate_secret_key input (for
+          # rotating a compromised key). NOTE: generating a new key invalidates
+          # existing JWTs (15-min access / 7-day refresh) — acceptable cost.
+          if [ "$ROTATE_SECRET_KEY" = "true" ] || ! grep -q '^SECRET_KEY=..*' "$ENVF" || grep -q '^SECRET_KEY=placeholder' "$ENVF"; then
             KEY=$(python3 -c "import secrets;print(secrets.token_urlsafe(64))")
             grep -v '^SECRET_KEY=' "$ENVF" > "$ENVF.tmp" || true
             printf 'SECRET_KEY=%s\n' "$KEY" >> "$ENVF.tmp"
@@ -123,8 +137,23 @@ jobs:
           grep -v '^ADMIN_API_TOKEN=' "$ENVF" > "$ENVF.tmp" || true
           printf 'ADMIN_API_TOKEN=%s\n' "$ADMIN_API_TOKEN" >> "$ENVF.tmp"
           mv "$ENVF.tmp" "$ENVF"
-          chmod 600 "$ENVF"
           echo "ADMIN_API_TOKEN: synced from GitHub secret"
+          # DATABASE_URL: synced ONLY on explicit request (sync_database_url),
+          # to propagate a DB password rotation. Opt-in because the GitHub
+          # secret and the box could legitimately drift in connection form —
+          # a silent overwrite on every deploy could change the DB connection
+          # as a side effect nobody asked for.
+          if [ "$SYNC_DATABASE_URL" = "true" ]; then
+            if [ -z "$DATABASE_URL" ]; then
+              echo "::error::sync_database_url requested but the GitHub secret DATABASE_URL is empty."
+              exit 1
+            fi
+            grep -v '^DATABASE_URL=' "$ENVF" > "$ENVF.tmp" || true
+            printf 'DATABASE_URL=%s\n' "$DATABASE_URL" >> "$ENVF.tmp"
+            mv "$ENVF.tmp" "$ENVF"
+            echo "DATABASE_URL: synced from GitHub secret (explicit request)"
+          fi
+          chmod 600 "$ENVF"
 
       - name: Record rollback point
         id: rollback

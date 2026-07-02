@@ -7,6 +7,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, "..");
 const publicPages = ["home", "marketplace", "fund-details", "fund-compare", "market-pulse", "learn", "learn-topic", "news", "news-article"];
+// SEO gate covers every indexable static template (superset incl. legal pages).
+const seoPages = [...publicPages, "portfolio", "portfolio-detail", "privacy", "terms"];
 
 function hasCurrentPublicNav(text) {
   const nav = text.match(/<nav[\s\S]*?<\/nav>/i)?.[0] || "";
@@ -108,6 +110,39 @@ const checks = [
     assert: (text) =>
       /const lessonNumber = state\.lang === ['"]ar['"]/.test(text) &&
       /class=["']cover-art-number["']/.test(text),
+  },
+
+  // ── SEO release gate (master-plan guardrail 3.7) ────────────────────────
+  // Every static public page must ship canonical + social tags, and none may
+  // regress to the Tailwind Play CDN runtime compiler (killed in PR #139).
+  ...seoPages.map((page) => ({
+    name: `${page} carries canonical + OG + Twitter tags (SEO gate)`,
+    file: `public/${page}.html`,
+    assert: (text) =>
+      /<link rel="canonical" href="https:\/\/startamarkets\.com\//.test(text) &&
+      /property="og:title"/.test(text) &&
+      /name="twitter:card"/.test(text),
+  })),
+  ...seoPages.map((page) => ({
+    name: `${page} does not use the Tailwind CDN runtime compiler (SEO/CWV gate)`,
+    file: `public/${page}.html`,
+    assert: (text) => !text.includes("cdn.tailwindcss.com"),
+  })),
+  {
+    name: "robots.ts exists (crawl policy is a route, deleting it kills robots.txt)",
+    file: "app/robots.ts",
+    assert: (text) => /sitemap/.test(text) && /Disallow|disallow/.test(text),
+  },
+  {
+    name: "segmented sitemap route exists with all six segments",
+    file: "app/sitemaps/[name]/route.ts",
+    assert: (text) =>
+      ["core", "companies", "sectors", "funds", "learn", "news"].every((seg) => text.includes(seg)),
+  },
+  {
+    name: "llms.txt exists and points at the canonical host",
+    file: "public/llms.txt",
+    assert: (text) => text.includes("https://startamarkets.com/"),
   },
 ];
 

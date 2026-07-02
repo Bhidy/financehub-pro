@@ -99,8 +99,14 @@ const nextConfig = {
           source: '/Learn',
           destination: '/learn.html',
         },
-        // '/News' rewrite removed: the hub is now a server-rendered App Router
-        // page (app/News/page.tsx) with crawlable pagination.
+        {
+          // The DESIGNED news hub (news.html). A server-rendered replacement
+          // shipped briefly in #130 and was rolled back 2026-07-03: the owner's
+          // premium design is canonical — never swap a designed page for a
+          // plain server page. Article pages (/News/{id}) stay server-rendered.
+          source: '/News',
+          destination: '/news.html',
+        },
         {
           source: '/Market-Pulse',
           destination: '/market-pulse.html',

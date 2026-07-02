@@ -151,7 +151,7 @@ export default function SymbolSeoSection({
                     SITE_URL
                 )}
             />
-            <div className="mx-auto max-w-6xl px-4 py-10">
+            <div className="mx-auto max-w-6xl border-t border-slate-200/60 px-4 py-14 dark:border-slate-800/60">
                 <nav aria-label={`${symbol} data pages`} className="mb-8 flex flex-wrap gap-2 text-sm font-semibold">
                     {(
                         [
@@ -164,7 +164,7 @@ export default function SymbolSeoSection({
                         <Link
                             key={href}
                             href={href}
-                            className="rounded-full border border-slate-200/60 bg-white px-4 py-2 text-slate-700 hover:border-teal-400 hover:text-teal-600 dark:border-slate-800/60 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-teal-400"
+                            className="rounded-full border border-slate-200/70 bg-white px-4 py-2 text-[13px] font-semibold text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-[#14B8A6]/50 hover:text-[#0D9488] dark:border-slate-800/70 dark:bg-[#0F172A] dark:text-slate-300 dark:hover:text-[#2DD4BF]"
                         >
                             {symbol} {label}
                         </Link>
@@ -172,7 +172,7 @@ export default function SymbolSeoSection({
                 </nav>
                 {profile?.description && (
                     <div className="mb-8">
-                        <h2 className="text-xl font-bold">About {name}</h2>
+                        <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight"><span aria-hidden className="inline-block h-4 w-1 rounded-full bg-[#14B8A6]" />About {name}</h2>
                         <p className="mt-3 max-w-3xl leading-relaxed text-slate-600 dark:text-slate-300">{profile.description}</p>
                         <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-sm text-slate-600 dark:text-slate-300">
                             {profile.industry && (
@@ -203,12 +203,12 @@ export default function SymbolSeoSection({
 
                 {presentRows.length > 0 && (
                     <div className="mb-8">
-                        <h2 className="text-xl font-bold">{symbol} key statistics</h2>
+                        <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight"><span aria-hidden className="inline-block h-4 w-1 rounded-full bg-[#14B8A6]" />{symbol} key statistics</h2>
                         <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3 lg:grid-cols-4">
                             {presentRows.map(([label, value]) => (
-                                <div key={label} className="rounded-xl border border-slate-200/60 bg-white p-3 dark:border-slate-800/60 dark:bg-slate-900">
-                                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</dt>
-                                    <dd className="mt-1 font-bold">{value}</dd>
+                                <div key={label} className="rounded-2xl border border-slate-200/70 bg-white p-3.5 shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:border-slate-800/70 dark:bg-[#0F172A]">
+                                    <dt className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">{label}</dt>
+                                    <dd className="mt-1.5 text-[15px] font-extrabold tracking-tight">{value}</dd>
                                 </div>
                             ))}
                         </dl>
@@ -220,7 +220,8 @@ export default function SymbolSeoSection({
 
                 {peers.length > 0 && ticker.sector_name && (
                     <div className="mb-8">
-                        <h2 className="text-xl font-bold">
+                        <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
+                            <span aria-hidden className="inline-block h-4 w-1 rounded-full bg-[#14B8A6]" />
                             Compare with other{' '}
                             <Link href={`/sectors/${slugify(ticker.sector_name)}`} className="text-teal-600 hover:underline dark:text-teal-400">
                                 {ticker.sector_name}
@@ -232,7 +233,7 @@ export default function SymbolSeoSection({
                                 <li key={p.symbol}>
                                     <Link
                                         href={symbolPath(p.symbol)}
-                                        className="inline-block rounded-full border border-slate-200/60 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:border-teal-400 hover:text-teal-600 dark:border-slate-800/60 dark:bg-slate-900 dark:text-slate-200 dark:hover:text-teal-400"
+                                        className="inline-block rounded-full border border-slate-200/70 bg-white px-3.5 py-1.5 text-[13px] font-semibold text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-[#14B8A6]/50 hover:text-[#0D9488] dark:border-slate-800/70 dark:bg-[#0F172A] dark:text-slate-300 dark:hover:text-[#2DD4BF]"
                                     >
                                         {p.name_en || p.symbol} ({p.symbol.toUpperCase()})
                                     </Link>
@@ -243,12 +244,12 @@ export default function SymbolSeoSection({
                 )}
 
                 <div>
-                    <h2 className="text-xl font-bold">Frequently asked questions</h2>
-                    <dl className="mt-3 space-y-4">
+                    <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight"><span aria-hidden className="inline-block h-4 w-1 rounded-full bg-[#14B8A6]" />Frequently asked questions</h2>
+                    <dl className="mt-4 divide-y divide-slate-200/70 rounded-2xl border border-slate-200/70 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:divide-slate-800/70 dark:border-slate-800/70 dark:bg-[#0F172A]">
                         {faq.map((f) => (
-                            <div key={f.q}>
-                                <dt className="font-semibold">{f.q}</dt>
-                                <dd className="mt-1 max-w-3xl text-slate-600 dark:text-slate-300">{f.a}</dd>
+                            <div key={f.q} className="px-5 py-4">
+                                <dt className="text-[15px] font-bold tracking-tight">{f.q}</dt>
+                                <dd className="mt-1.5 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">{f.a}</dd>
                             </div>
                         ))}
                     </dl>

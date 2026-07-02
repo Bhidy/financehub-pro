@@ -32,13 +32,13 @@
         rel="stylesheet">
 
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- tw-home.css moved to end of head for CDN-cascade parity -->
 
     <!-- GSAP & Plugins -->
     <script src="/assets/news-covers.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+    <script src="/assets/vendor/gsap-3.12.2.min.js"></script>
+    <script src="/assets/vendor/ScrollTrigger-3.12.2.min.js"></script>
+    <script src="/assets/vendor/TextPlugin-3.12.2.min.js"></script>
 
     <!-- Portfolio showcase styles (used by the portfolio section on this page) -->
     <link rel="stylesheet" href="/assets/portfolio-showcase.css?v=1.1.14">
@@ -46,37 +46,7 @@
     <!-- Mobile navigation (shared ultra-premium burger menu) -->
     <script src="/assets/starta-mobile-nav.js?v=1.0.4" defer></script>
 
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        page: 'var(--c-page)',
-                        surface: 'var(--c-surface)',
-                        panel: 'var(--c-panel)',
-                        main: 'var(--c-text-main)',
-                        muted: 'var(--c-text-muted)',
-                        border: 'var(--c-border)',
-                        starta: {
-                            teal: '#14B8A6',
-                            darkTeal: '#0F766E',
-                            accent: '#2DD4BF',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Manrope', 'sans-serif'],
-                        display: ['Sora', 'sans-serif'],
-                        arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'neon': 'var(--s-neon)',
-                        'premium': 'var(--s-premium)',
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- tailwind compiled at build time: assets/tw-home.css (was: CDN runtime compiler + inline config) -->
 
     <style>
         /* --- THEME VARIABLES --- */
@@ -2250,6 +2220,7 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-X86G4NMVFJ"></script>
     <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-X86G4NMVFJ');</script>
     <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://startamarkets.com/#organization","name":"Starta Markets","alternateName":"Starta","url":"https://startamarkets.com","logo":{"@type":"ImageObject","url":"https://startamarkets.com/app-icon.png"},"description":"Bilingual (Arabic/English) market-intelligence platform for the Egyptian Exchange (EGX): live prices, 20 years of financials, mutual-fund NAVs and returns, market news, and an AI market analyst.","areaServed":"EG","knowsLanguage":["en","ar"],"sameAs":[]},{"@type":"WebSite","@id":"https://startamarkets.com/#website","url":"https://startamarkets.com","name":"Starta Markets","publisher":{"@id":"https://startamarkets.com/#organization"},"inLanguage":["en","ar"]}]}</script>
+    <link rel="stylesheet" href="/assets/tw-home.css?v=1.0.0">
 </head>
 
 <body class="antialiased selection:bg-starta-teal selection:text-white">

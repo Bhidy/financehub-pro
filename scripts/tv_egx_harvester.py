@@ -35,6 +35,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend-core")
 import asyncpg  # noqa: E402
 from data_pipeline.tradingview_client import TradingViewEGXClient, _finite, _sane_dividend_yield  # noqa: E402
 from data_pipeline.egx_feed_router import EGXFeedRouter  # noqa: E402
+from data_pipeline.pg_resilient import database_is_read_only, is_read_only_error  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("TVHarvester")
@@ -302,6 +303,11 @@ async def _on_write_error(conn, cycle, key, payload, exc):
     """Route a per-row write failure by class. STRUCTURAL and TRANSIENT errors
     are RE-RAISED so they surface (fail-fast bug / reconnect-and-retry); only a
     genuine single-row DATA error is dead-lettered so the cycle survives it."""
+    # READ-ONLY (platform incident/standby): affects EVERY row identically and the
+    # dead-letter INSERT itself would fail read-only. Re-raise so _run_cycle skips
+    # the whole cycle cleanly instead of trying (and failing) to dead-letter it.
+    if is_read_only_error(exc):
+        raise exc
     if isinstance(exc, STRUCTURAL_DB_ERRORS):
         logger.error("%s: STRUCTURAL DB error (code/schema bug) on %s -> aborting cycle: %s",
                      cycle, key, exc)
@@ -613,6 +619,12 @@ async def _run_cycle(name, fn):
             conn = await asyncpg.connect(DATABASE_URL, **CONNECT_KW)
             await fn(conn)
             return
+        except asyncpg.ReadOnlySQLTransactionError:
+            # DB flipped read-only mid-cycle (incident started after preflight).
+            # Retrying can't help — skip this cycle cleanly (not an error).
+            logger.warning("%s: DB went READ-ONLY mid-cycle — skipping (resumes when "
+                           "writable; health monitor tracks the incident)", name)
+            return
         except TRANSIENT_DB_ERRORS as e:
             last = e
             wait = min(2 ** attempt, 30)
@@ -632,6 +644,27 @@ async def _run_cycle(name, fn):
 async def main(cycle: str):
     if not DATABASE_URL:
         sys.exit("DATABASE_URL not set")
+    # Writable preflight: during a Supabase read-only incident every upsert would
+    # fail identically. Skip the whole run cleanly (exit 0) rather than churn
+    # per-symbol and exit RED. Only a CONFIRMED read-only state skips here — a
+    # genuine connect failure falls through to _run_cycle's normal retry/fail path
+    # so a real outage still surfaces.
+    _pf, _ro = None, False
+    try:
+        _pf = await asyncpg.connect(DATABASE_URL, **CONNECT_KW)
+        _ro = await database_is_read_only(_pf)
+    except Exception:
+        _ro = False
+    finally:
+        if _pf is not None:
+            try:
+                await _pf.close(timeout=5)
+            except Exception:
+                pass
+    if _ro:
+        logger.warning("DB is READ-ONLY (platform incident/standby) — skipping harvest "
+                       "cycle(s) '%s'; resumes automatically when writable. Not an error.", cycle)
+        return
     if cycle == "all":
         todo = list(CYCLES)
     elif cycle in COMPOUND:

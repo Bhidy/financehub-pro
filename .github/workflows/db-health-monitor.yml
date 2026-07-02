@@ -1,0 +1,58 @@
+name: DB Health Monitor
+
+# Early-warning system for our single most critical dependency: Supabase Postgres.
+# Born from the 2026-07-02 eu-central-1 platform incident that flipped the DB
+# read-only and blinded us (we found out from failed-run pushes, not our system).
+#
+# Every ~10 min it probes the DB (reachable? writable? fresh?) + the Supabase
+# public status API, and alerts ONCE per state transition (dedup'd via a tiny
+# state file persisted in the Actions cache) — DOWN when it breaks, RECOVERED
+# when it clears. It never floods, and it distinguishes "platform incident, wait"
+# from "read-only with no incident → investigate our side (disk)". The probe
+# always exits 0: a monitor must never become the red noise it exists to prevent.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: db-health-monitor
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write        # send_alert's guaranteed last-resort channel (needs no external creds)
+
+jobs:
+  probe:
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: pip install asyncpg
+
+      # Persist the dedup state across runs. A unique per-run key always saves;
+      # restore-keys pulls the most recent previous state so we alert only on a
+      # real transition. Works even while the DB is read-only (GitHub-side store).
+      - name: Restore health state
+        uses: actions/cache@v4
+        with:
+          path: .health_state.json
+          key: db-health-state-${{ github.run_id }}
+          restore-keys: |
+            db-health-state-
+
+      - name: Probe DB + Supabase status, alert on transition
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          NOTIFICATION_EMAIL: ${{ secrets.NOTIFICATION_EMAIL }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEALTH_STATE_FILE: .health_state.json
+        run: python scripts/db_health_probe.py

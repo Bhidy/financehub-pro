@@ -25,7 +25,8 @@ Reads DATABASE_URL from env/.env.
 import argparse, asyncio, glob, os, re, sys
 import asyncpg
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from data_pipeline.pg_resilient import connect_resilient  # noqa: E402
+from data_pipeline.pg_resilient import (  # noqa: E402
+    connect_resilient, database_is_read_only, is_read_only_error)
 
 def load_db_url():
     u = os.environ.get("DATABASE_URL")
@@ -63,6 +64,15 @@ WHERE ss.symbol = mt.symbol AND mt.market_code = 'EGX';
 async def main(view_only):
     c = await connect_resilient(load_db_url())
     try:
+        # Read-only preflight: during a Supabase platform incident the cluster is
+        # set read-only and the DROP/CREATE VIEW + UPDATE below would crash RED.
+        # There is nothing to refresh against a read-only DB and it is not our bug
+        # — skip cleanly (exit 0); the next scheduled run resumes once writable.
+        if await database_is_read_only(c):
+            print("[skip] database is READ-ONLY (Supabase platform incident or standby) — "
+                  "skipping stock_statistics refresh this cycle; resumes automatically when "
+                  "writes are restored. Not an error.")
+            return
         # Apply the LATEST canonical view migration (single source of truth).
         # NEVER pin a specific file: the old hardcoded 0007 pin silently REVERTED
         # migration 0009 (honest-TTM view) twice a day until the TV reconcile
@@ -85,6 +95,14 @@ async def main(view_only):
             print("  COMI now:", dict(r) if r else None)
             stale = await c.fetchval("SELECT COUNT(*) FROM stock_statistics WHERE updated_at < NOW() - INTERVAL '2 days'")
             print(f"  stock_statistics rows still >2d stale: {stale}")
+    except Exception as e:
+        # DB flipped read-only mid-run (incident started between preflight and now)
+        # -> skip cleanly rather than exit RED. Any other error still surfaces.
+        if is_read_only_error(e):
+            print("[skip] database went READ-ONLY mid-run — skipping this refresh cycle "
+                  "(not an error; resumes when writable).")
+            return
+        raise
     finally:
         await c.close()
 

@@ -44,3 +44,29 @@ async def connect_resilient(url, *, attempts=4, command_timeout=30,
             if i < attempts:
                 await asyncio.sleep(min(2 ** i, 30))
     raise last
+
+
+# --- read-only awareness ---------------------------------------------------- #
+# A read-only database is a DISTINCT signal from _TRANSIENT above. During a
+# Supabase platform incident the whole cluster is set default_transaction_read_only
+# =on (SQLSTATE 25006 on every write); a hot standby behaves the same. Retrying
+# WITHIN a run cannot help — it persists for the whole incident — so the correct
+# response is not reconnect-and-retry but SKIP-this-cycle-and-exit-clean. A write
+# job that crashes RED on this turns an external, transient, not-our-fault infra
+# state into a flood of failure notifications and blocks PRs. It is also not a
+# bug to hide: the DB health monitor (scripts/db_health_probe.py) tracks the
+# incident and alerts once per transition.
+def is_read_only_error(exc) -> bool:
+    """True if `exc` is Postgres 'cannot execute X in a read-only transaction'."""
+    return isinstance(exc, asyncpg.ReadOnlySQLTransactionError)
+
+
+async def database_is_read_only(conn) -> bool:
+    """Cheap, side-effect-free probe: can this session NOT write? True when
+    default_transaction_read_only=on (platform incident) OR the backend is in
+    recovery (standby). Callers use it as a preflight to skip a write cycle
+    gracefully rather than crash on the first INSERT."""
+    row = await conn.fetchrow(
+        "SELECT current_setting('transaction_read_only') AS ro, "
+        "pg_is_in_recovery() AS in_recovery")
+    return row["ro"] == "on" or bool(row["in_recovery"])

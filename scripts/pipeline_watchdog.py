@@ -142,6 +142,10 @@ WORKFLOWS = [
     ("company-names-refresh.yml",   "weekly",   9*24),
     ("data_sync.yml",               "interval", 6),
     ("production_watchdog.yml",     "interval", 8),
+    # "who watches the monitor": if the DB early-warning monitor itself stops
+    # firing we'd be blind again. 3h window is generous vs the */10 cron so normal
+    # self-hosted drop never false-flags it; only a truly dead monitor trips.
+    ("db-health-monitor.yml",       "interval", 3),
 ]
 
 HEAL_COOLDOWN_MIN = 45  # never re-dispatch a corrective workflow within this window
@@ -290,6 +294,21 @@ async def main(heal: bool, check_watchdog_min: int):
     now = datetime.now(timezone.utc)
     conn = await _connect()
     try:
+        # Read-only preflight (covers BOTH forward + inverse mode). A Supabase
+        # platform incident sets the cluster read-only: the watchdog then can't
+        # write its heartbeat, CREATE its table, or dispatch heals — and none of
+        # that is our bug. Crashing here would (a) spam a RED every cycle and
+        # (b) make the paired inverse-watcher cry "WATCHDOG IS DOWN" off a stale
+        # heartbeat. So skip cleanly (exit 0); the DB health monitor owns
+        # incident alerting (dedup'd, once per transition).
+        _ro = await conn.fetchrow(
+            "SELECT current_setting('transaction_read_only') AS ro, "
+            "pg_is_in_recovery() AS rec")
+        if _ro["ro"] == "on" or _ro["rec"]:
+            print("DB is READ-ONLY (Supabase platform incident/standby) — watchdog "
+                  "pausing this cycle; no writes possible. Health monitor tracks the "
+                  "incident. Not an error.")
+            return
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS pipeline_heartbeat (
                 name TEXT PRIMARY KEY, last_run_at TIMESTAMPTZ NOT NULL,

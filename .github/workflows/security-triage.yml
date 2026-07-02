@@ -1,0 +1,27 @@
+name: Security Triage (read-only)
+
+# On-demand, READ-ONLY evidence gathering for the Supabase Security Advisor
+# findings: which public tables have RLS off, which SECURITY DEFINER views exist,
+# the app's DB role, and whether the anon/PostgREST API can actually read the
+# RLS-off tables. Changes nothing. Dispatch when investigating the RLS findings.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Run read-only security triage
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASETOKENKEY }}
+          SUPABASE_PROJECT_REF: kgjpkphfjmmiyjsgsaup
+        run: python scripts/security_triage.py

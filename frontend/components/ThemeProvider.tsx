@@ -15,6 +15,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<Theme>("dark"); // Default to dark
 
     useEffect(() => {
+        // Public-chrome pages (PublicPageShell renders .seo-shell) are themed
+        // by /assets/starta-theme.js, which shares this "theme" storage key
+        // but defaults to LIGHT like the designed static pages. Don't re-apply
+        // the app's dark default here, or SSR pages flip dark after hydration.
+        if (document.querySelector(".seo-shell")) return;
+
         // Check localStorage or System Preference on mount
         const savedTheme = localStorage.getItem("theme") as Theme | null;
         const resolvedTheme = savedTheme || "dark";

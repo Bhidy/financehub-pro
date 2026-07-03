@@ -6,6 +6,7 @@ import type { Ticker } from '@/lib/public-data';
 import { SITE_URL, symbolPath, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { sectorAr } from '@/content/sector-names-ar';
 
 /**
  * Arabic company page at /ar/symbol/{SYMBOL} — the AR twin of the EN
@@ -127,7 +128,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const cur = ticker.currency || 'EGP';
     const priceStr = ticker.last_price !== null ? `${cur} ${fmtNum(ticker.last_price)}` : null;
     const title = `سعر سهم ${name} (${symbol}) اليوم — البورصة المصرية`;
-    let description = `تابع سعر سهم ${name} (${symbol}) في البورصة المصرية${priceStr ? ` — آخر سعر ${priceStr}` : ''}${ticker.sector_name ? `، قطاع ${ticker.sector_name}` : ''}. إحصاءات وقوائم مالية وتوزيعات، تحديث كل 15 دقيقة.`;
+    let description = `تابع سعر سهم ${name} (${symbol}) في البورصة المصرية${priceStr ? ` — آخر سعر ${priceStr}` : ''}${ticker.sector_name ? `، قطاع ${sectorAr(ticker.sector_name)}` : ''}. إحصاءات وقوائم مالية وتوزيعات، تحديث كل 15 دقيقة.`;
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 
     return {
@@ -191,7 +192,7 @@ export default async function ArabicSymbolPage({ params }: Props) {
         ['بيتا', fmtNum(num(stats, 'beta_1y'))],
         ['متوسط 50 يوم', num(stats, 'ma_50d') !== null ? `EGP ${fmtNum(num(stats, 'ma_50d'))}` : null],
         ['متوسط 200 يوم', num(stats, 'ma_200d') !== null ? `EGP ${fmtNum(num(stats, 'ma_200d'))}` : null],
-        ['RSI', fmtNum(num(stats, 'rsi_14'))],
+        ['مؤشر القوة النسبية (RSI)', fmtNum(num(stats, 'rsi_14'))],
     ];
     const presentRows = statRows.filter((r): r is [string, string] => r[1] !== null);
 
@@ -252,7 +253,7 @@ export default async function ArabicSymbolPage({ params }: Props) {
                     )}
                     <span className="text-sm font-semibold text-muted">البورصة المصرية (EGX)</span>
                     {ticker.sector_name && (
-                        <span className="text-sm text-muted">قطاع {ticker.sector_name}</span>
+                        <span className="text-sm text-muted">قطاع {sectorAr(ticker.sector_name)}</span>
                     )}
                 </p>
 
@@ -288,7 +289,7 @@ export default async function ArabicSymbolPage({ params }: Props) {
                 {peers.length > 0 && ticker.sector_name && (
                     <section className="mt-8">
                         <h2 className="text-xl font-bold text-main">
-                            قارن مع شركات {ticker.sector_name} الأخرى
+                            قارن مع شركات قطاع {sectorAr(ticker.sector_name)} الأخرى
                         </h2>
                         <ul className="mt-3 flex flex-wrap gap-2">
                             {peers.map((p) => (

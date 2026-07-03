@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const path = `/ar/Learn/glossary/${slug}`;
     const description = firstSentence(term.ar.definition);
     return {
-        title: `${term.ar.term} — تعريف | قاموس المصطلحات`,
+        title: `${term.ar.term} — تعريف`,
         description,
         alternates: {
             canonical: path,
@@ -47,6 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             url: path,
             locale: 'ar_EG',
+            images: [{ url: '/og-default.png' }],
         },
     };
 }

@@ -404,9 +404,15 @@ export default async function FundPage({ params }: Props) {
                     {peers.length > 0 && (
                         <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                             {peers.map((p) => (
-                                <li key={p.id}>
+                                <li key={p.id} className="flex items-baseline gap-2">
                                     <Link href={p.href} className="text-sm font-medium text-main hover:text-starta-teal">
                                         {p.label}
+                                    </Link>
+                                    <Link
+                                        href={`/Funds/vs/${Math.min(fund.fund_id, p.id)}-vs-${Math.max(fund.fund_id, p.id)}`}
+                                        className="shrink-0 text-xs font-semibold text-starta-teal hover:underline"
+                                    >
+                                        Compare →
                                     </Link>
                                 </li>
                             ))}

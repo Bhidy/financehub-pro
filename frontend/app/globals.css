@@ -1182,18 +1182,12 @@ a:focus-visible {
 
 /* ============================================================================
    PUBLIC-SITE CHROME VARIABLES — verbatim from the designed static pages
-   (home.html). Dark is the DEFAULT theme; light activates via
-   [data-theme="light"], toggled by /assets/starta-theme.js.
+   (home.html). LIGHT is the default first-paint state (home.html ships
+   data-theme="light" statically and starta-theme.js DEFAULT_THEME is
+   "light"), so no-JS crawler renders match the designed homepage. Dark
+   activates via [data-theme="dark"], toggled by /assets/starta-theme.js.
    ============================================================================ */
-:root {
-  --c-page: #010101;
-  --c-surface: #0b0c0d;
-  --c-panel: rgba(18, 19, 20, 0.62);
-  --c-text-main: #eef2f6;
-  --c-text-muted: #9ca6b5;
-  --c-border: rgba(255, 255, 255, 0.08);
-  --glass-bg: rgba(14, 16, 16, 0.56);
-}
+:root,
 [data-theme="light"] {
   --c-page: #f6f8fb;
   --c-surface: #FFFFFF;
@@ -1202,4 +1196,13 @@ a:focus-visible {
   --c-text-muted: #5c6676;
   --c-border: rgba(148, 163, 184, 0.2);
   --glass-bg: rgba(255, 255, 255, 0.75);
+}
+[data-theme="dark"] {
+  --c-page: #010101;
+  --c-surface: #0b0c0d;
+  --c-panel: rgba(18, 19, 20, 0.62);
+  --c-text-main: #eef2f6;
+  --c-text-muted: #9ca6b5;
+  --c-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(14, 16, 16, 0.56);
 }

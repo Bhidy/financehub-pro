@@ -31,7 +31,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const path = `/Learn/glossary/${slug}`;
     const description = firstSentence(term.en.definition);
     return {
-        title: `${term.en.term} — Definition | Financial Glossary`,
+        // Short template: the root layout appends the brand, and the final
+        // audit flagged glossary titles running past 70 chars.
+        title: `${term.en.term} — Definition`,
         description,
         alternates: {
             canonical: path,
@@ -47,6 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             url: path,
             locale: 'en_US',
+            images: [{ url: '/og-default.png' }],
         },
     };
 }

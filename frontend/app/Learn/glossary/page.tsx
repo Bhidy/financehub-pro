@@ -46,7 +46,9 @@ export default function GlossaryIndexPage() {
         hasDefinedTerm: terms.map((t) => ({
             '@type': 'DefinedTerm',
             name: t.en.term,
+            description: firstSentence(t.en.definition),
             url: absUrl(`${PATH}/${t.slug}`),
+            inDefinedTermSet: absUrl(PATH),
         })),
     };
 

@@ -45,7 +45,9 @@ export default function GlossaryIndexArabicPage() {
         hasDefinedTerm: terms.map((t) => ({
             '@type': 'DefinedTerm',
             name: t.ar.term,
+            description: firstSentence(t.ar.definition),
             url: absUrl(`${PATH}/${t.slug}`),
+            inDefinedTermSet: absUrl(PATH),
         })),
     };
 

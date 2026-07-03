@@ -71,35 +71,43 @@ export function middleware(request: NextRequest) {
 
     // 4) Case canonicalization. Only for known public segments; never touches
     // /api, /_next (excluded by matcher), file paths, or unknown routes.
+    // Arabic tree: /ar/<same segments> — normalize the same way, shifted by one.
     const segments = url.pathname.split('/');
-    const first = segments[1] || '';
+    let base = 1;
+    if ((segments[1] || '').toLowerCase() === 'ar') {
+        if (segments[1] !== 'ar') {
+            segments[1] = 'ar';
+        }
+        base = 2;
+    }
+    const first = segments[base] || '';
     const canonicalFirst = CANONICAL_SEGMENTS[first.toLowerCase()];
     if (canonicalFirst && !url.pathname.includes('.')) {
-        let changed = false;
+        let changed = base === 2 && url.pathname.split('/')[1] !== 'ar';
         if (first !== canonicalFirst) {
-            segments[1] = canonicalFirst;
+            segments[base] = canonicalFirst;
             changed = true;
         }
         // Symbols are uppercase by contract: /symbol/comi -> /symbol/COMI.
-        if (canonicalFirst === 'symbol' && segments[2]) {
-            const upper = segments[2].toUpperCase();
-            if (segments[2] !== upper) {
-                segments[2] = upper;
+        if (canonicalFirst === 'symbol' && segments[base + 1]) {
+            const upper = segments[base + 1].toUpperCase();
+            if (segments[base + 1] !== upper) {
+                segments[base + 1] = upper;
                 changed = true;
             }
-            // Tab segments are lowercase by contract: /symbol/COMI/FINANCIALS
-            // -> /symbol/COMI/financials (audit: uppercase variants served 200).
-            if (segments[3]) {
-                const tab = segments[3].toLowerCase();
-                if (['financials', 'dividends', 'technicals', 'history'].includes(tab) && segments[3] !== tab) {
-                    segments[3] = tab;
+            // Tab/metric segments are lowercase by contract:
+            // /symbol/COMI/FINANCIALS -> /symbol/COMI/financials.
+            if (segments[base + 2]) {
+                const tab = segments[base + 2].toLowerCase();
+                if (['financials', 'dividends', 'technicals', 'history', 'market-cap', 'revenue', 'net-income', 'eps', 'dividend-yield', 'pe-ratio'].includes(tab) && segments[base + 2] !== tab) {
+                    segments[base + 2] = tab;
                     changed = true;
                 }
             }
         }
         // /Funds/compare -> /Funds/Compare (the compare tool's canonical case).
-        if (canonicalFirst === 'Funds' && segments[2] && segments[2].toLowerCase() === 'compare' && segments[2] !== 'Compare') {
-            segments[2] = 'Compare';
+        if (canonicalFirst === 'Funds' && segments[base + 1] && segments[base + 1].toLowerCase() === 'compare' && segments[base + 1] !== 'Compare') {
+            segments[base + 1] = 'Compare';
             changed = true;
         }
         if (changed) {

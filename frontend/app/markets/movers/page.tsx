@@ -39,13 +39,13 @@ const fmtVolume = (n: number | null): string =>
 
 function MoversTable({ rows, showVolume = false }: { rows: Ticker[]; showVolume?: boolean }) {
     if (rows.length === 0) {
-        return <p className="mt-3 text-sm text-slate-500">No data available right now.</p>;
+        return <p className="mt-3 text-sm text-muted">No data available right now.</p>;
     }
     return (
-        <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface">
             <table className={`w-full ${showVolume ? 'min-w-[600px]' : 'min-w-[520px]'} text-sm`}>
                 <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                    <tr className="border-b border-border bg-panel/40 text-left text-xs font-bold uppercase tracking-wide text-muted">
                         <th className="px-4 py-3">Company</th>
                         <th className="px-4 py-3">Symbol</th>
                         <th className="px-4 py-3 text-right">Price</th>
@@ -55,21 +55,21 @@ function MoversTable({ rows, showVolume = false }: { rows: Ticker[]; showVolume?
                 </thead>
                 <tbody>
                     {rows.map((t) => (
-                        <tr key={t.symbol} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                        <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                             <td className="px-4 py-2.5">
-                                <Link href={symbolPath(t.symbol)} className="font-semibold text-slate-800 hover:text-teal-600">
+                                <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-teal">
                                     {t.name_en || t.symbol}
                                 </Link>
                                 {t.name_ar && (
-                                    <span className="block text-xs text-slate-400" dir="rtl" lang="ar">{t.name_ar}</span>
+                                    <span className="block text-xs text-muted" dir="rtl" lang="ar">{t.name_ar}</span>
                                 )}
                             </td>
-                            <td className="px-4 py-2.5 font-mono font-semibold text-slate-600">
-                                <Link href={symbolPath(t.symbol)} className="hover:text-teal-600">{t.symbol}</Link>
+                            <td className="px-4 py-2.5 font-mono font-semibold text-muted">
+                                <Link href={symbolPath(t.symbol)} className="hover:text-starta-teal">{t.symbol}</Link>
                             </td>
                             <td className="px-4 py-2.5 text-right font-semibold">{fmtPrice(t.last_price)}{t.last_price !== null && t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}</td>
                             <td className={`px-4 py-2.5 text-right font-semibold ${
-                                t.change_percent === null ? 'text-slate-400' : t.change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'
+                                t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'
                             }`}>
                                 {fmtChange(t.change_percent)}
                             </td>
@@ -105,42 +105,42 @@ export default async function MoversPage() {
             />
             <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'EGX Movers' }]} />
 
-            <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+            <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 EGX Movers Today — Top Gainers, Losers &amp; Most Active
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-slate-600">
+            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
                 Today&apos;s biggest moves on the Egyptian Exchange: the top gaining and losing stocks by change
                 percentage and the most actively traded companies by volume. Click any company for its full profile.
             </p>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-muted">
                 {asOfHuman && <>As of {asOfHuman} (Africa/Cairo time). </>}
                 Prices refresh every 15 minutes during EGX trading hours (Sunday–Thursday).
             </p>
-            <p className="mt-1 text-sm text-slate-500" dir="rtl" lang="ar">
+            <p className="mt-1 text-sm text-muted" dir="rtl" lang="ar">
                 الأكثر ارتفاعًا وانخفاضًا ونشاطًا في البورصة المصرية اليوم.
             </p>
 
             <section className="mt-8">
-                <h2 className="text-xl font-bold text-slate-900">Top Gainers</h2>
+                <h2 className="text-xl font-bold text-main">Top Gainers</h2>
                 <MoversTable rows={gainers} />
             </section>
 
             <section className="mt-8">
-                <h2 className="text-xl font-bold text-slate-900">Top Losers</h2>
+                <h2 className="text-xl font-bold text-main">Top Losers</h2>
                 <MoversTable rows={losers} />
             </section>
 
             <section className="mt-8">
-                <h2 className="text-xl font-bold text-slate-900">Most Active by Volume</h2>
+                <h2 className="text-xl font-bold text-main">Most Active by Volume</h2>
                 <MoversTable rows={active} showVolume />
             </section>
 
-            <p className="mt-6 text-sm text-slate-600">
-                Browse the full <Link href="/companies" className="font-semibold text-teal-600 hover:underline">EGX listed companies directory</Link> or
-                companies <Link href="/sectors" className="font-semibold text-teal-600 hover:underline">by sector</Link>.
+            <p className="mt-6 text-sm text-muted">
+                Browse the full <Link href="/companies" className="font-semibold text-starta-teal hover:underline">EGX listed companies directory</Link> or
+                companies <Link href="/sectors" className="font-semibold text-starta-teal hover:underline">by sector</Link>.
             </p>
 
-            <p className="mt-4 text-xs text-slate-500">
+            <p className="mt-4 text-xs text-muted">
                 Source: Egyptian Exchange via TradingView. Prices in Egyptian pounds.
             </p>
         </PublicPageShell>

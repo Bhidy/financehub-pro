@@ -320,6 +320,51 @@ export const getNewsPage = cache(async (page: number, perPage = 24): Promise<{ a
     return { articles: rows.rows as NewsArticle[], total: (count.rows[0]?.n as number) || 0 };
 });
 
+
+/** Upcoming + recent dividend events across the market (calendar page). */
+export const getDividendCalendar = cache(async (): Promise<{ upcoming: Array<Record<string, unknown>>; recent: Array<Record<string, unknown>> }> => {
+    const [up, rec] = await Promise.all([
+        db.query(
+            `SELECT e.symbol, e.amount_upcoming, e.ex_date_upcoming, e.payment_date_upcoming,
+                    t.name_en, t.name_ar, t.currency
+             FROM egx_dividends e
+             JOIN market_tickers t ON t.symbol = UPPER(e.symbol)
+             WHERE e.amount_upcoming IS NOT NULL AND e.ex_date_upcoming IS NOT NULL
+             ORDER BY e.ex_date_upcoming ASC`
+        ),
+        db.query(
+            `SELECT d.symbol, d.dividend_amount, d.ex_date, d.pay_date, d.currency AS div_currency,
+                    t.name_en, t.name_ar
+             FROM dividend_history d
+             JOIN market_tickers t ON t.symbol = UPPER(d.symbol)
+             WHERE d.ex_date >= NOW() - INTERVAL '90 days'
+             ORDER BY d.ex_date DESC LIMIT 60`
+        ),
+    ]);
+    return {
+        upcoming: up.rows.map((r: Record<string, unknown>) => toNum(r, ['amount_upcoming', 'ex_date_upcoming', 'payment_date_upcoming'])),
+        recent: rec.rows.map((r: Record<string, unknown>) => toNum(r, ['dividend_amount'])),
+    };
+});
+
+/** All funds with the fields the rankings/comparison pages need. */
+export const getAllFundsRanked = cache(async (): Promise<Array<Record<string, unknown>>> => {
+    const result = await db.query(
+        `SELECT fund_id, fund_name, fund_name_en, fund_type, fund_type_en,
+                classification_en, issuer_en, manager_name_en, currency, is_shariah,
+                latest_nav, live_latest_nav, last_nav_date,
+                return_ytd, return_1m, return_3m, return_1y, return_3y, return_5y,
+                expense_ratio, fee_management, min_subscription, inception_date, risk_level_en
+         FROM funds_view
+         WHERE fund_id::text ~ '^[0-9]+$'
+         ORDER BY return_1y DESC NULLS LAST`
+    );
+    return result.rows.map((r: Record<string, unknown>) => {
+        r.latest_nav = (r.live_latest_nav as number | null) ?? r.latest_nav;
+        return toNum(r, ['latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_1y', 'return_3y', 'return_5y', 'expense_ratio', 'fee_management', 'min_subscription']);
+    });
+});
+
 /** All companies for the /companies directory hub. */
 export const getAllTickers = cache(async (): Promise<Ticker[]> => {
     const result = await db.query(

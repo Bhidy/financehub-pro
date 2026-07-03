@@ -134,10 +134,10 @@ const checks = [
     assert: (text) => /sitemap/.test(text) && /Disallow|disallow/.test(text),
   },
   {
-    name: "segmented sitemap route exists with all six segments",
+    name: "segmented sitemap route exists with all ten segments",
     file: "app/sitemaps/[name]/route.ts",
     assert: (text) =>
-      ["core", "companies", "sectors", "funds", "learn", "news"].every((seg) => text.includes(seg)),
+      ["core", "companies", "ar-companies", "metrics", "sectors", "funds", "comparisons", "learn", "glossary", "news"].every((seg) => text.includes(seg)),
   },
   {
     name: "llms.txt exists and points at the canonical host",

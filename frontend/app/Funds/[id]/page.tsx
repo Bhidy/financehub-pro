@@ -271,31 +271,31 @@ export default async function FundPage({ params }: Props) {
             <article>
                 <header>
                     <h1
-                        className="text-2xl font-extrabold leading-snug text-slate-900 sm:text-3xl"
+                        className="text-2xl font-extrabold leading-snug text-main sm:text-3xl"
                         {...(!nameEn && nameAr ? { dir: 'rtl' as const, lang: 'ar' } : {})}
                     >
                         {name}
                     </h1>
                     {nameEn && nameAr && nameAr !== nameEn && (
-                        <p dir="rtl" lang="ar" className="mt-1 text-lg font-semibold text-slate-600">
+                        <p dir="rtl" lang="ar" className="mt-1 text-lg font-semibold text-muted">
                             {nameAr}
                         </p>
                     )}
                 </header>
 
                 {nav !== null && (
-                    <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5">
-                        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Net Asset Value</h2>
-                        <p className="mt-1 text-3xl font-extrabold text-slate-900">
-                            {fmtNav(nav)} <span className="text-base font-semibold text-slate-500">EGP</span>
+                    <section className="mt-6 rounded-xl border border-border bg-surface p-5">
+                        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Net Asset Value</h2>
+                        <p className="mt-1 text-3xl font-extrabold text-main">
+                            {fmtNav(nav)} <span className="text-base font-semibold text-muted">EGP</span>
                         </p>
                         {navDateIso && (
-                            <p className="mt-1 text-sm text-slate-500">
+                            <p className="mt-1 text-sm text-muted">
                                 as of <time dateTime={navDateIso}>{humanDate(navDateIso)}</time>
                             </p>
                         )}
                         {(navHigh !== null || navLow !== null) && (
-                            <p className="mt-2 text-sm text-slate-600">
+                            <p className="mt-2 text-sm text-muted">
                                 {navLow !== null && (
                                     <>
                                         52-week low: <span className="font-semibold">{fmtNav(navLow)}</span>
@@ -309,7 +309,7 @@ export default async function FundPage({ params }: Props) {
                                 )}
                             </p>
                         )}
-                        <p className="mt-3 border-t border-slate-100 pt-2 text-xs text-slate-400">
+                        <p className="mt-3 border-t border-border/60 pt-2 text-xs text-muted">
                             Source: fund manager disclosures · Updated twice daily
                         </p>
                     </section>
@@ -317,24 +317,24 @@ export default async function FundPage({ params }: Props) {
 
                 {returns.length > 0 && (
                     <section className="mt-8">
-                        <h2 className="text-lg font-bold text-slate-900">Performance</h2>
-                        <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                        <h2 className="text-lg font-bold text-main">Performance</h2>
+                        <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+                                    <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
                                         <th scope="col" className="px-4 py-2.5 font-semibold">Period</th>
                                         <th scope="col" className="px-4 py-2.5 font-semibold">Return</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {returns.map(([label, value]) => (
-                                        <tr key={label} className="border-b border-slate-100 last:border-b-0">
-                                            <th scope="row" className="px-4 py-2.5 text-left font-medium text-slate-700">
+                                        <tr key={label} className="border-b border-border/60 last:border-b-0">
+                                            <th scope="row" className="px-4 py-2.5 text-left font-medium text-main">
                                                 {label}
                                             </th>
                                             <td
                                                 className={`px-4 py-2.5 font-semibold tabular-nums ${
-                                                    value < 0 ? 'text-red-600' : value > 0 ? 'text-emerald-600' : 'text-slate-700'
+                                                    value < 0 ? 'text-red-600' : value > 0 ? 'text-emerald-600' : 'text-main'
                                                 }`}
                                             >
                                                 {fmtPct(value)}
@@ -349,17 +349,17 @@ export default async function FundPage({ params }: Props) {
 
                 {(facts.length > 0 || isTrue(fund, 'is_shariah')) && (
                     <section className="mt-8">
-                        <h2 className="text-lg font-bold text-slate-900">Key Facts</h2>
-                        <dl className="mt-3 grid gap-x-6 gap-y-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2 lg:grid-cols-3">
+                        <h2 className="text-lg font-bold text-main">Key Facts</h2>
+                        <dl className="mt-3 grid gap-x-6 gap-y-4 rounded-xl border border-border bg-surface p-5 sm:grid-cols-2 lg:grid-cols-3">
                             {facts.map(([label, value]) => (
                                 <div key={label}>
-                                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</dt>
-                                    <dd className="mt-0.5 text-sm font-medium text-slate-800">{value}</dd>
+                                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</dt>
+                                    <dd className="mt-0.5 text-sm font-medium text-main">{value}</dd>
                                 </div>
                             ))}
                             {isTrue(fund, 'is_shariah') && (
                                 <div>
-                                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">Compliance</dt>
+                                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Compliance</dt>
                                     <dd className="mt-0.5">
                                         <span className="inline-block rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
                                             Shariah-compliant
@@ -373,12 +373,12 @@ export default async function FundPage({ params }: Props) {
 
                 {fees.length > 0 && (
                     <section className="mt-8">
-                        <h2 className="text-lg font-bold text-slate-900">Fees</h2>
-                        <dl className="mt-3 grid gap-x-6 gap-y-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2 lg:grid-cols-4">
+                        <h2 className="text-lg font-bold text-main">Fees</h2>
+                        <dl className="mt-3 grid gap-x-6 gap-y-4 rounded-xl border border-border bg-surface p-5 sm:grid-cols-2 lg:grid-cols-4">
                             {fees.map(([label, value]) => (
                                 <div key={label}>
-                                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</dt>
-                                    <dd className="mt-0.5 text-sm font-semibold tabular-nums text-slate-800">{fmtPct(value)}</dd>
+                                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</dt>
+                                    <dd className="mt-0.5 text-sm font-semibold tabular-nums text-main">{fmtPct(value)}</dd>
                                 </div>
                             ))}
                         </dl>
@@ -387,11 +387,11 @@ export default async function FundPage({ params }: Props) {
 
                 {(strategyEn || objectiveEn || strategyAr || objectiveAr) && (
                     <section className="mt-8">
-                        <h2 className="text-lg font-bold text-slate-900">Strategy &amp; Objective</h2>
-                        {strategyEn && <p className="mt-3 leading-relaxed text-slate-700">{strategyEn}</p>}
-                        {objectiveEn && <p className="mt-3 leading-relaxed text-slate-700">{objectiveEn}</p>}
+                        <h2 className="text-lg font-bold text-main">Strategy &amp; Objective</h2>
+                        {strategyEn && <p className="mt-3 leading-relaxed text-main">{strategyEn}</p>}
+                        {objectiveEn && <p className="mt-3 leading-relaxed text-main">{objectiveEn}</p>}
                         {(strategyAr || objectiveAr) && (
-                            <div dir="rtl" lang="ar" className="mt-4 rounded-xl border border-slate-200 bg-white p-5 leading-relaxed text-slate-700">
+                            <div dir="rtl" lang="ar" className="mt-4 rounded-xl border border-border bg-surface p-5 leading-relaxed text-main">
                                 {strategyAr && <p>{strategyAr}</p>}
                                 {objectiveAr && <p className={strategyAr ? 'mt-3' : ''}>{objectiveAr}</p>}
                             </div>
@@ -399,13 +399,13 @@ export default async function FundPage({ params }: Props) {
                     </section>
                 )}
 
-                <section className="mt-10 border-t border-slate-200 pt-6">
-                    <h2 className="text-lg font-bold text-slate-900">Similar Funds</h2>
+                <section className="mt-10 border-t border-border pt-6">
+                    <h2 className="text-lg font-bold text-main">Similar Funds</h2>
                     {peers.length > 0 && (
                         <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                             {peers.map((p) => (
                                 <li key={p.id}>
-                                    <Link href={p.href} className="text-sm font-medium text-slate-700 hover:text-teal-600">
+                                    <Link href={p.href} className="text-sm font-medium text-main hover:text-starta-teal">
                                         {p.label}
                                     </Link>
                                 </li>
@@ -413,20 +413,20 @@ export default async function FundPage({ params }: Props) {
                         </ul>
                     )}
                     <p className="mt-4 text-sm">
-                        <Link href="/Funds" className="font-semibold text-teal-600 hover:underline">
+                        <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">
                             All Egyptian mutual funds →
                         </Link>
                     </p>
                 </section>
 
                 {faqs.length > 0 && (
-                    <section className="mt-10 border-t border-slate-200 pt-6">
-                        <h2 className="text-lg font-bold text-slate-900">FAQ</h2>
+                    <section className="mt-10 border-t border-border pt-6">
+                        <h2 className="text-lg font-bold text-main">FAQ</h2>
                         <dl className="mt-3 space-y-5">
                             {faqs.map((f) => (
                                 <div key={f.q}>
-                                    <dt className="font-semibold text-slate-900">{f.q}</dt>
-                                    <dd className="mt-1 text-sm leading-relaxed text-slate-700">{f.a}</dd>
+                                    <dt className="font-semibold text-main">{f.q}</dt>
+                                    <dd className="mt-1 text-sm leading-relaxed text-main">{f.a}</dd>
                                 </div>
                             ))}
                         </dl>

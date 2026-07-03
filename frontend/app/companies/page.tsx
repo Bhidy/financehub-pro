@@ -70,21 +70,21 @@ export default async function CompaniesPage() {
             />
             <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'EGX Listed Companies' }]} />
 
-            <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">Egyptian Exchange (EGX) Listed Companies</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-slate-600">
+            <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Egyptian Exchange (EGX) Listed Companies</h1>
+            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
                 All {tickers.length} companies listed on the Egyptian Exchange with live prices, sorted by market
                 capitalization. Click any company for its full profile: price chart, key statistics, financial
                 statements, dividends, technicals and news — in Arabic and English.
                 {asOfHuman && <> Updated daily; prices as of {asOfHuman}.</>}
             </p>
-            <p className="mt-1 text-sm text-slate-500" dir="rtl" lang="ar">
+            <p className="mt-1 text-sm text-muted" dir="rtl" lang="ar">
                 دليل الشركات المدرجة في البورصة المصرية — الأسعار والقطاعات والقيمة السوقية، محدَّث يوميًا.
             </p>
 
-            <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[640px] text-sm">
                     <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                        <tr className="border-b border-border bg-panel/40 text-left text-xs font-bold uppercase tracking-wide text-muted">
                             <th className="px-4 py-3">#</th>
                             <th className="px-4 py-3">Company</th>
                             <th className="px-4 py-3">Symbol</th>
@@ -96,25 +96,25 @@ export default async function CompaniesPage() {
                     </thead>
                     <tbody>
                         {tickers.map((t, i) => (
-                            <tr key={t.symbol} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                                <td className="px-4 py-2.5 text-slate-400">{i + 1}</td>
+                            <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
+                                <td className="px-4 py-2.5 text-muted">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={symbolPath(t.symbol)} className="font-semibold text-slate-800 hover:text-teal-600">
+                                    <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-teal">
                                         {t.name_en || t.symbol}
                                     </Link>
                                     {t.name_ar && (
-                                        <span className="block text-xs text-slate-400" dir="rtl" lang="ar">{t.name_ar}</span>
+                                        <span className="block text-xs text-muted" dir="rtl" lang="ar">{t.name_ar}</span>
                                     )}
                                 </td>
-                                <td className="px-4 py-2.5 font-mono font-semibold text-slate-600">
-                                    <Link href={symbolPath(t.symbol)} className="hover:text-teal-600">{t.symbol}</Link>
+                                <td className="px-4 py-2.5 font-mono font-semibold text-muted">
+                                    <Link href={symbolPath(t.symbol)} className="hover:text-starta-teal">{t.symbol}</Link>
                                 </td>
-                                <td className="px-4 py-2.5 text-slate-500">{t.sector_name || '—'}</td>
+                                <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 text-right font-semibold">
                                     {t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}
                                 </td>
                                 <td className={`px-4 py-2.5 text-right font-semibold ${
-                                    t.change_percent === null ? 'text-slate-400' : t.change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'
+                                    t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'
                                 }`}>
                                     {t.change_percent !== null ? `${t.change_percent >= 0 ? '+' : ''}${t.change_percent.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—'}
                                 </td>
@@ -125,7 +125,7 @@ export default async function CompaniesPage() {
                 </table>
             </div>
 
-            <p className="mt-4 text-xs text-slate-500">
+            <p className="mt-4 text-xs text-muted">
                 Source: Egyptian Exchange via TradingView. Prices refresh every 15 minutes during EGX trading hours
                 (Sunday–Thursday). Market caps in Egyptian pounds. Prices are in EGP unless a currency code is shown (some EGX lines trade in USD).
             </p>

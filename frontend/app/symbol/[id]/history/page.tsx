@@ -175,26 +175,26 @@ export default async function HistoryPage({ params }: Props) {
                 ]}
             />
 
-            <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+            <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 {name} ({symbol}) Stock Price History
             </h1>
 
             {cards.length > 0 && (
                 <dl className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {cards.map((c) => (
-                        <div key={c.label} className="rounded-xl border border-slate-200 bg-white p-4">
-                            <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">{c.label}</dt>
-                            <dd className="mt-1 text-xl font-extrabold tabular-nums text-slate-900">{c.value}</dd>
+                        <div key={c.label} className="rounded-xl border border-border bg-surface p-4">
+                            <dt className="text-xs font-semibold uppercase tracking-wide text-muted">{c.label}</dt>
+                            <dd className="mt-1 text-xl font-extrabold tabular-nums text-main">{c.value}</dd>
                         </div>
                     ))}
                 </dl>
             )}
 
-            <h2 className="mt-8 text-lg font-bold text-slate-900">Last {recent.length} trading sessions</h2>
-            <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <h2 className="mt-8 text-lg font-bold text-main">Last {recent.length} trading sessions</h2>
+            <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[640px] text-sm">
                     <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                        <tr className="border-b border-border bg-panel/40 text-left text-xs font-bold uppercase tracking-wide text-muted">
                             <th scope="col" className="px-4 py-3">Date</th>
                             <th scope="col" className="px-4 py-3 text-right">Open</th>
                             <th scope="col" className="px-4 py-3 text-right">High</th>
@@ -208,15 +208,15 @@ export default async function HistoryPage({ params }: Props) {
                             const dateIso = isoDate(r['date']);
                             const volume = num(r, 'volume');
                             return (
-                                <tr key={dateIso || i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                                    <th scope="row" className="px-4 py-2.5 text-left font-semibold text-slate-700">
+                                <tr key={dateIso || i} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
+                                    <th scope="row" className="px-4 py-2.5 text-left font-semibold text-main">
                                         {dateIso ? <time dateTime={dateIso}>{dateIso}</time> : '—'}
                                     </th>
-                                    <td className="px-4 py-2.5 text-right tabular-nums text-slate-700">{fmtPrice(num(r, 'open'))}</td>
-                                    <td className="px-4 py-2.5 text-right tabular-nums text-slate-700">{fmtPrice(num(r, 'high'))}</td>
-                                    <td className="px-4 py-2.5 text-right tabular-nums text-slate-700">{fmtPrice(num(r, 'low'))}</td>
-                                    <td className="px-4 py-2.5 text-right tabular-nums font-semibold text-slate-800">{fmtPrice(num(r, 'close'))}</td>
-                                    <td className="px-4 py-2.5 text-right tabular-nums text-slate-600">
+                                    <td className="px-4 py-2.5 text-right tabular-nums text-main">{fmtPrice(num(r, 'open'))}</td>
+                                    <td className="px-4 py-2.5 text-right tabular-nums text-main">{fmtPrice(num(r, 'high'))}</td>
+                                    <td className="px-4 py-2.5 text-right tabular-nums text-main">{fmtPrice(num(r, 'low'))}</td>
+                                    <td className="px-4 py-2.5 text-right tabular-nums font-semibold text-main">{fmtPrice(num(r, 'close'))}</td>
+                                    <td className="px-4 py-2.5 text-right tabular-nums text-muted">
                                         {volume !== null ? volume.toLocaleString('en-EG') : '—'}
                                     </td>
                                 </tr>
@@ -226,24 +226,24 @@ export default async function HistoryPage({ params }: Props) {
                 </table>
             </div>
 
-            <p className="mt-4 text-sm text-slate-600">
+            <p className="mt-4 text-sm text-muted">
                 The full price history{firstIso ? ` back to ${humanDate(firstIso)}` : ''} is available on the{' '}
-                <Link href={overviewPath} className="font-semibold text-teal-600 hover:underline">
+                <Link href={overviewPath} className="font-semibold text-starta-teal hover:underline">
                     interactive {symbol} chart
                 </Link>
                 .
             </p>
 
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-muted">
                 Daily OHLC from the Egyptian Exchange{firstYear ? `; history back to ${firstYear}` : ''}. Prices in
                 Egyptian pounds.
             </p>
 
-            <nav aria-label="Company pages" className="mt-8 border-t border-slate-200 pt-5">
+            <nav aria-label="Company pages" className="mt-8 border-t border-border pt-5">
                 <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
                     {siblings.map((s) => (
                         <li key={s.href}>
-                            <Link href={s.href} className="text-teal-600 hover:underline">
+                            <Link href={s.href} className="text-starta-teal hover:underline">
                                 {s.label}
                             </Link>
                         </li>

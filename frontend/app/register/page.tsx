@@ -15,6 +15,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { track } from '@/lib/analytics';
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -118,6 +119,7 @@ function MobileRegisterPageContent() {
         });
 
         if (result.success) {
+            track('sign_up', { method: 'email' });
             if (searchParams.get("checkout") === "true" && searchParams.get("plan") === "analyst") {
                 try {
                     const data = await createCheckoutSession("price_1T66bq2UXuH5fA2IQIuSelxJ");

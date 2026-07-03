@@ -121,7 +121,7 @@ export default async function NewsArticlePage({ params }: Props) {
     };
 
     return (
-        <PublicPageShell dir={arabic ? 'rtl' : 'ltr'}>
+        <PublicPageShell lang={arabic ? 'ar' : 'en'}>
             <JsonLd data={newsJsonLd} />
             <JsonLd
                 data={breadcrumbJsonLd(
@@ -132,15 +132,15 @@ export default async function NewsArticlePage({ params }: Props) {
             <Breadcrumbs items={[{ href: '/', label: 'Home' }, { href: '/News', label: 'Market News' }, { label: headline }]} />
 
             <article lang={arabic ? 'ar' : 'en'}>
-                <h1 className="text-2xl font-extrabold leading-snug text-slate-900 sm:text-3xl">{headline}</h1>
-                <p className="mt-2 text-sm text-slate-500">
+                <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">{headline}</h1>
+                <p className="mt-2 text-sm text-muted">
                     <time dateTime={publishedIso}>{publishedHuman}</time>
                     {' · '}
                     {arabic ? 'أخبار البورصة المصرية' : 'Egyptian market news'}
                     {article.symbol && (
                         <>
                             {' · '}
-                            <Link href={`/symbol/${article.symbol.toUpperCase()}`} className="font-semibold text-teal-600 hover:underline">
+                            <Link href={`/symbol/${article.symbol.toUpperCase()}`} className="font-semibold text-starta-teal hover:underline">
                                 {article.symbol.toUpperCase()}
                             </Link>
                         </>
@@ -156,21 +156,21 @@ export default async function NewsArticlePage({ params }: Props) {
                         alt={headline}
                         width={1200}
                         height={675}
-                        className="mt-5 h-auto w-full rounded-xl border border-slate-200 object-cover"
+                        className="mt-5 h-auto w-full rounded-xl border border-border object-cover"
                         referrerPolicy="no-referrer"
                     />
                 )}
 
-                <div className="prose prose-slate mt-6 max-w-none text-[1.05rem] leading-relaxed">
+                <div className="prose mt-6 max-w-none text-[1.05rem] leading-relaxed">
                     {paragraphs.map((p, i) => (
                         <p key={i} className="mb-4">{p}</p>
                     ))}
                 </div>
 
                 {article.url && (
-                    <p className="mt-6 text-sm text-slate-500">
+                    <p className="mt-6 text-sm text-muted">
                         {arabic ? 'المصدر الأصلي: ' : 'Original source: '}
-                        <a href={article.url} rel="nofollow noopener" target="_blank" className="text-teal-600 hover:underline">
+                        <a href={article.url} rel="nofollow noopener" target="_blank" className="text-starta-teal hover:underline">
                             {(() => {
                                 try {
                                     return new URL(article.url).hostname;
@@ -184,14 +184,14 @@ export default async function NewsArticlePage({ params }: Props) {
             </article>
 
             {latest.length > 0 && (
-                <section className="mt-10 border-t border-slate-200 pt-6" dir="ltr">
-                    <h2 className="text-lg font-bold text-slate-900">More Egyptian market news</h2>
+                <section className="mt-10 border-t border-border pt-6" dir="ltr">
+                    <h2 className="text-lg font-bold text-main">More Egyptian market news</h2>
                     <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                         {latest.map((n) => {
                             const h = sanitizeNewsText(n.headline) || 'Egypt Market Update';
                             return (
                                 <li key={n.id}>
-                                    <Link href={newsPath(n.id, h)} className="text-sm font-medium text-slate-700 hover:text-teal-600">
+                                    <Link href={newsPath(n.id, h)} className="text-sm font-medium text-main hover:text-starta-teal">
                                         {h}
                                     </Link>
                                 </li>
@@ -199,7 +199,7 @@ export default async function NewsArticlePage({ params }: Props) {
                         })}
                     </ul>
                     <p className="mt-4 text-sm">
-                        <Link href="/News" className="font-semibold text-teal-600 hover:underline">
+                        <Link href="/News" className="font-semibold text-starta-teal hover:underline">
                             All market news →
                         </Link>
                     </p>

@@ -41,9 +41,9 @@ export default function AboutPage() {
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { label: 'About' }], SITE_URL)} />
             <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'About' }]} />
 
-            <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">About Starta Markets</h1>
+            <h1 className="text-2xl font-extrabold text-main sm:text-3xl">About Starta Markets</h1>
 
-            <div className="mt-4 max-w-3xl space-y-4 leading-relaxed text-slate-700">
+            <div className="mt-4 max-w-3xl space-y-4 leading-relaxed text-main">
                 <p>
                     <strong>Starta Markets</strong> is a bilingual (Arabic/English) market-intelligence platform for
                     the <strong>Egyptian Exchange (EGX)</strong>. It brings together, in one place: live prices and
@@ -52,35 +52,35 @@ export default function AboutPage() {
                     Egyptian market news in both languages; a beginner-friendly investing academy; and an AI market
                     analyst you can ask about any EGX stock or fund.
                 </p>
-                <p dir="rtl" lang="ar" className="rounded-xl bg-white p-4 text-slate-700 ring-1 ring-slate-200">
+                <p dir="rtl" lang="ar" className="rounded-xl bg-surface p-4 text-main ring-1 ring-slate-200">
                     <strong>ستارتا ماركتس</strong> منصة ذكاء مالي ثنائية اللغة (عربي/إنجليزي) للبورصة المصرية: أسعار
                     مباشرة وبيانات مالية تمتد ٢٠ عامًا لكل الشركات المدرجة، وصافي قيمة أصول صناديق الاستثمار المصرية
                     وأداؤها، وأخبار السوق، وأكاديمية تعليمية للمبتدئين، ومحلل ذكي يجيب عن أسئلتك بالعربية أو الإنجليزية.
                 </p>
             </div>
 
-            <h2 className="mt-10 text-xl font-bold text-slate-900">Where our data comes from</h2>
-            <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <h2 className="mt-10 text-xl font-bold text-main">Where our data comes from</h2>
+            <div className="mt-4 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[560px] text-sm">
                     <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                        <tr className="border-b border-border bg-panel/40 text-left text-xs font-bold uppercase tracking-wide text-muted">
                             <th className="px-4 py-3">Dataset</th>
                             <th className="px-4 py-3">Source & freshness</th>
                         </tr>
                     </thead>
                     <tbody>
                         {SOURCES.map(([k, v]) => (
-                            <tr key={k} className="border-b border-slate-100 last:border-0">
-                                <td className="px-4 py-3 font-semibold text-slate-800">{k}</td>
-                                <td className="px-4 py-3 text-slate-600">{v}</td>
+                            <tr key={k} className="border-b border-border/60 last:border-0">
+                                <td className="px-4 py-3 font-semibold text-main">{k}</td>
+                                <td className="px-4 py-3 text-muted">{v}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
 
-            <h2 className="mt-10 text-xl font-bold text-slate-900">Methodology notes</h2>
-            <ul className="mt-3 max-w-3xl list-disc space-y-2 pl-5 leading-relaxed text-slate-700">
+            <h2 className="mt-10 text-xl font-bold text-main">Methodology notes</h2>
+            <ul className="mt-3 max-w-3xl list-disc space-y-2 pl-5 leading-relaxed text-main">
                 <li>All figures are in Egyptian pounds (EGP) unless explicitly stated otherwise.</li>
                 <li>Every data page carries an &ldquo;as of&rdquo; timestamp (Cairo time) and names its source.</li>
                 <li>Fund NAVs shown in headlines are always derived live from the underlying NAV history — the headline can never drift from the chart.</li>
@@ -88,20 +88,20 @@ export default function AboutPage() {
                 <li>Automated pipelines monitor data freshness around the clock and alert on staleness or anomalies.</li>
             </ul>
 
-            <h2 className="mt-10 text-xl font-bold text-slate-900">What Starta Markets is not</h2>
-            <p className="mt-3 max-w-3xl leading-relaxed text-slate-700">
+            <h2 className="mt-10 text-xl font-bold text-main">What Starta Markets is not</h2>
+            <p className="mt-3 max-w-3xl leading-relaxed text-main">
                 Starta Markets is an information platform. Nothing on this site is investment advice, a recommendation
                 to buy or sell any security, or an offer of brokerage services. Markets involve risk — always do your
                 own research and consider consulting a licensed financial advisor regulated by the Egyptian Financial
                 Regulatory Authority (FRA).
             </p>
 
-            <h2 className="mt-10 text-xl font-bold text-slate-900">Contact</h2>
-            <p className="mt-3 max-w-3xl leading-relaxed text-slate-700">
-                Questions, corrections or partnerships: <Link href="/contact" className="font-semibold text-teal-600 hover:underline">contact us</Link>. Explore the{' '}
-                <Link href="/companies" className="font-semibold text-teal-600 hover:underline">EGX companies directory</Link>,{' '}
-                <Link href="/Funds" className="font-semibold text-teal-600 hover:underline">mutual funds</Link> or the{' '}
-                <Link href="/Learn" className="font-semibold text-teal-600 hover:underline">investing academy</Link>.
+            <h2 className="mt-10 text-xl font-bold text-main">Contact</h2>
+            <p className="mt-3 max-w-3xl leading-relaxed text-main">
+                Questions, corrections or partnerships: <Link href="/contact" className="font-semibold text-starta-teal hover:underline">contact us</Link>. Explore the{' '}
+                <Link href="/companies" className="font-semibold text-starta-teal hover:underline">EGX companies directory</Link>,{' '}
+                <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">mutual funds</Link> or the{' '}
+                <Link href="/Learn" className="font-semibold text-starta-teal hover:underline">investing academy</Link>.
             </p>
         </PublicPageShell>
     );

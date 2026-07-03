@@ -7,6 +7,21 @@
 
 @theme {
   /* ========================================================================
+     PUBLIC-SITE CHROME TOKENS (SEO/server pages — mirror the static pages'
+     --c-* runtime variables so bg-page/text-main/etc. follow the SAME
+     light/dark theme the rest of the site uses via data-theme.)
+     ======================================================================== */
+  --color-page: var(--c-page);
+  --color-surface: var(--c-surface);
+  --color-panel: var(--c-panel);
+  --color-main: var(--c-text-main);
+  --color-muted: var(--c-text-muted);
+  --color-border: var(--c-border);
+  --color-starta-teal: #14B8A6;
+  --color-starta-darkTeal: #0F766E;
+  --color-starta-accent: #2DD4BF;
+
+  /* ========================================================================
      CORE BRAND COLORS (Midnight Teal Palette)
      ======================================================================== */
 
@@ -1162,4 +1177,29 @@ a:focus-visible {
 
 .animate-ambient-glow {
   animation: ambientGlow 15s ease-in-out infinite alternate;
+}
+
+
+/* ============================================================================
+   PUBLIC-SITE CHROME VARIABLES — verbatim from the designed static pages
+   (home.html). Dark is the DEFAULT theme; light activates via
+   [data-theme="light"], toggled by /assets/starta-theme.js.
+   ============================================================================ */
+:root {
+  --c-page: #010101;
+  --c-surface: #0b0c0d;
+  --c-panel: rgba(18, 19, 20, 0.62);
+  --c-text-main: #eef2f6;
+  --c-text-muted: #9ca6b5;
+  --c-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(14, 16, 16, 0.56);
+}
+[data-theme="light"] {
+  --c-page: #f6f8fb;
+  --c-surface: #FFFFFF;
+  --c-panel: rgba(255, 255, 255, 0.82);
+  --c-text-main: #111827;
+  --c-text-muted: #5c6676;
+  --c-border: rgba(148, 163, 184, 0.2);
+  --glass-bg: rgba(255, 255, 255, 0.75);
 }

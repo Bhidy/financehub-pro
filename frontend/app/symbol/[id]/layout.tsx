@@ -38,7 +38,15 @@ export async function generateMetadata(
         if (!dbOk) {
             return {
                 title: `${symbol} — EGX Stock Price, Financials & News`,
-                alternates: { canonical: symbolPath(symbol) },
+                alternates: {
+            canonical: symbolPath(symbol),
+            // Arabic twin page (306 AR company pages, reciprocal hreflang).
+            languages: {
+                en: symbolPath(symbol),
+                ar: `/ar${symbolPath(symbol)}`,
+                'x-default': symbolPath(symbol),
+            },
+        },
             };
         }
         return { title: "Symbol not found", robots: { index: false } };
@@ -55,7 +63,15 @@ export async function generateMetadata(
     return {
         title,
         description,
-        alternates: { canonical: symbolPath(symbol) },
+        alternates: {
+            canonical: symbolPath(symbol),
+            // Arabic twin page (306 AR company pages, reciprocal hreflang).
+            languages: {
+                en: symbolPath(symbol),
+                ar: `/ar${symbolPath(symbol)}`,
+                'x-default': symbolPath(symbol),
+            },
+        },
         openGraph: {
             type: "website",
             title: `${title} | Starta Markets`,

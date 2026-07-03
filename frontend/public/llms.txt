@@ -12,16 +12,21 @@
 - [EGX companies directory](https://startamarkets.com/companies): all Egyptian Exchange listed companies with price, sector and market cap, updated daily
 - [EGX sectors](https://startamarkets.com/sectors): companies grouped by sector with counts and market caps (per-sector pages: /sectors/{sector})
 - [EGX movers](https://startamarkets.com/markets/movers): today's top gainers, losers and most active stocks
+- [Dividend calendar](https://startamarkets.com/markets/dividend-calendar): upcoming and recent EGX dividend ex-dates and payouts
+- [Arabic company pages](https://startamarkets.com/ar/symbol/COMI): بالعربية — pattern /ar/symbol/{TICKER}
 - [Company pages](https://startamarkets.com/symbol/COMI): per-symbol live price, key statistics, financials, dividends, technicals and news (URL pattern: /symbol/{TICKER}; data pages: /symbol/{TICKER}/financials, /dividends, /technicals, /history)
 
 ## Mutual funds
 - [Funds marketplace](https://startamarkets.com/Funds): Egyptian mutual funds with NAV, returns and fees, in Arabic and English
+- [Best-performing funds 2026](https://startamarkets.com/Funds/best-mutual-funds-egypt-2026): ranked by trailing 1-year return with methodology
+- [Fund comparisons](https://startamarkets.com/Funds/vs/2662-vs-2666): side-by-side NAV/returns/fees (pattern: /Funds/vs/{id}-vs-{id})
 
 ## News
 - [EGX market news](https://startamarkets.com/News): Arabic and English coverage of the Egyptian market, ~30 articles/day
 
 ## Learn
 - [Investing academy](https://startamarkets.com/Learn): bilingual beginner guides (stock market, mutual funds, NAV, dividends, risk)
+- [Financial glossary](https://startamarkets.com/Learn/glossary): 30 EGX/investing terms defined in English and Arabic (/ar/Learn/glossary)
 
 ## Tools
 - [AI market analyst](https://startamarkets.com/AiChat): ask about any EGX stock or fund in Arabic or English

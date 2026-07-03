@@ -48,7 +48,7 @@ function fmtPerShare(n: number | null): string {
 /** Right-aligned numeric cell; negatives in red (losses must read as losses). */
 function NumCell({ v, text }: { v: number | null; text: string }) {
     return (
-        <td className={`px-4 py-2.5 text-right ${v !== null && v < 0 ? 'text-red-600' : 'text-slate-700'}`}>
+        <td className={`px-4 py-2.5 text-right ${v !== null && v < 0 ? 'text-red-600' : 'text-main'}`}>
             {text}
         </td>
     );
@@ -119,19 +119,19 @@ export default async function FinancialsPage({ params }: Props) {
             <JsonLd data={datasetJsonLd} />
             <Breadcrumbs items={breadcrumbItems} />
 
-            <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+            <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 {name} ({symbol}) Financial Statements
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-slate-600">
+            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
                 Annual financial statement highlights for {name}, in Egyptian pounds (EGP)
                 {minYear !== null && maxYear !== null ? ` covering fiscal years ${minYear}–${maxYear}` : ''}.
                 Figures are updated weekly from EGX filings via TradingView.
             </p>
 
-            <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[760px] text-sm">
                     <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                        <tr className="border-b border-border bg-panel/40 text-left text-xs font-bold uppercase tracking-wide text-muted">
                             <th className="px-4 py-3">Fiscal year</th>
                             <th className="px-4 py-3 text-right">Revenue</th>
                             <th className="px-4 py-3 text-right">Net income</th>
@@ -144,8 +144,8 @@ export default async function FinancialsPage({ params }: Props) {
                     </thead>
                     <tbody>
                         {years.map((y, i) => (
-                            <tr key={y.fiscal_year ?? `row-${i}`} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                                <td className="px-4 py-2.5 font-semibold text-slate-800">
+                            <tr key={y.fiscal_year ?? `row-${i}`} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
+                                <td className="px-4 py-2.5 font-semibold text-main">
                                     {typeof y.fiscal_year === 'number' && Number.isFinite(y.fiscal_year) ? y.fiscal_year : '—'}
                                 </td>
                                 <NumCell v={y.revenue} text={fmtEgp(y.revenue)} />
@@ -161,21 +161,21 @@ export default async function FinancialsPage({ params }: Props) {
                 </table>
             </div>
 
-            <p className="mt-4 text-xs text-slate-500">
+            <p className="mt-4 text-xs text-muted">
                 All figures in EGP. Source: company disclosures to the Egyptian Exchange via TradingView; updated weekly.
             </p>
 
             <nav aria-label={`More on ${symbol}`} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-teal-700">
-                <Link href={symbolPath(symbol)} className="hover:text-teal-600 hover:underline">
+                <Link href={symbolPath(symbol)} className="hover:text-starta-teal hover:underline">
                     {symbol} Overview
                 </Link>
-                <Link href={`${symbolPath(symbol)}/dividends`} className="hover:text-teal-600 hover:underline">
+                <Link href={`${symbolPath(symbol)}/dividends`} className="hover:text-starta-teal hover:underline">
                     Dividends
                 </Link>
-                <Link href={`${symbolPath(symbol)}/technicals`} className="hover:text-teal-600 hover:underline">
+                <Link href={`${symbolPath(symbol)}/technicals`} className="hover:text-starta-teal hover:underline">
                     Technicals
                 </Link>
-                <Link href={`${symbolPath(symbol)}/history`} className="hover:text-teal-600 hover:underline">
+                <Link href={`${symbolPath(symbol)}/history`} className="hover:text-starta-teal hover:underline">
                     Price History
                 </Link>
             </nav>

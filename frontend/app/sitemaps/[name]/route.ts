@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
 import { SITE_URL, absUrl, newsPath, fundPath, symbolPath, slugify } from '@/lib/seo';
 import learnTopics from '@/content/learn-topics.generated';
+import { GLOSSARY_TERMS } from '@/content/glossary-terms';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +38,8 @@ async function coreEntries(): Promise<Entry[]> {
         ['/companies', 'daily', '0.9'],
         ['/sectors', 'daily', '0.7'],
         ['/markets/movers', 'hourly', '0.7'],
+        ['/markets/dividend-calendar', 'daily', '0.7'],
+        ['/Funds/best-mutual-funds-egypt-2026', 'daily', '0.8'],
         ['/about', 'monthly', '0.5'],
         ['/contact', 'monthly', '0.4'],
         ['/AiChat', 'weekly', '0.6'],
@@ -107,6 +110,105 @@ async function sectorEntries(): Promise<Entry[]> {
     }));
 }
 
+async function arCompanyEntries(): Promise<Entry[]> {
+    // Arabic twins of the company pages (/ar/symbol/{SYM}).
+    const result = await db.query(
+        `SELECT t.symbol,
+                GREATEST(
+                    COALESCE(t.last_updated, 'epoch'::timestamptz),
+                    COALESCE(t.updated_at, 'epoch'::timestamptz)
+                ) AS lastmod
+         FROM market_tickers t
+         WHERE t.last_price IS NOT NULL
+           AND COALESCE(t.sector_name,'') <> 'Index'
+           AND NOT (t.symbol LIKE '%.CA' AND EXISTS (
+               SELECT 1 FROM market_tickers b
+               WHERE b.symbol = REPLACE(t.symbol, '.CA', '') AND b.last_price IS NOT NULL))
+         ORDER BY t.symbol`
+    );
+    return result.rows.map((r: any) => ({
+        loc: absUrl(`/ar${symbolPath(r.symbol)}`),
+        lastmod: r.lastmod,
+        changefreq: 'daily',
+        priority: '0.7',
+    }));
+}
+
+async function metricEntries(): Promise<Entry[]> {
+    // Per-metric pages, DATA-GATED to mirror the page-level notFound() gates
+    // (under-listing is safe; over-listing recreates the dead-URL defect the
+    // audits keep hunting). revenue/net-income/eps approximate via statement
+    // history EXISTS — a strict subset of the page gate.
+    const result = await db.query(
+        `SELECT t.symbol,
+                (t.market_cap IS NOT NULL) AS m_marketcap,
+                (t.pe_ratio IS NOT NULL) AS m_pe,
+                (COALESCE(t.dividend_yield, 0) > 0
+                 OR EXISTS(SELECT 1 FROM egx_financials f WHERE UPPER(f.symbol) = t.symbol AND f.dps IS NOT NULL)) AS m_dy,
+                EXISTS(SELECT 1 FROM egx_financials f WHERE UPPER(f.symbol) = t.symbol AND f.revenue IS NOT NULL) AS m_rev,
+                EXISTS(SELECT 1 FROM egx_financials f WHERE UPPER(f.symbol) = t.symbol AND f.net_income IS NOT NULL) AS m_ni,
+                EXISTS(SELECT 1 FROM egx_financials f WHERE UPPER(f.symbol) = t.symbol AND f.eps_diluted IS NOT NULL) AS m_eps
+         FROM market_tickers t
+         WHERE t.last_price IS NOT NULL
+           AND COALESCE(t.sector_name,'') <> 'Index'
+           AND NOT (t.symbol LIKE '%.CA' AND EXISTS (
+               SELECT 1 FROM market_tickers b
+               WHERE b.symbol = REPLACE(t.symbol, '.CA', '') AND b.last_price IS NOT NULL))
+         ORDER BY t.symbol`
+    );
+    return result.rows.flatMap((r: any) => {
+        const base = symbolPath(r.symbol);
+        const entries: Entry[] = [];
+        if (r.m_marketcap) entries.push({ loc: absUrl(`${base}/market-cap`), changefreq: 'daily', priority: '0.5' });
+        if (r.m_pe) entries.push({ loc: absUrl(`${base}/pe-ratio`), changefreq: 'daily', priority: '0.5' });
+        if (r.m_dy) entries.push({ loc: absUrl(`${base}/dividend-yield`), changefreq: 'weekly', priority: '0.5' });
+        if (r.m_rev) entries.push({ loc: absUrl(`${base}/revenue`), changefreq: 'weekly', priority: '0.5' });
+        if (r.m_ni) entries.push({ loc: absUrl(`${base}/net-income`), changefreq: 'weekly', priority: '0.5' });
+        if (r.m_eps) entries.push({ loc: absUrl(`${base}/eps`), changefreq: 'weekly', priority: '0.5' });
+        return entries;
+    });
+}
+
+async function glossaryEntries(): Promise<Entry[]> {
+    const entries: Entry[] = [
+        { loc: absUrl('/Learn/glossary'), changefreq: 'monthly', priority: '0.7' },
+        { loc: absUrl('/ar/Learn/glossary'), changefreq: 'monthly', priority: '0.7' },
+    ];
+    for (const t of GLOSSARY_TERMS) {
+        entries.push({ loc: absUrl(`/Learn/glossary/${t.slug}`), changefreq: 'yearly', priority: '0.5' });
+        entries.push({ loc: absUrl(`/ar/Learn/glossary/${t.slug}`), changefreq: 'yearly', priority: '0.5' });
+    }
+    return entries;
+}
+
+async function comparisonEntries(): Promise<Entry[]> {
+    // Top fund pairs within each fund type (numeric ids, ranked by 1Y return):
+    // C(top5, 2) = 10 pairs per type — every URL resolves by construction.
+    const result = await db.query(
+        `SELECT fund_id, fund_type_en, return_1y
+         FROM funds_view
+         WHERE fund_id::text ~ '^[0-9]+$' AND return_1y IS NOT NULL
+         ORDER BY fund_type_en NULLS LAST, return_1y DESC`
+    );
+    const byType = new Map<string, number[]>();
+    for (const r of result.rows as Array<{ fund_id: number; fund_type_en: string | null }>) {
+        const t = r.fund_type_en || 'other';
+        if (!byType.has(t)) byType.set(t, []);
+        const arr = byType.get(t) as number[];
+        if (arr.length < 5) arr.push(Number(r.fund_id));
+    }
+    const entries: Entry[] = [];
+    for (const ids of byType.values()) {
+        for (let i = 0; i < ids.length; i++) {
+            for (let j = i + 1; j < ids.length; j++) {
+                const [a, b] = ids[i] < ids[j] ? [ids[i], ids[j]] : [ids[j], ids[i]];
+                entries.push({ loc: absUrl(`/Funds/vs/${a}-vs-${b}`), changefreq: 'weekly', priority: '0.4' });
+            }
+        }
+    }
+    return entries;
+}
+
 async function fundEntries(): Promise<Entry[]> {
     // Numeric fund_ids only: the /Funds/[id] route resolves numeric ids, but
     // funds_view also carries legacy string ids (EGY_NEW_*, EGYAAIB*, ...)
@@ -152,9 +254,13 @@ async function newsEntries(): Promise<Entry[]> {
 const BUILDERS: Record<string, () => Promise<Entry[]>> = {
     core: coreEntries,
     companies: companyEntries,
+    'ar-companies': arCompanyEntries,
+    metrics: metricEntries,
     sectors: sectorEntries,
     funds: fundEntries,
+    comparisons: comparisonEntries,
     learn: learnEntries,
+    glossary: glossaryEntries,
     news: newsEntries,
 };
 

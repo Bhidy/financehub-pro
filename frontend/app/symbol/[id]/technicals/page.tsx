@@ -76,7 +76,7 @@ function signalLabel(r: number | null): Signal {
 function signalClass(label: Signal): string {
     if (label === 'Strong Buy' || label === 'Buy') return 'text-emerald-600';
     if (label === 'Strong Sell' || label === 'Sell') return 'text-red-600';
-    return 'text-slate-500';
+    return 'text-muted';
 }
 
 function fmt2(n: number | null): string {
@@ -171,7 +171,7 @@ export default async function TechnicalsPage({ params }: Props) {
                 ]}
             />
 
-            <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+            <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 {name} ({symbol}) Technical Analysis
             </h1>
 
@@ -179,18 +179,18 @@ export default async function TechnicalsPage({ params }: Props) {
                 {rows.map((r, i) => {
                     const overall = signalLabel(num(r, 'recommend_all'));
                     return (
-                        <li key={str(r, 'timeframe') || i} className="text-sm text-slate-600">
-                            <span className="font-semibold text-slate-700">{timeframeLabel(r)}:</span>{' '}
+                        <li key={str(r, 'timeframe') || i} className="text-sm text-muted">
+                            <span className="font-semibold text-main">{timeframeLabel(r)}:</span>{' '}
                             <span className={`font-bold ${signalClass(overall)}`}>{overall}</span>
                         </li>
                     );
                 })}
             </ul>
 
-            <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[760px] text-sm">
                     <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                        <tr className="border-b border-border bg-panel/40 text-left text-xs font-bold uppercase tracking-wide text-muted">
                             <th scope="col" className="px-4 py-3">Timeframe</th>
                             <th scope="col" className="px-4 py-3">Overall signal</th>
                             <th scope="col" className="px-4 py-3">Moving-averages signal</th>
@@ -208,18 +208,18 @@ export default async function TechnicalsPage({ params }: Props) {
                             const ma = signalLabel(num(r, 'recommend_ma'));
                             const osc = signalLabel(num(r, 'recommend_other'));
                             return (
-                                <tr key={str(r, 'timeframe') || i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                                    <th scope="row" className="px-4 py-2.5 text-left font-semibold text-slate-700">
+                                <tr key={str(r, 'timeframe') || i} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
+                                    <th scope="row" className="px-4 py-2.5 text-left font-semibold text-main">
                                         {timeframeLabel(r)}
                                     </th>
                                     <td className={`px-4 py-2.5 font-bold ${signalClass(overall)}`}>{overall}</td>
                                     <td className={`px-4 py-2.5 font-semibold ${signalClass(ma)}`}>{ma}</td>
                                     <td className={`px-4 py-2.5 font-semibold ${signalClass(osc)}`}>{osc}</td>
-                                    <td className="px-4 py-2.5 text-right tabular-nums text-slate-700">{fmt2(num(r, 'rsi'))}</td>
-                                    <td className="px-4 py-2.5 text-right tabular-nums text-slate-700">{fmt2(num(r, 'macd_macd'))}</td>
-                                    <td className="px-4 py-2.5 text-right tabular-nums text-slate-700">{fmt2(num(r, 'adx'))}</td>
-                                    <td className="px-4 py-2.5 text-right tabular-nums text-slate-700">{fmt2(num(r, 'sma50'))}</td>
-                                    <td className="px-4 py-2.5 text-right tabular-nums text-slate-700">{fmt2(num(r, 'sma200'))}</td>
+                                    <td className="px-4 py-2.5 text-right tabular-nums text-main">{fmt2(num(r, 'rsi'))}</td>
+                                    <td className="px-4 py-2.5 text-right tabular-nums text-main">{fmt2(num(r, 'macd_macd'))}</td>
+                                    <td className="px-4 py-2.5 text-right tabular-nums text-main">{fmt2(num(r, 'adx'))}</td>
+                                    <td className="px-4 py-2.5 text-right tabular-nums text-main">{fmt2(num(r, 'sma50'))}</td>
+                                    <td className="px-4 py-2.5 text-right tabular-nums text-main">{fmt2(num(r, 'sma200'))}</td>
                                 </tr>
                             );
                         })}
@@ -227,23 +227,23 @@ export default async function TechnicalsPage({ params }: Props) {
                 </table>
             </div>
 
-            <p className="mt-4 text-xs text-slate-500">
+            <p className="mt-4 text-xs text-muted">
                 {asOfHuman && <>As of {asOfHuman} (Cairo time). </>}
                 Computed from EGX price history via TradingView; refreshed with market data.
             </p>
 
-            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600">
+            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted">
                 Buy and sell signals summarize where indicators such as RSI, MACD and moving averages currently point
                 for each timeframe — short-term readings (1 Hour, 4 Hours) react faster while Daily and Weekly reflect
                 the broader trend. They describe recent price behaviour, not a prediction of where the stock will go.
             </p>
-            <p className="mt-2 text-xs text-slate-500">Technical signals are informational, not investment advice.</p>
+            <p className="mt-2 text-xs text-muted">Technical signals are informational, not investment advice.</p>
 
-            <nav aria-label="Company pages" className="mt-8 border-t border-slate-200 pt-5">
+            <nav aria-label="Company pages" className="mt-8 border-t border-border pt-5">
                 <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
                     {siblings.map((s) => (
                         <li key={s.href}>
-                            <Link href={s.href} className="text-teal-600 hover:underline">
+                            <Link href={s.href} className="text-starta-teal hover:underline">
                                 {s.label}
                             </Link>
                         </li>

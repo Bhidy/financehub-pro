@@ -63,20 +63,20 @@ export default async function SectorsPage() {
             />
             <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'EGX Sectors' }]} />
 
-            <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">Egyptian Exchange (EGX) Sectors</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-slate-600">
+            <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Egyptian Exchange (EGX) Sectors</h1>
+            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
                 {sectors.length} sectors covering {totalCompanies} companies listed on the Egyptian Exchange,
                 ranked by aggregate market capitalization. Click any sector for its full list of companies with
                 live prices and market caps. Updated daily.
             </p>
-            <p className="mt-1 text-sm text-slate-500" dir="rtl" lang="ar">
+            <p className="mt-1 text-sm text-muted" dir="rtl" lang="ar">
                 قطاعات البورصة المصرية — عدد الشركات والقيمة السوقية لكل قطاع.
             </p>
 
-            <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[480px] text-sm">
                     <thead>
-                        <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                        <tr className="border-b border-border bg-panel/40 text-left text-xs font-bold uppercase tracking-wide text-muted">
                             <th className="px-4 py-3">Sector</th>
                             <th className="px-4 py-3 text-right">Companies</th>
                             <th className="px-4 py-3 text-right">Market Cap (EGP)</th>
@@ -84,16 +84,16 @@ export default async function SectorsPage() {
                     </thead>
                     <tbody>
                         {sectors.map((s) => (
-                            <tr key={s.sector_name} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                            <tr key={s.sector_name} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5">
                                     <Link
                                         href={`/sectors/${slugify(s.sector_name)}`}
-                                        className="font-semibold text-slate-800 hover:text-teal-600"
+                                        className="font-semibold text-main hover:text-starta-teal"
                                     >
                                         {s.sector_name}
                                     </Link>
                                 </td>
-                                <td className="px-4 py-2.5 text-right text-slate-600">{s.companies}</td>
+                                <td className="px-4 py-2.5 text-right text-muted">{s.companies}</td>
                                 <td className="px-4 py-2.5 text-right">{fmtCap(s.market_cap)}</td>
                             </tr>
                         ))}
@@ -101,9 +101,9 @@ export default async function SectorsPage() {
                 </table>
             </div>
 
-            <p className="mt-4 text-xs text-slate-500">
+            <p className="mt-4 text-xs text-muted">
                 Source: Egyptian Exchange via TradingView, updated daily. Market caps in Egyptian pounds. See also
-                the full <Link href="/companies" className="text-teal-600 hover:underline">EGX listed companies directory</Link>.
+                the full <Link href="/companies" className="text-starta-teal hover:underline">EGX listed companies directory</Link>.
             </p>
         </PublicPageShell>
     );

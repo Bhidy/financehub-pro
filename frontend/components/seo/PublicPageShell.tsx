@@ -1,106 +1,236 @@
 import Link from 'next/link';
+import Script from 'next/script';
+import ThemeToggle from '@/components/seo/ThemeToggle';
 
 /**
- * Server-rendered chrome for the SEO/public pages (news articles, fund pages,
- * learn topics, directory hubs). Styled to the Midnight Teal design system
- * (DESIGN_SYSTEM.md): dark-navy #0F172A anchors, teal #14B8A6 accent, light
- * #F8FAFC surfaces, uppercase tracked nav like the designed static pages.
- * Zero client JS.
+ * Server-rendered chrome for the SEO/public pages — a FAITHFUL replication of
+ * the designed static pages' header and footer (extracted verbatim from
+ * home.html: same markup, classes, theme system and translations). The site's
+ * design is canonical:
+ *  - dark theme is the DEFAULT; /assets/starta-theme.js toggles data-theme
+ *    (light) and binds #themeToggle exactly like the static pages
+ *  - /assets/starta-mobile-nav.js provides the shared premium burger nav
+ *    (drop-in for any header family per its own contract)
+ *  - bg-page/text-main/text-muted/border-border/starta-teal tokens map to the
+ *    same --c-* variables the static pages define (see globals.css)
+ *  - language is per-URL here (SSR), so the langToggle is a LINK to the
+ *    hreflang twin instead of the static pages' client-side dict toggle —
+ *    visually identical control, correct mechanic for indexable pages.
  */
 
-const NAV = [
-    { href: '/', label: 'Home' },
-    { href: '/Market-Pulse', label: 'Market Pulse' },
-    { href: '/companies', label: 'Companies' },
-    { href: '/News', label: 'Market News' },
-    { href: '/Funds', label: 'Funds' },
-    { href: '/Learn', label: 'Learn' },
-];
+type Lang = 'en' | 'ar';
+
+const NAV_LABELS: Record<Lang, Record<string, string>> = {
+    en: {
+        home: 'HOME', funds: 'MUTUAL FUNDS', pulse: 'MARKET PULSE', news: 'MARKET NEWS',
+        portfolio: 'MY PORTFOLIO', learn: 'LEARN', cta: 'Try Now',
+    },
+    ar: {
+        home: 'الرئيسية', funds: 'الصناديق الاستثمارية', pulse: 'نبض السوق', news: 'أخبار السوق',
+        portfolio: 'محفظتي', learn: 'تعلّم', cta: 'جرّب الآن',
+    },
+};
+
+const FOOTER_LABELS: Record<Lang, Record<string, string>> = {
+    en: {
+        desc: 'Next-generation financial intelligence platform. Empowering Egyptian market investors with unified data, institutional-grade AI analytics, and responsive portfolio tools.',
+        cta: 'Launch Starta AI',
+        col1: 'PLATFORM', col2: 'RESEARCH', col3: 'RESOURCES',
+        home: 'Home', funds: 'Mutual Funds', pulse: 'Market Pulse',
+        news: 'Market News', learn: 'Learn Catalog', portfolio: 'Smart Portfolio',
+        chat: 'AI Assistant', account: 'Create Account', login: 'Sign In',
+        discTitle: 'Regulatory Disclaimer',
+        disclaimer: 'Starta Markets is a financial data and technology platform. All content, tools, and AI analyses provided are for informational and educational purposes only, and should not be construed as investment advice, recommendations, or endorsements to buy or sell any security or mutual fund. Financial markets carry high volatility and risks; every investor is fully responsible for their own investment due diligence.',
+        copy: '© 2026 Starta Markets. All Rights Reserved.',
+        companies: 'EGX Companies', about: 'About', contact: 'Contact',
+        privacy: 'Privacy Policy', terms: 'Terms of Service',
+    },
+    ar: {
+        desc: 'منصة الجيل القادم للتحليل المالي الذكي. نمكّن مستثمري السوق المصري ببيانات موحدة، تحليلات ذكاء اصطناعي بمستوى مؤسسي، وأدوات متطورة لإدارة المحفظة.',
+        cta: 'ابدأ مع مساعد ستارتا',
+        col1: 'المنصة', col2: 'الأبحاث', col3: 'المصادر',
+        home: 'الرئيسية', funds: 'الصناديق الاستثمارية', pulse: 'نبض السوق',
+        news: 'أخبار السوق', learn: 'أكاديمية ستارتا', portfolio: 'المحفظة الذكية',
+        chat: 'المساعد الذكي', account: 'إنشاء حساب', login: 'تسجيل الدخول',
+        discTitle: 'إخلاء المسؤولية التنظيمي',
+        disclaimer: 'ستارتا ماركتس منصة بيانات وتقنيات مالية. جميع المحتويات والأدوات وتحليلات الذكاء الاصطناعي المقدمة لأغراض معلوماتية وتعليمية فقط، ولا تُعد نصيحة استثمارية أو توصية أو تزكية لشراء أو بيع أي ورقة مالية أو صندوق استثمار. الأسواق المالية عالية التقلب والمخاطر؛ وكل مستثمر مسؤول مسؤولية كاملة عن قراراته الاستثمارية.',
+        copy: '© 2026 ستارتا ماركتس. جميع الحقوق محفوظة.',
+        companies: 'الشركات المدرجة', about: 'من نحن', contact: 'اتصل بنا',
+        privacy: 'سياسة الخصوصية', terms: 'شروط الاستخدام',
+    },
+};
+
+/** Custom classes from the designed pages, scoped under .seo-shell so they
+ * can never collide with the interactive app's own styles. */
+const SHELL_CSS = `
+.seo-shell{overflow-x:hidden}
+.seo-shell .btn-primary{background:linear-gradient(135deg,#14B8A6 20%,#0f766e 100%);color:#fff;box-shadow:0 18px 44px rgba(20,184,166,0.22);border:1px solid rgba(45,212,191,0.35);transition:transform .28s ease,box-shadow .28s ease,filter .28s ease}
+.seo-shell .btn-primary:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 24px 52px rgba(20,184,166,0.32);filter:saturate(1.06)}
+.seo-shell .btn-secondary{border:1px solid rgba(45,212,191,0.45);background:rgba(45,212,191,0.08);color:var(--c-text-main);transition:background-color .25s ease,color .25s ease,transform .25s ease}
+.seo-shell .btn-secondary:hover{background:rgba(45,212,191,0.2);transform:translateY(-1px)}
+.seo-shell .nav-controls{display:flex;align-items:center;gap:.5rem}
+.seo-shell .control-btn{width:2.35rem;height:2.35rem;border-radius:999px;border:1px solid var(--c-border);background:var(--glass-bg);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;color:var(--c-text-main)}
+.seo-shell .control-btn:hover{transform:translateY(-1px);color:#14B8A6;border-color:rgba(20,184,166,0.5)}
+[data-theme="light"] .seo-shell .dark-icon{opacity:0}
+[data-theme="light"] .seo-shell .light-icon{opacity:1}
+`;
 
 export default function PublicPageShell({
     children,
-    dir = 'ltr',
+    lang = 'en',
+    altHref,
+    dir,
 }: {
     children: React.ReactNode;
+    lang?: Lang;
+    /** URL of the hreflang twin — renders the site's lang toggle as a link. */
+    altHref?: string;
+    /** @deprecated derived from lang; kept for call-site compatibility. */
     dir?: 'ltr' | 'rtl';
 }) {
+    const direction = dir ?? (lang === 'ar' ? 'rtl' : 'ltr');
+    const t = NAV_LABELS[lang];
+    const f = FOOTER_LABELS[lang];
+
     return (
-        <div dir={dir} className="min-h-screen bg-[#F8FAFC] text-[#0F172A]">
-            <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/85 backdrop-blur-xl">
-                <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
-                    <Link href="/" prefetch={false} className="flex items-center gap-2.5 text-[17px] font-extrabold tracking-tight text-[#0F172A]">
-                        <span className="relative flex h-2.5 w-2.5" aria-hidden>
-                            <span className="absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-60" />
-                            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#14B8A6]" />
-                        </span>
-                        Starta<span className="text-[#14B8A6]">Markets</span>
-                    </Link>
-                    <nav aria-label="Main" className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">
-                        {NAV.map((item) => (
-                            // prefetch=false: these routes rewrite to static HTML
-                            // (no RSC payload) — prefetching 404s in the console.
-                            <Link key={item.href} href={item.href} prefetch={false} className="transition-colors hover:text-[#14B8A6]">
-                                {item.label}
-                            </Link>
-                        ))}
+        <div dir={direction} lang={lang} className={`seo-shell min-h-screen bg-page text-main ${lang === 'ar' ? 'font-arabic' : ''}`}>
+            <style dangerouslySetInnerHTML={{ __html: SHELL_CSS }} />
+            <Script src="/assets/starta-theme.js?v=1.0.1" strategy="beforeInteractive" />
+            <Script src="/assets/starta-mobile-nav.js?v=1.0.4" strategy="lazyOnload" />
+
+            {/* ── Header: verbatim structure from the designed pages ─────────── */}
+            <nav className="fixed top-0 w-full z-50 border-b border-border bg-page/80 backdrop-blur-xl transition-all duration-300">
+                <div className="max-w-screen-2xl mx-auto px-8 h-20 flex justify-between items-center">
+                    <a href="/" className="flex items-center gap-3 group cursor-pointer">
+                        <div className="w-8 h-8 bg-starta-teal rounded flex items-center justify-center font-bold text-white text-xl font-display group-hover:rotate-12 transition-transform">S</div>
+                        <span className="text-lg font-display font-bold text-main tracking-widest">STARTA</span>
+                    </a>
+
+                    <div className="hidden lg:flex items-center gap-10">
+                        <div className="flex gap-10 text-xs font-mono text-muted tracking-widest">
+                            <Link href="/" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_home">{t.home}</Link>
+                            <Link href="/Funds" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_mobile">{t.funds}</Link>
+                            <Link href="/Market-Pulse" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_pulse">{t.pulse}</Link>
+                            <Link href="/News" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_news">{t.news}</Link>
+                            <Link href="/Portfolio/demo" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_portfolio">{t.portfolio}</Link>
+                            <Link href="/Learn" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_learn">{t.learn}</Link>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 ml-3">
                         <Link
                             href="/AiChat"
                             prefetch={false}
-                            className="rounded-full bg-[#0F172A] px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#14B8A6]"
+                            className="hidden md:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
+                            data-key="nav_cta"
                         >
-                            AI Analyst
+                            {t.cta}
                         </Link>
-                    </nav>
-                </div>
-            </header>
-            <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">{children}</main>
-            <footer className="mt-16 bg-[#0F172A] text-slate-300">
-                <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-10 sm:px-6">
-                    <div>
-                        <p className="flex items-center gap-2 text-[15px] font-extrabold tracking-tight text-white">
-                            <span className="inline-block h-2 w-2 rounded-full bg-[#14B8A6]" aria-hidden />
-                            Starta<span className="text-[#14B8A6]">Markets</span>
-                        </p>
-                        <p className="mt-2 max-w-md text-sm leading-6 text-slate-400">
-                            EGX market intelligence in Arabic &amp; English — live prices, fund NAVs, news and an AI analyst.
-                        </p>
+                        <div className="nav-controls">
+                            <ThemeToggle />
+                            {altHref && (
+                                <a href={altHref} className="control-btn font-display text-xs font-bold" aria-label={lang === 'ar' ? 'English version' : 'النسخة العربية'}>
+                                    {lang === 'ar' ? 'EN' : 'ع'}
+                                </a>
+                            )}
+                        </div>
                     </div>
-                    <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                        <Link href="/companies" prefetch={false} className="hover:text-[#2DD4BF]">EGX Companies</Link>
-                        <Link href="/sectors" prefetch={false} className="hover:text-[#2DD4BF]">Sectors</Link>
-                        <Link href="/News" prefetch={false} className="hover:text-[#2DD4BF]">News</Link>
-                        <Link href="/Funds" prefetch={false} className="hover:text-[#2DD4BF]">Funds</Link>
-                        <Link href="/Learn" prefetch={false} className="hover:text-[#2DD4BF]">Learn</Link>
-                        <Link href="/about" prefetch={false} className="hover:text-[#2DD4BF]">About</Link>
-                        <Link href="/contact" prefetch={false} className="hover:text-[#2DD4BF]">Contact</Link>
-                        <Link href="/privacy" prefetch={false} className="hover:text-[#2DD4BF]">Privacy</Link>
-                        <Link href="/terms" prefetch={false} className="hover:text-[#2DD4BF]">Terms</Link>
-                    </nav>
                 </div>
-                <div className="border-t border-white/10">
-                    <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-slate-500 sm:px-6">
-                        © {new Date().getFullYear()} Starta Markets. Market data is informational — not investment advice.
-                    </p>
+            </nav>
+
+            <main className="mx-auto max-w-7xl px-6 pt-28 pb-16">{children}</main>
+
+            {/* ── Footer: verbatim structure from the designed pages ─────────── */}
+            <footer className="relative bg-surface border-t border-border overflow-hidden pt-24 pb-12">
+                <div className="absolute inset-0 pointer-events-none opacity-40 dark:opacity-80" aria-hidden="true">
+                    <div className="absolute bottom-0 right-10 w-[450px] h-[300px] bg-starta-teal/5 rounded-full blur-[100px]" />
+                    <div className="absolute top-12 left-10 w-[300px] h-[200px] bg-violet-600/3 rounded-full blur-[80px]" />
+                </div>
+
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 pb-16 border-b border-border mb-16">
+                        <div className="space-y-4 max-w-md text-start">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 bg-starta-teal rounded-xl flex items-center justify-center font-bold text-white text-xl font-display">S</div>
+                                <span className="text-xl font-display font-bold text-main tracking-widest">STARTA</span>
+                            </div>
+                            <p className="text-sm text-muted leading-relaxed">{f.desc}</p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full lg:w-auto">
+                            <Link href="/AiChat" prefetch={false} className="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase">
+                                <span>{f.cta}</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6" /></svg>
+                            </Link>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-8 mb-16 text-start">
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col1}</h4>
+                            <ul className="space-y-2.5 text-sm">
+                                <li><Link href="/" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.home}</Link></li>
+                                <li><Link href="/Funds" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.funds}</Link></li>
+                                <li><Link href="/Market-Pulse" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.pulse}</Link></li>
+                            </ul>
+                        </div>
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col2}</h4>
+                            <ul className="space-y-2.5 text-sm">
+                                <li><Link href="/News" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.news}</Link></li>
+                                <li><Link href="/Learn" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.learn}</Link></li>
+                                <li><Link href="/Portfolio" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.portfolio}</Link></li>
+                            </ul>
+                        </div>
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col3}</h4>
+                            <ul className="space-y-2.5 text-sm">
+                                <li><Link href="/AiChat" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.chat}</Link></li>
+                                <li><Link href="/register" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.account}</Link></li>
+                                <li><Link href="/login" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.login}</Link></li>
+                            </ul>
+                        </div>
+                        <div className="space-y-4">
+                            <ul className="space-y-2.5 text-sm">
+                                <li><a href="mailto:support@startamarkets.com" className="text-muted hover:text-starta-teal transition-colors font-medium">support@startamarkets.com</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="p-6 rounded-2xl bg-panel/30 border border-border mb-12 text-start">
+                        <h5 className="text-xs font-mono text-main tracking-widest uppercase font-semibold mb-2.5">{f.discTitle}</h5>
+                        <p className="text-[11px] text-muted leading-relaxed">{f.disclaimer}</p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted font-mono pt-4 border-t border-border/80">
+                        <div>{f.copy}</div>
+                        <div className="flex flex-wrap gap-6">
+                            <Link href="/companies" prefetch={false} className="hover:text-starta-teal transition-colors">{f.companies}</Link>
+                            <Link href="/about" prefetch={false} className="hover:text-starta-teal transition-colors">{f.about}</Link>
+                            <Link href="/contact" prefetch={false} className="hover:text-starta-teal transition-colors">{f.contact}</Link>
+                            <Link href="/privacy" prefetch={false} className="hover:text-starta-teal transition-colors">{f.privacy}</Link>
+                            <Link href="/terms" prefetch={false} className="hover:text-starta-teal transition-colors">{f.terms}</Link>
+                        </div>
+                    </div>
                 </div>
             </footer>
         </div>
     );
 }
 
-/** Linked breadcrumb trail; pair with a BreadcrumbList JSON-LD block. */
+/** Linked breadcrumb trail in the site's font-mono tracked style. */
 export function Breadcrumbs({ items }: { items: Array<{ href?: string; label: string }> }) {
     return (
-        <nav aria-label="Breadcrumb" className="mb-5 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+        <nav aria-label="Breadcrumb" className="mb-6 text-xs font-mono uppercase tracking-widest text-muted">
             <ol className="flex flex-wrap items-center gap-1.5">
                 {items.map((item, i) => (
                     <li key={i} className="flex items-center gap-1.5">
-                        {i > 0 && <span aria-hidden className="text-slate-300">/</span>}
+                        {i > 0 && <span aria-hidden className="opacity-50">/</span>}
                         {item.href ? (
-                            <Link href={item.href} prefetch={false} className="transition-colors hover:text-[#14B8A6]">
+                            <Link href={item.href} prefetch={false} className="transition-colors hover:text-starta-teal">
                                 {item.label}
                             </Link>
                         ) : (
-                            <span className="text-slate-600">{item.label}</span>
+                            <span className="text-main">{item.label}</span>
                         )}
                     </li>
                 ))}

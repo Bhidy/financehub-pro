@@ -183,10 +183,10 @@ export default async function DividendsPage({ params }: Props) {
             <JsonLd data={datasetJsonLd} />
             <Breadcrumbs items={breadcrumbItems} />
 
-            <h1 className="text-2xl font-extrabold text-slate-900 sm:text-3xl">
+            <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 {name} ({symbol}) Dividend History
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-slate-600">
+            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
                 Cash dividends paid by {name} on the Egyptian Exchange — per-share amounts in Egyptian
                 pounds (EGP) with ex-dates, record dates and payment dates, alongside the current trailing
                 yield and payout summary.
@@ -195,20 +195,20 @@ export default async function DividendsPage({ params }: Props) {
             {cards.length > 0 && (
                 <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                     {cards.map((c) => (
-                        <div key={c.label} className="rounded-xl border border-slate-200 bg-white p-4">
-                            <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{c.label}</p>
-                            <p className="mt-1 text-lg font-extrabold text-slate-900">{c.value}</p>
-                            {c.sub && <p className="mt-0.5 text-xs text-slate-500">{c.sub}</p>}
+                        <div key={c.label} className="rounded-xl border border-border bg-surface p-4">
+                            <p className="text-xs font-bold uppercase tracking-wide text-muted">{c.label}</p>
+                            <p className="mt-1 text-lg font-extrabold text-main">{c.value}</p>
+                            {c.sub && <p className="mt-0.5 text-xs text-muted">{c.sub}</p>}
                         </div>
                     ))}
                 </div>
             )}
 
             {history.length > 0 ? (
-                <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                     <table className="w-full min-w-[560px] text-sm">
                         <thead>
-                            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                            <tr className="border-b border-border bg-panel/40 text-left text-xs font-bold uppercase tracking-wide text-muted">
                                 <th className="px-4 py-3">Ex-date</th>
                                 <th className="px-4 py-3 text-right">Dividend per share (EGP)</th>
                                 <th className="px-4 py-3">Record date</th>
@@ -217,38 +217,38 @@ export default async function DividendsPage({ params }: Props) {
                         </thead>
                         <tbody>
                             {history.map((row, i) => (
-                                <tr key={`${isoDate(row['ex_date']) ?? 'row'}-${i}`} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                                    <td className="px-4 py-2.5 font-semibold text-slate-800">{isoDate(row['ex_date']) ?? '—'}</td>
-                                    <td className="px-4 py-2.5 text-right text-slate-700">{fmtAmount(num(row, 'dividend_amount'))}</td>
-                                    <td className="px-4 py-2.5 text-slate-600">{isoDate(row['record_date']) ?? '—'}</td>
-                                    <td className="px-4 py-2.5 text-slate-600">{isoDate(row['pay_date']) ?? '—'}</td>
+                                <tr key={`${isoDate(row['ex_date']) ?? 'row'}-${i}`} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
+                                    <td className="px-4 py-2.5 font-semibold text-main">{isoDate(row['ex_date']) ?? '—'}</td>
+                                    <td className="px-4 py-2.5 text-right text-main">{fmtAmount(num(row, 'dividend_amount'))}</td>
+                                    <td className="px-4 py-2.5 text-muted">{isoDate(row['record_date']) ?? '—'}</td>
+                                    <td className="px-4 py-2.5 text-muted">{isoDate(row['pay_date']) ?? '—'}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             ) : (
-                <p className="mt-6 text-sm text-slate-600">
+                <p className="mt-6 text-sm text-muted">
                     Individual payment records are not yet available for {symbol}; the summary above reflects
                     the latest TradingView dividend data.
                 </p>
             )}
 
-            <p className="mt-4 text-xs text-slate-500">
+            <p className="mt-4 text-xs text-muted">
                 Source: Egyptian Exchange corporate actions; dividend summary via TradingView.
             </p>
 
             <nav aria-label={`More on ${symbol}`} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-teal-700">
-                <Link href={symbolPath(symbol)} className="hover:text-teal-600 hover:underline">
+                <Link href={symbolPath(symbol)} className="hover:text-starta-teal hover:underline">
                     {symbol} Overview
                 </Link>
-                <Link href={`${symbolPath(symbol)}/financials`} className="hover:text-teal-600 hover:underline">
+                <Link href={`${symbolPath(symbol)}/financials`} className="hover:text-starta-teal hover:underline">
                     Financials
                 </Link>
-                <Link href={`${symbolPath(symbol)}/technicals`} className="hover:text-teal-600 hover:underline">
+                <Link href={`${symbolPath(symbol)}/technicals`} className="hover:text-starta-teal hover:underline">
                     Technicals
                 </Link>
-                <Link href={`${symbolPath(symbol)}/history`} className="hover:text-teal-600 hover:underline">
+                <Link href={`${symbolPath(symbol)}/history`} className="hover:text-starta-teal hover:underline">
                     Price History
                 </Link>
             </nav>

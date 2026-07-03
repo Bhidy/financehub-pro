@@ -21,6 +21,7 @@
 "use client";
 
 import { useState, useRef, useEffect, Suspense, useCallback, useMemo, memo } from "react";
+import { trackAiChatFirstMessage } from '@/lib/analytics';
 import { Loader2, Send, BarChart3, Sun, Moon, Plus, History, Settings, LogOut, MessageSquare, ChevronLeft, ChevronRight, Sparkles, Bot, User, Target, CircleDollarSign, TrendingUp, PieChart, ArrowLeftRight, BookOpen, Newspaper } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAIChat, Action } from "@/hooks/useAIChat";
@@ -418,12 +419,12 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                                         type="text"
                                                         value={query}
                                                         onChange={(e) => setQuery(e.target.value)}
-                                                        onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                                                        onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (trackAiChatFirstMessage(), handleSend())}
                                                         placeholder={typewriterPlaceholder}
                                                         className="flex-1 bg-transparent border-none outline-none px-2 py-3 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-base"
                                                     />
                                                     <button
-                                                        onClick={handleSend}
+                                                        onClick={() => { trackAiChatFirstMessage(); handleSend(); }}
                                                         disabled={isLoading || !query.trim()}
                                                         className="w-11 h-11 rounded-xl bg-[#13b8a6] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#0f8f82] transition-all shadow-md shadow-[#13b8a6]/20"
                                                     >
@@ -527,12 +528,12 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                         type="text"
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
-                                        onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                                        onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (trackAiChatFirstMessage(), handleSend())}
                                         placeholder={translations[lang].inputPlaceholder}
                                         className="flex-1 bg-transparent border-none outline-none px-2 py-2 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-sm"
                                     />
                                     <button
-                                        onClick={handleSend}
+                                        onClick={() => { trackAiChatFirstMessage(); handleSend(); }}
                                         disabled={isLoading || !query.trim()}
                                         className="w-9 h-9 rounded-full bg-[#13b8a6] hover:bg-[#0f8f82] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                     >
@@ -632,12 +633,12 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                                     type="text"
                                                     value={query}
                                                     onChange={(e) => setQuery(e.target.value)}
-                                                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                                                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (trackAiChatFirstMessage(), handleSend())}
                                                     placeholder={typewriterPlaceholder}
                                                     className="flex-1 bg-transparent border-none outline-none px-2 py-2 text-slate-900 dark:!text-white dark:caret-white placeholder:text-slate-400 text-sm font-medium"
                                                 />
                                                 <button
-                                                    onClick={handleSend}
+                                                    onClick={() => { trackAiChatFirstMessage(); handleSend(); }}
                                                     className="w-9 h-9 rounded-xl bg-white text-slate-900 hover:bg-slate-50 flex items-center justify-center shadow-md active:scale-95 transition-all"
                                                 >
                                                     {isLoading ? (

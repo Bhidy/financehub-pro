@@ -86,7 +86,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
           ];
 
     return (
-        <PublicPageShell dir={arabic ? 'rtl' : 'ltr'}>
+        <PublicPageShell lang={arabic ? 'ar' : 'en'} altHref={arabic ? `/Learn/${topic.slug}` : `/ar/Learn/${topic.slug}`}>
             <JsonLd data={articleJsonLd} />
             <JsonLd
                 data={breadcrumbJsonLd(
@@ -97,14 +97,14 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
             <Breadcrumbs items={crumbs} />
 
             <article lang={lang}>
-                <p className="text-sm font-semibold text-teal-600">
+                <p className="text-sm font-semibold text-starta-teal">
                     {content.category}
-                    <span className="font-normal text-slate-500"> · {content.readTime}</span>
+                    <span className="font-normal text-muted"> · {content.readTime}</span>
                 </p>
-                <h1 className="mt-1 text-2xl font-extrabold leading-snug text-slate-900 sm:text-3xl">
+                <h1 className="mt-1 text-2xl font-extrabold leading-snug text-main sm:text-3xl">
                     {content.title}
                 </h1>
-                <p className="mt-3 text-lg font-semibold leading-relaxed text-slate-700">{content.summary}</p>
+                <p className="mt-3 text-lg font-semibold leading-relaxed text-main">{content.summary}</p>
 
                 {/* Local static covers; plain <img> keeps these pages zero-JS like the News article page. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -114,17 +114,17 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     width={1200}
                     height={675}
                     loading="eager"
-                    className="mt-5 h-auto w-full rounded-xl border border-slate-200 object-cover"
+                    className="mt-5 h-auto w-full rounded-xl border border-border object-cover"
                 />
 
-                <p className="mt-6 text-[1.05rem] leading-relaxed text-slate-700">{content.intro}</p>
+                <p className="mt-6 text-[1.05rem] leading-relaxed text-main">{content.intro}</p>
 
                 {content.sections.map((section) => (
                     <section key={section.heading} className="mt-8">
-                        <h2 className="text-xl font-bold text-slate-900">{section.heading}</h2>
-                        <p className="mt-2 text-[1.05rem] leading-relaxed text-slate-700">{section.body}</p>
+                        <h2 className="text-xl font-bold text-main">{section.heading}</h2>
+                        <p className="mt-2 text-[1.05rem] leading-relaxed text-main">{section.body}</p>
                         {section.bullets && section.bullets.length > 0 && (
-                            <ul className="mt-3 list-disc space-y-1 ps-6 text-[1.05rem] leading-relaxed text-slate-700">
+                            <ul className="mt-3 list-disc space-y-1 ps-6 text-[1.05rem] leading-relaxed text-main">
                                 {section.bullets.map((bullet) => (
                                     <li key={bullet}>{bullet}</li>
                                 ))}
@@ -139,10 +139,10 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                                     width={1200}
                                     height={675}
                                     loading="lazy"
-                                    className="h-auto w-full rounded-xl border border-slate-200"
+                                    className="h-auto w-full rounded-xl border border-border"
                                 />
                                 {section.image.caption && (
-                                    <figcaption className="mt-2 text-sm text-slate-500">
+                                    <figcaption className="mt-2 text-sm text-muted">
                                         {section.image.caption}
                                     </figcaption>
                                 )}
@@ -151,15 +151,15 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     </section>
                 ))}
 
-                <p className="mt-8 rounded-xl border border-teal-100 bg-teal-50 p-4 text-[1.05rem] leading-relaxed text-slate-700">
+                <p className="mt-8 rounded-xl border border-teal-100 bg-teal-50 p-4 text-[1.05rem] leading-relaxed text-main">
                     {arabic ? (
                         <>
                             طبّق ما تعلمته —{' '}
-                            <Link href="/Funds" className="font-semibold text-teal-600 hover:underline">
+                            <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">
                                 استكشف صناديق الاستثمار المصرية
                             </Link>{' '}
                             أو{' '}
-                            <Link href="/AiChat" className="font-semibold text-teal-600 hover:underline">
+                            <Link href="/AiChat" className="font-semibold text-starta-teal hover:underline">
                                 اسأل المحلل الذكي
                             </Link>
                             .
@@ -167,11 +167,11 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     ) : (
                         <>
                             Put it into practice —{' '}
-                            <Link href="/Funds" className="font-semibold text-teal-600 hover:underline">
+                            <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">
                                 explore Egyptian mutual funds
                             </Link>{' '}
                             or{' '}
-                            <Link href="/AiChat" className="font-semibold text-teal-600 hover:underline">
+                            <Link href="/AiChat" className="font-semibold text-starta-teal hover:underline">
                                 ask the AI analyst
                             </Link>
                             .
@@ -180,8 +180,8 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                 </p>
             </article>
 
-            <section className="mt-10 border-t border-slate-200 pt-6">
-                <h2 className="text-lg font-bold text-slate-900">
+            <section className="mt-10 border-t border-border pt-6">
+                <h2 className="text-lg font-bold text-main">
                     {arabic ? 'تابع التعلّم' : 'Continue learning'}
                 </h2>
                 <ul className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -189,7 +189,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                         <li key={t.slug}>
                             <Link
                                 href={`${basePath}/${t.slug}`}
-                                className="text-sm font-medium text-slate-700 hover:text-teal-600"
+                                className="text-sm font-medium text-main hover:text-starta-teal"
                             >
                                 {(arabic ? t.ar : t.en).title}
                             </Link>
@@ -197,7 +197,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     ))}
                 </ul>
                 <p className="mt-4 text-sm">
-                    <Link href="/Learn" className="font-semibold text-teal-600 hover:underline">
+                    <Link href="/Learn" className="font-semibold text-starta-teal hover:underline">
                         {arabic ? 'كل دروس التعلّم ←' : 'All learn topics →'}
                     </Link>
                 </p>

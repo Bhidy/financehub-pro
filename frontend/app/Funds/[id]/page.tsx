@@ -204,7 +204,7 @@ export default async function FundPage({ params }: Props) {
     let peers = (await getFundPeers(fund.fund_id))
         .map((p) => {
             const peerId = typeof p.peer_fund_id === 'number' ? p.peer_fund_id : Number(p.peer_fund_id);
-            if (!Number.isInteger(peerId) || peerId <= 0 || peerId === fund.fund_id) return null;
+            if (!Number.isInteger(peerId) || peerId <= 0 || peerId === Number(fund.fund_id)) return null;
             const en = typeof p.peer_fund_name_en === 'string' && p.peer_fund_name_en.trim() ? p.peer_fund_name_en.trim() : null;
             const ar = typeof p.peer_fund_name === 'string' && p.peer_fund_name.trim() ? p.peer_fund_name.trim() : null;
             if (!en && !ar) return null;
@@ -214,19 +214,25 @@ export default async function FundPage({ params }: Props) {
     if (peers.length === 0) {
         // fund_peers is empty on production (2026-07-03 audit follow-up):
         // fall back to the best same-type funds so "Similar Funds" and its
-        // head-to-head links never render as an empty section.
+        // head-to-head links never render as an empty section. Compare ids
+        // NUMERICALLY — pg returns fund_id as a string, and a strict
+        // string-vs-number check let the fund list itself as its own peer
+        // (live 2666-vs-2666 regression).
+        const myId = Number(fund.fund_id);
         const myType = str(fund, 'fund_type_en');
+        const seen = new Set<number>([myId]);
         peers = (await getAllFundsRanked())
-            .filter((f) => Number(f.fund_id) !== fund.fund_id && (!myType || f.fund_type_en === myType))
-            .slice(0, 4)
+            .filter((f) => !myType || f.fund_type_en === myType)
             .map((f) => {
                 const id = Number(f.fund_id);
                 const en = typeof f.fund_name_en === 'string' && f.fund_name_en.trim() ? f.fund_name_en.trim() : null;
                 const ar = typeof f.fund_name === 'string' && f.fund_name.trim() ? f.fund_name.trim() : null;
-                if (!Number.isInteger(id) || id <= 0 || (!en && !ar)) return null;
+                if (!Number.isInteger(id) || id <= 0 || seen.has(id) || (!en && !ar)) return null;
+                seen.add(id);
                 return { id, label: en || ar!, href: fundPath(id, en, ar) };
             })
-            .filter((p): p is { id: number; label: string; href: string } => p !== null);
+            .filter((p): p is { id: number; label: string; href: string } => p !== null)
+            .slice(0, 4);
     }
 
     // FAQ: visible text and JSON-LD are rendered from this one array so they

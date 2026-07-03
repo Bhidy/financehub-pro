@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getFund, getFundPeers, type Fund } from '@/lib/public-data';
+import { getAllFundsRanked, getFund, getFundPeers, type Fund } from '@/lib/public-data';
 import { SITE_URL, fundPath, idFromParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
@@ -201,7 +201,7 @@ export default async function FundPage({ params }: Props) {
     const strategyAr = str(fund, 'investment_strategy');
     const objectiveAr = str(fund, 'objective');
 
-    const peers = (await getFundPeers(fund.fund_id))
+    let peers = (await getFundPeers(fund.fund_id))
         .map((p) => {
             const peerId = typeof p.peer_fund_id === 'number' ? p.peer_fund_id : Number(p.peer_fund_id);
             if (!Number.isInteger(peerId) || peerId <= 0 || peerId === fund.fund_id) return null;
@@ -211,6 +211,23 @@ export default async function FundPage({ params }: Props) {
             return { id: peerId, label: en || ar!, href: fundPath(peerId, en, ar) };
         })
         .filter((p): p is { id: number; label: string; href: string } => p !== null);
+    if (peers.length === 0) {
+        // fund_peers is empty on production (2026-07-03 audit follow-up):
+        // fall back to the best same-type funds so "Similar Funds" and its
+        // head-to-head links never render as an empty section.
+        const myType = str(fund, 'fund_type_en');
+        peers = (await getAllFundsRanked())
+            .filter((f) => Number(f.fund_id) !== fund.fund_id && (!myType || f.fund_type_en === myType))
+            .slice(0, 4)
+            .map((f) => {
+                const id = Number(f.fund_id);
+                const en = typeof f.fund_name_en === 'string' && f.fund_name_en.trim() ? f.fund_name_en.trim() : null;
+                const ar = typeof f.fund_name === 'string' && f.fund_name.trim() ? f.fund_name.trim() : null;
+                if (!Number.isInteger(id) || id <= 0 || (!en && !ar)) return null;
+                return { id, label: en || ar!, href: fundPath(id, en, ar) };
+            })
+            .filter((p): p is { id: number; label: string; href: string } => p !== null);
+    }
 
     // FAQ: visible text and JSON-LD are rendered from this one array so they
     // can never drift apart. Entries exist only where the data does.

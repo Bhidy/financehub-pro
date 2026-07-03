@@ -158,12 +158,42 @@ export type Fund = Record<string, unknown> & {
     last_nav_date: string | null;
 };
 
+/**
+ * funds_view ships two families of return columns: the `return_*` family is
+ * NULL on production while `returns_*` / `one_year_return`-style columns carry
+ * the data (2026-07-03 final audit: empty money-page table + empty comparisons
+ * sitemap). Normalize onto the `return_*` names every consumer reads — done in
+ * JS, not SQL COALESCE, so mismatched column types can never 500 a page.
+ */
+const RETURN_FALLBACKS: Array<[string, string[]]> = [
+    ['return_ytd', ['returns_ytd', 'ytd_return']],
+    ['return_1m', ['returns_1m']],
+    ['return_3m', ['returns_3m']],
+    ['return_1y', ['returns_1y', 'one_year_return']],
+    ['return_3y', ['returns_3y', 'three_year_return']],
+    ['return_5y', ['returns_5y', 'five_year_return']],
+];
+function coalesceReturns(r: Record<string, unknown>): Record<string, unknown> {
+    for (const [main, alts] of RETURN_FALLBACKS) {
+        if (r[main] === null || r[main] === undefined) {
+            for (const alt of alts) {
+                if (r[alt] !== null && r[alt] !== undefined) {
+                    r[main] = r[alt];
+                    break;
+                }
+            }
+        }
+    }
+    return r;
+}
+
 export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
     const result = await db.query(`SELECT * FROM funds_view WHERE fund_id = $1`, [fundId]);
     const row = result.rows[0] as Fund | undefined;
     if (!row) return null;
     // Canonical NAV = live value derived from nav_history (see /api/v1/funds/[id]).
     row.latest_nav = (row.live_latest_nav as number | null) ?? (Number(row.latest_nav) || null);
+    coalesceReturns(row);
     toNum(row, [
         'latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_1y', 'return_3y', 'return_5y',
         'expense_ratio', 'fee_management', 'fee_subscription', 'fee_redemption',
@@ -354,15 +384,21 @@ export const getAllFundsRanked = cache(async (): Promise<Array<Record<string, un
                 classification_en, issuer_en, manager_name_en, currency, is_shariah,
                 latest_nav, live_latest_nav, last_nav_date,
                 return_ytd, return_1m, return_3m, return_1y, return_3y, return_5y,
+                returns_ytd, ytd_return, returns_1m, returns_3m, returns_1y, one_year_return,
+                returns_3y, three_year_return, returns_5y, five_year_return,
                 expense_ratio, fee_management, min_subscription, inception_date, risk_level_en
          FROM funds_view
-         WHERE fund_id::text ~ '^[0-9]+$'
-         ORDER BY return_1y DESC NULLS LAST`
+         WHERE fund_id::text ~ '^[0-9]+$'`
     );
-    return result.rows.map((r: Record<string, unknown>) => {
+    const rows = result.rows.map((r: Record<string, unknown>) => {
         r.latest_nav = (r.live_latest_nav as number | null) ?? r.latest_nav;
+        coalesceReturns(r);
         return toNum(r, ['latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_1y', 'return_3y', 'return_5y', 'expense_ratio', 'fee_management', 'min_subscription']);
     });
+    // Rank in JS on the coalesced value (the raw return_1y column is all-NULL,
+    // so an SQL ORDER BY on it would be meaningless).
+    rows.sort((a, b) => ((b.return_1y as number | null) ?? -Infinity) - ((a.return_1y as number | null) ?? -Infinity));
+    return rows;
 });
 
 /** All companies for the /companies directory hub. */

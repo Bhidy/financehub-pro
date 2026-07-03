@@ -530,7 +530,9 @@ export default async function MetricPage({ params }: Props) {
     const datasetJsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Dataset',
-        name: `${name} (${symbol}) ${view.label} history`,
+        // Only claim "history" when the page actually carries a dated series
+        // (metrics like market-cap are point-in-time snapshots).
+        name: `${name} (${symbol}) ${view.label}${view.temporal ? ' history' : ''}`,
         description: view.description,
         url: absUrl(pagePath),
         creator: {

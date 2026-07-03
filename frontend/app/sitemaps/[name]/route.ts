@@ -184,18 +184,28 @@ async function glossaryEntries(): Promise<Entry[]> {
 async function comparisonEntries(): Promise<Entry[]> {
     // Top fund pairs within each fund type (numeric ids, ranked by 1Y return):
     // C(top5, 2) = 10 pairs per type — every URL resolves by construction.
+    // return_1y itself is all-NULL in funds_view; the populated columns are
+    // returns_1y / one_year_return (2026-07-03 audit: this gate emptied the
+    // whole segment). Coalesce + rank in JS.
     const result = await db.query(
-        `SELECT fund_id, fund_type_en, return_1y
+        `SELECT fund_id, fund_type_en, return_1y, returns_1y, one_year_return
          FROM funds_view
-         WHERE fund_id::text ~ '^[0-9]+$' AND return_1y IS NOT NULL
-         ORDER BY fund_type_en NULLS LAST, return_1y DESC`
+         WHERE fund_id::text ~ '^[0-9]+$'`
     );
+    const ranked = (result.rows as Array<Record<string, unknown>>)
+        .map((r) => {
+            const raw = r.return_1y ?? r.returns_1y ?? r.one_year_return;
+            const r1y = raw === null || raw === undefined ? NaN : Number(raw);
+            return { fund_id: Number(r.fund_id), fund_type_en: (r.fund_type_en as string | null) || 'other', r1y };
+        })
+        .filter((r) => Number.isFinite(r.r1y))
+        .sort((a, b) => (a.fund_type_en === b.fund_type_en ? b.r1y - a.r1y : a.fund_type_en.localeCompare(b.fund_type_en)));
     const byType = new Map<string, number[]>();
-    for (const r of result.rows as Array<{ fund_id: number; fund_type_en: string | null }>) {
-        const t = r.fund_type_en || 'other';
+    for (const r of ranked) {
+        const t = r.fund_type_en;
         if (!byType.has(t)) byType.set(t, []);
         const arr = byType.get(t) as number[];
-        if (arr.length < 5) arr.push(Number(r.fund_id));
+        if (arr.length < 5) arr.push(r.fund_id);
     }
     const entries: Entry[] = [];
     for (const ids of byType.values()) {

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { getAllFundsRanked } from '@/lib/public-data';
 import { SITE_URL, fundPath, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -18,7 +19,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
     title: 'Best-Performing Mutual Funds in Egypt (2026) — Ranked by 1-Year Return',
     description:
-        'Egyptian mutual funds ranked by trailing 1-year return, by category: money market, fixed income, equity and balanced. Live NAVs, fees and minimums — updated twice daily. أفضل صناديق الاستثمار في مصر.',
+        'Egyptian mutual funds ranked by trailing 1-year return, by category: money market, fixed income, equity and balanced. Live NAVs, fees and minimums — updated twice daily.',
     alternates: { canonical: '/Funds/best-mutual-funds-egypt-2026' },
     openGraph: {
         type: 'article',
@@ -34,6 +35,18 @@ const num = (r: FundRow, k: string): number | null => (typeof r[k] === 'number' 
 const str = (r: FundRow, k: string): string | null => (typeof r[k] === 'string' && (r[k] as string).trim() ? (r[k] as string).trim() : null);
 const fmtPct = (v: number | null): string => (v === null ? '—' : `${v.toFixed(2)}%`);
 const fmtNav = (v: number | null): string => (v === null ? '—' : v.toLocaleString('en-EG', { maximumFractionDigits: 4 }));
+const shortName = (f: FundRow): string => str(f, 'fund_name_en') || str(f, 'fund_name') || `Fund ${f.fund_id}`;
+const vsHref = (a: FundRow, b: FundRow): string => {
+    const ia = Number(a.fund_id);
+    const ib = Number(b.fund_id);
+    const [lo, hi] = ia < ib ? [ia, ib] : [ib, ia];
+    return `/Funds/vs/${lo}-vs-${hi}`;
+};
+const pairsOf = (arr: FundRow[]): Array<[FundRow, FundRow]> => {
+    const out: Array<[FundRow, FundRow]> = [];
+    for (let i = 0; i < arr.length; i++) for (let j = i + 1; j < arr.length; j++) out.push([arr[i], arr[j]]);
+    return out;
+};
 
 /** Category buckets by fund_type_en keywords (fall back to 'Other'). */
 function categoryOf(r: FundRow): string {
@@ -59,11 +72,17 @@ const CATEGORY_AR: Record<string, string> = {
 export default async function BestFundsPage() {
     const funds = await getAllFundsRanked();
     const withReturn = funds.filter((f) => num(f, 'return_1y') !== null);
-    const asOf = funds.reduce<string | null>((mx, f) => {
-        const d = f.last_nav_date ? String(f.last_nav_date) : null;
-        return d && (!mx || d > mx) ? d : mx;
+    // A ranking page with (almost) nothing ranked is a misleading financial
+    // display — 404 rather than publish an empty "best funds" table.
+    if (withReturn.length < 3) notFound();
+    // Compare as timestamps: pg returns Date objects here, and String(Date)
+    // ("Wed May 14 2025...") compares alphabetically, not chronologically.
+    const asOfMs = funds.reduce<number | null>((mx, f) => {
+        const t = f.last_nav_date ? Date.parse(String(f.last_nav_date)) : NaN;
+        return Number.isFinite(t) && (mx === null || t > mx) ? t : mx;
     }, null);
-    const asOfHuman = asOf ? new Date(asOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+    const asOf = asOfMs !== null ? new Date(asOfMs).toISOString().slice(0, 10) : null;
+    const asOfHuman = asOfMs !== null ? new Date(asOfMs).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
 
     const buckets = new Map<string, FundRow[]>();
     for (const f of withReturn) {
@@ -171,6 +190,18 @@ export default async function BestFundsPage() {
                         </tbody>
                     </table>
                 </div>
+                <p className="mt-3 text-sm text-muted">
+                    Want a side-by-side view? Open the interactive{' '}
+                    <Link href="/Funds/Compare" className="font-semibold text-starta-teal hover:underline">fund comparison tool</Link>
+                    {top10.length >= 2 && (
+                        <>
+                            {' '}or jump straight to a head-to-head:{' '}
+                            <Link href={vsHref(top10[0], top10[1])} className="font-semibold text-starta-teal hover:underline">
+                                {shortName(top10[0])} vs {shortName(top10[1])}
+                            </Link>
+                        </>
+                    )}.
+                </p>
             </section>
 
             {sections.map((sec) => (
@@ -215,6 +246,19 @@ export default async function BestFundsPage() {
                             </tbody>
                         </table>
                     </div>
+                    {sec.funds.length >= 2 && (
+                        <p className="mt-3 text-sm text-muted">
+                            Head-to-head:{' '}
+                            {pairsOf(sec.funds.slice(0, 3)).map(([a, b], i) => (
+                                <span key={vsHref(a, b)}>
+                                    {i > 0 && <span aria-hidden> · </span>}
+                                    <Link href={vsHref(a, b)} className="font-medium text-starta-teal hover:underline">
+                                        {shortName(a)} vs {shortName(b)}
+                                    </Link>
+                                </span>
+                            ))}
+                        </p>
+                    )}
                 </section>
             ))}
 

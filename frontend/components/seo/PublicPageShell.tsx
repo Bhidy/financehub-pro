@@ -95,6 +95,16 @@ export default function PublicPageShell({
     return (
         <div dir={direction} lang={lang} className={`seo-shell min-h-screen bg-page text-main ${lang === 'ar' ? 'font-arabic' : ''}`}>
             <style dangerouslySetInnerHTML={{ __html: SHELL_CSS }} />
+            {lang === 'ar' && (
+                // The root layout hardcodes <html lang="en"> — mirror the page
+                // language onto the document element so assistive tech and
+                // search engines see an Arabic document, not an English one.
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: "document.documentElement.lang='ar';document.documentElement.dir='rtl';",
+                    }}
+                />
+            )}
             <Script src="/assets/starta-theme.js?v=1.0.1" strategy="beforeInteractive" />
             <Script src="/assets/starta-mobile-nav.js?v=1.0.4" strategy="lazyOnload" />
 

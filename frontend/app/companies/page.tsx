@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
     title: 'EGX Listed Companies — All Egyptian Exchange Stocks',
     description:
-        'Complete directory of companies listed on the Egyptian Exchange (EGX), sorted by market capitalization — live prices, sectors and market caps, updated daily. الشركات المدرجة في البورصة المصرية.',
+        'Complete directory of companies listed on the Egyptian Exchange (EGX), sorted by market capitalization — live prices, sectors and market caps, updated daily.',
     alternates: { canonical: '/companies' },
     openGraph: {
         type: 'website',

@@ -293,6 +293,7 @@ export default async function FundComparisonPage({ params }: Props) {
                     '@type': 'ItemList',
                     name: `${A.name} vs ${B.name}`,
                     url: absUrl(canonicalPath),
+                    numberOfItems: 2,
                     itemListElement: [
                         { '@type': 'ListItem', position: 1, name: A.name, url: absUrl(A.path) },
                         { '@type': 'ListItem', position: 2, name: B.name, url: absUrl(B.path) },

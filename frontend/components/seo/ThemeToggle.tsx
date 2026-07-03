@@ -22,8 +22,9 @@ export default function ThemeToggle() {
         if (window.StartaTheme) {
             window.StartaTheme.apply(next);
         } else {
+            // Same storage key as starta-theme.js and the app ThemeProvider.
             document.documentElement.setAttribute('data-theme', next);
-            try { window.localStorage.setItem('starta-theme', next); } catch { /* private mode */ }
+            try { window.localStorage.setItem('theme', next); } catch { /* private mode */ }
         }
     };
 

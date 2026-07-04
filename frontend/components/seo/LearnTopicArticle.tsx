@@ -3,6 +3,7 @@ import { SITE_URL } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import topicsJson from '@/content/learn-topics.generated';
+import { LEARN_FAQS, faqPageJsonLd } from '@/content/learn-faqs';
 
 /**
  * Shared server-rendered Learn topic article, used by both the EN
@@ -60,6 +61,8 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
     const basePath = arabic ? '/ar/Learn' : '/Learn';
     const path = `${basePath}/${topic.slug}`;
     const related = nextTopics(topic.slug);
+    const faqs = LEARN_FAQS[topic.slug]?.[lang] ?? [];
+    const faqJsonLd = faqPageJsonLd(topic.slug, lang);
 
     const articleJsonLd = {
         '@context': 'https://schema.org',
@@ -94,6 +97,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
     return (
         <PublicPageShell lang={arabic ? 'ar' : 'en'} altHref={arabic ? `/Learn/${topic.slug}` : `/ar/Learn/${topic.slug}`}>
             <JsonLd data={articleJsonLd} />
+            {faqJsonLd && <JsonLd data={faqJsonLd} />}
             <JsonLd
                 data={breadcrumbJsonLd(
                     crumbs.map(({ href, label }) => ({ url: href, label })),
@@ -185,6 +189,22 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     )}
                 </p>
             </article>
+
+            {faqs.length > 0 && (
+                <section className="mt-10 border-t border-border pt-6" lang={lang}>
+                    <h2 className="text-xl font-bold text-main">
+                        {arabic ? 'الأسئلة الشائعة' : 'Frequently asked questions'}
+                    </h2>
+                    <dl className="mt-4 space-y-5">
+                        {faqs.map((f) => (
+                            <div key={f.q}>
+                                <dt className="font-semibold text-main">{f.q}</dt>
+                                <dd className="mt-1 text-[1.05rem] leading-relaxed text-muted">{f.a}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                </section>
+            )}
 
             <section className="mt-10 border-t border-border pt-6">
                 <h2 className="text-lg font-bold text-main">

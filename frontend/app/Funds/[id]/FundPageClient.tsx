@@ -17,6 +17,7 @@ export type FundClientData = {
     nameAr: string | null;
     managerLine: string | null;
     monogram: string;
+    heroLogo: string | null;
     navText: string | null;
     navDateIso: string | null;
     navHuman: string | null;
@@ -59,6 +60,7 @@ export default function FundPageClient(props: FundClientData) {
         nameAr,
         managerLine,
         monogram,
+        heroLogo,
         navText,
         navDateIso,
         navHuman,
@@ -90,9 +92,18 @@ export default function FundPageClient(props: FundClientData) {
                 <div className="grid gap-7 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.1fr)] xl:items-stretch">
                     <div className="flex flex-col gap-6">
                         <div className="flex items-start gap-4">
-                            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.3rem] border border-border bg-surface text-2xl font-display font-bold text-starta-teal shadow-sm sm:h-20 sm:w-20 sm:text-3xl">
-                                {monogram}
-                            </div>
+                            {heroLogo ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={heroLogo}
+                                    alt=""
+                                    className="h-16 w-16 shrink-0 rounded-[1.3rem] border border-border bg-surface object-contain p-2 shadow-sm sm:h-20 sm:w-20"
+                                />
+                            ) : (
+                                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.3rem] border border-border bg-surface text-2xl font-display font-bold text-starta-teal shadow-sm sm:h-20 sm:w-20 sm:text-3xl">
+                                    {monogram}
+                                </div>
+                            )}
                             <div className="min-w-0">
                                 <h1 className="text-2xl font-display font-bold leading-[1.15] tracking-[-0.03em] text-main sm:text-3xl lg:text-[2.6rem]">
                                     {name}

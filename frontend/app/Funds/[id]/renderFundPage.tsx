@@ -341,6 +341,7 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
         nameAr,
         managerLine,
         monogram,
+        heroLogo: managerProfile?.logo ?? null,
         navText: nav !== null ? fmtNav(nav) : null,
         navDateIso,
         navHuman: navDateIso ? humanDate(navDateIso, lang) : null,

@@ -753,6 +753,10 @@
                     </div>
                 </div>
 
+                <div id="viewMoreWrap" class="mt-8 hidden text-center">
+                    <button id="viewMoreBtn" type="button" class="btn-primary inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-bold tracking-wide"></button>
+                </div>
+
                 <div id="emptyState" class="hidden mt-8 rounded-[2rem] border border-border bg-surface px-8 py-16 text-center shadow-premium">
                     <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-starta-teal/10 text-starta-teal">
                         <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -871,6 +875,7 @@
                 risk_high: "High",
                 risk_unclassified: "Unclassified",
                 type_unclassified: "Investment fund",
+                view_more: "View more funds",
                 manager_unavailable: "Manager unavailable",
                 fee_sub: "Subscription Fee",
                 fee_red: "Redemption Fee",
@@ -947,6 +952,7 @@
                 risk_high: "مرتفعة",
                 risk_unclassified: "غير مصنفة",
                 type_unclassified: "صندوق استثمار",
+                view_more: "عرض المزيد من الصناديق",
                 manager_unavailable: "المدير غير متاح",
                 fee_sub: "رسوم الاكتتاب",
                 fee_red: "رسوم الاسترداد",
@@ -965,6 +971,23 @@
             }
         };
 
+        // Fund-type slug -> localized label. fund_type is a raw snake_case slug
+        // (equity, money_market, …) and fund_type_en/classification_en are NULL
+        // for every fund, so without this map the UI shows "money_market" in both
+        // languages. Single source of truth for the dropdown, card chip and table.
+        const FUND_TYPE_LABELS = {
+            equity: { en: 'Equity Fund', ar: 'صندوق أسهم' },
+            money_market: { en: 'Money Market Fund', ar: 'صندوق أسواق نقدية' },
+            fixed_income: { en: 'Fixed Income Fund', ar: 'صندوق دخل ثابت' },
+            fixed_income_usd: { en: 'USD Fixed Income Fund', ar: 'صندوق دخل ثابت بالدولار' },
+            balanced: { en: 'Balanced Fund', ar: 'صندوق متوازن' },
+            mixed: { en: 'Balanced Fund', ar: 'صندوق متوازن' },
+            bond: { en: 'Fixed Income Fund', ar: 'صندوق دخل ثابت' },
+            gold: { en: 'Gold Fund', ar: 'صندوق ذهب' },
+            real_estate: { en: 'Real Estate Fund', ar: 'صندوق عقاري' },
+        };
+        const PAGE_SIZE = 10;
+
         const state = {
             funds: [],
             filtered: [],
@@ -973,6 +996,8 @@
             view: 'grid',
             shariahOnly: false,
             compareIds: [],
+            visibleCount: PAGE_SIZE,
+            _filterSig: '',
         };
         const DEFAULT_LOGO = '/assets/funds/starta-fund-placeholder.svg';
         const COMPARE_STORAGE_KEY = 'starta-funds-compare';
@@ -1068,14 +1093,28 @@
             return value || null;
         }
 
-        function getFundTypeName(fund, lang = state.lang) {
-            if (lang === 'ar') {
-                return localizedPair(fund.fund_type, fund.classification) || getLabels().type_unclassified;
-            }
+        // Stable, language-independent key for the fund type (used as the filter
+        // <option> value so a selection survives EN<->AR toggles).
+        function getFundTypeSlug(fund) {
+            const raw = String(fund.fund_type || '').trim().toLowerCase();
+            if (raw && FUND_TYPE_LABELS[raw]) return raw;
+            // Fall back to a slug derived from the clean English classification.
+            const cls = String(fund.classification || fund.classification_en || '').trim();
+            return raw || (cls ? `cls:${cls.toLowerCase()}` : '');
+        }
 
-            return localizedPair(fund.fund_type_en, fund.fund_type)
-                || localizedPair(fund.classification_en, fund.classification)
-                || getLabels().type_unclassified;
+        function getFundTypeName(fund, lang = state.lang) {
+            const raw = String(fund.fund_type || '').trim().toLowerCase();
+            const mapped = FUND_TYPE_LABELS[raw];
+            if (mapped) return mapped[lang] || mapped.en;
+            // No slug match: use the clean `classification` (English label like
+            // "Equity Fund"), humanising any stray slug so a raw token never shows.
+            const cls = (lang === 'ar')
+                ? (localizedPair(fund.classification, fund.classification_en))
+                : (localizedPair(fund.classification_en, fund.classification));
+            if (cls) return cls;
+            if (raw) return raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+            return getLabels().type_unclassified;
         }
 
         function getFundName(fund, lang = state.lang) {
@@ -1165,14 +1204,32 @@
                 .join('');
         }
 
+        // Like populateSelect but with a STABLE value distinct from the display
+        // label, so a selection survives EN<->AR re-renders. options: [{value,label}].
+        function populateSelectKeyed(select, options, defaultLabel, currentValue) {
+            select.innerHTML = [`<option value="">${escapeHtml(defaultLabel)}</option>`]
+                .concat(options.map((o) => `<option value="${escapeHtml(o.value)}"${o.value === currentValue ? ' selected' : ''}>${escapeHtml(o.label)}</option>`))
+                .join('');
+            select.value = currentValue || '';
+        }
+
         function populateFilterOptions() {
-            const types = [...new Set(state.funds.map((fund) => getFundTypeName(fund)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+            // Type options: stable slug value, localized label (survives lang toggle).
+            const typeMap = new Map();
+            state.funds.forEach((fund) => {
+                const slug = getFundTypeSlug(fund);
+                if (slug && !typeMap.has(slug)) typeMap.set(slug, getFundTypeName(fund));
+            });
+            const typeOptions = [...typeMap.entries()]
+                .map(([value, label]) => ({ value, label }))
+                .sort((a, b) => a.label.localeCompare(b.label, state.lang === 'ar' ? 'ar' : 'en'));
+
             const managers = [...new Set(state.funds.map((fund) => getManagerName(fund)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
             const risks = ['low', 'medium', 'high', 'unclassified'].filter((bucket) => state.funds.some((fund) => fund.riskBucket === bucket));
 
-            populateSelect(typeFilter, types, getLabels().all_types, typeFilter.value);
+            populateSelectKeyed(typeFilter, typeOptions, getLabels().all_types, typeFilter.value);
             populateSelect(managerFilter, managers, getLabels().all_managers, managerFilter.value);
-            populateSelect(riskFilter, risks.map((bucket) => getRiskLabel(bucket)), getLabels().all_risks, riskFilter.value);
+            populateSelectKeyed(riskFilter, risks.map((bucket) => ({ value: bucket, label: getRiskLabel(bucket) })), getLabels().all_risks, riskFilter.value);
 
             // Default the marketplace to "Latest update" order (and list it first), while
             // preserving any sort the user has actively chosen across re-renders/lang toggles.
@@ -1244,9 +1301,9 @@
         function getAppliedFilters() {
             const chips = [];
             if (fundSearch.value.trim()) chips.push({ key: 'search', label: `${getLabels().filter_search}: ${fundSearch.value.trim()}` });
-            if (typeFilter.value) chips.push({ key: 'type', label: `${getLabels().filter_type}: ${typeFilter.value}` });
+            if (typeFilter.value) chips.push({ key: 'type', label: `${getLabels().filter_type}: ${typeFilter.options[typeFilter.selectedIndex]?.text || typeFilter.value}` });
             if (managerFilter.value) chips.push({ key: 'manager', label: `${getLabels().filter_manager}: ${managerFilter.value}` });
-            if (riskFilter.value) chips.push({ key: 'risk', label: `${getLabels().filter_risk}: ${riskFilter.value}` });
+            if (riskFilter.value) chips.push({ key: 'risk', label: `${getLabels().filter_risk}: ${getRiskLabel(riskFilter.value)}` });
             if (state.shariahOnly) chips.push({ key: 'shariah', label: getLabels().filter_shariah });
             return chips;
         }
@@ -1291,9 +1348,9 @@
                 ].join(' ').toLowerCase();
 
                 if (search && !haystack.includes(search)) return false;
-                if (selectedType && getFundTypeName(fund) !== selectedType) return false;
+                if (selectedType && getFundTypeSlug(fund) !== selectedType) return false;
                 if (selectedManager && getManagerName(fund) !== selectedManager) return false;
-                if (selectedRisk && getRiskLabel(fund.riskBucket) !== selectedRisk) return false;
+                if (selectedRisk && fund.riskBucket !== selectedRisk) return false;
                 if (state.shariahOnly && !fund.isShariah) return false;
                 return true;
             }).sort((a, b) => {
@@ -1597,7 +1654,7 @@
                             <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                                 <div class="flex gap-4">
                                     <div class="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-border bg-surface p-3 shadow-sm">
-                                        <img src="${escapeHtml(fund.logo_url || DEFAULT_LOGO)}" alt="${manager}" class="h-full w-full rounded-xl object-contain" style="transform:scale(${Number(fund.logo_scale || 1)}); transform-origin:center center;">
+                                        <img src="${escapeHtml(fund.logo_url || DEFAULT_LOGO)}" alt="${manager}" loading="lazy" onerror="this.onerror=null;this.src='${DEFAULT_LOGO}';this.style.transform='none';" class="h-full w-full rounded-xl object-contain" style="transform:scale(${Number(fund.logo_scale || 1)}); transform-origin:center center;">
                                     </div>
                                     <div>
                                         <h3 class="text-xl font-display font-bold tracking-[-0.04em] text-main">${name}</h3>
@@ -1686,6 +1743,11 @@
             shariahToggle.classList.toggle('text-emerald-700', state.shariahOnly);
 
             state.filtered = getFilteredFunds();
+            // Reset to the first page whenever the result set changes (filter / sort /
+            // search / period / view). A "View more" click keeps the same signature,
+            // so the grown visibleCount is preserved and only 10 more are added.
+            const filterSig = JSON.stringify([fundSearch.value, typeFilter.value, managerFilter.value, riskFilter.value, state.shariahOnly, sortSelect.value, state.period, state.view]);
+            if (filterSig !== state._filterSig) { state.visibleCount = PAGE_SIZE; state._filterSig = filterSig; }
             const hasResults = state.filtered.length > 0;
             resultsCount.textContent = formatNumber(state.filtered.length, { maximumFractionDigits: 0 });
             renderActiveFilters();
@@ -1705,11 +1767,28 @@
                 miniChartInstances.clear();
                 grid.innerHTML = '';
                 tableBody.innerHTML = '';
+                document.getElementById('viewMoreWrap')?.classList.add('hidden');
                 return;
             }
 
-            if (state.view === 'grid') renderGrid(state.filtered);
-            if (state.view === 'table') renderTable(state.filtered);
+            const visible = state.filtered.slice(0, state.visibleCount);
+            if (state.view === 'grid') renderGrid(visible);
+            if (state.view === 'table') renderTable(visible);
+            renderViewMore();
+        }
+
+        function renderViewMore() {
+            const wrap = document.getElementById('viewMoreWrap');
+            const btn = document.getElementById('viewMoreBtn');
+            if (!wrap || !btn) return;
+            const remaining = state.filtered.length - state.visibleCount;
+            if (remaining > 0) {
+                const step = Math.min(PAGE_SIZE, remaining);
+                btn.textContent = `${getLabels().view_more} (+${formatNumber(step, { maximumFractionDigits: 0 })})`;
+                wrap.classList.remove('hidden');
+            } else {
+                wrap.classList.add('hidden');
+            }
         }
 
         async function loadFundsData() {
@@ -1760,6 +1839,10 @@
 
         function bindEvents() {
             fundSearch.addEventListener('input', renderFunds);
+            document.getElementById('viewMoreBtn').addEventListener('click', () => {
+                state.visibleCount += PAGE_SIZE;
+                renderFunds();
+            });
             typeFilter.addEventListener('change', renderFunds);
             managerFilter.addEventListener('change', renderFunds);
             riskFilter.addEventListener('change', renderFunds);
@@ -1838,7 +1921,6 @@
         }
 
         bindEvents();
-        sortSelect.value = 'period-desc';
         localStorage.removeItem(COMPARE_STORAGE_KEY);
         state.compareIds = [];
         setLanguage(getStoredLanguage());

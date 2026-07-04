@@ -26,10 +26,15 @@ export const metadata: Metadata = {
     },
 };
 
+// عائد توزيع تجاوز 100% غير منطقي (يعني توزيع أكثر من كامل سعر السهم في سنة) —
+// وهو أثر بيانات (توزيع خاص/عائد رأس مال أو سعر قديم)، لا عائد متكرر. استبعاده
+// يحافظ على مصداقية الترتيب وبيانات ItemList. تدقيق 2026-07-04: SAIB=761%، SEIGA=215%.
+const MAX_PLAUSIBLE_YIELD = 100;
+
 export default async function TopDividendYieldArPage() {
     const all = await getAllTickers();
     const ranked = all
-        .filter((t) => t.dividend_yield !== null && Number.isFinite(t.dividend_yield) && (t.dividend_yield as number) > 0)
+        .filter((t) => t.dividend_yield !== null && Number.isFinite(t.dividend_yield) && (t.dividend_yield as number) > 0 && (t.dividend_yield as number) <= MAX_PLAUSIBLE_YIELD)
         .sort((a, b) => (b.dividend_yield as number) - (a.dividend_yield as number))
         .slice(0, 50);
     const asOf = ranked.reduce<string | null>((mx, t) => (t.last_updated && (!mx || new Date(t.last_updated) > new Date(mx)) ? t.last_updated : mx), null);
@@ -86,6 +91,7 @@ export default async function TopDividendYieldArPage() {
             <p className="mt-6 text-sm text-muted">
                 اطّلع على <Link href="/ar/markets/dividend-calendar" className="font-semibold text-starta-teal hover:underline">مواعيد توزيعات الأرباح</Link> أو <Link href="/ar/markets/largest-companies" className="font-semibold text-starta-teal hover:underline">أكبر الشركات حسب القيمة السوقية</Link> أو <Link href="/ar/markets/lowest-pe-stocks" className="font-semibold text-starta-teal hover:underline">الأقل مكرر ربحية</Link> أو تصفّح <Link href="/ar/companies" className="font-semibold text-starta-teal hover:underline">جميع الشركات</Link>.
             </p>
+            <p className="mt-4 text-xs text-muted">المصدر: البورصة المصرية عبر TradingView. عائد التوزيع محسوب على آخر 12 شهرًا مقابل السعر الحالي. تُستبعد العوائد التي تتجاوز 100% باعتبارها غير متكررة أو أثر بيانات (كالتوزيعات الخاصة). الأسعار بالجنيه المصري ما لم يُذكر رمز عملة آخر.</p>
         </PublicPageShell>
     );
 }

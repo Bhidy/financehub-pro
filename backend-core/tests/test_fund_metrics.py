@@ -12,12 +12,18 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from data_pipeline.fund_metrics import (  # noqa: E402
     total_return_pct, window_return_pct, ytd_return_pct, max_drawdown_pct,
     annualized_volatility_pct, nav_52w_high_low, compute_all,
+    _split_adjust, _reject_spikes,
 )
 
 
 def _weekly(navs, start=date(2025, 1, 4)):
     """Build a weekly (7-day) dated series from a list of NAVs."""
     return [(start + timedelta(days=7 * i), float(v)) for i, v in enumerate(navs)]
+
+
+def _daily(navs, start=date(2025, 1, 1)):
+    """Build a daily (1-day) dated series from a list of NAVs."""
+    return [(start + timedelta(days=i), float(v)) for i, v in enumerate(navs)]
 
 
 # --- max drawdown ---------------------------------------------------------- #
@@ -108,6 +114,28 @@ def test_no_absurd_metrics_from_corrupt_series():
     m = compute_all(_weekly([1.0, 0.02, 1.0, 0.02, 1.0, 0.02, 1.0, 0.02, 1.0]))
     assert m["volatility_annual"] is None or m["volatility_annual"] <= 100
     assert m["max_drawdown"] is None or m["max_drawdown"] >= -90
+
+
+def test_redenomination_stitched_not_a_fake_crash():
+    # a 100:1 redenomination overnight (102 -> 1.03) must NOT read as a -99% drawdown
+    dd = max_drawdown_pct(_daily([100, 101, 102, 1.03, 1.04, 1.05, 1.06]))
+    assert dd is not None and dd > -5           # stitched -> continuous, ~no drawdown
+
+def test_split_adjust_stitches_redenomination():
+    # earlier points rescaled to the new (~1.0) scale after a 100:1 redenomination
+    adj = dict(_split_adjust(_daily([100, 101, 102, 1.03, 1.04, 1.05])))
+    assert all(0.9 < v < 1.2 for v in list(adj.values())[:3])
+
+def test_split_adjust_gap_guard_leaves_wide_gap_move():
+    # 100 -> 15 across 182 days is a real move, NOT a re-scaling: left unchanged
+    adj = _split_adjust([(date(2020, 1, 1), 100.0), (date(2020, 7, 1), 15.0)])
+    assert adj[0][1] == 100.0 and adj[1][1] == 15.0
+
+def test_reject_spikes_preserves_gradual_trend():
+    # a dense gradual decline is NOT despiked (local median tracks it)
+    kept = _reject_spikes([(date(2025, 1, i + 1), v) for i, v in
+                           enumerate([100, 95, 90, 85, 80, 75, 70])])
+    assert len(kept) == 7
 
 
 # --- standalone runner (no pytest needed) ---------------------------------- #

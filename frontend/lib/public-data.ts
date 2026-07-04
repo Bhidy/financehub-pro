@@ -218,9 +218,15 @@ function mgrTokenKey(name: string | null): string | null {
         .replace(/[أإآ]/g, 'ا')
         .replace(/ى/g, 'ي')
         .replace(/ة/g, 'ه');
-    const toks = x
+    const all = x
         .split(/[^a-z0-9؀-ۿ]+/)
         .filter((w) => w.length > 1 && !MGR_STOP.has(w));
+    // Prefer the Arabic tokens: houses embed their English translation in the
+    // Arabic name ("إن اي كابيتال (NI Capital)"), and that extra latin token
+    // must not block a match — but an extra ARABIC token ("اتون فاروس" vs
+    // "فاروس") genuinely means a different house, so it must.
+    const arabic = all.filter((w) => /[؀-ۿ]/.test(w));
+    const toks = arabic.length ? arabic : all;
     return toks.length ? Array.from(new Set(toks)).sort().join(' ') : null;
 }
 

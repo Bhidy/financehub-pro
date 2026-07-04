@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: 'EGX Sectors — Egyptian Exchange Companies by Sector',
     description:
         'Browse Egyptian Exchange (EGX) companies by sector — company counts and aggregate market caps for every EGX sector, updated daily. قطاعات البورصة المصرية.',
-    alternates: { canonical: '/sectors' },
+    alternates: { canonical: '/sectors', languages: { en: '/sectors', ar: '/ar/sectors', 'x-default': '/sectors' } },
     openGraph: {
         type: 'website',
         title: 'EGX Sectors — Egyptian Exchange Companies by Sector | Starta Markets',

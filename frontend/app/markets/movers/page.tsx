@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title: 'EGX Movers Today — Top Gainers, Losers & Most Active Stocks',
     description:
         'The biggest EGX movers today — top gainers, losers and most active Egyptian Exchange stocks by volume. Refreshed every 15 minutes during trading hours.',
-    alternates: { canonical: '/markets/movers' },
+    alternates: { canonical: '/markets/movers', languages: { en: '/markets/movers', ar: '/ar/markets/movers', 'x-default': '/markets/movers' } },
     openGraph: {
         type: 'website',
         title: 'EGX Movers Today — Top Gainers, Losers & Most Active Stocks | Starta Markets',

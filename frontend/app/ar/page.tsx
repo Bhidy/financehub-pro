@@ -1,0 +1,115 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { getEgx30Index, getMovers, type Ticker } from '@/lib/public-data';
+import { SITE_URL, absUrl } from '@/lib/seo';
+import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
+import JsonLd from '@/components/seo/JsonLd';
+
+/**
+ * /ar — the Arabic entry hub ("البورصة المصرية اليوم"). Audit: /ar was a live
+ * 308→404 loop and the whole Arabic lane had no landing surface. This is the
+ * root of the audit's single highest-leverage 90-day gap.
+ */
+
+export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+    title: 'البورصة المصرية اليوم — أسعار الأسهم والمؤشرات والأخبار مباشرة',
+    description:
+        'تابع البورصة المصرية (EGX) اليوم: مؤشر EGX30 المباشر، أسعار الأسهم، الأكثر ارتفاعًا وانخفاضًا، صناديق الاستثمار، وأخبار السوق — بالعربية، محدَّث كل 15 دقيقة.',
+    alternates: {
+        canonical: '/ar',
+        languages: { en: '/', ar: '/ar', 'x-default': '/' },
+    },
+    openGraph: {
+        type: 'website',
+        title: 'البورصة المصرية اليوم — ستارتا ماركتس',
+        description: 'مؤشر EGX30 المباشر وأسعار الأسهم والأكثر نشاطًا وأخبار البورصة المصرية بالعربية.',
+        url: '/ar',
+        locale: 'ar_EG',
+    },
+};
+
+const fmt = (n: number | null, d = 2): string =>
+    n === null ? '—' : n.toLocaleString('en-EG', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtPct = (n: number | null): string => (n === null ? '—' : `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`);
+
+const HUBS: Array<{ href: string; title: string; desc: string }> = [
+    { href: '/ar/companies', title: 'أسهم البورصة المصرية', desc: 'أسعار جميع الشركات المدرجة مرتبة حسب القيمة السوقية' },
+    { href: '/ar/markets/egx30', title: 'مؤشر EGX30', desc: 'القيمة المباشرة والتغير والشركات المكونة للمؤشر' },
+    { href: '/ar/markets/movers', title: 'الأكثر ارتفاعًا وانخفاضًا', desc: 'أكبر الرابحين والخاسرين والأكثر نشاطًا اليوم' },
+    { href: '/ar/sectors', title: 'القطاعات', desc: 'أداء قطاعات البورصة المصرية والشركات في كل قطاع' },
+    { href: '/ar/Learn/glossary', title: 'قاموس المصطلحات', desc: 'شرح مصطلحات الاستثمار والبورصة بالعربية' },
+    { href: '/ar/Learn', title: 'أكاديمية التعلم', desc: 'أدلة تعليمية عن الاستثمار والبورصة المصرية' },
+];
+
+export default async function ArHome() {
+    const [egx30, movers] = await Promise.all([
+        getEgx30Index().catch(() => null),
+        getMovers().catch(() => ({ gainers: [] as Ticker[], losers: [] as Ticker[], active: [] as Ticker[] })),
+    ]);
+    const up = (egx30?.change ?? 0) >= 0;
+    const topGainers = (movers?.gainers || []).slice(0, 5);
+
+    return (
+        <PublicPageShell lang="ar" altHref="/">
+            <JsonLd data={breadcrumbJsonLd([{ label: 'البورصة المصرية اليوم' }], SITE_URL)} />
+            <JsonLd
+                data={{
+                    '@context': 'https://schema.org',
+                    '@type': 'CollectionPage',
+                    name: 'البورصة المصرية اليوم',
+                    url: absUrl('/ar'),
+                    inLanguage: 'ar',
+                    isPartOf: { '@id': `${SITE_URL}/#website` },
+                }}
+            />
+            <Breadcrumbs items={[{ label: 'البورصة المصرية اليوم' }]} />
+
+            <h1 className="text-2xl font-extrabold text-main sm:text-3xl">البورصة المصرية اليوم</h1>
+            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+                منصة ستارتا ماركتس لمتابعة <strong>البورصة المصرية (EGX)</strong> بالعربية: أسعار الأسهم المباشرة، ومؤشر EGX30،
+                والأكثر ارتفاعًا وانخفاضًا، وصناديق الاستثمار، وأخبار السوق — محدَّثة كل 15 دقيقة خلال ساعات التداول.
+            </p>
+
+            {egx30?.value != null && (
+                <Link href="/ar/markets/egx30" className="mt-6 flex flex-wrap items-baseline gap-3 rounded-2xl border border-border bg-surface px-5 py-4 hover:border-starta-teal/50">
+                    <span className="text-xs font-bold uppercase tracking-widest text-muted">مؤشر EGX30</span>
+                    <span className="text-2xl font-black tabular-nums tracking-tight" dir="ltr">{fmt(egx30.value)}</span>
+                    <span className={`text-base font-bold tabular-nums ${up ? 'text-emerald-600' : 'text-rose-600'}`} dir="ltr">
+                        {up ? '+' : ''}{fmt(egx30.change)} ({fmtPct(egx30.changePercent)})
+                    </span>
+                </Link>
+            )}
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {HUBS.map((h) => (
+                    <Link key={h.href} href={h.href} className="group rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-starta-teal/50">
+                        <div className="font-bold text-main group-hover:text-starta-teal">{h.title}</div>
+                        <div className="mt-1 text-sm leading-relaxed text-muted">{h.desc}</div>
+                    </Link>
+                ))}
+            </div>
+
+            {topGainers.length > 0 && (
+                <section className="mt-10">
+                    <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
+                        <span aria-hidden className="inline-block h-4 w-1 rounded-full bg-starta-teal" />
+                        الأكثر ارتفاعًا اليوم
+                    </h2>
+                    <ul className="mt-3 flex flex-wrap gap-2">
+                        {topGainers.map((t) => (
+                            <li key={t.symbol}>
+                                <Link href={`/ar/symbol/${t.symbol}`} className="inline-flex items-baseline gap-2 rounded-full border border-border bg-surface px-3.5 py-1.5 text-sm font-semibold hover:border-starta-teal/50">
+                                    <span className="text-main">{t.name_ar || t.name_en || t.symbol}</span>
+                                    <span className="tabular-nums text-emerald-600" dir="ltr">{t.change_percent !== null ? `+${t.change_percent.toFixed(2)}%` : ''}</span>
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                    <p className="mt-4 text-sm"><Link href="/ar/markets/movers" className="font-semibold text-starta-teal hover:underline">كل الأكثر نشاطًا ←</Link></p>
+                </section>
+            )}
+        </PublicPageShell>
+    );
+}

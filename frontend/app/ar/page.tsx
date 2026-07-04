@@ -39,6 +39,7 @@ const HUBS: Array<{ href: string; title: string; desc: string }> = [
     { href: '/ar/markets/egx30', title: 'مؤشر EGX30', desc: 'القيمة المباشرة والتغير والشركات المكونة للمؤشر' },
     { href: '/ar/markets/movers', title: 'الأكثر ارتفاعًا وانخفاضًا', desc: 'أكبر الرابحين والخاسرين والأكثر نشاطًا اليوم' },
     { href: '/ar/sectors', title: 'القطاعات', desc: 'أداء قطاعات البورصة المصرية والشركات في كل قطاع' },
+    { href: '/ar/markets/dividend-calendar', title: 'مواعيد توزيعات الأرباح', desc: 'التوزيعات القادمة والأخيرة وتواريخ الاستحقاق' },
     { href: '/ar/Funds/best-mutual-funds-egypt-2026', title: 'أفضل صناديق الاستثمار', desc: 'ترتيب صناديق الاستثمار المصرية حسب العائد السنوي' },
     { href: '/ar/Learn/glossary', title: 'قاموس المصطلحات', desc: 'شرح مصطلحات الاستثمار والبورصة بالعربية' },
     { href: '/ar/Learn', title: 'أكاديمية التعلم', desc: 'أدلة تعليمية عن الاستثمار والبورصة المصرية' },

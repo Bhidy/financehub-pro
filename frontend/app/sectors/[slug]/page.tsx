@@ -78,7 +78,7 @@ export async function generateMetadata({
     return {
         title: `${match.sector_name} Stocks on the EGX — Prices & Market Caps`,
         description,
-        alternates: { canonical },
+        alternates: { canonical, languages: { en: canonical, ar: `/ar/sectors/${slugify(match.sector_name)}`, 'x-default': canonical } },
         openGraph: {
             type: 'website',
             title: `${match.sector_name} Stocks on the EGX — Prices & Market Caps | Starta Markets`,

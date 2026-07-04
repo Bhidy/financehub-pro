@@ -48,7 +48,7 @@ export default async function SectorsArPage() {
             '@type': 'ListItem',
             position: i + 1,
             name: sectorAr(s.sector_name) || s.sector_name,
-            url: absUrl(`/sectors/${slugify(s.sector_name)}`),
+            url: absUrl(`/ar/sectors/${slugify(s.sector_name)}`),
         })),
     };
 
@@ -77,7 +77,7 @@ export default async function SectorsArPage() {
                         {sectors.map((s) => (
                             <tr key={s.sector_name} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5">
-                                    <Link href={`/sectors/${slugify(s.sector_name)}`} className="font-semibold text-main hover:text-starta-teal">
+                                    <Link href={`/ar/sectors/${slugify(s.sector_name)}`} className="font-semibold text-main hover:text-starta-teal">
                                         {sectorAr(s.sector_name) || s.sector_name}
                                     </Link>
                                 </td>

@@ -386,7 +386,9 @@ export const getEgx30Index = cache(async (): Promise<Egx30Quote | null> => {
     try {
         const res = await fetch('https://startamarkets.com/api/v1/egx30/index', {
             signal: AbortSignal.timeout(7000),
-            cache: 'no-store',
+            // revalidate (not no-store) so the /markets/egx30 pages can be ISR
+            // rather than forced-dynamic; the route itself caches 30s upstream.
+            next: { revalidate: 120 },
         });
         if (!res.ok) return null;
         const d = (await res.json()) as {

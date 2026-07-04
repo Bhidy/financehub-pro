@@ -10,6 +10,13 @@ import SymbolPageClient from './SymbolPageClient';
  * blocks on six URLs per symbol would be near-duplicate content.
  * Symbol validation + metadata stay in layout.tsx (shared by all sub-tabs).
  */
+
+// ISR: the audit found every SSR route shipped no-store (0% CDN hit,
+// 1.0-1.5s TTFB). This page is anonymous — edge-cache it and revalidate
+// every 5 min (prices refresh every 15 min, so 5 min is well within
+// tolerance and turns the highest-traffic template into a CDN hit).
+export const revalidate = 300;
+
 export default async function SymbolOverviewPage({
     params,
 }: {

@@ -174,8 +174,8 @@ export default async function FundPage({ params }: Props) {
 
     const riskStats = (
         [
-            ['Max drawdown (worst peak-to-trough)', num(fund, 'max_drawdown')],
-            ['Volatility (annualized)', num(fund, 'volatility_annual')],
+            ['Max drawdown (all-time, peak-to-trough)', num(fund, 'max_drawdown')],
+            ['Volatility (annualized, full history)', num(fund, 'volatility_annual')],
         ] as Array<[string, number | null]>
     ).filter((r): r is [string, number] => r[1] !== null);
 

@@ -4,6 +4,7 @@
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=1.0.1"></script><script src="/assets/starta-mobile-nav.js?v=1.0.4" defer></script>
+    <script src="/assets/fund-logos.js?v=1"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Funds Marketplace | Starta Markets</title>
@@ -1177,8 +1178,10 @@
                 lastUpdated: fund.last_nav_date || fund.last_update_date || fund.last_updated || null,
                 isShariah: Boolean(fund.is_shariah),
                 currency: fund.currency || 'EGP',
-                logo_url: fund.logo_url || DEFAULT_LOGO,
-                logo_scale: Number(fund.logo_scale || 1) || 1,
+                // Real per-fund logo (snduk, name+NAV matched — see assets/fund-logos.js),
+                // falling back to any API logo then the placeholder.
+                logo_url: (window.STARTA_FUND_LOGOS && window.STARTA_FUND_LOGOS[String(fund.fund_id)]) || fund.logo_url || DEFAULT_LOGO,
+                logo_scale: 1,
             };
         }
 

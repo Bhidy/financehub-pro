@@ -1,6 +1,7 @@
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { db } from '@/lib/db-server';
+import { matchAssetManager } from './asset-managers';
 
 /**
  * Server-side data access for the SEO/public pages (news articles, symbol
@@ -195,41 +196,6 @@ function coalesceReturns(r: Record<string, unknown>): Record<string, unknown> {
     return r;
 }
 
-/**
- * Normalised, order-independent token key for an asset-manager name, used to
- * match a fund's manager to a harvested asset_managers row WITHOUT false
- * positives. Arabic diacritics/alef/ta-marbuta are normalised and the common
- * "…for asset management / صناديق الاستثمار / لإدارة الأصول" boilerplate is
- * dropped, leaving only the distinctive house tokens (e.g. "فاروس" vs
- * "اتون فاروس" — which stay distinct, so Aton Pharos never matches Pharos).
- */
-const MGR_STOP = new Set([
-    'لاداره', 'لادارة', 'لإدارة', 'لادار', 'واداره', 'وادارة', 'وإدارة', 'لتكوين', 'لاداره',
-    'الاصول', 'الأصول', 'الاستثمارات', 'الاستثمار', 'صناديق', 'الماليه', 'المالية', 'المحافظ',
-    'القابضه', 'القابضة', 'شركه', 'شركة', 'مصر', 'ايجيبت', 'الاوراق', 'للاستثمارات', 'للاستثمار',
-    'asset', 'management', 'capital', 'for', 'investment', 'investments', 'securities', 'holding',
-    'company', 'and', 'funds', 'fund', 'the', 'egypt',
-]);
-function mgrTokenKey(name: string | null): string | null {
-    if (!name || !name.trim()) return null;
-    const x = name
-        .toLowerCase()
-        .replace(/[ً-ْٰ]/g, '') // Arabic diacritics
-        .replace(/[أإآ]/g, 'ا')
-        .replace(/ى/g, 'ي')
-        .replace(/ة/g, 'ه');
-    const all = x
-        .split(/[^a-z0-9؀-ۿ]+/)
-        .filter((w) => w.length > 1 && !MGR_STOP.has(w));
-    // Prefer the Arabic tokens: houses embed their English translation in the
-    // Arabic name ("إن اي كابيتال (NI Capital)"), and that extra latin token
-    // must not block a match — but an extra ARABIC token ("اتون فاروس" vs
-    // "فاروس") genuinely means a different house, so it must.
-    const arabic = all.filter((w) => /[؀-ۿ]/.test(w));
-    const toks = arabic.length ? arabic : all;
-    return toks.length ? Array.from(new Set(toks)).sort().join(' ') : null;
-}
-
 export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
     const result = await db.query(`SELECT * FROM funds_view WHERE fund_id = $1`, [fundId]);
     const row = result.rows[0] as Fund | undefined;
@@ -272,24 +238,18 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
             `SELECT platform_name, logo_url FROM fund_platforms WHERE fund_id = $1 ORDER BY platform_name`, [String(fundId)]);
         row.platforms = pl.rows;
     } catch { row.platforms = []; }
-    // Asset-manager profile (23 harvested houses, Arabic-named; no FK). Match by
-    // NORMALISED TOKEN-SET EQUALITY, not substring — a loose "%فاروس%" would wrongly
-    // attach "أتون فاروس" (Aton Pharos, a different house) to a Pharos fund, i.e.
-    // misleading financial data. Token-set equality accepts only the same house.
-    // Isolated: a missing table / no match never breaks the page.
+    // Asset-manager profile from the STATIC harvested set (23 houses in
+    // lib/asset-managers.ts). Matched by normalised, Arabic-aware token-set
+    // equality (precise: "اتون فاروس" never matches a "فاروس" fund). No DB
+    // dependency — the asset_managers table is unreliable to populate.
     try {
-        const targets = [row.manager_name, row.manager_name_en, row.owner_name, row.owner_name_en]
-            .map((n) => mgrTokenKey(n as string | null))
-            .filter((k): k is string => !!k);
-        if (targets.length) {
-            const all = await db.query(
-                `SELECT name, name_en, establishment_year, chairman, capital, total_aum, fund_count, logo_url FROM asset_managers`);
-            const match = (all.rows as Record<string, unknown>[]).find((r) => {
-                const keys = [mgrTokenKey(r.name as string | null), mgrTokenKey(r.name_en as string | null)].filter(Boolean);
-                return keys.some((k) => targets.includes(k as string));
-            });
-            if (match) row.manager_profile = match;
-        }
+        const mp = matchAssetManager(
+            row.manager_name as string | null,
+            row.manager_name_en as string | null,
+            row.owner_name as string | null,
+            row.owner_name_en as string | null,
+            row.issuer_en as string | null);
+        if (mp) row.manager_profile = mp;
     } catch { /* isolated */ }
     toNum(row, [
         'latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_1y', 'return_3y', 'return_5y',

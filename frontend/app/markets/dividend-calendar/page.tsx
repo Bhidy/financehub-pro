@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     title: 'EGX Dividend Calendar — Ex-Dates & Payouts',
     description:
         'Upcoming and recent dividends on the Egyptian Exchange: ex-dividend dates, per-share amounts and payment dates for EGX companies. Updated with market data.',
-    alternates: { canonical: '/markets/dividend-calendar' },
+    alternates: { canonical: '/markets/dividend-calendar', languages: { en: '/markets/dividend-calendar', ar: '/ar/markets/dividend-calendar', 'x-default': '/markets/dividend-calendar' } },
     openGraph: {
         type: 'website',
         title: 'EGX Dividend Calendar — Ex-Dates & Payouts | Starta Markets',

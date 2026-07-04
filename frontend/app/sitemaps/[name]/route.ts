@@ -46,6 +46,7 @@ async function coreEntries(): Promise<Entry[]> {
         ['/ar/companies', 'daily', '0.8'],
         ['/ar/sectors', 'daily', '0.6'],
         ['/ar/markets/movers', 'hourly', '0.6'],
+        ['/ar/markets/dividend-calendar', 'daily', '0.5'],
         ['/Funds/best-mutual-funds-egypt-2026', 'daily', '0.8'],
         ['/ar/Funds/best-mutual-funds-egypt-2026', 'daily', '0.7'],
         ['/about', 'monthly', '0.5'],
@@ -115,11 +116,10 @@ async function sectorEntries(): Promise<Entry[]> {
          GROUP BY sector_name
          ORDER BY sector_name`
     );
-    return result.rows.map((r: any) => ({
-        loc: absUrl(`/sectors/${slugify(r.sector_name)}`),
-        changefreq: 'daily',
-        priority: '0.7',
-    }));
+    return result.rows.flatMap((r: any) => [
+        { loc: absUrl(`/sectors/${slugify(r.sector_name)}`), changefreq: 'daily', priority: '0.7' },
+        { loc: absUrl(`/ar/sectors/${slugify(r.sector_name)}`), changefreq: 'daily', priority: '0.6' },
+    ]);
 }
 
 async function arCompanyEntries(): Promise<Entry[]> {

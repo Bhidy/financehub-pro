@@ -218,6 +218,23 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
             }
         }
     } catch { /* side table isolated — never break the core payload */ }
+    // Harvested metadata that funds_view doesn't carry (prospectus / manager person /
+    // purchase+redemption frequency) + distribution platforms. Isolated: a missing
+    // column or the fund_platforms table can never break the page.
+    try {
+        const meta = await db.query(
+            `SELECT prospectus_url, alternative_names, fund_manager, purchase_frequency, redemption_frequency
+             FROM mutual_funds WHERE fund_id = $1`, [String(fundId)]);
+        const mm = meta.rows[0] as Record<string, unknown> | undefined;
+        if (mm) for (const k of ['prospectus_url', 'alternative_names', 'fund_manager', 'purchase_frequency', 'redemption_frequency']) {
+            if (row[k] === null || row[k] === undefined) row[k] = mm[k];
+        }
+    } catch { /* isolated */ }
+    try {
+        const pl = await db.query(
+            `SELECT platform_name, logo_url FROM fund_platforms WHERE fund_id = $1 ORDER BY platform_name`, [String(fundId)]);
+        row.platforms = pl.rows;
+    } catch { row.platforms = []; }
     toNum(row, [
         'latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_1y', 'return_3y', 'return_5y',
         'expense_ratio', 'fee_management', 'fee_subscription', 'fee_redemption',

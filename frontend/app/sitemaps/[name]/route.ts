@@ -47,6 +47,7 @@ async function coreEntries(): Promise<Entry[]> {
         ['/ar/sectors', 'daily', '0.6'],
         ['/ar/markets/movers', 'hourly', '0.6'],
         ['/Funds/best-mutual-funds-egypt-2026', 'daily', '0.8'],
+        ['/ar/Funds/best-mutual-funds-egypt-2026', 'daily', '0.7'],
         ['/about', 'monthly', '0.5'],
         ['/contact', 'monthly', '0.4'],
         ['/AiChat', 'weekly', '0.6'],

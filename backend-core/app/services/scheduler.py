@@ -238,7 +238,9 @@ class SchedulerService:
             # On boot: refresh fund_risk_metrics once so a deploy applies the latest compute
             # logic + freshest NAVs immediately (ongoing refresh is the tier4d cron).
             asyncio.create_task(self._startup_fund_metrics_catchup())
-            
+            # On boot: if asset_managers is empty, backfill it once (manager logos + profiles).
+            asyncio.create_task(self._startup_asset_managers_backfill())
+
         except Exception as e:
             # THIS IS THE SAFETY NET
             # If scheduler fails, we LOG IT, but we DO NOT CRASH THE API
@@ -294,6 +296,55 @@ class SchedulerService:
             await self.run_fund_metrics_job()     # then recompute metrics (incl. any new funds)
         except Exception as e:
             logger.error(f"Startup fund-metrics catch-up error: {e}")
+
+    async def _startup_asset_managers_backfill(self):
+        """One-shot, self-guarding: if asset_managers is empty/missing, run the snduk
+        harvest so fund pages can show the managing-house logo + profile (established,
+        chairman, AUM). Guarded on COUNT==0 so it never re-runs once populated;
+        the harvest is idempotent (fill-don't-null + ON CONFLICT) and read-only-safe;
+        isolated so it can never crash or delay startup."""
+        try:
+            await asyncio.sleep(40)  # after the metrics catch-up settles
+            from app.db.session import db
+            from app.services.notification_service import notification_service
+
+            async def _count():
+                try:
+                    row = await db.fetch_one("SELECT COUNT(*) AS n FROM asset_managers")
+                    if not row:
+                        return 0
+                    val = row.get('n') if isinstance(row, dict) else row['n']
+                    return int(val or 0)
+                except Exception:
+                    return 0  # table missing -> treat as empty; the harvest CREATEs it
+
+            before = await _count()
+            if before > 0:
+                logger.info(f"asset_managers already populated ({before}); backfill skipped")
+                return
+
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            script_path = os.path.join(base_dir, 'scripts', 'harvest_snduk_once.py')
+            logger.info("asset_managers empty -> running snduk harvest backfill")
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, script_path,
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            stdout, stderr = await proc.communicate()
+            tail = (stdout or b'').decode(errors='ignore')[-300:]
+
+            after = await _count()
+            if after > 0:
+                notification_service.send_discord(
+                    f"✅ **Asset-managers backfill** — {after} managers now in DB (rc={proc.returncode})\n{tail}",
+                    is_error=False)
+                logger.info(f"asset_managers backfill OK: {after} rows")
+            else:
+                err = (stderr or b'').decode(errors='ignore')[-400:]
+                notification_service.send_discord(
+                    f"❌ **Asset-managers backfill produced 0 rows** (rc={proc.returncode})\n```{err}```",
+                    is_error=True)
+        except Exception as e:
+            logger.error(f"asset_managers backfill error: {e}")
 
     async def run_ohlc_catchup_job(self):
         """Periodic OHLC catch-up job (Runs every 4 hours)."""

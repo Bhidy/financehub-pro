@@ -6,6 +6,7 @@ import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo
 import JsonLd from '@/components/seo/JsonLd';
 import FundPageClient, { type FundClientData } from './FundPageClient';
 import { fundLabels, fundTypeLabel, riskLabel, freqLabel, type Lang } from './fund-i18n';
+import { fundLogo } from '@/lib/fund-logos';
 
 /**
  * Shared, per-URL bilingual renderer for the fund-profile page. Both routes
@@ -341,7 +342,7 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
         nameAr,
         managerLine,
         monogram,
-        heroLogo: managerProfile?.logo ?? null,
+        heroLogo: fundLogo(fund.fund_id) ?? managerProfile?.logo ?? null,
         navText: nav !== null ? fmtNav(nav) : null,
         navDateIso,
         navHuman: navDateIso ? humanDate(navDateIso, lang) : null,

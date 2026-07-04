@@ -36,8 +36,8 @@ from typing import Iterable, Optional
 _YEAR_DAYS = 365.25
 
 
-def _split_adjust(pts: list[tuple[date, float]], lo: float = 0.25, hi: float = 4.0,
-                  max_gap_days: int = 14) -> list[tuple[date, float]]:
+def _split_adjust(pts: list[tuple[date, float]], lo: float = 0.34, hi: float = 3.0,
+                  max_gap_days: int = 45) -> list[tuple[date, float]]:
     """Stitch redenominations / splits. An ADJACENT single-step NAV ratio outside
     [lo, hi] over a short time gap is not a market move but a re-scaling — e.g. the
     ~100:1 redenominations in Mubasher's raw series (fund NAV 2513 -> 25 overnight),

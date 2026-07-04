@@ -131,6 +131,13 @@ def test_split_adjust_gap_guard_leaves_wide_gap_move():
     adj = _split_adjust([(date(2020, 1, 1), 100.0), (date(2020, 7, 1), 15.0)])
     assert adj[0][1] == 100.0 and adj[1][1] == 15.0
 
+def test_redenomination_across_short_data_gap_stitched():
+    # a ~4:1 redenomination during a ~40-day Mubasher data gap (the 3889 pattern)
+    s = _daily([100, 101, 102]) + [(date(2025, 2, 12), 25.0), (date(2025, 2, 13), 25.5),
+                                   (date(2025, 2, 14), 26.0), (date(2025, 2, 15), 26.5)]
+    adj = dict(_split_adjust(s))
+    assert all(20 < v < 30 for v in list(adj.values())[:3])   # early block rescaled ~25
+
 def test_reject_spikes_preserves_gradual_trend():
     # a dense gradual decline is NOT despiked (local median tracks it)
     kept = _reject_spikes([(date(2025, 1, i + 1), v) for i, v in

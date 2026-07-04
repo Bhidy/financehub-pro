@@ -112,10 +112,8 @@
         /* Funds hero — premium ambient card, seamless in both themes */
         .funds-hero {
             position: relative;
-            /* light: tinted-glass surface — no flat pure-white expanse, no harsh edge rim */
-            background:
-                radial-gradient(120% 130% at 100% 0%, rgba(20, 184, 166, 0.10), rgba(45, 212, 191, 0) 60%),
-                linear-gradient(150deg, #fdfefe 0%, #f5fbfa 52%, #edf7f4 100%);
+            /* light: even tinted-glass surface — one cohesive tone, no pure-white zone */
+            background: linear-gradient(135deg, #edf6f4 0%, #e7f3ef 58%, #e1f0ea 100%);
             border: 1px solid rgba(15, 118, 110, 0.15);
             border-radius: 2.5rem;
             box-shadow: var(--shadow-premium);
@@ -132,9 +130,9 @@
             z-index: 0;
         }
 
-        /* light: soft top-right corner bloom that melts into the tinted base (no band) */
+        /* light: static top-right depth that fades into the tinted base (no white behind it) */
         .funds-hero::after {
-            background: radial-gradient(55% 85% at 97% 3%, rgba(45, 212, 191, 0.09), transparent 72%);
+            background: radial-gradient(95% 115% at 100% 0%, rgba(20, 184, 166, 0.12), transparent 60%);
         }
 
         /* fine research-grid texture, masked to the top-right so copy stays clean */
@@ -166,17 +164,6 @@
 
         [data-theme="dark"] .funds-hero::before {
             opacity: 0.5;
-        }
-
-        @media (prefers-reduced-motion: no-preference) {
-            .funds-hero::after {
-                animation: heroGlowDrift 18s ease-in-out infinite alternate;
-            }
-        }
-
-        @keyframes heroGlowDrift {
-            from { transform: translate3d(0, 0, 0); opacity: 0.9; }
-            to { transform: translate3d(-1.5%, 1%, 0); opacity: 1; }
         }
 
         .filter-shell {

@@ -129,6 +129,20 @@ class SchedulerService:
                 coalesce=True
             )
 
+            # --- TIER 4E: Mubasher LIST-API NAV augment (fresher pipeline, Sun-Thu) ---
+            # Pulls every EG fund's current price from the list API (~1 day ahead of the
+            # per-fund CSV) and upserts it, keeping headline NAV fresh and stale funds
+            # re-crossing the freshness gate. Runs just before the metrics compute.
+            self.scheduler.add_job(
+                self.run_fund_list_api_job,
+                CronTrigger(day_of_week='sun,mon,tue,wed,thu', hour='8,19', minute=10,
+                            timezone='Africa/Cairo'),
+                id='tier4e_fund_list_api',
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True
+            )
+
             # --- TIER 5: Rubix Watchlist (Every 1 min in Session) ---
             self.scheduler.add_job(
                 self.run_rubix_watchlist_job,
@@ -423,6 +437,29 @@ class SchedulerService:
                     f"❌ **Fund Metrics Compute Failed**\nExit: {proc.returncode}", is_error=True)
         except Exception as e:
             logger.error(f"Fund metrics job error: {e}")
+
+    async def run_fund_list_api_job(self):
+        """Augment NAVs from Mubasher's LIST API (fresher than the per-fund CSV,
+        ~1 day ahead) for funds already in mutual_funds. Idempotent, read-only-safe;
+        failure isolated, never crashes the API."""
+        try:
+            from app.services.notification_service import notification_service
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            script_path = os.path.join(base_dir, 'scripts', 'funds_list_api_sync.py')
+
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, script_path, '--min-updated', '50',
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
+            await proc.communicate()
+
+            if proc.returncode == 0:
+                notification_service.send_discord("✅ **Fund List-API Sync Success**", is_error=False)
+            else:
+                notification_service.send_discord(
+                    f"❌ **Fund List-API Sync Failed**\nExit: {proc.returncode}", is_error=True)
+        except Exception as e:
+            logger.error(f"Fund list-api job error: {e}")
 
     async def run_egx_multisource_news_job(self):
         """Runs EGX multi-source news scraper every 2 hours."""

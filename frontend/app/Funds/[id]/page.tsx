@@ -151,6 +151,11 @@ export default async function FundPage({ params }: Props) {
 
     const navHigh = num(fund, 'nav_52w_high');
     const navLow = num(fund, 'nav_52w_low');
+    // Staleness cue: EG fund NAVs publish ~weekly, so >10 days without a fresh
+    // point means the headline is delayed. Surfacing this lets us show more funds
+    // (relaxed freshness gate) without ever presenting a stale NAV as current.
+    const navAgeDays = navDateIso ? Math.floor((Date.now() - Date.parse(navDateIso)) / 86_400_000) : null;
+    const navStale = navAgeDays !== null && navAgeDays > 10;
     const currency = str(fund, 'currency');
     const fundTypeEn = str(fund, 'fund_type_en');
     const minSubscription = num(fund, 'min_subscription');
@@ -322,6 +327,11 @@ export default async function FundPage({ params }: Props) {
                         {navDateIso && (
                             <p className="mt-1 text-sm text-muted">
                                 as of <time dateTime={navDateIso}>{humanDate(navDateIso)}</time>
+                                {navStale && (
+                                    <span className="ml-2 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">
+                                        Delayed{navAgeDays !== null ? ` · ${navAgeDays}d` : ''}
+                                    </span>
+                                )}
                             </p>
                         )}
                         {(navHigh !== null || navLow !== null) && (

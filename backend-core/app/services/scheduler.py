@@ -238,9 +238,6 @@ class SchedulerService:
             # On boot: refresh fund_risk_metrics once so a deploy applies the latest compute
             # logic + freshest NAVs immediately (ongoing refresh is the tier4d cron).
             asyncio.create_task(self._startup_fund_metrics_catchup())
-            # ONE-TIME: gap-fill fund metadata from the snduk harvest (fees/min/inception/
-            # risk/type + platforms/managers). Self-guarded so it runs at most once.
-            asyncio.create_task(self._startup_harvest_once())
             
         except Exception as e:
             # THIS IS THE SAFETY NET
@@ -297,30 +294,6 @@ class SchedulerService:
             await self.run_fund_metrics_job()     # then recompute metrics (incl. any new funds)
         except Exception as e:
             logger.error(f"Startup fund-metrics catch-up error: {e}")
-
-    async def _startup_harvest_once(self):
-        """ONE-TIME: run the snduk metadata gap-fill harvest if it hasn't run yet.
-        Guarded by the fund_platforms table (the harvest creates + fills it) so it runs
-        at most once and never re-scrapes. Isolated subprocess; never blocks/crashes."""
-        try:
-            await asyncio.sleep(40)  # after the metrics/discovery catch-ups settle
-            from app.db.session import db
-            try:
-                row = await db.fetch_one("SELECT COUNT(*) AS n FROM fund_platforms")
-                if row and (row.get('n') or 0) > 0:
-                    logger.info("Startup: snduk harvest already applied — skip.")
-                    return
-            except Exception:
-                pass  # table absent -> not yet applied -> proceed
-            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            script_path = os.path.join(base_dir, 'scripts', 'harvest_snduk_once.py')
-            proc = await asyncio.create_subprocess_exec(
-                sys.executable, script_path,
-                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-            out, _ = await proc.communicate()
-            logger.info(f"Startup snduk harvest exit={proc.returncode}: {out.decode()[-300:] if out else ''}")
-        except Exception as e:
-            logger.error(f"Startup harvest error: {e}")
 
     async def run_ohlc_catchup_job(self):
         """Periodic OHLC catch-up job (Runs every 4 hours)."""

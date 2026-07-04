@@ -288,12 +288,16 @@ export default async function FundPage({ params }: Props) {
         faqs.push({ q: `Who manages ${name}?`, a: `${name} is managed by ${manager}.` });
     }
     if (fundTypeEn) {
-        faqs.push({ q: `What type of fund is ${name}?`, a: `${name} is a ${fundTypeEn}.` });
+        const article = /^[aeiou]/i.test(fundTypeEn) ? 'an' : 'a';
+        faqs.push({ q: `What type of fund is ${name}?`, a: `${name} is ${article} ${fundTypeEn}.` });
     }
     if (minSubscription !== null) {
+        // minSubscription is a unit count (e.g. 100 وثيقة), NOT an EGP amount —
+        // never suffix the fund currency here or it reads as "100 EGP".
+        const units = minSubscription === 1 ? 'unit' : 'units';
         faqs.push({
             q: 'What is the minimum investment?',
-            a: `The minimum subscription for ${name} is ${minSubscription.toLocaleString('en-EG')}${currency ? ` ${currency}` : ''}.`,
+            a: `The minimum subscription for ${name} is ${minSubscription.toLocaleString('en-EG')} ${units}.`,
         });
     }
 

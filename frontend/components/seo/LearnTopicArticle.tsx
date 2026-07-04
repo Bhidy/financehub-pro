@@ -70,7 +70,13 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
         mainEntityOfPage: SITE_URL + path,
         image: SITE_URL + coverImage,
         publisher: { '@id': `${SITE_URL}/#organization` },
-        author: { '@type': 'Organization', name: 'Starta Markets' },
+        author: {
+            '@type': 'Organization',
+            name: 'Starta Markets',
+            url: SITE_URL,
+            sameAs: ['https://www.linkedin.com/company/starta-markets'],
+            publishingPrinciples: `${SITE_URL}/editorial-policy`,
+        },
     };
 
     const crumbs = arabic

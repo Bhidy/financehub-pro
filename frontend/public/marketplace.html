@@ -109,6 +109,76 @@
             box-shadow: var(--shadow-premium);
         }
 
+        /* Funds hero — premium ambient card, seamless in both themes */
+        .funds-hero {
+            position: relative;
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: 2.5rem;
+            box-shadow: var(--shadow-premium), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            isolation: isolate;
+        }
+
+        .funds-hero::before,
+        .funds-hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            border-radius: inherit;
+            z-index: 0;
+        }
+
+        /* full-bleed ambient glow — right-anchored, fades to transparent (no seam) */
+        .funds-hero::after {
+            background:
+                radial-gradient(75% 120% at 100% 0%, rgba(45, 212, 191, 0.16), transparent 60%),
+                radial-gradient(60% 130% at 92% 108%, rgba(13, 148, 136, 0.12), transparent 62%),
+                radial-gradient(150% 100% at 100% 50%, rgba(20, 184, 166, 0.06), transparent 58%);
+        }
+
+        /* fine research-grid texture, masked to the top-right so copy stays clean */
+        .funds-hero::before {
+            background-image: var(--c-grid);
+            background-size: 46px 46px;
+            opacity: 0.7;
+            -webkit-mask-image: radial-gradient(120% 115% at 100% 0%, #000 5%, transparent 68%);
+            mask-image: radial-gradient(120% 115% at 100% 0%, #000 5%, transparent 68%);
+        }
+
+        .funds-hero > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        [data-theme="dark"] .funds-hero {
+            background: linear-gradient(180deg, rgba(20, 22, 24, 0.92), rgba(8, 9, 10, 0.92));
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: var(--shadow-premium), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        [data-theme="dark"] .funds-hero::after {
+            background:
+                radial-gradient(75% 120% at 100% 0%, rgba(45, 212, 191, 0.22), transparent 60%),
+                radial-gradient(60% 130% at 92% 108%, rgba(13, 148, 136, 0.16), transparent 62%),
+                radial-gradient(150% 100% at 100% 50%, rgba(20, 184, 166, 0.08), transparent 58%);
+        }
+
+        [data-theme="dark"] .funds-hero::before {
+            opacity: 0.5;
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .funds-hero::after {
+                animation: heroGlowDrift 18s ease-in-out infinite alternate;
+            }
+        }
+
+        @keyframes heroGlowDrift {
+            from { transform: translate3d(0, 0, 0); opacity: 0.9; }
+            to { transform: translate3d(-1.5%, 1%, 0); opacity: 1; }
+        }
+
         .filter-shell {
             background:
                 radial-gradient(circle at 0% 0%, rgba(20, 184, 166, 0.08), transparent 35%),
@@ -598,9 +668,7 @@
 
     <main class="pt-28 pb-20 min-h-screen">
         <div class="max-w-screen-2xl mx-auto px-6 lg:px-8">
-            <section class="relative overflow-hidden rounded-[2.5rem] border border-border bg-panel px-6 py-10 sm:px-8 lg:px-12 lg:py-14 shadow-premium reveal-block">
-                <div class="absolute inset-y-0 right-0 w-[38%] hidden xl:block"
-                    style="background: radial-gradient(circle at 20% 50%, rgba(20, 184, 166, 0.18), transparent 38%), radial-gradient(circle at 80% 10%, rgba(15, 118, 110, 0.1), transparent 28%);"></div>
+            <section class="funds-hero relative overflow-hidden rounded-[2.5rem] px-6 py-10 sm:px-8 lg:px-12 lg:py-14 reveal-block">
                 <div class="max-w-[62rem] relative z-10">
                     <div class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-starta-darkTeal" data-key="marketplace_tag">Mutual Funds</div>
                     <h1 class="hero-copy mt-4 text-[2.25rem] leading-[1.12] sm:text-[2.8rem] lg:text-[3.35rem] font-display font-bold tracking-[-0.05em] text-main"

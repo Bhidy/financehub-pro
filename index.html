@@ -2252,9 +2252,7 @@
                     <a href="/" class="hover:text-starta-teal transition-colors"
                         data-key="nav_home">HOME</a>
                     <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
-                    <a href="/Market-Pulse" class="hover:text-starta-teal transition-colors" data-key="nav_pulse">MARKET PULSE</a>
                     <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">MARKET NEWS</a>
-                    <a href="/Portfolio/demo" class="hover:text-starta-teal transition-colors" data-key="nav_portfolio">MY PORTFOLIO</a>
                     <a href="/Learn" class="hover:text-starta-teal transition-colors" data-key="nav_learn">LEARN</a>
                 </div>
             </div>
@@ -2306,8 +2304,6 @@
                         Free</button>
                     <button onclick="document.getElementById('funds-section').scrollIntoView({behavior: 'smooth'})"
                         class="px-10 py-4 font-bold text-lg rounded-lg btn-secondary" data-key="hero_btn_funds">Mutual Funds</button>
-                    <button onclick="window.location.href='/Market-Pulse'"
-                        class="px-10 py-4 font-bold text-lg rounded-lg btn-secondary" data-key="hero_btn_pulse">Market Pulse</button>
                 </div>
             </div>
 
@@ -2884,63 +2880,6 @@
         </div>
     </section>
 
-    <!-- 4.2 MARKET PULSE SECTION -->
-    <section id="hp-pulse-section" class="py-32 bg-surface border-t border-border relative overflow-hidden section-premium">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-                <div class="reveal-text">
-                    <div class="flex flex-wrap items-center gap-3 mb-4">
-                        <span class="section-tag !mb-0" data-key="hp_pulse_tag">MARKET PULSE</span>
-                    </div>
-                    <h2 class="section-title text-main mb-5" data-key="hp_pulse_title">Real-Time EGX Snapshot.</h2>
-                    <p class="text-muted copy-premium mb-8" data-key="hp_pulse_text">Track listed equities, index direction, and market breadth — all in one live terminal view.</p>
-                    <div class="hp-stat-grid mb-9">
-                        <div class="hp-stat-box">
-                            <div class="hp-stat-label" data-key="hp_pulse_stat1">EGX 30 Index</div>
-                            <div id="hp-pulse-index" class="hp-stat-val">--</div>
-                            <div class="hp-stat-sub">pts</div>
-                        </div>
-                        <div class="hp-stat-box">
-                            <div class="hp-stat-label" data-key="hp_pulse_stat2">Advancers / Decliners</div>
-                            <div id="hp-pulse-breadth" class="hp-stat-val pos">--</div>
-                        </div>
-                        <div class="hp-stat-box">
-                            <div class="hp-stat-label" data-key="hp_pulse_stat3">Trading Value</div>
-                            <div id="hp-pulse-value" class="hp-stat-val">--</div>
-                        </div>
-                        <div class="hp-stat-box">
-                            <div class="hp-stat-label" data-key="hp_pulse_stat4">Market Status</div>
-                            <div id="hp-pulse-status" class="hp-stat-val">--</div>
-                        </div>
-                    </div>
-                    <a href="/Market-Pulse" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm">
-                        <span data-key="hp_pulse_cta">Open Market Pulse</span>
-                        <svg class="w-4 h-4 arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    </a>
-                </div>
-                <div class="hp-terminal">
-                    <div class="hp-terminal-chrome">
-                        <span class="hp-td" style="background:#ff5f56;"></span>
-                        <span class="hp-td" style="background:#ffbd2e;"></span>
-                        <span class="hp-td" style="background:#27c93f;"></span>
-                        <span style="flex:1;"></span>
-                        <div style="display:flex;align-items:center;gap:0.45rem;">
-                            <span class="hp-live-dot"></span>
-                            <span style="font-size:0.61rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--c-text-muted);font-family:monospace;">EGX LIVE FEED</span>
-                        </div>
-                    </div>
-                    <div class="hp-terminal-head">
-                        <span data-key="hp_pulse_col1">Symbol</span>
-                        <span data-key="hp_pulse_col2">Last</span>
-                        <span data-key="hp_pulse_col3">Chg%</span>
-                    </div>
-                    <div id="hp-pulse-rows"></div>
-                    <div style="padding:0.48rem 1rem;font-size:0.58rem;color:var(--c-text-muted);font-family:monospace;letter-spacing:0.06em;border-top:1px solid var(--c-border);" data-key="hp_pulse_footer">Simulated data for illustration</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- 4.3 MARKET NEWS SECTION -->
     <section id="hp-news-section" class="py-32 bg-page border-t border-border relative overflow-hidden section-premium">
         <div class="max-w-7xl mx-auto px-6">
@@ -3052,9 +2991,6 @@
             </div>
         </div>
     </section>
-
-    <!-- 15. PORTFOLIO INTELLIGENCE — interactive showcase (renders via portfolio-showcase.js) -->
-    <div id="pfShowcaseRoot"></div>
 
     <!-- 4.4 STARTA ACADEMY SECTION -->
     <section id="hp-academy-section" class="py-32 bg-surface border-t border-border relative overflow-hidden section-premium">
@@ -3729,7 +3665,6 @@
                     <ul class="space-y-2.5 text-sm">
                         <li><a href="/" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_home">Home</a></li>
                         <li><a href="/Funds" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_funds">Mutual Funds</a></li>
-                        <li><a href="/Market-Pulse" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_pulse">Market Pulse</a></li>
                     </ul>
                 </div>
                 <!-- Col 2: Research -->
@@ -3738,7 +3673,6 @@
                     <ul class="space-y-2.5 text-sm">
                         <li><a href="/News" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_news">Market News</a></li>
                         <li><a href="/Learn" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_learn">Learn Catalog</a></li>
-                        <li><a href="/Portfolio" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_portfolio">Smart Portfolio</a></li>
                     </ul>
                 </div>
                 <!-- Col 3: Resources -->

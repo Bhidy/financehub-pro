@@ -122,9 +122,7 @@ export default function PublicPageShell({
                         <div className="flex gap-10 text-xs font-mono text-muted tracking-widest">
                             <Link href="/" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_home">{t.home}</Link>
                             <Link href="/Funds" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_mobile">{t.funds}</Link>
-                            <Link href="/Market-Pulse" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_pulse">{t.pulse}</Link>
                             <Link href="/News" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_news">{t.news}</Link>
-                            <Link href="/Portfolio/demo" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_portfolio">{t.portfolio}</Link>
                             <Link href="/Learn" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_learn">{t.learn}</Link>
                         </div>
                     </div>
@@ -182,7 +180,6 @@ export default function PublicPageShell({
                             <ul className="space-y-2.5 text-sm">
                                 <li><Link href="/" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.home}</Link></li>
                                 <li><Link href="/Funds" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.funds}</Link></li>
-                                <li><Link href="/Market-Pulse" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.pulse}</Link></li>
                             </ul>
                         </div>
                         <div className="space-y-4">
@@ -190,7 +187,6 @@ export default function PublicPageShell({
                             <ul className="space-y-2.5 text-sm">
                                 <li><Link href="/News" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.news}</Link></li>
                                 <li><Link href="/Learn" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.learn}</Link></li>
-                                <li><Link href="/Portfolio" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.portfolio}</Link></li>
                             </ul>
                         </div>
                         <div className="space-y-4">

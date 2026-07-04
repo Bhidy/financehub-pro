@@ -12,11 +12,12 @@ import { GLOSSARY_TERMS, firstSentence } from '@/content/glossary-terms';
  */
 
 const PATH = '/Learn/glossary';
+const TERM_COUNT = GLOSSARY_TERMS.length;
 
 export const metadata: Metadata = {
     title: 'Financial Glossary — EGX & Investing Terms',
     description:
-        'Plain-English definitions of 30 essential stock market and investing terms — from P/E ratio and NAV to circuit breakers — with an Egyptian Exchange (EGX) angle.',
+        `Plain-English definitions of ${TERM_COUNT} essential stock market and investing terms — from P/E ratio and NAV to circuit breakers — with an Egyptian Exchange (EGX) angle.`,
     alternates: {
         canonical: PATH,
         languages: {
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
         type: 'website',
         title: 'Financial Glossary — EGX & Investing Terms',
         description:
-            'Definitions of 30 essential stock market and investing terms with an Egyptian Exchange (EGX) angle.',
+            `Definitions of ${TERM_COUNT} essential stock market and investing terms with an Egyptian Exchange (EGX) angle.`,
         url: PATH,
         locale: 'en_US',
     },

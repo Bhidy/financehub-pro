@@ -41,6 +41,8 @@ const HUBS: Array<{ href: string; title: string; desc: string }> = [
     { href: '/ar/sectors', title: 'القطاعات', desc: 'أداء قطاعات البورصة المصرية والشركات في كل قطاع' },
     { href: '/ar/markets/dividend-calendar', title: 'مواعيد توزيعات الأرباح', desc: 'التوزيعات القادمة والأخيرة وتواريخ الاستحقاق' },
     { href: '/ar/markets/top-dividend-yield', title: 'أعلى الأسهم توزيعًا', desc: 'أسهم البورصة المصرية مرتبة حسب عائد التوزيع' },
+    { href: '/ar/markets/largest-companies', title: 'أكبر الشركات', desc: 'شركات البورصة المصرية مرتبة حسب القيمة السوقية' },
+    { href: '/ar/markets/lowest-pe-stocks', title: 'الأقل مكرر ربحية', desc: 'أرخص أسهم البورصة المصرية حسب مضاعف الأرباح' },
     { href: '/ar/Funds/best-mutual-funds-egypt-2026', title: 'أفضل صناديق الاستثمار', desc: 'ترتيب صناديق الاستثمار المصرية حسب العائد السنوي' },
     { href: '/ar/Learn/glossary', title: 'قاموس المصطلحات', desc: 'شرح مصطلحات الاستثمار والبورصة بالعربية' },
     { href: '/ar/Learn', title: 'أكاديمية التعلم', desc: 'أدلة تعليمية عن الاستثمار والبورصة المصرية' },

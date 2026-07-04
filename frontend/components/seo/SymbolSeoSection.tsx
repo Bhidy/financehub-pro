@@ -377,7 +377,9 @@ export default function SymbolSeoSection({
                         <Link href={`/sectors/${slugify(ticker.sector_name)}`} className="text-slate-500 hover:text-[#0D9488] dark:text-slate-400 dark:hover:text-[#2DD4BF]">{ticker.sector_name} sector</Link>
                     )}
                     <Link href="/markets/movers" className="text-slate-500 hover:text-[#0D9488] dark:text-slate-400 dark:hover:text-[#2DD4BF]">Top movers</Link>
+                    <Link href="/markets/largest-companies" className="text-slate-500 hover:text-[#0D9488] dark:text-slate-400 dark:hover:text-[#2DD4BF]">Largest by market cap</Link>
                     <Link href="/markets/dividend-calendar" className="text-slate-500 hover:text-[#0D9488] dark:text-slate-400 dark:hover:text-[#2DD4BF]">Dividend calendar</Link>
+                    <Link href="/editorial-policy" className="text-slate-500 hover:text-[#0D9488] dark:text-slate-400 dark:hover:text-[#2DD4BF]">Editorial policy</Link>
                     <a href={`/ar/symbol/${symbol}`} lang="ar" hrefLang="ar" className="text-slate-500 hover:text-[#0D9488] dark:text-slate-400 dark:hover:text-[#2DD4BF]">صفحة السهم بالعربية</a>
                 </nav>
             </div>

@@ -1,0 +1,135 @@
+/*
+ * Premium fund-profile design system — a faithful port of the canonical
+ * fund-details.html inline styles, scoped under .fund-premium so it can never
+ * collide with the rest of the app. Colors theme off the shared --c-* tokens
+ * already defined in globals.css (light + [data-theme="dark"]), so this matches
+ * the site's Midnight Teal system automatically.
+ */
+.fund-premium {
+    --shadow-premium: 0 24px 60px rgba(148, 163, 184, 0.18);
+    --shadow-halo: 0 16px 34px rgba(20, 184, 166, 0.12);
+    --glass-blur: 22px;
+}
+
+[data-theme='dark'] .fund-premium {
+    --shadow-premium: 0 24px 70px rgba(0, 0, 0, 0.5);
+    --shadow-halo: 0 16px 34px rgba(20, 184, 166, 0.2);
+    --glass-blur: 40px;
+}
+
+.fund-premium .font-display {
+    font-family: var(--font-sans, 'Manrope', sans-serif);
+}
+
+.fund-premium .glass-premium {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--c-border);
+    box-shadow: var(--shadow-premium);
+}
+
+.fund-premium .surface-card {
+    background:
+        radial-gradient(circle at top right, rgba(20, 184, 166, 0.1), transparent 30%),
+        var(--c-surface);
+    border: 1px solid var(--c-border);
+    box-shadow: var(--shadow-premium);
+}
+
+.fund-premium .summary-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    box-shadow: var(--shadow-premium);
+}
+
+.fund-premium .section-tag {
+    font-size: 0.72rem;
+    letter-spacing: 0.24em;
+    color: var(--teal-dark);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.fund-premium .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: 1px solid var(--c-border);
+    background: var(--c-surface);
+    color: var(--c-text-main);
+}
+
+.fund-premium .perf-card {
+    border: 1px solid transparent;
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.fund-premium .perf-card:hover {
+    border-color: rgba(20, 184, 166, 0.25);
+    transform: translateY(-1px);
+}
+
+.fund-premium .perf-card-active {
+    border-color: rgba(15, 118, 110, 0.28) !important;
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(45, 212, 191, 0.05)) !important;
+    box-shadow: 0 8px 24px rgba(20, 184, 166, 0.12);
+}
+
+.fund-premium .range-btn {
+    border: 1px solid var(--c-border);
+    background: var(--c-surface);
+    color: var(--c-text-muted);
+    min-width: 3.4rem;
+    letter-spacing: 0.02em;
+    transition: all 180ms ease;
+}
+
+.fund-premium .range-btn:hover {
+    border-color: rgba(20, 184, 166, 0.35);
+    color: var(--c-text-main);
+}
+
+.fund-premium .range-btn.active {
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.14), rgba(45, 212, 191, 0.08));
+    border-color: rgba(15, 118, 110, 0.2);
+    color: var(--teal-dark);
+    box-shadow: 0 14px 28px rgba(20, 184, 166, 0.12);
+    transform: translateY(-1px);
+}
+
+.fund-premium .doc-link {
+    border: 1px solid var(--c-border);
+    background: var(--c-surface);
+    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.fund-premium .doc-link:hover {
+    border-color: rgba(20, 184, 166, 0.3);
+    box-shadow: 0 14px 32px rgba(20, 184, 166, 0.08);
+    transform: translateY(-1px);
+}
+
+.fund-premium .chart-tooltip {
+    position: absolute;
+    pointer-events: none;
+    z-index: 5;
+    min-width: 8rem;
+    border-radius: 0.9rem;
+    border: 1px solid var(--c-border);
+    background: var(--c-surface);
+    box-shadow: var(--shadow-premium);
+    padding: 0.65rem 0.85rem;
+    transform: translate(-50%, -110%);
+    opacity: 0;
+    transition: opacity 120ms ease;
+}
+
+.fund-premium .chart-tooltip.visible {
+    opacity: 1;
+}

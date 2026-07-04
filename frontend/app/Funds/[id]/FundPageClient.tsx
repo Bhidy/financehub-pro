@@ -2,12 +2,15 @@
 
 import Link from 'next/link';
 import FundNavChart from './FundNavChart';
+import type { FundLabels, Lang } from './fund-i18n';
 import './fund-premium.css';
 
-type Stat = { label: string; value: string };
+type LabelValue = { label: string; value: string };
 type SignedStat = { label: string; value: string; negative: boolean };
 
 export type FundClientData = {
+    t: FundLabels;
+    lang: Lang;
     fundId: string | number;
     name: string;
     nameEn: string | null;
@@ -24,31 +27,32 @@ export type FundClientData = {
     currency: string;
     headlineReturn: SignedStat | null;
     chips: string[];
-    miniStats: Stat[];
     perfCards: SignedStat[];
-    facts: Stat[];
-    fees: Stat[];
+    facts: LabelValue[];
+    fees: LabelValue[];
     riskStats: SignedStat[];
     platforms: Array<{ name: string; logo: string | null }>;
     prospectusUrl: string | null;
-    tradingRows: Stat[];
-    strategyEn: string | null;
-    objectiveEn: string | null;
-    strategyAr: string | null;
-    objectiveAr: string | null;
+    tradingRows: LabelValue[];
+    strategy: string | null;
+    objective: string | null;
+    managerProfile: { name: string; logo: string | null; rows: LabelValue[] } | null;
     peers: Array<{ id: number; label: string; href: string; compareHref: string }>;
     faqs: Array<{ q: string; a: string }>;
+    isShariah: boolean;
 };
 
 const MICRO = 'text-[0.68rem] uppercase tracking-[0.22em] text-muted';
 const SECTION = 'mt-8';
 
-function SignedValue({ value, negative, className = '' }: { value: string; negative: boolean; className?: string }) {
+function Signed({ value, negative, className = '' }: { value: string; negative: boolean; className?: string }) {
     return <span className={`${negative ? 'text-red-500' : 'text-main'} ${className}`}>{value}</span>;
 }
 
 export default function FundPageClient(props: FundClientData) {
     const {
+        t,
+        lang,
         fundId,
         name,
         nameEn,
@@ -65,7 +69,6 @@ export default function FundPageClient(props: FundClientData) {
         currency,
         headlineReturn,
         chips,
-        miniStats,
         perfCards,
         facts,
         fees,
@@ -73,19 +76,16 @@ export default function FundPageClient(props: FundClientData) {
         platforms,
         prospectusUrl,
         tradingRows,
-        strategyEn,
-        objectiveEn,
-        strategyAr,
-        objectiveAr,
+        strategy,
+        objective,
+        managerProfile,
         peers,
         faqs,
     } = props;
 
-    const arabicOnlyTitle = !nameEn && !!nameAr;
-
     return (
         <div className="fund-premium">
-            {/* ── Hero: identity + headline stats + interactive NAV chart ───────── */}
+            {/* ── Hero ──────────────────────────────────────────────────────────── */}
             <section className="surface-card rounded-[2.4rem] p-5 sm:p-7 lg:p-9">
                 <div className="grid gap-7 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.1fr)] xl:items-stretch">
                     <div className="flex flex-col gap-6">
@@ -94,17 +94,9 @@ export default function FundPageClient(props: FundClientData) {
                                 {monogram}
                             </div>
                             <div className="min-w-0">
-                                <h1
-                                    className="text-2xl font-display font-bold leading-[1.05] tracking-[-0.03em] text-main sm:text-3xl lg:text-[2.6rem]"
-                                    {...(arabicOnlyTitle ? { dir: 'rtl' as const, lang: 'ar' } : {})}
-                                >
+                                <h1 className="text-2xl font-display font-bold leading-[1.15] tracking-[-0.03em] text-main sm:text-3xl lg:text-[2.6rem]">
                                     {name}
                                 </h1>
-                                {nameEn && nameAr && nameAr !== nameEn && (
-                                    <p dir="rtl" lang="ar" className="mt-2 text-base font-semibold text-muted">
-                                        {nameAr}
-                                    </p>
-                                )}
                                 {managerLine && <p className="mt-2 text-sm text-muted">{managerLine}</p>}
                             </div>
                         </div>
@@ -121,36 +113,36 @@ export default function FundPageClient(props: FundClientData) {
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="summary-card rounded-[1.6rem] p-5">
-                                <div className={MICRO}>Latest NAV</div>
+                                <div className={MICRO}>{t.latestNav}</div>
                                 <div className="mt-3 text-3xl font-display font-bold tracking-[-0.03em] text-main sm:text-4xl">
                                     {navText ?? '—'}
-                                    {navText && <span className="ml-1.5 text-base font-semibold text-muted">{currency}</span>}
+                                    {navText && <span className="mx-1.5 text-base font-semibold text-muted">{currency}</span>}
                                 </div>
                                 <p className="mt-2 text-sm text-muted">
                                     {navHuman ? (
                                         <>
-                                            as of <time dateTime={navDateIso ?? undefined}>{navHuman}</time>
+                                            {t.asOf} <time dateTime={navDateIso ?? undefined}>{navHuman}</time>
                                         </>
                                     ) : (
                                         currency
                                     )}
                                     {navStale && (
-                                        <span className="ml-2 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">
-                                            Delayed{navAgeDays !== null ? ` · ${navAgeDays}d` : ''}
+                                        <span className="mx-2 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">
+                                            {t.delayed}{navAgeDays !== null ? ` · ${navAgeDays}d` : ''}
                                         </span>
                                     )}
                                 </p>
                             </div>
                             <div className="summary-card rounded-[1.6rem] p-5">
-                                <div className={MICRO}>{headlineReturn ? headlineReturn.label : 'Return'}</div>
+                                <div className={MICRO}>{headlineReturn ? headlineReturn.label : t.returnLabel}</div>
                                 <div className="mt-3 text-3xl font-display font-bold tracking-[-0.03em] sm:text-4xl">
                                     {headlineReturn ? (
-                                        <SignedValue value={headlineReturn.value} negative={headlineReturn.negative} />
+                                        <Signed value={headlineReturn.value} negative={headlineReturn.negative} />
                                     ) : (
                                         <span className="text-main">—</span>
                                     )}
                                 </div>
-                                <p className="mt-2 text-sm text-muted">Total NAV return</p>
+                                <p className="mt-2 text-sm text-muted">{t.totalNavReturn}</p>
                             </div>
                         </div>
 
@@ -158,44 +150,33 @@ export default function FundPageClient(props: FundClientData) {
                             <p className="text-sm text-muted">
                                 {navLow && (
                                     <>
-                                        52-week low: <span className="font-semibold text-main">{navLow}</span>
+                                        {t.week52Low}: <span className="font-semibold text-main">{navLow}</span>
                                     </>
                                 )}
                                 {navLow && navHigh && ' · '}
                                 {navHigh && (
                                     <>
-                                        52-week high: <span className="font-semibold text-main">{navHigh}</span>
+                                        {t.week52High}: <span className="font-semibold text-main">{navHigh}</span>
                                     </>
                                 )}
                             </p>
                         )}
-
-                        {miniStats.length > 0 && (
-                            <div className="grid gap-3 sm:grid-cols-3">
-                                {miniStats.map((s) => (
-                                    <div key={s.label} className="summary-card rounded-[1.3rem] p-4">
-                                        <div className={MICRO}>{s.label}</div>
-                                        <div className="mt-2 text-base font-semibold text-main">{s.value}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
 
-                    <FundNavChart fundId={fundId} currency={currency} />
+                    <FundNavChart fundId={fundId} currency={currency} lang={lang} />
                 </div>
             </section>
 
-            {/* ── Period performance ────────────────────────────────────────────── */}
+            {/* ── Performance ───────────────────────────────────────────────────── */}
             {perfCards.length > 0 && (
                 <section className={SECTION}>
-                    <span className="section-tag">Performance</span>
+                    <span className="section-tag">{t.performance}</span>
                     <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
                         {perfCards.map((p) => (
                             <div key={p.label} className="summary-card perf-card rounded-[1.4rem] p-4">
                                 <div className={MICRO}>{p.label}</div>
                                 <div className="mt-3 text-xl font-display font-bold tracking-[-0.03em]">
-                                    <SignedValue value={p.value} negative={p.negative} />
+                                    <Signed value={p.value} negative={p.negative} />
                                 </div>
                             </div>
                         ))}
@@ -203,14 +184,12 @@ export default function FundPageClient(props: FundClientData) {
                 </section>
             )}
 
-            {/* ── Fund details + Investment thesis ──────────────────────────────── */}
+            {/* ── Fund details + thesis ─────────────────────────────────────────── */}
             <section className={`${SECTION} grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.72fr)]`}>
                 {facts.length > 0 && (
                     <div className="glass-premium rounded-[2rem] p-6 sm:p-7">
-                        <span className="section-tag">Fund details</span>
-                        <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">
-                            Research-grade fund profile
-                        </h2>
+                        <span className="section-tag">{t.fundDetails}</span>
+                        <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">{t.fundDetailsSub}</h2>
                         <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                             {facts.map((f) => (
                                 <div key={f.label} className="summary-card rounded-[1.2rem] p-4">
@@ -222,26 +201,20 @@ export default function FundPageClient(props: FundClientData) {
                     </div>
                 )}
 
-                {(strategyEn || objectiveEn || strategyAr || objectiveAr) && (
+                {(strategy || objective) && (
                     <div className="glass-premium rounded-[2rem] p-6 sm:p-7">
-                        <span className="section-tag">Investment thesis</span>
+                        <span className="section-tag">{t.investmentThesis}</span>
                         <div className="mt-4 space-y-6">
-                            {strategyEn && (
+                            {strategy && (
                                 <div>
-                                    <h3 className="text-base font-semibold text-main">Investment strategy</h3>
-                                    <p className="mt-2 text-sm leading-relaxed text-muted">{strategyEn}</p>
+                                    <h3 className="text-base font-semibold text-main">{t.investmentStrategy}</h3>
+                                    <p className="mt-2 text-sm leading-relaxed text-muted">{strategy}</p>
                                 </div>
                             )}
-                            {objectiveEn && (
+                            {objective && (
                                 <div>
-                                    <h3 className="text-base font-semibold text-main">Fund objective</h3>
-                                    <p className="mt-2 text-sm leading-relaxed text-muted">{objectiveEn}</p>
-                                </div>
-                            )}
-                            {(strategyAr || objectiveAr) && (
-                                <div dir="rtl" lang="ar" className="rounded-[1.2rem] border border-border bg-surface p-4 text-sm leading-relaxed text-muted">
-                                    {strategyAr && <p>{strategyAr}</p>}
-                                    {objectiveAr && <p className={strategyAr ? 'mt-3' : ''}>{objectiveAr}</p>}
+                                    <h3 className="text-base font-semibold text-main">{t.fundObjective}</h3>
+                                    <p className="mt-2 text-sm leading-relaxed text-muted">{objective}</p>
                                 </div>
                             )}
                         </div>
@@ -249,13 +222,47 @@ export default function FundPageClient(props: FundClientData) {
                 )}
             </section>
 
+            {/* ── About the manager ─────────────────────────────────────────────── */}
+            {managerProfile && (
+                <section className={`${SECTION} glass-premium rounded-[2rem] p-6 sm:p-8`}>
+                    <span className="section-tag">{t.managerProfile}</span>
+                    <div className="mt-4 flex flex-col gap-6 sm:flex-row sm:items-center">
+                        <div className="flex items-center gap-4">
+                            {managerProfile.logo ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                    src={managerProfile.logo}
+                                    alt=""
+                                    className="h-16 w-16 shrink-0 rounded-2xl border border-border bg-surface object-contain p-2"
+                                />
+                            ) : (
+                                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-starta-teal/10 text-2xl font-display font-bold text-starta-teal">
+                                    {managerProfile.name.trim().charAt(0)}
+                                </span>
+                            )}
+                            <h2 className="text-lg font-display font-bold tracking-[-0.02em] text-main sm:text-xl">
+                                {managerProfile.name}
+                            </h2>
+                        </div>
+                        <div className="grid flex-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            {managerProfile.rows.map((r) => (
+                                <div key={r.label} className="summary-card rounded-[1.2rem] p-4">
+                                    <div className={MICRO}>{r.label}</div>
+                                    <div className="mt-2 text-sm font-semibold text-main">{r.value}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {/* ── Fees + Risk ───────────────────────────────────────────────────── */}
             {(fees.length > 0 || riskStats.length > 0) && (
                 <section className={`${SECTION} grid gap-6 lg:grid-cols-2`}>
                     {fees.length > 0 && (
                         <div className="glass-premium rounded-[2rem] p-6 sm:p-7">
-                            <span className="section-tag">Cost of ownership</span>
-                            <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">Fees</h2>
+                            <span className="section-tag">{t.costOfOwnership}</span>
+                            <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">{t.fees}</h2>
                             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                 {fees.map((f) => (
                                     <div key={f.label} className="summary-card rounded-[1.2rem] p-4">
@@ -269,51 +276,41 @@ export default function FundPageClient(props: FundClientData) {
 
                     {riskStats.length > 0 && (
                         <div className="glass-premium rounded-[2rem] p-6 sm:p-7">
-                            <span className="section-tag">Risk factors</span>
-                            <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">Risk &amp; Volatility</h2>
+                            <span className="section-tag">{t.riskFactors}</span>
+                            <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">{t.riskVolatility}</h2>
                             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                 {riskStats.map((r) => (
                                     <div key={r.label} className="summary-card rounded-[1.2rem] p-4">
                                         <div className={MICRO}>{r.label}</div>
                                         <div className="mt-2 text-lg font-display font-bold tabular-nums">
-                                            <SignedValue value={r.value} negative={r.negative} />
+                                            <Signed value={r.value} negative={r.negative} />
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <p className="mt-4 border-t border-border/60 pt-3 text-xs text-muted">
-                                Computed from our full NAV history. Max drawdown is the worst peak-to-trough decline;
-                                volatility is annualized by the fund&apos;s NAV reporting frequency.
-                            </p>
+                            <p className="mt-4 border-t border-border/60 pt-3 text-xs text-muted">{t.riskNote}</p>
                         </div>
                     )}
                 </section>
             )}
 
-            {/* ── Where to invest: distributors + prospectus + schedule ─────────── */}
+            {/* ── Where to invest ───────────────────────────────────────────────── */}
             {(platforms.length > 0 || prospectusUrl || tradingRows.length > 0) && (
                 <section className={`${SECTION} glass-premium rounded-[2rem] p-6 sm:p-8`}>
-                    <span className="section-tag">Purchase channels</span>
-                    <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">Where to Invest</h2>
+                    <span className="section-tag">{t.purchaseChannels}</span>
+                    <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">{t.whereToInvest}</h2>
 
                     <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.6fr)]">
                         <div className="flex flex-col gap-6">
                             {platforms.length > 0 && (
                                 <div>
-                                    <div className={MICRO}>Subscription &amp; redemption channels</div>
+                                    <div className={MICRO}>{t.subRedemptionChannels}</div>
                                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                                         {platforms.map((p) => (
-                                            <div
-                                                key={p.name}
-                                                className="summary-card flex items-center gap-3 rounded-[1.1rem] p-3.5"
-                                            >
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <div key={p.name} className="summary-card flex items-center gap-3 rounded-[1.1rem] p-3.5">
                                                 {p.logo ? (
-                                                    <img
-                                                        src={p.logo}
-                                                        alt=""
-                                                        className="h-9 w-9 shrink-0 rounded-lg object-contain"
-                                                    />
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img src={p.logo} alt="" className="h-9 w-9 shrink-0 rounded-lg object-contain" />
                                                 ) : (
                                                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-starta-teal/10 text-sm font-bold text-starta-teal">
                                                         {p.name.trim().charAt(0)}
@@ -328,12 +325,12 @@ export default function FundPageClient(props: FundClientData) {
 
                             {tradingRows.length > 0 && (
                                 <div>
-                                    <div className={MICRO}>Trading schedule</div>
+                                    <div className={MICRO}>{t.tradingSchedule}</div>
                                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                        {tradingRows.map((t) => (
-                                            <div key={t.label} className="summary-card rounded-[1.1rem] p-3.5">
-                                                <div className={MICRO}>{t.label}</div>
-                                                <div className="mt-1.5 text-sm font-semibold text-main">{t.value}</div>
+                                        {tradingRows.map((tr) => (
+                                            <div key={tr.label} className="summary-card rounded-[1.1rem] p-3.5">
+                                                <div className={MICRO}>{tr.label}</div>
+                                                <div className="mt-1.5 text-sm font-semibold text-main">{tr.value}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -343,7 +340,7 @@ export default function FundPageClient(props: FundClientData) {
 
                         {prospectusUrl && (
                             <div>
-                                <div className={MICRO}>Documents</div>
+                                <div className={MICRO}>{t.documents}</div>
                                 <a
                                     href={prospectusUrl}
                                     target="_blank"
@@ -360,26 +357,22 @@ export default function FundPageClient(props: FundClientData) {
                                         </svg>
                                     </span>
                                     <span>
-                                        <span className="block text-sm font-semibold text-main">Fund prospectus</span>
-                                        <span className="block text-xs text-muted">PDF · opens in a new tab</span>
+                                        <span className="block text-sm font-semibold text-main">{t.prospectus}</span>
+                                        <span className="block text-xs text-muted">{t.prospectusMeta}</span>
                                     </span>
                                 </a>
                             </div>
                         )}
                     </div>
 
-                    <p className="mt-6 border-t border-border/60 pt-3 text-xs text-muted">
-                        Channels &amp; prospectus as published by the fund manager. Verify terms before investing.
-                    </p>
+                    <p className="mt-6 border-t border-border/60 pt-3 text-xs text-muted">{t.channelsDisclaimer}</p>
                 </section>
             )}
 
             {/* ── Similar funds ─────────────────────────────────────────────────── */}
             <section className={SECTION}>
-                <span className="section-tag">Explore more</span>
-                <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">
-                    Similar funds in the same universe
-                </h2>
+                <span className="section-tag">{t.exploreMore}</span>
+                <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">{t.similarFunds}</h2>
                 {peers.length > 0 && (
                     <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         {peers.map((p) => (
@@ -387,19 +380,16 @@ export default function FundPageClient(props: FundClientData) {
                                 <Link href={p.href} className="text-sm font-semibold text-main hover:text-starta-teal">
                                     {p.label}
                                 </Link>
-                                <Link
-                                    href={p.compareHref}
-                                    className="mt-auto text-xs font-semibold text-starta-teal hover:underline"
-                                >
-                                    Compare →
+                                <Link href={p.compareHref} className="mt-auto text-xs font-semibold text-starta-teal hover:underline">
+                                    {t.compare} →
                                 </Link>
                             </div>
                         ))}
                     </div>
                 )}
                 <p className="mt-5 text-sm">
-                    <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">
-                        All Egyptian mutual funds →
+                    <Link href={lang === 'ar' ? '/Funds' : '/Funds'} className="font-semibold text-starta-teal hover:underline">
+                        {t.allFunds} →
                     </Link>
                 </p>
             </section>
@@ -407,10 +397,8 @@ export default function FundPageClient(props: FundClientData) {
             {/* ── FAQ ───────────────────────────────────────────────────────────── */}
             {faqs.length > 0 && (
                 <section className={`${SECTION} glass-premium rounded-[2rem] p-6 sm:p-8`}>
-                    <span className="section-tag">Fund FAQ</span>
-                    <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">
-                        Frequently asked questions
-                    </h2>
+                    <span className="section-tag">{t.fundFaq}</span>
+                    <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">{t.faqTitle}</h2>
                     <dl className="mt-6 space-y-5">
                         {faqs.map((f) => (
                             <div key={f.q} className="border-b border-border/60 pb-5 last:border-b-0 last:pb-0">

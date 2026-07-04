@@ -13,6 +13,7 @@
     "pull-env": "vercel env pull .env.local",
     "verify": "npx tsx scripts/verify-prod.ts",
     "verify:routes": "node scripts/verify-route-aliases.mjs",
+    "verify:deploy": "node scripts/verify-deploy.mjs",
     "sync:mobile-public": "node scripts/sync-mobile-public.mjs",
     "build:mobile": "node scripts/sync-mobile-public.mjs && vite build --config vite.mobile.config.ts"
   },

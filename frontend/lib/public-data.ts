@@ -223,10 +223,12 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
     // column or the fund_platforms table can never break the page.
     try {
         const meta = await db.query(
-            `SELECT prospectus_url, alternative_names, fund_manager, purchase_frequency, redemption_frequency
+            `SELECT prospectus_url, alternative_names, fund_manager, purchase_frequency, redemption_frequency,
+                    isin, aum, aum_millions, market
              FROM mutual_funds WHERE fund_id = $1`, [String(fundId)]);
         const mm = meta.rows[0] as Record<string, unknown> | undefined;
-        if (mm) for (const k of ['prospectus_url', 'alternative_names', 'fund_manager', 'purchase_frequency', 'redemption_frequency']) {
+        if (mm) for (const k of ['prospectus_url', 'alternative_names', 'fund_manager', 'purchase_frequency',
+            'redemption_frequency', 'isin', 'aum', 'aum_millions', 'market']) {
             if (row[k] === null || row[k] === undefined) row[k] = mm[k];
         }
     } catch { /* isolated */ }
@@ -235,10 +237,25 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
             `SELECT platform_name, logo_url FROM fund_platforms WHERE fund_id = $1 ORDER BY platform_name`, [String(fundId)]);
         row.platforms = pl.rows;
     } catch { row.platforms = []; }
+    // Asset-manager profile (23 harvested houses; no FK — fuzzy-match on the
+    // manager name). Isolated: a missing asset_managers table or no match must
+    // never break the page. Powers the premium "About the manager" section.
+    try {
+        const mgrName = (row.manager_name_en || row.manager_name || row.issuer_en || row.owner_name_en) as string | null;
+        if (mgrName && mgrName.trim()) {
+            const q = `%${mgrName.trim()}%`;
+            const amp = await db.query(
+                `SELECT name, name_en, establishment_year, chairman, capital, total_aum, fund_count, logo_url
+                 FROM asset_managers
+                 WHERE name_en ILIKE $1 OR name ILIKE $1 OR $2 ILIKE '%' || name_en || '%'
+                 ORDER BY (name_en ILIKE $1) DESC LIMIT 1`, [q, mgrName.trim()]);
+            row.manager_profile = amp.rows[0] ?? null;
+        }
+    } catch { /* isolated */ }
     toNum(row, [
         'latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_1y', 'return_3y', 'return_5y',
         'expense_ratio', 'fee_management', 'fee_subscription', 'fee_redemption',
-        'nav_52w_high', 'nav_52w_low', 'aum', 'min_subscription', 'par_value',
+        'nav_52w_high', 'nav_52w_low', 'aum', 'aum_millions', 'min_subscription', 'par_value',
         'max_drawdown', 'volatility_annual',
     ]);
     return row;

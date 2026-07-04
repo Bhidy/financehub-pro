@@ -249,8 +249,8 @@ async def save_fund_data(conn, fund, history, profile_data):
     """Save all data to DB."""
     # 1. Upsert Fund
     await conn.execute('''
-        INSERT INTO mutual_funds (fund_id, fund_name, market, manager_name, owner, latest_nav, last_update_date, updated_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+        INSERT INTO mutual_funds (fund_id, fund_name, fund_name_en, market, manager_name, owner, latest_nav, last_update_date, updated_at)
+        VALUES ($1, $2, $2, $3, $4, $5, $6, $7, NOW())
         ON CONFLICT (fund_id) DO UPDATE SET
             -- freshest-wins / fill-don't-null: never overwrite a populated metadata
             -- field with a blank scrape, and never regress the NAV date.
@@ -260,6 +260,9 @@ async def save_fund_data(conn, fund, history, profile_data):
             manager_name = COALESCE(NULLIF(EXCLUDED.manager_name, ''), mutual_funds.manager_name),
             owner = COALESCE(NULLIF(EXCLUDED.owner, ''), mutual_funds.owner),
             fund_name = COALESCE(NULLIF(EXCLUDED.fund_name, ''), mutual_funds.fund_name),
+            -- fund_name_en is what the funds API/sitemap require to make a fund visible;
+            -- the census name is English, so seed it here (Arabic fund_name filled later).
+            fund_name_en = COALESCE(NULLIF(mutual_funds.fund_name_en, ''), EXCLUDED.fund_name_en),
             updated_at = NOW()
     ''', fund['fund_id'], fund['name'], fund['market'], fund['manager'], fund['owner'], fund['latest_nav'], fund['last_update_date'])
     

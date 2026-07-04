@@ -107,6 +107,58 @@ def parse_list_rows(payload) -> list[tuple[str, date, float]]:
     return out
 
 
+ARABIC_LIST_URL = "https://www.mubasher.info/api/1/funds?country=eg&size=500"
+
+_INSERT_FUND = """
+INSERT INTO mutual_funds
+    (fund_id, fund_name_en, fund_name, market_code, market, currency,
+     manager_name, owner, latest_nav, last_update_date, updated_at)
+VALUES ($1, $2, $3, 'EGX', 'Egyptian Stock Exchange', $4, $5, $6, $7, $8, NOW())
+ON CONFLICT (fund_id) DO UPDATE SET
+    fund_name_en = COALESCE(NULLIF(mutual_funds.fund_name_en, ''), EXCLUDED.fund_name_en),
+    fund_name    = COALESCE(NULLIF(mutual_funds.fund_name, ''), EXCLUDED.fund_name),
+    manager_name = COALESCE(NULLIF(mutual_funds.manager_name, ''), EXCLUDED.manager_name),
+    owner        = COALESCE(NULLIF(mutual_funds.owner, ''), EXCLUDED.owner),
+    updated_at   = NOW()
+"""
+
+
+def _fund_insert_row(en, ar_name=None):
+    """PURE: map a Mubasher english list-API row (+ optional Arabic name) to the arg
+    tuple for _INSERT_FUND, or None if the fund lacks the data to render a real page
+    (no positive price, or no English name). This is what prevents empty stubs — a
+    fund Mubasher lists but has no NAV for (price 0, e.g. an unlaunched target-maturity
+    fund) is never inserted. fund_name_en is always set, so new funds are visible."""
+    if not isinstance(en, dict):
+        return None
+    fid = en.get("fundId")
+    nav = _parse_nav(en.get("price"))          # None when price is 0 / missing
+    name_en = (en.get("name") or "").strip()
+    if fid is None or nav is None or not name_en:
+        return None
+    managers = en.get("managers") or []
+    manager = str((managers[0] if managers else None) or en.get("owner") or "").strip() or None
+    return (
+        str(fid),
+        name_en,
+        (ar_name or "").strip() or name_en,
+        (en.get("currency") or "EGP") or "EGP",
+        manager,
+        (str(en.get("owner") or "").strip() or None),
+        nav,
+        _parse_date(en.get("date")),
+    )
+
+
+async def fetch_raw(client, url):
+    """Fetch a Mubasher list-API URL and return its raw rows (list of dicts)."""
+    r = await client.get(url)
+    r.raise_for_status()
+    data = r.json()
+    rows = data.get("rows") if isinstance(data, dict) else None
+    return rows if isinstance(rows, list) else []
+
+
 def load_db_url() -> str:
     url = os.environ.get("DATABASE_URL")
     if url:
@@ -132,7 +184,7 @@ async def fetch_list() -> list[tuple[str, date, float]]:
         return parse_list_rows(r.json())
 
 
-async def run(dry_run=False, min_updated=1):
+async def run(dry_run=False, min_updated=1, discover=False):
     from data_pipeline.pg_resilient import (  # lazy: keeps parser asyncpg-free
         connect_resilient, database_is_read_only, is_read_only_error)
     points = await fetch_list()
@@ -177,6 +229,41 @@ async def run(dry_run=False, min_updated=1):
                     break
                 stats["failures"].append(f"{fund_id}:{type(e).__name__}")
 
+        # --- Discovery: add funds Mubasher lists but we don't have, or that we have but
+        # are HIDDEN because fund_name_en is blank (the funds API filters those out).
+        # Only funds WITH data (positive price + English name) are inserted, so we never
+        # create empty stub pages; fill-don't-null upsert never overwrites existing data.
+        if discover and not dry_run and not stats.get("read_only"):
+            try:
+                timeout = httpx.Timeout(25.0, connect=10.0)
+                async with httpx.AsyncClient(timeout=timeout, follow_redirects=True,
+                                             headers={"User-Agent": UA}) as client:
+                    en_rows = await fetch_raw(client, LIST_URL)
+                    ar_rows = await fetch_raw(client, ARABIC_LIST_URL)
+                ar_name = {str(r.get("fundId")): (r.get("name") or "")
+                           for r in ar_rows if isinstance(r, dict)}
+                invisible = {r["fund_id"] for r in await conn.fetch(
+                    "SELECT fund_id FROM mutual_funds WHERE COALESCE(fund_name_en, '') = ''")}
+                added = 0
+                for en in en_rows:
+                    fid = str(en.get("fundId")) if isinstance(en, dict) else ""
+                    if fid in known and fid not in invisible:
+                        continue  # already present and visible
+                    row = _fund_insert_row(en, ar_name.get(fid))
+                    if not row:
+                        continue  # dataless (price 0) — never insert an empty stub
+                    try:
+                        await conn.execute(_INSERT_FUND, *row)
+                        added += 1
+                    except Exception as e:  # noqa: BLE001 - per-fund isolation
+                        if is_read_only_error(e):
+                            stats["read_only"] = True
+                            break
+                        stats["failures"].append(f"discover:{fid}:{type(e).__name__}")
+                stats["discovered"] = added
+            except Exception as e:  # noqa: BLE001 - discovery best-effort; never fail the run
+                stats["failures"].append(f"discover:{type(e).__name__}")
+
         print("[funds-list-api] RESULT " + json.dumps(stats, default=str), flush=True)
         if stats["missing_from_db"]:
             print(f"::notice::{stats['missing_from_db']} funds priced by Mubasher are NOT in "
@@ -200,8 +287,11 @@ def main():
     ap.add_argument("--dry-run", action="store_true", help="fetch+parse only, no DB writes")
     ap.add_argument("--min-updated", type=int, default=1,
                     help="exit non-zero if fewer than this many funds updated")
+    ap.add_argument("--discover", action="store_true",
+                    help="also insert funds Mubasher lists that we lack/hide (with data only)")
     args = ap.parse_args()
-    sys.exit(asyncio.run(run(dry_run=args.dry_run, min_updated=args.min_updated)))
+    sys.exit(asyncio.run(run(dry_run=args.dry_run, min_updated=args.min_updated,
+                             discover=args.discover)))
 
 
 if __name__ == "__main__":

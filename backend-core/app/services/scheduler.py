@@ -289,8 +289,9 @@ class SchedulerService:
         it can never crash or delay startup."""
         try:
             await asyncio.sleep(25)  # let the DB + app settle
-            logger.info("Startup: refreshing fund_risk_metrics (applies latest compute logic)")
-            await self.run_fund_metrics_job()
+            logger.info("Startup: discover funds + augment NAVs, then refresh risk metrics")
+            await self.run_fund_list_api_job()   # discover new/hidden funds + fresh NAVs first
+            await self.run_fund_metrics_job()     # then recompute metrics (incl. any new funds)
         except Exception as e:
             logger.error(f"Startup fund-metrics catch-up error: {e}")
 
@@ -463,7 +464,7 @@ class SchedulerService:
             script_path = os.path.join(base_dir, 'scripts', 'funds_list_api_sync.py')
 
             proc = await asyncio.create_subprocess_exec(
-                sys.executable, script_path, '--min-updated', '50',
+                sys.executable, script_path, '--min-updated', '50', '--discover',
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
             await proc.communicate()

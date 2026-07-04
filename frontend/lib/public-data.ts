@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { db } from '@/lib/db-server';
 
 /**
@@ -490,19 +491,26 @@ export const getHistoryStats = cache(async (symbol: string): Promise<Record<stri
 });
 
 /** Sector list with counts + aggregate market cap (for /sectors hubs). */
-export const getSectors = cache(async (): Promise<Array<{ sector_name: string; companies: number; market_cap: number | null }>> => {
-    const result = await db.query(
-        `SELECT sector_name, COUNT(*)::int AS companies, SUM(market_cap::numeric) AS market_cap
-         FROM market_tickers
-         WHERE last_price IS NOT NULL AND sector_name IS NOT NULL AND sector_name <> ''
-           AND sector_name <> 'Index' -- the EGX30 index row is not a company sector
-         GROUP BY sector_name
-         ORDER BY SUM(market_cap::numeric) DESC NULLS LAST`
-    );
-    return result.rows.map((r: Record<string, unknown>) => toNum(r, ['companies', 'market_cap'])) as Array<{
-        sector_name: string; companies: number; market_cap: number | null;
-    }>;
-});
+// Sector aggregates change slowly (membership + summed caps) and power the
+// /sectors hubs — cache cross-request for 5 min, same rationale as the ticker list.
+const _sectorsCached = unstable_cache(
+    async (): Promise<Array<{ sector_name: string; companies: number; market_cap: number | null }>> => {
+        const result = await db.query(
+            `SELECT sector_name, COUNT(*)::int AS companies, SUM(market_cap::numeric) AS market_cap
+             FROM market_tickers
+             WHERE last_price IS NOT NULL AND sector_name IS NOT NULL AND sector_name <> ''
+               AND sector_name <> 'Index' -- the EGX30 index row is not a company sector
+             GROUP BY sector_name
+             ORDER BY SUM(market_cap::numeric) DESC NULLS LAST`
+        );
+        return result.rows.map((r: Record<string, unknown>) => toNum(r, ['companies', 'market_cap'])) as Array<{
+            sector_name: string; companies: number; market_cap: number | null;
+        }>;
+    },
+    ['seo:sectors'],
+    { revalidate: 300, tags: ['seo-tickers'] }
+);
+export const getSectors = cache((): Promise<Array<{ sector_name: string; companies: number; market_cap: number | null }>> => _sectorsCached());
 
 /** Movers straight from market_tickers (no dedicated endpoint exists). */
 export const getMovers = cache(async (limit = 10): Promise<{ gainers: Ticker[]; losers: Ticker[]; active: Ticker[] }> => {
@@ -588,19 +596,31 @@ export const getAllFundsRanked = cache(async (): Promise<Array<Record<string, un
 });
 
 /** All companies for the /companies directory hub. */
-export const getAllTickers = cache(async (): Promise<Ticker[]> => {
-    const result = await db.query(
-        `SELECT symbol, name_en, name_ar, last_price, change_percent, volume,
-                sector_name, market_cap, pe_ratio, pb_ratio, dividend_yield,
-                currency, isin, logo_url, last_updated
-         FROM market_tickers t
-         WHERE last_price IS NOT NULL
-           AND COALESCE(sector_name,'') <> 'Index' -- EGX30 is an index, not a listed company
-           -- .CA duplicate listings: keep only the primary ticker when both exist
-           AND NOT (t.symbol LIKE '%.CA' AND EXISTS (
-               SELECT 1 FROM market_tickers b
-               WHERE b.symbol = REPLACE(t.symbol, '.CA', '') AND b.last_price IS NOT NULL))
-         ORDER BY market_cap::numeric DESC NULLS LAST`
-    );
-    return result.rows.map((r: Record<string, unknown>) => toNum(cleanName(r), TICKER_NUM)) as Ticker[];
-});
+// Cross-request data cache (5 min) for the full ticker list — the hottest read
+// path (powers /companies, every /markets ranking page, the egx30 constituents
+// and sector peers). These hub routes are force-dynamic, so before this each
+// crawl/visit re-queried the DB; unstable_cache collapses that to one query per
+// 5-minute window. React.cache() below still dedups within a single request.
+// Prices refresh ~15 min upstream and every page shows an as-of stamp, so
+// up-to-5-min data staleness is safe for SEO.
+const _allTickersCached = unstable_cache(
+    async (): Promise<Ticker[]> => {
+        const result = await db.query(
+            `SELECT symbol, name_en, name_ar, last_price, change_percent, volume,
+                    sector_name, market_cap, pe_ratio, pb_ratio, dividend_yield,
+                    currency, isin, logo_url, last_updated
+             FROM market_tickers t
+             WHERE last_price IS NOT NULL
+               AND COALESCE(sector_name,'') <> 'Index' -- EGX30 is an index, not a listed company
+               -- .CA duplicate listings: keep only the primary ticker when both exist
+               AND NOT (t.symbol LIKE '%.CA' AND EXISTS (
+                   SELECT 1 FROM market_tickers b
+                   WHERE b.symbol = REPLACE(t.symbol, '.CA', '') AND b.last_price IS NOT NULL))
+             ORDER BY market_cap::numeric DESC NULLS LAST`
+        );
+        return result.rows.map((r: Record<string, unknown>) => toNum(cleanName(r), TICKER_NUM)) as Ticker[];
+    },
+    ['seo:all-tickers'],
+    { revalidate: 300, tags: ['seo-tickers'] }
+);
+export const getAllTickers = cache((): Promise<Ticker[]> => _allTickersCached());

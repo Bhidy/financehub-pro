@@ -4,6 +4,7 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, symbolPath } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { sectorAr } from '@/content/sector-names-ar';
 
 /** Arabic twin of /companies — "أسهم البورصة المصرية". Audit #1 gap: the AR lane. */
 
@@ -90,7 +91,7 @@ export default async function CompaniesArPage() {
                                 <td className="px-4 py-2.5 font-mono font-semibold text-muted" dir="ltr">
                                     <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-teal">{t.symbol}</Link>
                                 </td>
-                                <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
+                                <td className="px-4 py-2.5 text-muted">{sectorAr(t.sector_name) || '—'}</td>
                                 <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">
                                     {t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}
                                 </td>

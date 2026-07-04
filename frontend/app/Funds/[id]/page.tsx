@@ -157,8 +157,18 @@ export default async function FundPage({ params }: Props) {
     const navAgeDays = navDateIso ? Math.floor((Date.now() - Date.parse(navDateIso)) / 86_400_000) : null;
     const navStale = navAgeDays !== null && navAgeDays > 10;
     const currency = str(fund, 'currency');
-    const fundTypeEn = str(fund, 'fund_type_en');
+    // Fund type: funds_view carries fund_type/classification but not the *_en variants,
+    // so fall back through them (and humanise a raw code like "money_market").
+    const TYPE_LABEL: Record<string, string> = {
+        equity: 'Equity Fund', money_market: 'Money Market Fund', fixed_income: 'Fixed Income Fund',
+        balanced: 'Balanced Fund', mixed: 'Balanced Fund', bond: 'Fixed Income Fund', real_estate: 'Real Estate Fund',
+    };
+    const rawType = str(fund, 'fund_type');
+    const fundTypeEn = str(fund, 'fund_type_en') || str(fund, 'classification_en')
+        || str(fund, 'classification') || (rawType ? (TYPE_LABEL[rawType.toLowerCase()] ?? rawType) : null);
+    const classificationEn = str(fund, 'classification_en') || str(fund, 'classification');
     const minSubscription = num(fund, 'min_subscription');
+    const cap = (s: string | null) => (s ? s[0].toUpperCase() + s.slice(1) : null);
     const inceptionYear = isoDate(fund['inception_date'])?.slice(0, 4) ?? null;
 
     const returns = (
@@ -185,17 +195,19 @@ export default async function FundPage({ params }: Props) {
             ['Manager', manager],
             ['Fund manager', str(fund, 'fund_manager')],
             ['Fund type', fundTypeEn],
-            ['Classification', str(fund, 'classification_en')],
-            ['Risk level', str(fund, 'risk_level_en') || str(fund, 'risk_level')],
+            ['Classification', classificationEn && classificationEn !== fundTypeEn ? classificationEn : null],
+            ['Risk level', str(fund, 'risk_level_en') || cap(str(fund, 'risk_level'))],
             ['Currency', currency],
             ['Inception year', inceptionYear],
             ['NAV frequency', str(fund, 'nav_frequency_en')],
-            ['Purchase frequency', str(fund, 'purchase_frequency')],
-            ['Redemption frequency', str(fund, 'redemption_frequency')],
+            ['Purchase frequency', cap(str(fund, 'purchase_frequency'))],
+            ['Redemption frequency', cap(str(fund, 'redemption_frequency'))],
             [
+                // Egyptian fund minimums are a number of certificates (units), not a
+                // currency amount — snduk labels it "Units" too. Never append a currency.
                 'Minimum subscription',
                 minSubscription !== null
-                    ? `${minSubscription.toLocaleString('en-EG')}${currency ? ` ${currency}` : ''}`
+                    ? `${minSubscription.toLocaleString('en-EG')} ${minSubscription === 1 ? 'unit' : 'units'}`
                     : null,
             ],
             ['Benchmark', str(fund, 'benchmark_en')],
@@ -459,25 +471,33 @@ export default async function FundPage({ params }: Props) {
                 {(platforms.length > 0 || prospectusUrl) && (
                     <section className="mt-8">
                         <h2 className="text-lg font-bold text-main">Where to Invest</h2>
-                        {platforms.length > 0 && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                {platforms.map((p) => (
-                                    <span key={p.name} className="inline-block rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-main">
-                                        {p.name}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                        {prospectusUrl && (
-                            <p className="mt-3 text-sm">
-                                <a href={prospectusUrl} target="_blank" rel="noopener noreferrer nofollow" className="font-semibold text-main underline">
+                        <div className="mt-3 rounded-xl border border-border bg-surface p-5">
+                            {platforms.length > 0 && (
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+                                        Subscription &amp; redemption channels
+                                    </p>
+                                    <ul className="mt-2.5 flex flex-wrap gap-2">
+                                        {platforms.map((p) => (
+                                            <li key={p.name}
+                                                className="inline-flex items-center rounded-full border border-border px-3 py-1 text-sm font-medium text-main">
+                                                {p.name}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                            {prospectusUrl && (
+                                <a href={prospectusUrl} target="_blank" rel="noopener noreferrer nofollow"
+                                   className={`inline-flex items-center gap-1 text-sm font-semibold text-main underline underline-offset-4 ${platforms.length > 0 ? 'mt-4' : ''}`}>
                                     Fund prospectus (PDF)
+                                    <span aria-hidden="true">↗</span>
                                 </a>
+                            )}
+                            <p className="mt-4 border-t border-border/60 pt-2.5 text-xs text-muted">
+                                Channels &amp; prospectus as published by the fund manager. Verify terms before investing.
                             </p>
-                        )}
-                        <p className="mt-3 border-t border-border/60 pt-2 text-xs text-muted">
-                            Subscription &amp; redemption channels and the prospectus as published by the fund manager.
-                        </p>
+                        </div>
                     </section>
                 )}
 

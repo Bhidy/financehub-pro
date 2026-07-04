@@ -12,6 +12,7 @@
 - [EGX companies directory](https://startamarkets.com/companies): all Egyptian Exchange listed companies with price, sector and market cap, updated daily
 - [EGX sectors](https://startamarkets.com/sectors): companies grouped by sector with counts and market caps (per-sector pages: /sectors/{sector})
 - [EGX movers](https://startamarkets.com/markets/movers): today's top gainers, losers and most active stocks
+- [EGX 30 index](https://startamarkets.com/markets/egx30): live EGX 30 benchmark value, day change, 52-week range and its 30 constituents (Arabic: /ar/markets/egx30)
 - [Dividend calendar](https://startamarkets.com/markets/dividend-calendar): upcoming and recent EGX dividend ex-dates and payouts
 - [Arabic company pages](https://startamarkets.com/ar/symbol/COMI): بالعربية — pattern /ar/symbol/{TICKER}
 - [Company pages](https://startamarkets.com/symbol/COMI): per-symbol live price, key statistics, financials, dividends, technicals and news (URL pattern: /symbol/{TICKER}; data pages: /symbol/{TICKER}/financials, /dividends, /technicals, /history)
@@ -21,12 +22,21 @@
 - [Best-performing funds 2026](https://startamarkets.com/Funds/best-mutual-funds-egypt-2026): ranked by trailing 1-year return with methodology
 - [Fund comparisons](https://startamarkets.com/Funds/vs/2662-vs-2666): side-by-side NAV/returns/fees (pattern: /Funds/vs/{id}-vs-{id})
 
+## Arabic (العربية)
+- [البورصة المصرية اليوم](https://startamarkets.com/ar): Arabic market hub — live EGX30, prices, movers, funds, news
+- [أسهم البورصة المصرية](https://startamarkets.com/ar/companies): all EGX companies in Arabic
+- [أفضل صناديق الاستثمار في مصر](https://startamarkets.com/ar/Funds/best-mutual-funds-egypt-2026): Egyptian mutual funds ranked by return, in Arabic
+
 ## News
 - [EGX market news](https://startamarkets.com/News): Arabic and English coverage of the Egyptian market, ~30 articles/day
+- [RSS feed](https://startamarkets.com/feed.xml): latest EGX news as RSS 2.0
+
+## Full data extract
+- [llms-full.txt](https://startamarkets.com/llms-full.txt): current EGX30 value, top-25 companies with prices/PE/yield, top-10 funds, and all glossary definitions (EN+AR) — quotable figures with as-of timestamps
 
 ## Learn
 - [Investing academy](https://startamarkets.com/Learn): bilingual beginner guides (stock market, mutual funds, NAV, dividends, risk)
-- [Financial glossary](https://startamarkets.com/Learn/glossary): 30 EGX/investing terms defined in English and Arabic (/ar/Learn/glossary)
+- [Financial glossary](https://startamarkets.com/Learn/glossary): 45 EGX and Egypt-market terms defined in English and Arabic (/ar/Learn/glossary)
 
 ## Tools
 - [AI market analyst](https://startamarkets.com/AiChat): ask about any EGX stock or fund in Arabic or English
@@ -34,6 +44,8 @@
 
 ## Optional
 - [About & methodology](https://startamarkets.com/about)
+- [Editorial policy](https://startamarkets.com/editorial-policy): sourcing, accuracy and AI-usage disclosure
+- [Corrections](https://startamarkets.com/corrections)
 - [Contact](https://startamarkets.com/contact)
 - [Privacy](https://startamarkets.com/privacy)
 - [Terms](https://startamarkets.com/terms)

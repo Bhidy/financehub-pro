@@ -116,11 +116,20 @@ export default async function NewsArticlePage({ params }: Props) {
             url: SITE_URL,
             logo: { '@type': 'ImageObject', url: `${SITE_URL}/app-icon.png` },
             // E-E-A-T: point search/AI engines at the sourcing + corrections
-            // policy so every article is one hop from provenance.
+            // policy so every article is one hop from provenance, and at the
+            // verified LinkedIn entity so publisher/author reconcile to one org.
+            sameAs: ['https://www.linkedin.com/company/starta-markets'],
             publishingPrinciples: `${SITE_URL}/editorial-policy`,
             correctionsPolicy: `${SITE_URL}/corrections`,
         },
-        author: { '@type': 'Organization', name: 'Starta Markets Newsroom', url: SITE_URL },
+        author: {
+            '@type': 'Organization',
+            name: 'Starta Markets Newsroom',
+            url: SITE_URL,
+            sameAs: ['https://www.linkedin.com/company/starta-markets'],
+            publishingPrinciples: `${SITE_URL}/editorial-policy`,
+            knowsAbout: ['Egyptian Exchange (EGX)', 'Egyptian stock market', 'mutual funds in Egypt', 'EGX-listed companies'],
+        },
         ...(paragraphs.length ? { articleBody: paragraphs.join('\n\n').slice(0, 5000) } : {}),
         ...(article.symbol
             ? { about: { '@type': 'Corporation', name: article.symbol, tickerSymbol: article.symbol } }

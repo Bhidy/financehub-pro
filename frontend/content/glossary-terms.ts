@@ -435,6 +435,219 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
                 'الاستثمار المتوافق مع الشريعة هو استثمار يلتزم بأحكام الشريعة الإسلامية، فيتجنب العائد القائم على الفائدة (الربا) والغرر والأنشطة المحرّمة، ويخضع لمعايير مالية بشأن نسب الديون والدخل من الفوائد. وتتولى هيئة رقابة شرعية اعتماد التوافق ومراجعته بصفة دورية. وتضم السوق المصرية صناديق استثمار متوافقة مع الشريعة وقوائم أسهم مجازة شرعًا للمستثمرين الراغبين في ذلك.',
         },
     },
+
+    // ---- Egypt-market mechanics (audit: the 15 highest-value terms Egyptian
+    // retail investors actually search — how the EGX actually works). ----
+    {
+        slug: 'unified-investor-code',
+        en: {
+            term: 'Unified Investor Code (UIC)',
+            definition:
+                'The Unified Investor Code is a single identification number every investor must obtain from Misr for Central Clearing, Depository and Registry (MCDR) before trading on the Egyptian Exchange. It links all of an investor’s accounts across brokers to one identity, and getting it is the first practical step to buying or selling any EGX-listed share.',
+            related: ['broker', 'stock', 'settlement-t2'],
+        },
+        ar: {
+            term: 'الكود الموحد للمستثمر',
+            definition:
+                'الكود الموحد هو رقم تعريفي واحد يجب على كل مستثمر الحصول عليه من شركة مصر للمقاصة والإيداع والقيد المركزي قبل التداول في البورصة المصرية. ويربط جميع حسابات المستثمر لدى شركات السمسرة بهوية واحدة، والحصول عليه هو الخطوة العملية الأولى لشراء أو بيع أي سهم مقيد في البورصة المصرية.',
+        },
+    },
+    {
+        slug: 'settlement-t2',
+        en: {
+            term: 'Settlement Cycle (T+2)',
+            definition:
+                'Settlement is when the buyer’s cash and the seller’s shares actually change hands after a trade is executed. On the Egyptian Exchange most equities settle on a T+2 basis — two business days after the trade date — while some instruments settle same-day (T+0). Until settlement completes, the shares are pending in the buyer’s account.',
+            related: ['unified-investor-code', 'stock', 'broker'],
+        },
+        ar: {
+            term: 'دورة التسوية (T+2)',
+            definition:
+                'التسوية هي اللحظة التي تنتقل فيها فعليًا نقود المشتري وأسهم البائع بعد تنفيذ الصفقة. وتُسوّى معظم الأسهم في البورصة المصرية وفق نظام T+2، أي بعد يومي عمل من تاريخ التنفيذ، بينما تُسوّى بعض الأدوات في نفس اليوم (T+0). وحتى تكتمل التسوية تظل الأسهم معلّقة في حساب المشتري.',
+        },
+    },
+    {
+        slug: 'stamp-duty',
+        en: {
+            term: 'Stamp Duty on Trades',
+            definition:
+                'Stamp duty is a small tax levied on the value of stock-exchange transactions in Egypt, charged to both buyer and seller at rates set by law and typically collected automatically by the broker. It is separate from any capital-gains tax and from brokerage commissions, and it is one of the transaction costs an EGX investor should factor into net returns.',
+            related: ['broker', 'capital-gains-tax', 'stock'],
+        },
+        ar: {
+            term: 'ضريبة الدمغة على التداول',
+            definition:
+                'ضريبة الدمغة ضريبة بسيطة تُفرض على قيمة معاملات البورصة في مصر، وتُحصَّل من المشتري والبائع بنسب يحددها القانون وتُخصم عادة تلقائيًا عبر شركة السمسرة. وهي منفصلة عن ضريبة الأرباح الرأسمالية وعن عمولات السمسرة، وتُعد أحد تكاليف التداول التي ينبغي للمستثمر احتسابها ضمن صافي العائد.',
+        },
+    },
+    {
+        slug: 'capital-gains-tax',
+        en: {
+            term: 'Capital Gains Tax (Egypt)',
+            definition:
+                'Capital gains tax is a tax on the profit realized when an asset is sold for more than its purchase price. Egypt applies a capital-gains tax on gains from EGX-listed shares under rules and rates set by the tax authority. Investors should confirm the current rate, exemptions and filing requirements, as tax treatment changes over time and by investor type.',
+            related: ['stamp-duty', 'dividend', 'stock'],
+        },
+        ar: {
+            term: 'ضريبة الأرباح الرأسمالية (مصر)',
+            definition:
+                'ضريبة الأرباح الرأسمالية ضريبة على الربح المحقق عند بيع أصل بأعلى من سعر شرائه. وتطبّق مصر ضريبة على الأرباح الرأسمالية الناتجة عن أسهم البورصة المصرية وفق قواعد ونسب تحددها مصلحة الضرائب. وينبغي للمستثمر التحقق من النسبة والإعفاءات ومتطلبات الإقرار السارية، لأن المعاملة الضريبية تتغير بمرور الوقت وباختلاف نوع المستثمر.',
+        },
+    },
+    {
+        slug: 'treasury-bills',
+        en: {
+            term: 'Treasury Bills (T-Bills)',
+            definition:
+                'Treasury bills are short-term debt instruments issued by the Egyptian government (typically 91 to 364 days) to borrow money, sold at a discount and redeemed at face value. They are considered among the lowest-risk Egyptian-pound investments and are a common benchmark and alternative to bank deposits and money-market funds.',
+            related: ['money-market-fund', 'bank-cd', 'fixed-income-fund'],
+        },
+        ar: {
+            term: 'أذون الخزانة',
+            definition:
+                'أذون الخزانة أدوات دين قصيرة الأجل تصدرها الحكومة المصرية (عادة من 91 إلى 364 يومًا) للاقتراض، وتُباع بخصم وتُسترد بالقيمة الاسمية. وتُعد من أقل الاستثمارات بالجنيه المصري مخاطرة، وتُستخدم كمعيار مرجعي وبديل شائع للودائع البنكية وصناديق أسواق النقد.',
+        },
+    },
+    {
+        slug: 'treasury-bonds',
+        en: {
+            term: 'Treasury Bonds',
+            definition:
+                'Treasury bonds are longer-term debt securities issued by the Egyptian government (several years to maturity) that pay periodic interest (a coupon) and return the principal at maturity. They carry more interest-rate sensitivity than treasury bills but offer a fixed income stream, and they underpin many fixed-income mutual funds in Egypt.',
+            related: ['treasury-bills', 'fixed-income-fund', 'coupon'],
+        },
+        ar: {
+            term: 'السندات الحكومية',
+            definition:
+                'السندات الحكومية أدوات دين أطول أجلاً تصدرها الحكومة المصرية (آجالها عدة سنوات) وتدفع فائدة دورية (كوبون) وتردّ أصل المبلغ عند الاستحقاق. وهي أكثر حساسية لتغيّر أسعار الفائدة من أذون الخزانة لكنها توفّر دخلاً ثابتًا، وتُعد ركيزة للعديد من صناديق الدخل الثابت في مصر.',
+        },
+    },
+    {
+        slug: 'bank-cd',
+        en: {
+            term: 'Bank Certificate of Deposit (CD)',
+            definition:
+                'A bank certificate of deposit is a savings product in which you deposit money with a bank for a fixed term in exchange for a stated interest rate, usually higher than an ordinary savings account. In Egypt, high-yield bank CDs are a popular alternative to stock-market and fund investing, and comparing their net yield to fund returns is a common decision for Egyptian savers.',
+            related: ['treasury-bills', 'money-market-fund', 'fixed-income-fund'],
+        },
+        ar: {
+            term: 'شهادة الادخار البنكية',
+            definition:
+                'شهادة الادخار منتج ادخاري تودع فيه مبلغًا لدى البنك لمدة محددة مقابل سعر فائدة معلن، يكون عادة أعلى من حساب التوفير العادي. وفي مصر تُعد شهادات الادخار ذات العائد المرتفع بديلاً شائعًا للاستثمار في الأسهم والصناديق، وتُعد المقارنة بين صافي عائدها وعوائد الصناديق قرارًا متكررًا لدى المدخرين المصريين.',
+        },
+    },
+    {
+        slug: 'fra',
+        en: {
+            term: 'Financial Regulatory Authority (FRA)',
+            definition:
+                'The Financial Regulatory Authority (FRA) is the government body that regulates and supervises Egypt’s non-banking financial markets, including the Egyptian Exchange, brokerages, mutual funds and insurance. It sets listing, disclosure and licensing rules and enforces investor-protection standards across the market.',
+            related: ['stock-market', 'broker', 'mutual-fund'],
+        },
+        ar: {
+            term: 'الهيئة العامة للرقابة المالية',
+            definition:
+                'الهيئة العامة للرقابة المالية هي الجهة الحكومية التي تنظم وتراقب الأسواق المالية غير المصرفية في مصر، بما في ذلك البورصة المصرية وشركات السمسرة وصناديق الاستثمار والتأمين. وتضع قواعد القيد والإفصاح والترخيص وتُنفّذ معايير حماية المستثمرين في السوق.',
+        },
+    },
+    {
+        slug: 'mcdr',
+        en: {
+            term: 'MCDR (Central Clearing & Depository)',
+            definition:
+                'Misr for Central Clearing, Depository and Registry (MCDR) is the entity that holds EGX-listed securities in electronic (dematerialized) form, clears and settles trades, and maintains the central registry of ownership. It issues the Unified Investor Code and is the infrastructure that makes electronic share ownership and T+2 settlement possible in Egypt.',
+            related: ['unified-investor-code', 'settlement-t2', 'stock'],
+        },
+        ar: {
+            term: 'شركة مصر للمقاصة والإيداع والقيد المركزي',
+            definition:
+                'شركة مصر للمقاصة والإيداع والقيد المركزي هي الجهة التي تحفظ أوراق البورصة المصرية في صورة إلكترونية (غير ورقية)، وتتولى مقاصة الصفقات وتسويتها، وتحتفظ بالسجل المركزي للملكية. وهي التي تصدر الكود الموحد للمستثمر، وتمثّل البنية التي تتيح الملكية الإلكترونية للأسهم والتسوية بنظام T+2 في مصر.',
+        },
+    },
+    {
+        slug: 'broker',
+        en: {
+            term: 'Brokerage Firm (Broker)',
+            definition:
+                'A brokerage firm is a licensed intermediary that executes buy and sell orders on the Egyptian Exchange on behalf of investors, in exchange for a commission. To trade EGX shares you open an account with a licensed broker, obtain a Unified Investor Code, and place orders through the broker’s platform or dealers.',
+            related: ['unified-investor-code', 'stock', 'stamp-duty'],
+        },
+        ar: {
+            term: 'شركة السمسرة (الوسيط)',
+            definition:
+                'شركة السمسرة وسيط مرخّص ينفّذ أوامر الشراء والبيع في البورصة المصرية نيابة عن المستثمرين مقابل عمولة. وللتداول في أسهم البورصة تفتح حسابًا لدى شركة سمسرة مرخّصة، وتحصل على كود موحد للمستثمر، وتُصدر أوامرك عبر منصة الشركة أو من خلال متعامليها.',
+        },
+    },
+    {
+        slug: 'circuit-breaker-egx',
+        en: {
+            term: 'Price Limits & Circuit Breakers',
+            definition:
+                'To curb excessive volatility, the Egyptian Exchange applies daily price limits — a maximum percentage a share (or the index) can move in a session — and can halt trading temporarily when a threshold is breached. These circuit breakers give the market time to absorb information and are a key reason a stock may stop moving intraday.',
+            related: ['egx-30', 'stock', 'stock-market'],
+        },
+        ar: {
+            term: 'حدود السعر ومكابح التداول',
+            definition:
+                'للحدّ من التقلبات المفرطة، تطبّق البورصة المصرية حدودًا سعرية يومية — أقصى نسبة يمكن أن يتحرك بها السهم (أو المؤشر) في الجلسة — ويمكنها إيقاف التداول مؤقتًا عند تجاوز حدّ معين. وتمنح هذه المكابح السوق وقتًا لاستيعاب المعلومات، وهي سبب رئيسي في توقف حركة السهم أحيانًا خلال الجلسة.',
+        },
+    },
+    {
+        slug: 'coupon',
+        en: {
+            term: 'Coupon (Dividend/Interest Payment)',
+            definition:
+                'In the Egyptian market, “coupon” (كوبون) commonly refers to a scheduled cash payment to holders — a bond’s periodic interest or a stock’s cash dividend distribution. The coupon date is when eligibility is determined and the payment is made; a share typically trades “ex-coupon” (without the right to the upcoming payment) from a set date.',
+            related: ['dividend', 'treasury-bonds', 'ex-dividend-date'],
+        },
+        ar: {
+            term: 'الكوبون',
+            definition:
+                'في السوق المصرية يُقصد بـ«الكوبون» عادةً الدفعة النقدية المقررة لحملة الورقة المالية — سواء فائدة السند الدورية أو توزيع الأرباح النقدية للسهم. وتاريخ الكوبون هو موعد تحديد الأحقية وصرف الدفعة، ويُتداول السهم عادةً «بدون كوبون» (دون حق الدفعة القادمة) اعتبارًا من تاريخ محدد.',
+        },
+    },
+    {
+        slug: 'egx-trading-hours',
+        en: {
+            term: 'EGX Trading Hours',
+            definition:
+                'The Egyptian Exchange holds its continuous trading session on business days from Sunday to Thursday, and is closed on Friday, Saturday and official holidays — a schedule that differs from Western markets that trade Monday to Friday. Exact session times can change, so investors confirm the current opening and closing times before placing orders.',
+            related: ['stock-market', 'broker', 'egx-30'],
+        },
+        ar: {
+            term: 'ساعات تداول البورصة المصرية',
+            definition:
+                'تعقد البورصة المصرية جلستها المستمرة في أيام العمل من الأحد إلى الخميس، وتُغلق أيام الجمعة والسبت والعطلات الرسمية — وهو جدول يختلف عن الأسواق الغربية التي تتداول من الاثنين إلى الجمعة. وقد تتغير مواعيد الجلسة بدقة، لذا يتحقق المستثمر من مواعيد الفتح والإغلاق السارية قبل إصدار الأوامر.',
+        },
+    },
+    {
+        slug: 'ex-dividend-date',
+        en: {
+            term: 'Ex-Dividend Date',
+            definition:
+                'The ex-dividend date is the cut-off from which a share trades without the right to the upcoming dividend: an investor must own the share before this date to receive the payment. On or after it, the buyer is not entitled to that distribution, and the share price typically adjusts down by roughly the dividend amount.',
+            related: ['dividend', 'coupon', 'stock'],
+        },
+        ar: {
+            term: 'تاريخ التوزيع (تاريخ عدم الأحقية)',
+            definition:
+                'تاريخ عدم الأحقية هو الموعد الذي يبدأ من عنده تداول السهم دون حق التوزيع القادم: فيجب أن يمتلك المستثمر السهم قبل هذا التاريخ ليحصل على الدفعة. واعتبارًا منه لا يستحق المشتري ذلك التوزيع، ويتراجع سعر السهم عادةً بمقدار قيمة التوزيع تقريبًا.',
+        },
+    },
+    {
+        slug: 'foreign-ownership-limit',
+        en: {
+            term: 'Foreign Ownership & Free Float',
+            definition:
+                'Some EGX-listed companies operate under limits on how much of their shares foreign or strategic investors may hold, while the freely tradable portion is the “free float.” These factors affect a share’s liquidity and its weight in indices like the EGX 30, which is adjusted for free float.',
+            related: ['free-float', 'egx-30', 'market-cap'],
+        },
+        ar: {
+            term: 'ملكية الأجانب والأسهم الحرة',
+            definition:
+                'تعمل بعض الشركات المقيدة في البورصة المصرية وفق قيود على نسبة ما يملكه المستثمرون الأجانب أو الاستراتيجيون من أسهمها، بينما يمثّل الجزء القابل للتداول بحرية «الأسهم الحرة». وتؤثر هذه العوامل في سيولة السهم ووزنه في مؤشرات مثل EGX 30 المعدّل بالأسهم الحرة.',
+        },
+    },
 ];
 
 /** Look up a term by slug (undefined for unknown slugs → caller calls notFound). */

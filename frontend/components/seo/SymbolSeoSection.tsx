@@ -16,7 +16,8 @@ type Stats = Record<string, number | string | null>;
 const fmtNum = (n: number | null | undefined, digits = 2): string | null =>
     n === null || n === undefined || !Number.isFinite(n)
         ? null
-        : n.toLocaleString('en-EG', { maximumFractionDigits: digits });
+        // normalize -0 → 0 (audit: FAITA beta rendered as "-0")
+        : (Object.is(n, -0) ? 0 : n).toLocaleString('en-EG', { maximumFractionDigits: digits });
 
 const fmtEgp = (n: number | null | undefined): string | null => {
     if (n === null || n === undefined || !Number.isFinite(n)) return null;
@@ -145,8 +146,8 @@ export default function SymbolSeoSection({
         ['ROE', fmtPct(num(stats, 'roe'))],
         ['Book value / share', num(stats, 'bvps') !== null ? `EGP ${fmtNum(num(stats, 'bvps'))}` : null],
         ['Beta (1Y)', fmtNum(num(stats, 'beta_1y'))],
-        ['50-day MA', num(stats, 'ma_50d') !== null ? `EGP ${fmtNum(num(stats, 'ma_50d'))}` : null],
-        ['200-day MA', num(stats, 'ma_200d') !== null ? `EGP ${fmtNum(num(stats, 'ma_200d'))}` : null],
+        ['50-day MA', num(stats, 'ma_50d') !== null ? `${cur} ${fmtNum(num(stats, 'ma_50d'))}` : null],
+        ['200-day MA', num(stats, 'ma_200d') !== null ? `${cur} ${fmtNum(num(stats, 'ma_200d'))}` : null],
         ['RSI (14)', fmtNum(num(stats, 'rsi_14'))],
     ];
     const presentRows = statRows.filter(([, v]) => v !== null) as Array<[string, string]>;

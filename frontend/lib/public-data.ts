@@ -73,6 +73,13 @@ function cleanName(row: Record<string, unknown>): Record<string, unknown> {
         const v = row[k];
         if (typeof v === 'string' && PROVIDER_TUPLE.test(v.trim())) row[k] = null;
     }
+    // Currency sanitizer (audit 2026-07-04, Critical): ~36 EGX tickers carry a
+    // stale 'SAR' label (Tadawul-era residue) and were rendering "SAR" prices
+    // on the indexable /companies, /markets/egx30, movers and symbol pages —
+    // feeding AI engines a wrong currency. NO EGX line trades in SAR; only a
+    // handful legitimately trade in USD (FAITA/EGBE/VLMRA). Map SAR -> EGP for
+    // DISPLAY only (the DB is untouched — the deferred Saudi purge is separate).
+    if (row.currency === 'SAR') row.currency = 'EGP';
     return row;
 }
 
@@ -530,9 +537,12 @@ export const getDividendCalendar = cache(async (): Promise<{ upcoming: Array<Rec
              ORDER BY d.ex_date DESC LIMIT 60`
         ),
     ]);
+    // SAR is stale-mislabel residue (never valid for EGX) — map to EGP for
+    // display so the dividend calendar can't show a SAR per-share payout.
+    const sar = (r: Record<string, unknown>, k: string) => { if (r[k] === 'SAR') r[k] = 'EGP'; return r; };
     return {
-        upcoming: up.rows.map((r: Record<string, unknown>) => toNum(r, ['amount_upcoming', 'ex_date_upcoming', 'payment_date_upcoming'])),
-        recent: rec.rows.map((r: Record<string, unknown>) => toNum(r, ['dividend_amount'])),
+        upcoming: up.rows.map((r: Record<string, unknown>) => sar(toNum(r, ['amount_upcoming', 'ex_date_upcoming', 'payment_date_upcoming']), 'currency')),
+        recent: rec.rows.map((r: Record<string, unknown>) => sar(toNum(r, ['dividend_amount']), 'div_currency')),
     };
 });
 

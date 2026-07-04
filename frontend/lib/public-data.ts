@@ -293,6 +293,163 @@ export const getRecentHistory = cache(async (symbol: string, limit = 60): Promis
     return result.rows.map((r: Record<string, unknown>) => toNum(r, ['open', 'high', 'low', 'close', 'volume']));
 });
 
+/**
+ * Multi-horizon performance + quote essentials from ohlc_data in ONE query:
+ * previous close, 52-week high/low, and % change vs 1W/1M/3M/6M/YTD/1Y/5Y
+ * reference closes. Every top-ranking finance template carries this block;
+ * ours was missing it entirely (2026-07-03 competitor audit).
+ */
+export type SymbolPerformance = {
+    prev_close: number | null;
+    high_52w: number | null;
+    low_52w: number | null;
+    latest_close: number | null;
+    latest_date: string | null;
+    horizons: Array<{ label: string; pct: number | null }>;
+};
+
+export const getPerformance = cache(async (symbol: string): Promise<SymbolPerformance | null> => {
+    const result = await db.query(
+        `WITH h AS (
+            SELECT date, close FROM ohlc_data
+            WHERE UPPER(symbol) = $1 AND close IS NOT NULL
+            ORDER BY date DESC LIMIT 1400
+        )
+        SELECT
+            (SELECT close FROM h ORDER BY date DESC LIMIT 1)                                        AS latest_close,
+            (SELECT date  FROM h ORDER BY date DESC LIMIT 1)                                        AS latest_date,
+            (SELECT close FROM h ORDER BY date DESC OFFSET 1 LIMIT 1)                               AS prev_close,
+            (SELECT MAX(close) FROM h WHERE date >= NOW() - INTERVAL '365 days')                    AS high_52w,
+            (SELECT MIN(close) FROM h WHERE date >= NOW() - INTERVAL '365 days')                    AS low_52w,
+            (SELECT close FROM h WHERE date <= NOW() - INTERVAL '7 days'   ORDER BY date DESC LIMIT 1) AS ref_1w,
+            (SELECT close FROM h WHERE date <= NOW() - INTERVAL '30 days'  ORDER BY date DESC LIMIT 1) AS ref_1m,
+            (SELECT close FROM h WHERE date <= NOW() - INTERVAL '91 days'  ORDER BY date DESC LIMIT 1) AS ref_3m,
+            (SELECT close FROM h WHERE date <= NOW() - INTERVAL '182 days' ORDER BY date DESC LIMIT 1) AS ref_6m,
+            (SELECT close FROM h WHERE date <  date_trunc('year', NOW())   ORDER BY date DESC LIMIT 1) AS ref_ytd,
+            (SELECT close FROM h WHERE date <= NOW() - INTERVAL '365 days' ORDER BY date DESC LIMIT 1) AS ref_1y,
+            (SELECT close FROM h ORDER BY date ASC LIMIT 1)                                         AS ref_oldest,
+            (SELECT date  FROM h ORDER BY date ASC LIMIT 1)                                         AS oldest_date`,
+        [symbol.toUpperCase()]
+    );
+    const r = result.rows[0] as Record<string, unknown> | undefined;
+    if (!r || r.latest_close === null || r.latest_close === undefined) return null;
+    const n = (v: unknown): number | null => {
+        const x = typeof v === 'number' ? v : Number(v);
+        return Number.isFinite(x) ? x : null;
+    };
+    const latest = n(r.latest_close);
+    const pct = (ref: unknown): number | null => {
+        const base = n(ref);
+        return latest !== null && base !== null && base !== 0 ? ((latest - base) / base) * 100 : null;
+    };
+    // The 1,400-row window covers ~5.5 trading years; the oldest row is the
+    // 5Y reference (labelled 5Y only when it is actually old enough).
+    const oldestOldEnough =
+        r.oldest_date != null && Date.now() - Date.parse(String(r.oldest_date)) > 4.5 * 365 * 86400_000;
+    return {
+        prev_close: n(r.prev_close),
+        high_52w: n(r.high_52w),
+        low_52w: n(r.low_52w),
+        latest_close: latest,
+        latest_date: r.latest_date ? String(r.latest_date) : null,
+        horizons: [
+            { label: '1W', pct: pct(r.ref_1w) },
+            { label: '1M', pct: pct(r.ref_1m) },
+            { label: '3M', pct: pct(r.ref_3m) },
+            { label: '6M', pct: pct(r.ref_6m) },
+            { label: 'YTD', pct: pct(r.ref_ytd) },
+            { label: '1Y', pct: pct(r.ref_1y) },
+            { label: '5Y', pct: oldestOldEnough ? pct(r.ref_oldest) : null },
+        ],
+    };
+});
+
+/**
+ * EGX 30 index quote for the /markets/egx30 SSR page. Reads the internal
+ * WS-backed route (30s server cache) so the crawler-visible page carries a
+ * real index value + change — the audit found "EGX30 today" had no citable
+ * number anywhere on the domain. Degrades to null (page shows definition +
+ * constituents) rather than throwing.
+ */
+export type Egx30Quote = {
+    value: number | null;
+    change: number | null;
+    changePercent: number | null;
+    volume: number | null;
+    timestamp: string | null;
+    high52: number | null;
+    low52: number | null;
+    ytdPct: number | null;
+};
+
+export const getEgx30Index = cache(async (): Promise<Egx30Quote | null> => {
+    try {
+        const res = await fetch('https://startamarkets.com/api/v1/egx30/index', {
+            signal: AbortSignal.timeout(7000),
+            cache: 'no-store',
+        });
+        if (!res.ok) return null;
+        const d = (await res.json()) as {
+            quote?: { value?: number; change?: number; changePercent?: number; volume?: number; timestamp?: string };
+            history?: Array<{ date?: string; close?: number }>;
+        };
+        const q = d.quote || {};
+        const hist = Array.isArray(d.history) ? d.history : [];
+        const closes = hist.map((h) => Number(h.close)).filter((n) => Number.isFinite(n));
+        const yr = closes.slice(-252);
+        const high52 = yr.length ? Math.max(...yr) : null;
+        const low52 = yr.length ? Math.min(...yr) : null;
+        // YTD: first close on/after Jan 1 of the latest year in history.
+        let ytdPct: number | null = null;
+        const cur = Number(q.value);
+        if (Number.isFinite(cur) && hist.length) {
+            const latestYear = new Date(hist[hist.length - 1].date || Date.now()).getUTCFullYear();
+            const janRef = hist.find((h) => h.date && new Date(h.date).getUTCFullYear() === latestYear);
+            const base = janRef ? Number(janRef.close) : NaN;
+            if (Number.isFinite(base) && base !== 0) ytdPct = ((cur - base) / base) * 100;
+        }
+        const n = (v: unknown): number | null => (Number.isFinite(Number(v)) ? Number(v) : null);
+        return {
+            value: n(q.value),
+            change: n(q.change),
+            changePercent: n(q.changePercent),
+            volume: n(q.volume),
+            timestamp: q.timestamp || null,
+            high52,
+            low52,
+            ytdPct,
+        };
+    } catch {
+        return null;
+    }
+});
+
+/** EGX30 constituents (top-30 by market cap as a stable proxy). */
+export const getEgx30Constituents = cache(async (): Promise<Ticker[]> => {
+    const result = await db.query(
+        `SELECT symbol, name_en, name_ar, last_price, change_percent, market_cap,
+                sector_name, currency, dividend_yield, pe_ratio, pb_ratio, volume,
+                isin, logo_url, last_updated
+         FROM market_tickers
+         WHERE market_cap IS NOT NULL AND last_price IS NOT NULL
+           AND symbol NOT IN ('EGX30','^EGX30')
+         ORDER BY market_cap::numeric DESC NULLS LAST LIMIT 30`
+    );
+    return result.rows.map((r: Record<string, unknown>) => toNum(cleanName(r), TICKER_NUM)) as Ticker[];
+});
+
+/** Latest news headlines for one symbol (symbol-page news block). */
+export const getSymbolNews = cache(async (symbol: string, limit = 5): Promise<NewsArticle[]> => {
+    const result = await db.query(
+        `SELECT id, symbol, headline, url, published_at, article_body, image_url,
+                source_section, source_country
+         FROM market_news WHERE UPPER(symbol) = $1
+         ORDER BY published_at DESC LIMIT $2`,
+        [symbol.toUpperCase(), limit]
+    );
+    return result.rows as NewsArticle[];
+});
+
 /** All-time price range + row count for the history page summary. */
 export const getHistoryStats = cache(async (symbol: string): Promise<Record<string, unknown> | null> => {
     const result = await db.query(

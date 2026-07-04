@@ -1,4 +1,4 @@
-import { getTicker, getStats, getCompanyProfile, getSectorPeers } from '@/lib/public-data';
+import { getTicker, getStats, getCompanyProfile, getSectorPeers, getPerformance, getTechnicals, getSymbolNews } from '@/lib/public-data';
 import SymbolSeoSection from '@/components/seo/SymbolSeoSection';
 import SymbolPageClient from './SymbolPageClient';
 
@@ -26,18 +26,29 @@ export default async function SymbolOverviewPage({
     }
     if (!ticker) return <SymbolPageClient />;
 
-    const [stats, profile, peers] = await Promise.all([
+    const [stats, profile, peers, perf, technicals, news] = await Promise.all([
         getStats(symbol).catch(() => null),
         getCompanyProfile(symbol).catch(() => null),
         ticker.sector_name
             ? getSectorPeers(ticker.sector_name, symbol, 6).catch(() => [])
             : Promise.resolve([]),
+        getPerformance(symbol).catch(() => null),
+        getTechnicals(symbol).catch(() => null),
+        getSymbolNews(symbol, 5).catch(() => []),
     ]);
 
     return (
         <>
             <SymbolPageClient />
-            <SymbolSeoSection ticker={ticker} stats={stats} profile={profile} peers={peers} />
+            <SymbolSeoSection
+                ticker={ticker}
+                stats={stats}
+                profile={profile}
+                peers={peers}
+                perf={perf}
+                technicals={technicals}
+                news={news}
+            />
         </>
     );
 }

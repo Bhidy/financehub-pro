@@ -39,6 +39,8 @@ async function coreEntries(): Promise<Entry[]> {
         ['/sectors', 'daily', '0.7'],
         ['/markets/movers', 'hourly', '0.7'],
         ['/markets/dividend-calendar', 'daily', '0.7'],
+        ['/markets/egx30', 'hourly', '0.8'],
+        ['/ar/markets/egx30', 'hourly', '0.7'],
         ['/Funds/best-mutual-funds-egypt-2026', 'daily', '0.8'],
         ['/about', 'monthly', '0.5'],
         ['/contact', 'monthly', '0.4'],

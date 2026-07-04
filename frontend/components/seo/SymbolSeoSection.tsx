@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { SITE_URL, symbolPath, slugify } from '@/lib/seo';
-import type { Ticker, CompanyProfile } from '@/lib/public-data';
+import { SITE_URL, symbolPath, slugify, newsPath } from '@/lib/seo';
+import type { Ticker, CompanyProfile, NewsArticle, SymbolPerformance } from '@/lib/public-data';
 import JsonLd from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 
@@ -76,16 +76,34 @@ export function buildSymbolFaq(ticker: Ticker, stats: Stats | null, asOf: string
     return faq;
 }
 
+/** TradingView recommend_all convention: [-1..1] → five-step verdict. */
+function techVerdict(technicals: Array<Record<string, unknown>> | null): string | null {
+    const daily = technicals?.find((t) => t.timeframe === '1D') ?? technicals?.[0];
+    const v = daily?.recommend_all;
+    if (typeof v !== 'number' || !Number.isFinite(v)) return null;
+    if (v >= 0.5) return 'Strong Buy';
+    if (v >= 0.1) return 'Buy';
+    if (v > -0.1) return 'Neutral';
+    if (v > -0.5) return 'Sell';
+    return 'Strong Sell';
+}
+
 export default function SymbolSeoSection({
     ticker,
     stats,
     profile,
     peers,
+    perf = null,
+    technicals = null,
+    news = [],
 }: {
     ticker: Ticker;
     stats: Stats | null;
     profile: CompanyProfile | null;
     peers: Ticker[];
+    perf?: SymbolPerformance | null;
+    technicals?: Array<Record<string, unknown>> | null;
+    news?: NewsArticle[];
 }) {
     const symbol = ticker.symbol.toUpperCase();
     const name = ticker.name_en || symbol;
@@ -97,8 +115,25 @@ export default function SymbolSeoSection({
     const faq = buildSymbolFaq(ticker, stats, asOf);
 
     const cur = ticker.currency || 'EGP';
+    const verdict = techVerdict(technicals);
     const statRows: Array<[string, string | null]> = [
         ['Last price', ticker.last_price !== null ? `${cur} ${fmtNum(ticker.last_price)}` : null],
+        ['Previous close', perf?.prev_close != null ? `${cur} ${fmtNum(perf.prev_close)}` : null],
+        ['Day change', fmtPct(ticker.change_percent)],
+        [
+            '52-week range',
+            perf?.low_52w != null && perf?.high_52w != null
+                ? `${cur} ${fmtNum(perf.low_52w)} – ${fmtNum(perf.high_52w)}`
+                : null,
+        ],
+        ['Volume', ticker.volume !== null ? Number(ticker.volume).toLocaleString('en-EG') : null],
+        [
+            'Shares outstanding',
+            num(stats, 'shares_outstanding') !== null
+                ? Number(num(stats, 'shares_outstanding')).toLocaleString('en-EG', { notation: 'compact', maximumFractionDigits: 2 })
+                : null,
+        ],
+        ['Free float', fmtPct(num(stats, 'float_shares_percent'))],
         ['Market cap', fmtEgp(ticker.market_cap ?? num(stats, 'market_cap'))],
         ['P/E (trailing)', fmtNum(ticker.pe_ratio ?? num(stats, 'pe_ratio'))],
         ['Forward P/E', fmtNum(num(stats, 'forward_pe'))],
@@ -170,6 +205,60 @@ export default function SymbolSeoSection({
                         </Link>
                     ))}
                 </nav>
+
+                {/* Hero: the H1 + price the EN template was missing entirely
+                    (2026-07-03 competitor audit — every top-3 ranker leads with
+                    name + live price in crawler-visible HTML). */}
+                <div className="mb-9">
+                    <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+                        {name} ({symbol}) Share Price — EGX
+                    </h1>
+                    {ticker.last_price !== null && (
+                        <div className="mt-2 flex flex-wrap items-baseline gap-3">
+                            <span className="text-3xl font-black tracking-tight tabular-nums">
+                                {cur} {fmtNum(ticker.last_price)}
+                            </span>
+                            {ticker.change_percent !== null && (
+                                <span
+                                    className={`text-lg font-bold tabular-nums ${
+                                        ticker.change_percent >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                                    }`}
+                                >
+                                    {ticker.change_percent >= 0 ? '+' : ''}
+                                    {fmtNum(ticker.change_percent)}%
+                                </span>
+                            )}
+                            {verdict && (
+                                <span className="rounded-full bg-[#14B8A6]/12 px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#0D9488] dark:text-[#2DD4BF]">
+                                    Technicals: {verdict}
+                                </span>
+                            )}
+                        </div>
+                    )}
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                        {name} ({symbol}) trades on the Egyptian Exchange (EGX){ticker.sector_name ? ` in the ${ticker.sector_name} sector` : ''}
+                        {asOf ? `. Last updated ${asOf} (Cairo time).` : '.'}
+                    </p>
+                </div>
+
+                {/* Multi-horizon performance — a block every ranker carries. */}
+                {perf && perf.horizons.some((h) => h.pct !== null) && (
+                    <div className="mb-9">
+                        <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight"><span aria-hidden className="inline-block h-4 w-1 rounded-full bg-[#14B8A6]" />{symbol} price performance</h2>
+                        <dl className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-7">
+                            {perf.horizons.map((h) => (
+                                <div key={h.label} className="rounded-xl border border-slate-200/70 bg-white p-2.5 text-center shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:border-slate-800/70 dark:bg-[#0F172A]">
+                                    <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{h.label}</dt>
+                                    <dd className={`mt-1 text-[13px] font-extrabold tabular-nums ${h.pct === null ? 'text-slate-400' : h.pct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                        {h.pct === null ? '—' : `${h.pct >= 0 ? '+' : ''}${h.pct.toFixed(1)}%`}
+                                    </dd>
+                                </div>
+                            ))}
+                        </dl>
+                        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Total return based on EGX closing prices. Past performance does not indicate future results.</p>
+                    </div>
+                )}
+
                 {profile?.description && (
                     <div className="mb-8">
                         <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight"><span aria-hidden className="inline-block h-4 w-1 rounded-full bg-[#14B8A6]" />About {name}</h2>
@@ -243,7 +332,30 @@ export default function SymbolSeoSection({
                     </div>
                 )}
 
-                <div>
+                {/* Latest news — surfaces the news corpus on the page type that
+                    needs it (competitor audit: rankers show a news feed; we ran
+                    a 3,184-article system and never linked it here). */}
+                {news.length > 0 && (
+                    <div className="mb-8">
+                        <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight"><span aria-hidden className="inline-block h-4 w-1 rounded-full bg-[#14B8A6]" />Latest {name} news</h2>
+                        <ul className="mt-3 divide-y divide-slate-200/70 rounded-2xl border border-slate-200/70 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:divide-slate-800/70 dark:border-slate-800/70 dark:bg-[#0F172A]">
+                            {news.map((a) => (
+                                <li key={String(a.id)} className="px-5 py-3.5">
+                                    <Link href={newsPath(a.id, a.headline)} className="text-[15px] font-semibold leading-snug tracking-tight hover:text-[#0D9488] dark:hover:text-[#2DD4BF]">
+                                        {a.headline}
+                                    </Link>
+                                    {a.published_at && (
+                                        <time dateTime={new Date(a.published_at).toISOString()} className="mt-0.5 block text-xs text-slate-400 dark:text-slate-500">
+                                            {new Date(a.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                        </time>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+                <div className="mb-8">
                     <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight"><span aria-hidden className="inline-block h-4 w-1 rounded-full bg-[#14B8A6]" />Frequently asked questions</h2>
                     <dl className="mt-4 divide-y divide-slate-200/70 rounded-2xl border border-slate-200/70 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:divide-slate-800/70 dark:border-slate-800/70 dark:bg-[#0F172A]">
                         {faq.map((f) => (
@@ -254,6 +366,19 @@ export default function SymbolSeoSection({
                         ))}
                     </dl>
                 </div>
+
+                {/* Hub links — the EN symbol template dead-ended PageRank
+                    (no footer/hub links). This routes equity to the directory,
+                    the sector, the Arabic twin and the metric pages. */}
+                <nav aria-label="Explore EGX" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-slate-200/60 pt-6 text-sm font-semibold dark:border-slate-800/60">
+                    <Link href="/companies" className="text-slate-500 hover:text-[#0D9488] dark:text-slate-400 dark:hover:text-[#2DD4BF]">All EGX companies</Link>
+                    {ticker.sector_name && (
+                        <Link href={`/sectors/${slugify(ticker.sector_name)}`} className="text-slate-500 hover:text-[#0D9488] dark:text-slate-400 dark:hover:text-[#2DD4BF]">{ticker.sector_name} sector</Link>
+                    )}
+                    <Link href="/markets/movers" className="text-slate-500 hover:text-[#0D9488] dark:text-slate-400 dark:hover:text-[#2DD4BF]">Top movers</Link>
+                    <Link href="/markets/dividend-calendar" className="text-slate-500 hover:text-[#0D9488] dark:text-slate-400 dark:hover:text-[#2DD4BF]">Dividend calendar</Link>
+                    <a href={`/ar/symbol/${symbol}`} lang="ar" hrefLang="ar" className="text-slate-500 hover:text-[#0D9488] dark:text-slate-400 dark:hover:text-[#2DD4BF]">صفحة السهم بالعربية</a>
+                </nav>
             </div>
         </section>
     );

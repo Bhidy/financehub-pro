@@ -52,6 +52,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: headline,
         description,
         alternates: { canonical },
+        // max-image-preview:large is required for Google Discover / Top Stories
+        // large-thumbnail eligibility (2026-07-03 audit gap).
+        robots: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
         openGraph: {
             type: 'article',
             title: headline,

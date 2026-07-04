@@ -29,6 +29,18 @@ export default function robots(): MetadataRoute.Robots {
                 allow: '/',
                 disallow: DISALLOW,
             },
+            // Explicit opt-in for AI / answer-engine crawlers (audit: they
+            // previously only rode the wildcard). AI citations are a
+            // distribution channel we deliberately want — make it auditable.
+            {
+                userAgent: [
+                    'GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot', 'Claude-Web',
+                    'anthropic-ai', 'PerplexityBot', 'Perplexity-User', 'Google-Extended',
+                    'Applebot-Extended', 'CCBot',
+                ],
+                allow: '/',
+                disallow: DISALLOW,
+            },
         ],
         // Both sitemaps listed: the Google News sitemap is not in the index
         // (news-specific format), so robots.txt is its discovery path until

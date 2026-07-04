@@ -127,7 +127,7 @@ export default async function DividendCalendarArPage() {
             </section>
 
             <p className="mt-6 text-sm text-muted">
-                تصفح <Link href="/ar/companies" className="font-semibold text-starta-teal hover:underline">دليل أسهم البورصة المصرية</Link> أو <Link href="/ar/markets/movers" className="font-semibold text-starta-teal hover:underline">الأكثر نشاطًا</Link> اليوم.
+                تصفح <Link href="/ar/companies" className="font-semibold text-starta-teal hover:underline">دليل أسهم البورصة المصرية</Link> أو <Link href="/ar/markets/top-dividend-yield" className="font-semibold text-starta-teal hover:underline">أعلى الأسهم توزيعًا</Link> أو <Link href="/ar/markets/movers" className="font-semibold text-starta-teal hover:underline">الأكثر نشاطًا</Link> اليوم.
             </p>
 
             <section className="mt-10 border-t border-border pt-6">

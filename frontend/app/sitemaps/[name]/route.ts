@@ -40,6 +40,8 @@ async function coreEntries(): Promise<Entry[]> {
         ['/markets/movers', 'hourly', '0.7'],
         ['/markets/dividend-calendar', 'daily', '0.7'],
         ['/markets/egx30', 'hourly', '0.8'],
+        ['/markets/top-dividend-yield', 'daily', '0.7'],
+        ['/ar/markets/top-dividend-yield', 'daily', '0.6'],
         ['/ar/markets/egx30', 'hourly', '0.7'],
         // Arabic hub cluster (audit #1 gap — the AR lane)
         ['/ar', 'hourly', '0.9'],

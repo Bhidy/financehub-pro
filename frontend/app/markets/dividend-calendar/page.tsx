@@ -261,7 +261,7 @@ export default async function DividendCalendarPage() {
 
             <p className="mt-6 text-sm text-muted">
                 Browse the full <Link href="/companies" className="font-semibold text-starta-teal hover:underline">EGX listed companies directory</Link> or
-                today&apos;s <Link href="/markets/movers" className="font-semibold text-starta-teal hover:underline">EGX movers</Link>.
+                today&apos;s <Link href="/markets/movers" className="font-semibold text-starta-teal hover:underline">EGX movers</Link> and the <Link href="/markets/top-dividend-yield" className="font-semibold text-starta-teal hover:underline">highest dividend-yield stocks</Link>.
             </p>
 
             <section className="mt-10 border-t border-border pt-6">

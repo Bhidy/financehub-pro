@@ -13,12 +13,14 @@ const seoPages = [...publicPages, "portfolio", "portfolio-detail", "privacy", "t
 function hasCurrentPublicNav(text) {
   const nav = text.match(/<nav[\s\S]*?<\/nav>/i)?.[0] || "";
   const fundsKey = nav.includes('data-key="nav_mobile"') ? "nav_mobile" : "nav_funds";
-  const positions = ["nav_home", fundsKey, "nav_pulse", "nav_news", "nav_portfolio", "nav_learn"]
+  // Market Pulse (nav_pulse) and My Portfolio (nav_portfolio) are intentionally
+  // hidden from the nav; assert they are ABSENT and the remaining links are in order.
+  const positions = ["nav_home", fundsKey, "nav_news", "nav_learn"]
     .map((key) => nav.indexOf(`data-key="${key}"`));
 
   return positions.every((position) => position >= 0) &&
     positions.every((position, index) => index === 0 || position > positions[index - 1]) &&
-    !/data-key=["']nav_(features|pricing)["']/.test(nav) &&
+    !/data-key=["']nav_(features|pricing|pulse|portfolio)["']/.test(nav) &&
     /data-key=["']nav_news["'][^>]*>\s*MARKET NEWS\s*</i.test(nav);
 }
 

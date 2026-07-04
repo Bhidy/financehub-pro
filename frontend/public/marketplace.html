@@ -1162,6 +1162,12 @@
             });
         }
 
+        // Fund-profile URL, language-aware: Arabic mode links to the /ar twin so
+        // "view profile" opens the Arabic RTL page, not the English one.
+        function fundHref(id) {
+            return (state.lang === 'ar' ? '/ar' : '') + '/Funds/' + encodeURIComponent(id);
+        }
+
         function normalizeFund(fund) {
             const aum = safeNumber(fund.aum_millions ?? fund.aum);
             const latestNav = safeNumber(fund.latest_nav);
@@ -1656,7 +1662,7 @@
                         <div class="flex flex-col gap-6">
                             <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                                 <div class="flex gap-4">
-                                    <div class="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-border bg-surface p-3 shadow-sm">
+                                    <div class="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border bg-surface p-2 shadow-sm">
                                         <img src="${escapeHtml(fund.logo_url || DEFAULT_LOGO)}" alt="${manager}" loading="lazy" onerror="this.onerror=null;this.src='${DEFAULT_LOGO}';this.style.transform='none';" class="h-full w-full rounded-xl object-contain" style="transform:scale(${Number(fund.logo_scale || 1)}); transform-origin:center center;">
                                     </div>
                                     <div>
@@ -1707,7 +1713,7 @@
                                     <div class="mt-2 text-sm font-semibold text-main">${updated}</div>
                                 </div>
                                 <div class="${state.lang === 'ar' ? 'sm:text-left' : 'sm:text-right'}">
-                                    <a class="btn-primary inline-block rounded-full px-5 py-3 text-sm font-semibold" href="/Funds/${encodeURIComponent(fund.fund_id)}">${escapeHtml(getLabels().invest_now)}</a>
+                                    <a class="btn-primary inline-block rounded-full px-5 py-3 text-sm font-semibold" href="${fundHref(fund.fund_id)}">${escapeHtml(getLabels().invest_now)}</a>
                                 </div>
                             </div>
                         </div>
@@ -1724,9 +1730,9 @@
                 const retClass = ret !== null && ret < 0 ? 'text-red-500' : 'text-emerald-600';
                 const isSelected = state.compareIds.includes(String(fund.fund_id));
                 return `
-                    <tr class="table-row cursor-pointer border-t border-slate-100 text-main" onclick="window.location.href='/Funds/${encodeURIComponent(fund.fund_id)}'">
+                    <tr class="table-row cursor-pointer border-t border-slate-100 text-main" onclick="window.location.href='${fundHref(fund.fund_id)}'">
                         <td class="px-5 py-4">
-                            <div class="font-semibold"><a href="/Funds/${encodeURIComponent(fund.fund_id)}" onclick="event.stopPropagation();">${escapeHtml(getFundName(fund))}</a></div>
+                            <div class="font-semibold"><a href="${fundHref(fund.fund_id)}" onclick="event.stopPropagation();">${escapeHtml(getFundName(fund))}</a></div>
                             <div class="mt-1 text-xs text-muted">${escapeHtml(fund.symbol || fund.fund_id)}</div>
                             <button type="button" class="compare-btn mt-3 rounded-full px-3 py-2 text-xs font-bold ${isSelected ? 'active' : ''}" data-compare-fund="${escapeHtml(fund.fund_id)}" onclick="event.stopPropagation();">${escapeHtml(isSelected ? getLabels().compare_added : getLabels().compare_add)}</button>
                         </td>

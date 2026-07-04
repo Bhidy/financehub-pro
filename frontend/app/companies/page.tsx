@@ -84,6 +84,14 @@ export default async function CompaniesPage() {
                 دليل الشركات المدرجة في البورصة المصرية — الأسعار والقطاعات والقيمة السوقية، محدَّث يوميًا.
             </p>
 
+            <nav aria-label="EGX rankings" className="mt-5 flex flex-wrap gap-2 text-sm">
+                <Link href="/markets/largest-companies" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">Largest by market cap</Link>
+                <Link href="/markets/top-dividend-yield" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">Highest dividend yield</Link>
+                <Link href="/markets/lowest-pe-stocks" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">Lowest P/E</Link>
+                <Link href="/markets/movers" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">Top movers</Link>
+                <Link href="/markets/egx30" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">EGX 30 index</Link>
+            </nav>
+
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[640px] text-sm">
                     <thead>

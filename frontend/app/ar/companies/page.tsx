@@ -66,6 +66,14 @@ export default async function CompaniesArPage() {
                 {asOfHuman && <> محدَّث يوميًا؛ الأسعار بتاريخ {asOfHuman}.</>}
             </p>
 
+            <nav aria-label="تصنيفات البورصة المصرية" className="mt-5 flex flex-wrap gap-2 text-sm">
+                <Link href="/ar/markets/largest-companies" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">الأكبر حسب القيمة السوقية</Link>
+                <Link href="/ar/markets/top-dividend-yield" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">أعلى توزيعات الأرباح</Link>
+                <Link href="/ar/markets/lowest-pe-stocks" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">الأقل مكرر ربحية</Link>
+                <Link href="/ar/markets/movers" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">الأكثر نشاطًا</Link>
+                <Link href="/ar/markets/egx30" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">مؤشر EGX30</Link>
+            </nav>
+
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[640px] text-sm">
                     <thead>

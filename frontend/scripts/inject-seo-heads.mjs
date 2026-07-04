@@ -111,7 +111,12 @@ for (const [file, route] of Object.entries(FILES)) {
     ].filter(Boolean);
 
     if (file === 'home.html') {
+        // The home is the one static template with an Arabic twin (/ar). Declare
+        // reciprocal hreflang so crawlers pair the two locales.
         lines.push(
+            `    <link rel="alternate" hreflang="en" href="${SITE}/">`,
+            `    <link rel="alternate" hreflang="ar" href="${SITE}/ar">`,
+            `    <link rel="alternate" hreflang="x-default" href="${SITE}/">`,
             `    <script type="application/ld+json">${JSON.stringify(ORG_JSONLD)}</script>`
         );
     }

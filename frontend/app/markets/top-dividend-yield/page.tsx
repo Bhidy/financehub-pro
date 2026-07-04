@@ -98,7 +98,7 @@ export default async function TopDividendYieldPage() {
             </div>
 
             <p className="mt-6 text-sm text-muted">
-                See the <Link href="/markets/dividend-calendar" className="font-semibold text-starta-teal hover:underline">EGX dividend calendar</Link> for upcoming ex-dates, or browse <Link href="/companies" className="font-semibold text-starta-teal hover:underline">all EGX companies</Link>.
+                See the <Link href="/markets/dividend-calendar" className="font-semibold text-starta-teal hover:underline">EGX dividend calendar</Link> for upcoming ex-dates, the <Link href="/markets/largest-companies" className="font-semibold text-starta-teal hover:underline">largest companies by market cap</Link>, the <Link href="/markets/lowest-pe-stocks" className="font-semibold text-starta-teal hover:underline">lowest-P/E value stocks</Link>, or browse <Link href="/companies" className="font-semibold text-starta-teal hover:underline">all EGX companies</Link>.
             </p>
             <p className="mt-4 text-xs text-muted">Source: Egyptian Exchange via TradingView. Dividend yield is trailing (last 12 months) over the current price. Prices in EGP unless a currency code is shown.</p>
         </PublicPageShell>

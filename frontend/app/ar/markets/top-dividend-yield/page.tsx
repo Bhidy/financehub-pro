@@ -84,7 +84,7 @@ export default async function TopDividendYieldArPage() {
             </div>
 
             <p className="mt-6 text-sm text-muted">
-                اطّلع على <Link href="/ar/markets/dividend-calendar" className="font-semibold text-starta-teal hover:underline">مواعيد توزيعات الأرباح</Link> أو تصفّح <Link href="/ar/companies" className="font-semibold text-starta-teal hover:underline">جميع الشركات</Link>.
+                اطّلع على <Link href="/ar/markets/dividend-calendar" className="font-semibold text-starta-teal hover:underline">مواعيد توزيعات الأرباح</Link> أو <Link href="/ar/markets/largest-companies" className="font-semibold text-starta-teal hover:underline">أكبر الشركات حسب القيمة السوقية</Link> أو <Link href="/ar/markets/lowest-pe-stocks" className="font-semibold text-starta-teal hover:underline">الأقل مكرر ربحية</Link> أو تصفّح <Link href="/ar/companies" className="font-semibold text-starta-teal hover:underline">جميع الشركات</Link>.
             </p>
         </PublicPageShell>
     );

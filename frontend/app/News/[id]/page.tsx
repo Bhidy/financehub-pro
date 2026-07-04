@@ -115,6 +115,10 @@ export default async function NewsArticlePage({ params }: Props) {
             name: 'Starta Markets',
             url: SITE_URL,
             logo: { '@type': 'ImageObject', url: `${SITE_URL}/app-icon.png` },
+            // E-E-A-T: point search/AI engines at the sourcing + corrections
+            // policy so every article is one hop from provenance.
+            publishingPrinciples: `${SITE_URL}/editorial-policy`,
+            correctionsPolicy: `${SITE_URL}/corrections`,
         },
         author: { '@type': 'Organization', name: 'Starta Markets Newsroom', url: SITE_URL },
         ...(paragraphs.length ? { articleBody: paragraphs.join('\n\n').slice(0, 5000) } : {}),

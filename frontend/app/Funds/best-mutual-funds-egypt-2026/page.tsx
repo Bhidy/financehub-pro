@@ -23,7 +23,14 @@ export const metadata: Metadata = {
     title: 'Best-Performing Mutual Funds in Egypt (2026) — Ranked by 1-Year Return',
     description:
         'Egyptian mutual funds ranked by trailing 1-year return, by category: money market, fixed income, equity and balanced. Live NAVs, fees and minimums — updated twice daily.',
-    alternates: { canonical: '/Funds/best-mutual-funds-egypt-2026' },
+    alternates: {
+        canonical: '/Funds/best-mutual-funds-egypt-2026',
+        languages: {
+            en: '/Funds/best-mutual-funds-egypt-2026',
+            ar: '/ar/Funds/best-mutual-funds-egypt-2026',
+            'x-default': '/Funds/best-mutual-funds-egypt-2026',
+        },
+    },
     openGraph: {
         type: 'article',
         title: 'Best-Performing Mutual Funds in Egypt (2026) | Starta Markets',

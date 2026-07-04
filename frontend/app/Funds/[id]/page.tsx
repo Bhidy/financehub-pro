@@ -232,9 +232,14 @@ export default async function FundPage({ params }: Props) {
         .filter((p) => p.name);
 
     const strategyEn = str(fund, 'investment_strategy_en');
-    const objectiveEn = str(fund, 'objective_en');
     const strategyAr = str(fund, 'investment_strategy');
-    const objectiveAr = str(fund, 'objective');
+    // De-duplicate: many funds store the same text in both the strategy and
+    // objective columns — only surface the objective when it actually differs.
+    const norm = (s: string | null) => (s ? s.replace(/\s+/g, ' ').trim().toLowerCase() : '');
+    const objectiveEnRaw = str(fund, 'objective_en');
+    const objectiveArRaw = str(fund, 'objective');
+    const objectiveEn = norm(objectiveEnRaw) && norm(objectiveEnRaw) !== norm(strategyEn) ? objectiveEnRaw : null;
+    const objectiveAr = norm(objectiveArRaw) && norm(objectiveArRaw) !== norm(strategyAr) ? objectiveArRaw : null;
 
     let peers = (await getFundPeers(fund.fund_id))
         .map((p) => {

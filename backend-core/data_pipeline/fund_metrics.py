@@ -174,7 +174,9 @@ def compute_all(series) -> dict:
     return {
         "points": len(pts),
         "latest_nav": round(pts[-1][1], 6) if pts else None,
-        "latest_date": pts[-1][0].isoformat() if pts else None,
+        # date OBJECT (not isoformat) — asyncpg binds a DATE column from a
+        # datetime.date and rejects a string. Callers needing text can .isoformat().
+        "latest_date": pts[-1][0] if pts else None,
         "return_1m": window_return_pct(pts, 30),
         "return_3m": window_return_pct(pts, 91),
         "return_6m": window_return_pct(pts, 182),

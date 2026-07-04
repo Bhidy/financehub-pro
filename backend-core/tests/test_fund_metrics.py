@@ -85,6 +85,9 @@ def test_compute_all_bundle_shape():
     assert m["points"] == 4
     assert "sharpe" not in m and "beta" not in m  # gated, must be absent
     assert m["nav_52w_high"] == 150.0
+    # latest_date MUST be a datetime.date (not str) — asyncpg rejects a string
+    # for a DATE column, which would fail every upsert.
+    assert isinstance(m["latest_date"], date)
 
 
 # --- standalone runner (no pytest needed) ---------------------------------- #

@@ -55,7 +55,22 @@ export async function GET(request: Request) {
         `;
 
         const result = await db.query(query, params);
-        return NextResponse.json(result.rows);
+        // Freshness hygiene: mutual_funds.last_updated and last_synced_at are orphan
+        // columns — only ever written by the now-retired decypha sync, so they are frozen
+        // months in the past. The active NAV pipeline keeps last_update_date / last_nav_date
+        // current. Expose the TRUE as-of date on every freshness field so no API consumer
+        // can read a stale "last updated". Web pages read the DB directly (unaffected); the
+        // mobile client already prefers last_update_date, so this only corrects, never breaks.
+        const rows = result.rows.map((r: any) => {
+            const asOf = r.last_nav_date ?? r.last_update_date ?? null;
+            return {
+                ...r,
+                as_of_date: asOf,
+                last_updated: asOf ?? r.last_updated,
+                last_synced_at: asOf ?? r.last_synced_at,
+            };
+        });
+        return NextResponse.json(rows);
     } catch (error: any) {
         console.error('[API] /funds error:', error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });

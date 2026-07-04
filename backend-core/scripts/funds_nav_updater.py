@@ -57,7 +57,8 @@ from datetime import date, datetime, timezone
 
 import asyncpg
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from data_pipeline.pg_resilient import connect_resilient  # noqa: E402
+from data_pipeline.pg_resilient import (  # noqa: E402
+    connect_resilient, database_is_read_only, is_read_only_error)
 try:
     import httpx  # needed only for the updater (fetch) path; --monitor runs without it
 except ModuleNotFoundError:  # pragma: no cover
@@ -266,6 +267,18 @@ async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
     db_url = load_db_url()
     conn = await connect_resilient(db_url)
     try:
+        # Read-only preflight: during a Supabase platform incident the cluster is set
+        # default_transaction_read_only=on and every NAV upsert below raises (SQLSTATE
+        # 25006), zeroing `updated` and tripping --min-updated into a RED run for an
+        # external, not-our-fault infra state. Nothing can be written this cycle — skip
+        # cleanly (exit 0); the next scheduled run resumes once writes return, and the DB
+        # health monitor tracks the incident separately. --dry-run performs no writes, so
+        # it may proceed even when read-only.
+        if not dry_run and await database_is_read_only(conn):
+            print("[skip] database is READ-ONLY (Supabase platform incident or standby) — "
+                  "skipping funds NAV update this cycle; resumes automatically when writes "
+                  "are restored. Not an error.", flush=True)
+            return 0
         universe = await get_universe(conn, only_numeric, ids, limit)
         print(f"[funds-nav] universe={len(universe)} funds  dry_run={dry_run}", flush=True)
 
@@ -296,6 +309,12 @@ async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
                     if latest < _today().replace(day=1):  # informational: still old after update
                         pass
                 except Exception as e:  # noqa: BLE001 - per-fund isolation
+                    if is_read_only_error(e):
+                        # DB flipped read-only mid-run (incident began after the preflight).
+                        # No write can succeed this cycle — flag and skip clean at the end
+                        # rather than trip the min-updated RED gate on infra we don't own.
+                        stats["read_only"] = True
+                        continue
                     stats["failures"].append(f"{fund_id}:write:{type(e).__name__}")
 
         # Post-run freshness check (numeric universe only)
@@ -309,6 +328,11 @@ async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
             pass
 
         print("[funds-nav] RESULT " + json.dumps(stats, default=str), flush=True)
+
+        if stats.get("read_only"):
+            print("[skip] database went READ-ONLY mid-run — skipping remainder of this "
+                  "funds NAV cycle (not an error; resumes when writable).", flush=True)
+            return 0
 
         if stats["updated"] < min_updated:
             print(f"::error::funds-nav updated {stats['updated']} funds "

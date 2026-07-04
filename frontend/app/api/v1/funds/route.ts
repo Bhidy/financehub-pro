@@ -35,10 +35,13 @@ export async function GET(request: Request) {
             // Listing page: only show funds with meaningful chart data (>= 10 nav_history entries)
             // This excludes ghost/stub records that have only 1 scraped point and no real history
             whereClause += ` AND (SELECT COUNT(*) FROM nav_history WHERE fund_id = f.fund_id) >= 10`;
-            // Freshness gate: hide funds whose latest NAV on our source (Mubasher) is older than
-            // 2 weeks. Better to show nothing than present a months-old NAV as if it were current.
+            // Freshness gate: hide funds whose latest NAV is older than 30 days. Relaxed from
+            // 14d to recover "present but hidden" funds that are only a few weeks stale (EG fund
+            // NAVs publish ~weekly). Anything older than 10d is flagged `is_stale` below and always
+            // carries its real `as_of_date`, so an older NAV is never presented as current; beyond
+            // 30d the data is too old to be useful and stays hidden.
             // (Compare-by-ids path above is exempt so a direct link still resolves.)
-            whereClause += ` AND (SELECT MAX(date) FROM nav_history WHERE fund_id = f.fund_id) >= (CURRENT_DATE - INTERVAL '14 days')`;
+            whereClause += ` AND (SELECT MAX(date) FROM nav_history WHERE fund_id = f.fund_id) >= (CURRENT_DATE - INTERVAL '30 days')`;
         }
 
         const query = `
@@ -63,9 +66,14 @@ export async function GET(request: Request) {
         // mobile client already prefers last_update_date, so this only corrects, never breaks.
         const rows = result.rows.map((r: any) => {
             const asOf = r.last_nav_date ?? r.last_update_date ?? null;
+            const asOfMs = asOf ? new Date(asOf).getTime() : NaN;
+            // Flag NAVs older than 10 days so clients can show a "delayed" cue (the fund
+            // detail page renders an amber badge). Keeps the relaxed 30d gate honest.
+            const is_stale = Number.isFinite(asOfMs) ? Date.now() - asOfMs > 10 * 86_400_000 : false;
             return {
                 ...r,
                 as_of_date: asOf,
+                is_stale,
                 last_updated: asOf ?? r.last_updated,
                 last_synced_at: asOf ?? r.last_synced_at,
             };

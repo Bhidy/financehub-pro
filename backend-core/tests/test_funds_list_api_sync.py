@@ -9,7 +9,8 @@ from datetime import date
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from scripts.funds_list_api_sync import parse_list_rows, _parse_date, _parse_nav  # noqa: E402
+from scripts.funds_list_api_sync import (  # noqa: E402
+    parse_list_rows, _parse_date, _parse_nav, _fund_insert_row)
 
 
 def test_parses_valid_rows():
@@ -54,6 +55,27 @@ def test_nav_validation():
     assert _parse_nav(0) is None
     assert _parse_nav(-3) is None
     assert _parse_nav(float("nan")) is None
+
+
+def test_fund_insert_row_maps_valid_fund():
+    en = {"fundId": 6144, "name": "CI Fund", "price": 19.6, "currency": "EGP",
+          "managers": ["CI Capital"], "owner": "CI", "date": "30 June 2026"}
+    row = _fund_insert_row(en, "صندوق سي آي")
+    assert row is not None
+    assert row[0] == "6144" and row[1] == "CI Fund" and row[2] == "صندوق سي آي"
+    assert row[3] == "EGP" and row[4] == "CI Capital" and row[6] == 19.6
+
+
+def test_fund_insert_row_rejects_dataless():
+    # price 0 -> unlaunched/no-data fund -> None (never an empty stub page)
+    assert _fund_insert_row({"fundId": 6404, "name": "Azimut 2030", "price": 0.0}) is None
+    assert _fund_insert_row({"fundId": 1, "name": "", "price": 5.0}) is None
+    assert _fund_insert_row("garbage") is None
+
+
+def test_fund_insert_row_arabic_falls_back_to_english():
+    row = _fund_insert_row({"fundId": 9, "name": "X Fund", "price": 1.0}, None)
+    assert row is not None and row[2] == "X Fund"
 
 
 if __name__ == "__main__":

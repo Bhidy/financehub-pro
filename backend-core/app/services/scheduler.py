@@ -463,7 +463,7 @@ class SchedulerService:
             script_path = os.path.join(base_dir, 'scripts', 'funds_list_api_sync.py')
 
             proc = await asyncio.create_subprocess_exec(
-                sys.executable, script_path, '--min-updated', '50',
+                sys.executable, script_path, '--min-updated', '50', '--discover',
                 stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
             )
             await proc.communicate()

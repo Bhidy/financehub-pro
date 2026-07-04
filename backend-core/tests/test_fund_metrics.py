@@ -90,6 +90,26 @@ def test_compute_all_bundle_shape():
     assert isinstance(m["latest_date"], date)
 
 
+# --- spike / bad-data hardening -------------------------------------------- #
+def test_isolated_spike_removed_from_drawdown():
+    # a single glitch (0.03 amid ~1.0) must NOT create a ~-97% drawdown
+    s = _weekly([1.0, 1.01, 1.02, 0.03, 1.03, 1.04, 1.05])
+    assert max_drawdown_pct(s) == 0.0            # despiked -> monotonic up
+    v = annualized_volatility_pct(s)
+    assert v is not None and v < 20              # not an absurd 200%+
+
+def test_real_multipoint_crash_preserved():
+    # a genuine multi-point decline is NOT treated as a spike
+    assert max_drawdown_pct(_weekly([1.0, 0.9, 0.8, 0.7, 0.6])) == -40.0
+
+def test_no_absurd_metrics_from_corrupt_series():
+    # despike + output backstop guarantee: never an absurd vol/drawdown
+    # (this is the money-market 232%-vol / -97%-DD case, made safe)
+    m = compute_all(_weekly([1.0, 0.02, 1.0, 0.02, 1.0, 0.02, 1.0, 0.02, 1.0]))
+    assert m["volatility_annual"] is None or m["volatility_annual"] <= 100
+    assert m["max_drawdown"] is None or m["max_drawdown"] >= -90
+
+
 # --- standalone runner (no pytest needed) ---------------------------------- #
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]

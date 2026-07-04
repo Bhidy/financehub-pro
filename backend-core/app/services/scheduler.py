@@ -235,8 +235,8 @@ class SchedulerService:
 
             # Trigger Startup Catch-up (Async)
             asyncio.create_task(self._startup_ohlc_catchup())
-            # One-time: populate fund_risk_metrics immediately after a deploy if it's empty,
-            # instead of waiting for the tier4d cron (so the fund pages' Risk section shows).
+            # On boot: refresh fund_risk_metrics once so a deploy applies the latest compute
+            # logic + freshest NAVs immediately (ongoing refresh is the tier4d cron).
             asyncio.create_task(self._startup_fund_metrics_catchup())
             
         except Exception as e:
@@ -283,24 +283,14 @@ class SchedulerService:
             logger.error(f"Startup catch-up error: {e}")
 
     async def _startup_fund_metrics_catchup(self):
-        """One-time startup catch-up: if fund_risk_metrics is empty or missing, compute it
-        now (rather than waiting for the tier4d cron) so the fund pages' Risk & Volatility
-        section populates right after a deploy. Guarded, isolated, and non-blocking — it can
-        never crash or delay startup."""
+        """Startup refresh: recompute fund_risk_metrics once on boot so a deploy always
+        applies the latest compute logic + freshest NAVs (the ongoing refresh is the
+        tier4d cron). Idempotent ON CONFLICT upsert, guarded, isolated, and non-blocking —
+        it can never crash or delay startup."""
         try:
             await asyncio.sleep(25)  # let the DB + app settle
-            from app.db.session import db
-            reg = await db.fetch_one("SELECT to_regclass('public.fund_risk_metrics') AS t")
-            exists = bool(reg and reg.get('t'))
-            count = 0
-            if exists:
-                c = await db.fetch_one("SELECT COUNT(*) AS n FROM fund_risk_metrics")
-                count = (c or {}).get('n') or 0
-            if not exists or count == 0:
-                logger.info("Startup: fund_risk_metrics empty/missing -> computing now")
-                await self.run_fund_metrics_job()
-            else:
-                logger.info(f"Startup: fund_risk_metrics already populated ({count} rows) — skip.")
+            logger.info("Startup: refreshing fund_risk_metrics (applies latest compute logic)")
+            await self.run_fund_metrics_job()
         except Exception as e:
             logger.error(f"Startup fund-metrics catch-up error: {e}")
 

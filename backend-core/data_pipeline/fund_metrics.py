@@ -36,8 +36,35 @@ from typing import Iterable, Optional
 _YEAR_DAYS = 365.25
 
 
+def _reject_spikes(pts: list[tuple[date, float]], window: int = 3,
+                   thresh: float = 0.5) -> list[tuple[date, float]]:
+    """Drop isolated NAV glitches (decimal errors / bad ticks): a point that
+    deviates from its LOCAL median by more than `thresh` (fractional). Real
+    trends and multi-point crashes move the local median gradually and are
+    preserved; only single-point spikes are removed. Without this, one corrupt
+    tick (e.g. 0.03 where the series sits near 1.0) produces an absurd
+    volatility / drawdown — observed live on a money-market fund (232% vol, -97% DD)."""
+    n = len(pts)
+    if n < 5:
+        return pts
+    vals = [v for _, v in pts]
+    out: list[tuple[date, float]] = []
+    for i, (d, v) in enumerate(pts):
+        lo, hi = max(0, i - window), min(n, i + window + 1)
+        neighbors = sorted(vals[lo:i] + vals[i + 1:hi])
+        if not neighbors:
+            out.append((d, v))
+            continue
+        med = neighbors[len(neighbors) // 2]
+        if med > 0 and abs(v - med) / med > thresh:
+            continue  # isolated spike -> drop
+        out.append((d, v))
+    return out
+
+
 def _clean(series: Iterable[tuple]) -> list[tuple[date, float]]:
-    """Sort ascending by date, coerce, and drop unusable points (NaN/Inf/<=0)."""
+    """Sort ascending by date, coerce, drop unusable points (NaN/Inf/<=0), and
+    remove isolated spikes so one corrupt NAV tick cannot poison the metrics."""
     out: dict[date, float] = {}
     for d, nav in series or []:
         try:
@@ -47,7 +74,7 @@ def _clean(series: Iterable[tuple]) -> list[tuple[date, float]]:
         if not math.isfinite(v) or v <= 0:
             continue
         out[d] = v  # last value wins on duplicate date
-    return sorted(out.items())
+    return _reject_spikes(sorted(out.items()))
 
 
 def total_return_pct(series) -> Optional[float]:
@@ -171,6 +198,16 @@ def compute_all(series) -> dict:
     one. Those land in a later phase behind a proper benchmark join."""
     pts = _clean(series)
     hi, lo = nav_52w_high_low(pts)
+    vol = annualized_volatility_pct(pts)
+    dd = max_drawdown_pct(pts)
+    # Output sanity backstop (defense-in-depth after spike removal): no real fund
+    # has annualized volatility >100% or an all-time drawdown worse than -90%. If we
+    # still see that, the series is corrupt beyond what despiking caught — suppress
+    # the metric (render nothing) rather than an absurd number.
+    if vol is not None and vol > 100:
+        vol = None
+    if dd is not None and dd < -90:
+        dd = None
     return {
         "points": len(pts),
         "latest_nav": round(pts[-1][1], 6) if pts else None,
@@ -184,8 +221,8 @@ def compute_all(series) -> dict:
         "return_1y": window_return_pct(pts, 365),
         "return_3y": window_return_pct(pts, 1095),
         "return_5y": window_return_pct(pts, 1826),
-        "volatility_annual": annualized_volatility_pct(pts),
-        "max_drawdown": max_drawdown_pct(pts),
+        "volatility_annual": vol,
+        "max_drawdown": dd,
         "nav_52w_high": hi,
         "nav_52w_low": lo,
     }

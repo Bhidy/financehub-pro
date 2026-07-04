@@ -39,10 +39,13 @@ function rangeCutoff(range: Range): number | null {
 export default function FundNavChart({
     fundId,
     currency = 'EGP',
+    lang = 'en',
 }: {
     fundId: string | number;
     currency?: string;
+    lang?: 'en' | 'ar';
 }) {
+    const dateLocale = lang === 'ar' ? 'ar-EG' : 'en-GB';
     const wrapRef = useRef<HTMLDivElement>(null);
     const tipRef = useRef<HTMLDivElement>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -168,7 +171,7 @@ export default function FundNavChart({
                 const dEl = tip.querySelector('[data-d]');
                 const vEl = tip.querySelector('[data-v]');
                 if (dEl)
-                    dEl.textContent = new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', {
+                    dEl.textContent = new Date(`${iso}T00:00:00Z`).toLocaleDateString(dateLocale, {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',

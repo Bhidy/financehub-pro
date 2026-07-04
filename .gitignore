@@ -67,3 +67,4 @@ debug_*.json
 
 # Playwright MCP scratch output
 .playwright-mcp/
+.env*

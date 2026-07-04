@@ -102,7 +102,10 @@ async def compute_one(conn, fund_id, dry_run) -> bool:
         "SELECT date, nav FROM nav_history WHERE fund_id = $1 ORDER BY date", fund_id)
     series = [(r["date"], r["nav"]) for r in rows]
     m = compute_all(series)
-    if m["points"] < 2 or m["max_drawdown"] is None:
+    # Skip ONLY when the fund genuinely lacks data. A None max_drawdown can also mean
+    # the output backstop suppressed an absurd value — in that case we STILL upsert
+    # (with NULL metrics) so the fund's stale/garbage row is corrected, not left behind.
+    if m["points"] < 2:
         return False
     if dry_run:
         return True

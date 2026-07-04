@@ -36,6 +36,34 @@ from typing import Iterable, Optional
 _YEAR_DAYS = 365.25
 
 
+def _split_adjust(pts: list[tuple[date, float]], lo: float = 0.25, hi: float = 4.0,
+                  max_gap_days: int = 14) -> list[tuple[date, float]]:
+    """Stitch redenominations / splits. An ADJACENT single-step NAV ratio outside
+    [lo, hi] over a short time gap is not a market move but a re-scaling — e.g. the
+    ~100:1 redenominations in Mubasher's raw series (fund NAV 2513 -> 25 overnight),
+    which otherwise show as a fake -99% drawdown and wreck volatility + any return
+    spanning them. Rescale all EARLIER points by that ratio so the series is
+    continuous and every metric reflects real performance. The time-gap guard avoids
+    mistaking a large move across a data gap for a re-scaling; a down-then-up isolated
+    spike cancels to factor 1, leaving earlier history untouched."""
+    n = len(pts)
+    if n < 2:
+        return pts
+    dates = [d for d, _ in pts]
+    vals = [v for _, v in pts]
+    factor = 1.0
+    adj = [0.0] * n
+    adj[n - 1] = vals[n - 1]
+    for i in range(n - 1, 0, -1):
+        prev, cur = vals[i - 1], vals[i]
+        if prev > 0 and cur > 0 and (dates[i] - dates[i - 1]).days <= max_gap_days:
+            r = cur / prev
+            if r < lo or r > hi:
+                factor *= r
+        adj[i - 1] = vals[i - 1] * factor
+    return list(zip(dates, adj))
+
+
 def _reject_spikes(pts: list[tuple[date, float]], window: int = 3,
                    thresh: float = 0.5) -> list[tuple[date, float]]:
     """Drop isolated NAV glitches (decimal errors / bad ticks): a point that
@@ -74,7 +102,10 @@ def _clean(series: Iterable[tuple]) -> list[tuple[date, float]]:
         if not math.isfinite(v) or v <= 0:
             continue
         out[d] = v  # last value wins on duplicate date
-    return _reject_spikes(sorted(out.items()))
+    # split-adjust FIRST (stitch redenominations to a continuous series), THEN
+    # despike (drop mild isolated ticks) — order matters: despiking a raw series
+    # around a redenomination boundary would wrongly drop real pre-split points.
+    return _reject_spikes(_split_adjust(sorted(out.items())))
 
 
 def total_return_pct(series) -> Optional[float]:

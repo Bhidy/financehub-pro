@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getAllFundsRanked, getFund, getFundPeers, type Fund } from '@/lib/public-data';
 import { SITE_URL, fundPath, idFromParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import FundPageClient, { type FundClientData } from './FundPageClient';
 
 /**
  * Server-rendered fund profile at /Funds/{fund_id}-{slug}.
@@ -171,17 +171,6 @@ export default async function FundPage({ params }: Props) {
     const cap = (s: string | null) => (s ? s[0].toUpperCase() + s.slice(1) : null);
     const inceptionYear = isoDate(fund['inception_date'])?.slice(0, 4) ?? null;
 
-    const returns = (
-        [
-            ['YTD', num(fund, 'return_ytd')],
-            ['1 Month', num(fund, 'return_1m')],
-            ['3 Months', num(fund, 'return_3m')],
-            ['1 Year', num(fund, 'return_1y')],
-            ['3 Years', num(fund, 'return_3y')],
-            ['5 Years', num(fund, 'return_5y')],
-        ] as Array<[string, number | null]>
-    ).filter((r): r is [string, number] => r[1] !== null);
-
     const riskStats = (
         [
             ['Max drawdown (all-time, peak-to-trough)', num(fund, 'max_drawdown')],
@@ -189,19 +178,23 @@ export default async function FundPage({ params }: Props) {
         ] as Array<[string, number | null]>
     ).filter((r): r is [string, number] => r[1] !== null);
 
+    // The AMC/manager appears in the hero tagline; only surface a distinct
+    // "Fund manager" (the harvested individual/house) when it actually differs.
+    const fundManager = str(fund, 'fund_manager');
+    const fundManagerFact =
+        fundManager && (!manager || fundManager.trim().toLowerCase() !== manager.trim().toLowerCase())
+            ? fundManager
+            : null;
     const facts = (
         [
             ['Issuer', str(fund, 'issuer_en')],
-            ['Manager', manager],
-            ['Fund manager', str(fund, 'fund_manager')],
+            ['Fund manager', fundManagerFact],
             ['Fund type', fundTypeEn],
             ['Classification', classificationEn && classificationEn !== fundTypeEn ? classificationEn : null],
             ['Risk level', str(fund, 'risk_level_en') || cap(str(fund, 'risk_level'))],
             ['Currency', currency],
             ['Inception year', inceptionYear],
             ['NAV frequency', str(fund, 'nav_frequency_en')],
-            ['Purchase frequency', cap(str(fund, 'purchase_frequency'))],
-            ['Redemption frequency', cap(str(fund, 'redemption_frequency'))],
             [
                 // Egyptian fund minimums are a number of certificates (units), not a
                 // currency amount — snduk labels it "Units" too. Never append a currency.
@@ -211,6 +204,15 @@ export default async function FundPage({ params }: Props) {
                     : null,
             ],
             ['Benchmark', str(fund, 'benchmark_en')],
+        ] as Array<[string, string | null]>
+    ).filter((f): f is [string, string] => f[1] !== null);
+
+    // Trading schedule — surfaced in "Where to Invest", not the facts grid, so
+    // purchase/redemption cadence never renders twice on the page.
+    const tradingRows = (
+        [
+            ['Purchase frequency', cap(str(fund, 'purchase_frequency'))],
+            ['Redemption frequency', cap(str(fund, 'redemption_frequency'))],
         ] as Array<[string, string | null]>
     ).filter((f): f is [string, string] => f[1] !== null);
 
@@ -311,6 +313,76 @@ export default async function FundPage({ params }: Props) {
         ...(currency ? { currency } : {}),
     };
 
+    const currencyLabel = currency ?? 'EGP';
+    const monogram = (name || 'F').trim().charAt(0).toUpperCase();
+    const ytd = num(fund, 'return_ytd');
+
+    // Period performance cards use the server's precomputed returns (SEO-friendly,
+    // no client compute) with short labels; the interactive chart handles history.
+    const perfCards = (
+        [
+            ['1M', num(fund, 'return_1m')],
+            ['3M', num(fund, 'return_3m')],
+            ['YTD', ytd],
+            ['1Y', num(fund, 'return_1y')],
+            ['3Y', num(fund, 'return_3y')],
+            ['5Y', num(fund, 'return_5y')],
+        ] as Array<[string, number | null]>
+    )
+        .filter((p): p is [string, number] => p[1] !== null)
+        .map(([label, value]) => ({ label, value: fmtPct(value), negative: value < 0 }));
+
+    const headlineReturn =
+        ytd !== null
+            ? { label: 'YTD return', value: fmtPct(ytd), negative: ytd < 0 }
+            : perfCards.length > 0
+              ? { label: `${perfCards[0].label} return`, value: perfCards[0].value, negative: perfCards[0].negative }
+              : null;
+
+    const riskChip = str(fund, 'risk_level_en') || cap(str(fund, 'risk_level'));
+    const chips = [fundTypeEn, riskChip, isTrue(fund, 'is_shariah') ? 'Shariah-compliant' : null].filter(
+        (c): c is string => !!c
+    );
+
+    const myId = Number(fund.fund_id);
+    const clientData: FundClientData = {
+        fundId: fund.fund_id,
+        name,
+        nameEn,
+        nameAr,
+        managerLine: manager ? `Managed by ${manager}` : null,
+        monogram,
+        navText: nav !== null ? fmtNav(nav) : null,
+        navDateIso,
+        navHuman: navDateIso ? humanDate(navDateIso) : null,
+        navStale,
+        navAgeDays,
+        navHigh: navHigh !== null ? fmtNav(navHigh) : null,
+        navLow: navLow !== null ? fmtNav(navLow) : null,
+        currency: currencyLabel,
+        headlineReturn,
+        chips,
+        miniStats: [],
+        perfCards,
+        facts: facts.map(([label, value]) => ({ label, value })),
+        fees: fees.map(([label, value]) => ({ label, value: fmtPct(value) })),
+        riskStats: riskStats.map(([label, value]) => ({ label, value: fmtPct(value), negative: value < 0 })),
+        platforms,
+        prospectusUrl,
+        tradingRows: tradingRows.map(([label, value]) => ({ label, value })),
+        strategyEn,
+        objectiveEn,
+        strategyAr,
+        objectiveAr,
+        peers: peers.map((p) => ({
+            id: p.id,
+            label: p.label,
+            href: p.href,
+            compareHref: `/Funds/vs/${Math.min(myId, p.id)}-vs-${Math.max(myId, p.id)}`,
+        })),
+        faqs,
+    };
+
     return (
         <PublicPageShell>
             <JsonLd data={fundJsonLd} />
@@ -334,236 +406,7 @@ export default async function FundPage({ params }: Props) {
                 />
             )}
             <Breadcrumbs items={[{ href: '/', label: 'Home' }, { href: '/Funds', label: 'Mutual Funds' }, { label: name }]} />
-
-            <article>
-                <header>
-                    <h1
-                        className="text-2xl font-extrabold leading-snug text-main sm:text-3xl"
-                        {...(!nameEn && nameAr ? { dir: 'rtl' as const, lang: 'ar' } : {})}
-                    >
-                        {name}
-                    </h1>
-                    {nameEn && nameAr && nameAr !== nameEn && (
-                        <p dir="rtl" lang="ar" className="mt-1 text-lg font-semibold text-muted">
-                            {nameAr}
-                        </p>
-                    )}
-                </header>
-
-                {nav !== null && (
-                    <section className="mt-6 rounded-xl border border-border bg-surface p-5">
-                        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Net Asset Value</h2>
-                        <p className="mt-1 text-3xl font-extrabold text-main">
-                            {fmtNav(nav)} <span className="text-base font-semibold text-muted">EGP</span>
-                        </p>
-                        {navDateIso && (
-                            <p className="mt-1 text-sm text-muted">
-                                as of <time dateTime={navDateIso}>{humanDate(navDateIso)}</time>
-                                {navStale && (
-                                    <span className="ml-2 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">
-                                        Delayed{navAgeDays !== null ? ` · ${navAgeDays}d` : ''}
-                                    </span>
-                                )}
-                            </p>
-                        )}
-                        {(navHigh !== null || navLow !== null) && (
-                            <p className="mt-2 text-sm text-muted">
-                                {navLow !== null && (
-                                    <>
-                                        52-week low: <span className="font-semibold">{fmtNav(navLow)}</span>
-                                    </>
-                                )}
-                                {navLow !== null && navHigh !== null && ' · '}
-                                {navHigh !== null && (
-                                    <>
-                                        52-week high: <span className="font-semibold">{fmtNav(navHigh)}</span>
-                                    </>
-                                )}
-                            </p>
-                        )}
-                        <p className="mt-3 border-t border-border/60 pt-2 text-xs text-muted">
-                            Source: fund manager disclosures · Updated twice daily
-                        </p>
-                    </section>
-                )}
-
-                {returns.length > 0 && (
-                    <section className="mt-8">
-                        <h2 className="text-lg font-bold text-main">Performance</h2>
-                        <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
-                                        <th scope="col" className="px-4 py-2.5 font-semibold">Period</th>
-                                        <th scope="col" className="px-4 py-2.5 font-semibold">Return</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {returns.map(([label, value]) => (
-                                        <tr key={label} className="border-b border-border/60 last:border-b-0">
-                                            <th scope="row" className="px-4 py-2.5 text-left font-medium text-main">
-                                                {label}
-                                            </th>
-                                            <td
-                                                className={`px-4 py-2.5 font-semibold tabular-nums ${
-                                                    value < 0 ? 'text-red-600' : value > 0 ? 'text-emerald-600' : 'text-main'
-                                                }`}
-                                            >
-                                                {fmtPct(value)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
-                )}
-
-                {riskStats.length > 0 && (
-                    <section className="mt-8">
-                        <h2 className="text-lg font-bold text-main">Risk &amp; Volatility</h2>
-                        <dl className="mt-3 grid gap-x-6 gap-y-4 rounded-xl border border-border bg-surface p-5 sm:grid-cols-2">
-                            {riskStats.map(([label, value]) => (
-                                <div key={label}>
-                                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</dt>
-                                    <dd className={`mt-0.5 text-sm font-semibold tabular-nums ${value < 0 ? 'text-red-600' : 'text-main'}`}>
-                                        {fmtPct(value)}
-                                    </dd>
-                                </div>
-                            ))}
-                        </dl>
-                        <p className="mt-3 border-t border-border/60 pt-2 text-xs text-muted">
-                            Computed from our full NAV history. Max drawdown is the worst peak-to-trough
-                            decline; volatility is annualized by the fund&apos;s NAV reporting frequency.
-                        </p>
-                    </section>
-                )}
-
-                {(facts.length > 0 || isTrue(fund, 'is_shariah')) && (
-                    <section className="mt-8">
-                        <h2 className="text-lg font-bold text-main">Key Facts</h2>
-                        <dl className="mt-3 grid gap-x-6 gap-y-4 rounded-xl border border-border bg-surface p-5 sm:grid-cols-2 lg:grid-cols-3">
-                            {facts.map(([label, value]) => (
-                                <div key={label}>
-                                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</dt>
-                                    <dd className="mt-0.5 text-sm font-medium text-main">{value}</dd>
-                                </div>
-                            ))}
-                            {isTrue(fund, 'is_shariah') && (
-                                <div>
-                                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">Compliance</dt>
-                                    <dd className="mt-0.5">
-                                        <span className="inline-block rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
-                                            Shariah-compliant
-                                        </span>
-                                    </dd>
-                                </div>
-                            )}
-                        </dl>
-                    </section>
-                )}
-
-                {fees.length > 0 && (
-                    <section className="mt-8">
-                        <h2 className="text-lg font-bold text-main">Fees</h2>
-                        <dl className="mt-3 grid gap-x-6 gap-y-4 rounded-xl border border-border bg-surface p-5 sm:grid-cols-2 lg:grid-cols-4">
-                            {fees.map(([label, value]) => (
-                                <div key={label}>
-                                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</dt>
-                                    <dd className="mt-0.5 text-sm font-semibold tabular-nums text-main">{fmtPct(value)}</dd>
-                                </div>
-                            ))}
-                        </dl>
-                    </section>
-                )}
-
-                {(platforms.length > 0 || prospectusUrl) && (
-                    <section className="mt-8">
-                        <h2 className="text-lg font-bold text-main">Where to Invest</h2>
-                        <div className="mt-3 rounded-xl border border-border bg-surface p-5">
-                            {platforms.length > 0 && (
-                                <div>
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                                        Subscription &amp; redemption channels
-                                    </p>
-                                    <ul className="mt-2.5 flex flex-wrap gap-2">
-                                        {platforms.map((p) => (
-                                            <li key={p.name}
-                                                className="inline-flex items-center rounded-full border border-border px-3 py-1 text-sm font-medium text-main">
-                                                {p.name}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                            {prospectusUrl && (
-                                <a href={prospectusUrl} target="_blank" rel="noopener noreferrer nofollow"
-                                   className={`inline-flex items-center gap-1 text-sm font-semibold text-main underline underline-offset-4 ${platforms.length > 0 ? 'mt-4' : ''}`}>
-                                    Fund prospectus (PDF)
-                                    <span aria-hidden="true">↗</span>
-                                </a>
-                            )}
-                            <p className="mt-4 border-t border-border/60 pt-2.5 text-xs text-muted">
-                                Channels &amp; prospectus as published by the fund manager. Verify terms before investing.
-                            </p>
-                        </div>
-                    </section>
-                )}
-
-                {(strategyEn || objectiveEn || strategyAr || objectiveAr) && (
-                    <section className="mt-8">
-                        <h2 className="text-lg font-bold text-main">Strategy &amp; Objective</h2>
-                        {strategyEn && <p className="mt-3 leading-relaxed text-main">{strategyEn}</p>}
-                        {objectiveEn && <p className="mt-3 leading-relaxed text-main">{objectiveEn}</p>}
-                        {(strategyAr || objectiveAr) && (
-                            <div dir="rtl" lang="ar" className="mt-4 rounded-xl border border-border bg-surface p-5 leading-relaxed text-main">
-                                {strategyAr && <p>{strategyAr}</p>}
-                                {objectiveAr && <p className={strategyAr ? 'mt-3' : ''}>{objectiveAr}</p>}
-                            </div>
-                        )}
-                    </section>
-                )}
-
-                <section className="mt-10 border-t border-border pt-6">
-                    <h2 className="text-lg font-bold text-main">Similar Funds</h2>
-                    {peers.length > 0 && (
-                        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                            {peers.map((p) => (
-                                <li key={p.id} className="flex items-baseline gap-2">
-                                    <Link href={p.href} className="text-sm font-medium text-main hover:text-starta-teal">
-                                        {p.label}
-                                    </Link>
-                                    <Link
-                                        href={`/Funds/vs/${Math.min(fund.fund_id, p.id)}-vs-${Math.max(fund.fund_id, p.id)}`}
-                                        className="shrink-0 text-xs font-semibold text-starta-teal hover:underline"
-                                    >
-                                        Compare →
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                    <p className="mt-4 text-sm">
-                        <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">
-                            All Egyptian mutual funds →
-                        </Link>
-                    </p>
-                </section>
-
-                {faqs.length > 0 && (
-                    <section className="mt-10 border-t border-border pt-6">
-                        <h2 className="text-lg font-bold text-main">FAQ</h2>
-                        <dl className="mt-3 space-y-5">
-                            {faqs.map((f) => (
-                                <div key={f.q}>
-                                    <dt className="font-semibold text-main">{f.q}</dt>
-                                    <dd className="mt-1 text-sm leading-relaxed text-main">{f.a}</dd>
-                                </div>
-                            ))}
-                        </dl>
-                    </section>
-                )}
-            </article>
+            <FundPageClient {...clientData} />
         </PublicPageShell>
     );
 }

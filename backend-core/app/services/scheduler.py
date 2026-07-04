@@ -113,6 +113,22 @@ class SchedulerService:
                 coalesce=True
             )
             
+            # --- TIER 4D: Fund Risk Metrics (30 min after NAV updates, Sun-Thu) ---
+            # Computes volatility/max_drawdown/52w/returns from nav_history into the
+            # fund_risk_metrics side table. Runs after the Mubasher CSV NAV refresh so
+            # metrics reflect the freshest NAVs. Pushable automation (no workflow scope
+            # needed); the equivalent GitHub Actions workflow (funds-metrics.yml) is an
+            # alternative for anyone with workflow scope.
+            self.scheduler.add_job(
+                self.run_fund_metrics_job,
+                CronTrigger(day_of_week='sun,mon,tue,wed,thu', hour='8,19', minute=30,
+                            timezone='Africa/Cairo'),
+                id='tier4d_fund_metrics',
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True
+            )
+
             # --- TIER 5: Rubix Watchlist (Every 1 min in Session) ---
             self.scheduler.add_job(
                 self.run_rubix_watchlist_job,
@@ -383,6 +399,30 @@ class SchedulerService:
                 notification_service.send_discord(f"❌ **Mubasher Sync Failed**\nExit: {proc.returncode}", is_error=True)
         except Exception as e:
             logger.error(f"Mubasher job error: {e}")
+
+    async def run_fund_metrics_job(self):
+        """Compute fund risk metrics (volatility / max_drawdown / 52w / returns)
+        from nav_history into the fund_risk_metrics companion table. Deterministic,
+        idempotent, read-only-safe (skips clean during a Supabase read-only
+        incident); a failure is isolated and never crashes the API."""
+        try:
+            from app.services.notification_service import notification_service
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            script_path = os.path.join(base_dir, 'scripts', 'compute_fund_metrics.py')
+
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, script_path, '--min-updated', '50',
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
+            await proc.communicate()
+
+            if proc.returncode == 0:
+                notification_service.send_discord("✅ **Fund Metrics Compute Success**", is_error=False)
+            else:
+                notification_service.send_discord(
+                    f"❌ **Fund Metrics Compute Failed**\nExit: {proc.returncode}", is_error=True)
+        except Exception as e:
+            logger.error(f"Fund metrics job error: {e}")
 
     async def run_egx_multisource_news_job(self):
         """Runs EGX multi-source news scraper every 2 hours."""

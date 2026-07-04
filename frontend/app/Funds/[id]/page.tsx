@@ -167,6 +167,13 @@ export default async function FundPage({ params }: Props) {
         ] as Array<[string, number | null]>
     ).filter((r): r is [string, number] => r[1] !== null);
 
+    const riskStats = (
+        [
+            ['Max drawdown (worst peak-to-trough)', num(fund, 'max_drawdown')],
+            ['Volatility (annualized)', num(fund, 'volatility_annual')],
+        ] as Array<[string, number | null]>
+    ).filter((r): r is [string, number] => r[1] !== null);
+
     const facts = (
         [
             ['Issuer', str(fund, 'issuer_en')],
@@ -367,6 +374,26 @@ export default async function FundPage({ params }: Props) {
                                 </tbody>
                             </table>
                         </div>
+                    </section>
+                )}
+
+                {riskStats.length > 0 && (
+                    <section className="mt-8">
+                        <h2 className="text-lg font-bold text-main">Risk &amp; Volatility</h2>
+                        <dl className="mt-3 grid gap-x-6 gap-y-4 rounded-xl border border-border bg-surface p-5 sm:grid-cols-2">
+                            {riskStats.map(([label, value]) => (
+                                <div key={label}>
+                                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</dt>
+                                    <dd className={`mt-0.5 text-sm font-semibold tabular-nums ${value < 0 ? 'text-red-600' : 'text-main'}`}>
+                                        {fmtPct(value)}
+                                    </dd>
+                                </div>
+                            ))}
+                        </dl>
+                        <p className="mt-3 border-t border-border/60 pt-2 text-xs text-muted">
+                            Computed from our full NAV history. Max drawdown is the worst peak-to-trough
+                            decline; volatility is annualized by the fund&apos;s NAV reporting frequency.
+                        </p>
                     </section>
                 )}
 

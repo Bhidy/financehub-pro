@@ -40,6 +40,14 @@ export async function GET(
                 `SELECT * FROM fund_actions WHERE fund_id = $1 ORDER BY action_date DESC`, [fid]);
             row.actions = actions.rows;
         } catch { row.actions = []; }
+        // Risk metrics (volatility / max_drawdown / 52w) computed from nav_history
+        // into a companion table. Isolated like peers/actions: a missing table or
+        // schema issue here can never break the core fund payload.
+        try {
+            const rm = await db.query(
+                `SELECT * FROM fund_risk_metrics WHERE fund_id = $1`, [String(fid)]);
+            row.risk_metrics = rm.rows[0] ?? null;
+        } catch { row.risk_metrics = null; }
 
         return NextResponse.json(row);
     } catch (error: any) {

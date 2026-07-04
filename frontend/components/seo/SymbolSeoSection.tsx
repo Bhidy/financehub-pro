@@ -55,7 +55,11 @@ export function buildSymbolFaq(ticker: Ticker, stats: Stats | null, asOf: string
     if (mcap !== null) {
         faq.push({ q: `What is ${symbol}'s market capitalization?`, a: `${name} has a market capitalization of about ${fmtEgp(mcap)}.` });
     }
-    const dy = ticker.dividend_yield ?? num(stats, 'dividend_yield');
+    // A trailing yield > 100% is a data artifact (special/return-of-capital
+    // distribution or stale-price mismatch), not a repeatable yield — suppress
+    // it rather than claim an absurd figure (audit 2026-07-04: SAIB rendered 761%).
+    const dyRaw = ticker.dividend_yield ?? num(stats, 'dividend_yield');
+    const dy = dyRaw !== null && dyRaw <= 100 ? dyRaw : null;
     const dps = num(stats, 'dps');
     if (dy !== null && dy > 0) {
         faq.push({
@@ -139,7 +143,7 @@ export default function SymbolSeoSection({
         ['P/E (trailing)', fmtNum(ticker.pe_ratio ?? num(stats, 'pe_ratio'))],
         ['Forward P/E', fmtNum(num(stats, 'forward_pe'))],
         ['P/B', fmtNum(ticker.pb_ratio ?? num(stats, 'pb_ratio'))],
-        ['Dividend yield', fmtPct(ticker.dividend_yield ?? num(stats, 'dividend_yield'))],
+        ['Dividend yield', ((y) => (y !== null && y <= 100 ? fmtPct(y) : null))(ticker.dividend_yield ?? num(stats, 'dividend_yield'))],
         ['EPS (TTM)', num(stats, 'eps_ttm') !== null ? `EGP ${fmtNum(num(stats, 'eps_ttm'))}` : null],
         ['Revenue (TTM)', fmtEgp(num(stats, 'revenue_ttm'))],
         ['Net income (TTM)', fmtEgp(num(stats, 'net_income_ttm'))],

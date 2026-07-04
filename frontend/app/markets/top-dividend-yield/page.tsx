@@ -29,10 +29,17 @@ export const metadata: Metadata = {
     },
 };
 
+// A trailing dividend yield above 100% is mathematically implausible (it would
+// mean paying out more than the entire share price in a year) — such values are
+// data artifacts (a special/return-of-capital distribution or a stale-price /
+// units mismatch), not a repeatable yield. Excluding them keeps the ranking and
+// its ItemList JSON-LD credible. Audit 2026-07-04: SAIB showed 761%, SEIGA 215%.
+const MAX_PLAUSIBLE_YIELD = 100;
+
 export default async function TopDividendYieldPage() {
     const all = await getAllTickers();
     const ranked = all
-        .filter((t) => t.dividend_yield !== null && Number.isFinite(t.dividend_yield) && (t.dividend_yield as number) > 0)
+        .filter((t) => t.dividend_yield !== null && Number.isFinite(t.dividend_yield) && (t.dividend_yield as number) > 0 && (t.dividend_yield as number) <= MAX_PLAUSIBLE_YIELD)
         .sort((a, b) => (b.dividend_yield as number) - (a.dividend_yield as number))
         .slice(0, 50);
     const asOf = ranked.reduce<string | null>((mx, t) => (t.last_updated && (!mx || new Date(t.last_updated) > new Date(mx)) ? t.last_updated : mx), null);
@@ -100,7 +107,7 @@ export default async function TopDividendYieldPage() {
             <p className="mt-6 text-sm text-muted">
                 See the <Link href="/markets/dividend-calendar" className="font-semibold text-starta-teal hover:underline">EGX dividend calendar</Link> for upcoming ex-dates, the <Link href="/markets/largest-companies" className="font-semibold text-starta-teal hover:underline">largest companies by market cap</Link>, the <Link href="/markets/lowest-pe-stocks" className="font-semibold text-starta-teal hover:underline">lowest-P/E value stocks</Link>, or browse <Link href="/companies" className="font-semibold text-starta-teal hover:underline">all EGX companies</Link>.
             </p>
-            <p className="mt-4 text-xs text-muted">Source: Egyptian Exchange via TradingView. Dividend yield is trailing (last 12 months) over the current price. Prices in EGP unless a currency code is shown.</p>
+            <p className="mt-4 text-xs text-muted">Source: Egyptian Exchange via TradingView. Dividend yield is trailing (last 12 months) over the current price. Yields above 100% are excluded as non-recurring or data artifacts (e.g. special distributions), not repeatable yields. Prices in EGP unless a currency code is shown.</p>
         </PublicPageShell>
     );
 }

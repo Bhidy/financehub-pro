@@ -44,6 +44,7 @@ const FOOTER_LABELS: Record<Lang, Record<string, string>> = {
         copy: '© 2026 Starta Markets. All Rights Reserved.',
         companies: 'EGX Companies', about: 'About', contact: 'Contact',
         privacy: 'Privacy Policy', terms: 'Terms of Service',
+        editorial: 'Editorial Policy', corrections: 'Corrections',
     },
     ar: {
         desc: 'منصة الجيل القادم للتحليل المالي الذكي. نمكّن مستثمري السوق المصري ببيانات موحدة، تحليلات ذكاء اصطناعي بمستوى مؤسسي، وأدوات متطورة لإدارة المحفظة.',
@@ -57,6 +58,7 @@ const FOOTER_LABELS: Record<Lang, Record<string, string>> = {
         copy: '© 2026 ستارتا ماركتس. جميع الحقوق محفوظة.',
         companies: 'الشركات المدرجة', about: 'من نحن', contact: 'اتصل بنا',
         privacy: 'سياسة الخصوصية', terms: 'شروط الاستخدام',
+        editorial: 'سياسة التحرير', corrections: 'التصحيحات',
     },
 };
 
@@ -216,6 +218,8 @@ export default function PublicPageShell({
                         <div className="flex flex-wrap gap-6">
                             <Link href="/companies" prefetch={false} className="hover:text-starta-teal transition-colors">{f.companies}</Link>
                             <Link href="/about" prefetch={false} className="hover:text-starta-teal transition-colors">{f.about}</Link>
+                            <Link href={lang === 'ar' ? '/ar/editorial-policy' : '/editorial-policy'} prefetch={false} className="hover:text-starta-teal transition-colors">{f.editorial}</Link>
+                            <Link href={lang === 'ar' ? '/ar/corrections' : '/corrections'} prefetch={false} className="hover:text-starta-teal transition-colors">{f.corrections}</Link>
                             <Link href="/contact" prefetch={false} className="hover:text-starta-teal transition-colors">{f.contact}</Link>
                             <Link href="/privacy" prefetch={false} className="hover:text-starta-teal transition-colors">{f.privacy}</Link>
                             <Link href="/terms" prefetch={false} className="hover:text-starta-teal transition-colors">{f.terms}</Link>

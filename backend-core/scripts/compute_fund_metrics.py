@@ -84,20 +84,34 @@ def load_db_url() -> str:
     raise SystemExit("FATAL: DATABASE_URL not set (env or .env)")
 
 
+# Money-market / fixed-income / daily funds physically cannot draw down more than a
+# few percent; a larger figure is an unadjusted redenomination artifact in the raw
+# NAV series. Detect them by name and suppress the risk metrics rather than show a
+# false deep loss — tightening the split-adjust ratio band enough to catch every 2:1
+# redenomination would risk hiding real equity drawdowns.
+_MM_RE = re.compile(r"money market|fixed income|treasury|t-bill|liquid|daily|cash fund|nagm",
+                    re.IGNORECASE)
+
+
 async def get_universe(conn, ids, limit):
     if ids:
         rows = await conn.fetch(
-            """SELECT fund_id FROM nav_history WHERE fund_id = ANY($1::text[])
-               GROUP BY fund_id HAVING COUNT(*) >= 2 ORDER BY fund_id""", ids)
+            """SELECT nh.fund_id, COALESCE(mf.fund_name_en, mf.fund_name, '') AS name
+               FROM (SELECT fund_id FROM nav_history WHERE fund_id = ANY($1::text[])
+                     GROUP BY fund_id HAVING COUNT(*) >= 2) nh
+               LEFT JOIN mutual_funds mf ON mf.fund_id = nh.fund_id
+               ORDER BY nh.fund_id""", ids)
     else:
         rows = await conn.fetch(
-            """SELECT fund_id FROM nav_history GROUP BY fund_id
-               HAVING COUNT(*) >= 2 ORDER BY fund_id""")
-    fids = [r["fund_id"] for r in rows]
-    return fids[:limit] if limit else fids
+            """SELECT nh.fund_id, COALESCE(mf.fund_name_en, mf.fund_name, '') AS name
+               FROM (SELECT fund_id FROM nav_history GROUP BY fund_id HAVING COUNT(*) >= 2) nh
+               LEFT JOIN mutual_funds mf ON mf.fund_id = nh.fund_id
+               ORDER BY nh.fund_id""")
+    out = [(r["fund_id"], r["name"] or "") for r in rows]
+    return out[:limit] if limit else out
 
 
-async def compute_one(conn, fund_id, dry_run) -> bool:
+async def compute_one(conn, fund_id, name, dry_run) -> bool:
     rows = await conn.fetch(
         "SELECT date, nav FROM nav_history WHERE fund_id = $1 ORDER BY date", fund_id)
     series = [(r["date"], r["nav"]) for r in rows]
@@ -107,6 +121,13 @@ async def compute_one(conn, fund_id, dry_run) -> bool:
     # (with NULL metrics) so the fund's stale/garbage row is corrected, not left behind.
     if m["points"] < 2:
         return False
+    # Type-aware sanity: a money-market / fixed-income / daily fund cannot really draw
+    # down > ~10% or run > ~6% volatility — such a value is a redenomination artifact.
+    if _MM_RE.search(name or ""):
+        dd, vol = m.get("max_drawdown"), m.get("volatility_annual")
+        if (dd is not None and dd < -10) or (vol is not None and vol > 6):
+            m["max_drawdown"] = None
+            m["volatility_annual"] = None
     if dry_run:
         return True
     await conn.execute(_UPSERT, fund_id, *[m[c] for c in _COLS])
@@ -128,9 +149,9 @@ async def run(ids=None, limit=None, dry_run=False, min_updated=1):
         stats = {"universe": len(universe), "updated": 0, "skipped": 0, "failures": []}
         print(f"[fund-metrics] universe={len(universe)} funds dry_run={dry_run}", flush=True)
 
-        for fund_id in universe:
+        for fund_id, name in universe:
             try:
-                if await compute_one(conn, fund_id, dry_run):
+                if await compute_one(conn, fund_id, name, dry_run):
                     stats["updated"] += 1
                 else:
                     stats["skipped"] += 1

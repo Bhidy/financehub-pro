@@ -33,7 +33,10 @@ import JsonLd from '@/components/seo/JsonLd';
  * The parent layout already validates the symbol and degrades on DB outages.
  */
 
-export const dynamic = 'force-dynamic';
+// ISR: cache at the edge and revalidate in background — the audit found
+// every SSR route shipped no-store (0% CDN hit, 1.0-1.5s TTFB). Pages are
+// anonymous, so edge-caching is safe; value tuned to how fast the data moves.
+export const revalidate = 300;
 
 type Props = { params: Promise<{ id: string; metric: string }> };
 type Stats = Record<string, number | string | null>;

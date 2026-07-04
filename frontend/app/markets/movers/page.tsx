@@ -12,6 +12,9 @@ import JsonLd from '@/components/seo/JsonLd';
  * listing would be stale the moment it was indexed — freshness > listing.
  */
 
+// force-dynamic: non-dynamic hub route — must NOT prerender at build
+// (no DATABASE_URL at build). Vercel still edge-caches via next.config
+// s-maxage header; freshness comes from per-request render.
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {

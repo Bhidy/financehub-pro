@@ -13,6 +13,9 @@ import JsonLd from '@/components/seo/JsonLd';
  * value; degrades to definition + constituents if the feed is unavailable.
  */
 
+// force-dynamic: non-dynamic hub route — must NOT prerender at build
+// (no DATABASE_URL at build). Vercel still edge-caches via next.config
+// s-maxage header; freshness comes from per-request render.
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {

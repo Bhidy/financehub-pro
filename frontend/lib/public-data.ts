@@ -194,10 +194,27 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
     // Canonical NAV = live value derived from nav_history (see /api/v1/funds/[id]).
     row.latest_nav = (row.live_latest_nav as number | null) ?? (Number(row.latest_nav) || null);
     coalesceReturns(row);
+    // Merge computed risk metrics (fund_risk_metrics side table). Isolated in
+    // try/catch so a missing table can never break the page. Advanced metrics the
+    // view lacks (max_drawdown, volatility_annual) always come from here; returns
+    // and 52w fill ONLY gaps — never override a value funds_view already carries.
+    try {
+        const rm = await db.query(`SELECT * FROM fund_risk_metrics WHERE fund_id = $1`, [String(fundId)]);
+        const m = rm.rows[0] as Record<string, unknown> | undefined;
+        if (m) {
+            row.max_drawdown = m.max_drawdown;
+            row.volatility_annual = m.volatility_annual;
+            for (const k of ['nav_52w_high', 'nav_52w_low', 'return_1m', 'return_3m',
+                'return_ytd', 'return_1y', 'return_3y', 'return_5y']) {
+                if (row[k] === null || row[k] === undefined) row[k] = m[k];
+            }
+        }
+    } catch { /* side table isolated — never break the core payload */ }
     toNum(row, [
         'latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_1y', 'return_3y', 'return_5y',
         'expense_ratio', 'fee_management', 'fee_subscription', 'fee_redemption',
         'nav_52w_high', 'nav_52w_low', 'aum', 'min_subscription', 'par_value',
+        'max_drawdown', 'volatility_annual',
     ]);
     return row;
 });

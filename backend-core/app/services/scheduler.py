@@ -235,6 +235,9 @@ class SchedulerService:
 
             # Trigger Startup Catch-up (Async)
             asyncio.create_task(self._startup_ohlc_catchup())
+            # One-time: populate fund_risk_metrics immediately after a deploy if it's empty,
+            # instead of waiting for the tier4d cron (so the fund pages' Risk section shows).
+            asyncio.create_task(self._startup_fund_metrics_catchup())
             
         except Exception as e:
             # THIS IS THE SAFETY NET
@@ -278,6 +281,28 @@ class SchedulerService:
                 
         except Exception as e:
             logger.error(f"Startup catch-up error: {e}")
+
+    async def _startup_fund_metrics_catchup(self):
+        """One-time startup catch-up: if fund_risk_metrics is empty or missing, compute it
+        now (rather than waiting for the tier4d cron) so the fund pages' Risk & Volatility
+        section populates right after a deploy. Guarded, isolated, and non-blocking — it can
+        never crash or delay startup."""
+        try:
+            await asyncio.sleep(25)  # let the DB + app settle
+            from app.db.session import db
+            reg = await db.fetch_one("SELECT to_regclass('public.fund_risk_metrics') AS t")
+            exists = bool(reg and reg.get('t'))
+            count = 0
+            if exists:
+                c = await db.fetch_one("SELECT COUNT(*) AS n FROM fund_risk_metrics")
+                count = (c or {}).get('n') or 0
+            if not exists or count == 0:
+                logger.info("Startup: fund_risk_metrics empty/missing -> computing now")
+                await self.run_fund_metrics_job()
+            else:
+                logger.info(f"Startup: fund_risk_metrics already populated ({count} rows) — skip.")
+        except Exception as e:
+            logger.error(f"Startup fund-metrics catch-up error: {e}")
 
     async def run_ohlc_catchup_job(self):
         """Periodic OHLC catch-up job (Runs every 4 hours)."""

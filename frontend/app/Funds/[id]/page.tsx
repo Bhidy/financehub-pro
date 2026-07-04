@@ -183,12 +183,15 @@ export default async function FundPage({ params }: Props) {
         [
             ['Issuer', str(fund, 'issuer_en')],
             ['Manager', manager],
+            ['Fund manager', str(fund, 'fund_manager')],
             ['Fund type', fundTypeEn],
             ['Classification', str(fund, 'classification_en')],
-            ['Risk level', str(fund, 'risk_level_en')],
+            ['Risk level', str(fund, 'risk_level_en') || str(fund, 'risk_level')],
             ['Currency', currency],
             ['Inception year', inceptionYear],
             ['NAV frequency', str(fund, 'nav_frequency_en')],
+            ['Purchase frequency', str(fund, 'purchase_frequency')],
+            ['Redemption frequency', str(fund, 'redemption_frequency')],
             [
                 'Minimum subscription',
                 minSubscription !== null
@@ -207,6 +210,14 @@ export default async function FundPage({ params }: Props) {
             ['Expense ratio', num(fund, 'expense_ratio')],
         ] as Array<[string, number | null]>
     ).filter((f): f is [string, number] => f[1] !== null);
+
+    const prospectusUrl = str(fund, 'prospectus_url');
+    const platforms = (Array.isArray(fund.platforms) ? (fund.platforms as Record<string, unknown>[]) : [])
+        .map((p) => ({
+            name: typeof p.platform_name === 'string' ? p.platform_name.trim() : '',
+            logo: typeof p.logo_url === 'string' ? p.logo_url : null,
+        }))
+        .filter((p) => p.name);
 
     const strategyEn = str(fund, 'investment_strategy_en');
     const objectiveEn = str(fund, 'objective_en');
@@ -442,6 +453,31 @@ export default async function FundPage({ params }: Props) {
                                 </div>
                             ))}
                         </dl>
+                    </section>
+                )}
+
+                {(platforms.length > 0 || prospectusUrl) && (
+                    <section className="mt-8">
+                        <h2 className="text-lg font-bold text-main">Where to Invest</h2>
+                        {platforms.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                {platforms.map((p) => (
+                                    <span key={p.name} className="inline-block rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-main">
+                                        {p.name}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                        {prospectusUrl && (
+                            <p className="mt-3 text-sm">
+                                <a href={prospectusUrl} target="_blank" rel="noopener noreferrer nofollow" className="font-semibold text-main underline">
+                                    Fund prospectus (PDF)
+                                </a>
+                            </p>
+                        )}
+                        <p className="mt-3 border-t border-border/60 pt-2 text-xs text-muted">
+                            Subscription &amp; redemption channels and the prospectus as published by the fund manager.
+                        </p>
                     </section>
                 )}
 

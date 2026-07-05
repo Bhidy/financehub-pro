@@ -72,6 +72,31 @@ are healthy.
 5. Changing a static asset in `frontend/public/assets/`? Bump its `?v=X.Y.Z` query
    in the HTML or the CDN serves the stale file.
 
+### ⚡ Owner express-lane (fast path) — `./ship.sh "msg"`
+
+The account owner is a repo **admin** and branch protection has `enforce_admins:false`,
+so the owner may **push straight to `main`** — which triggers the same one-and-only
+Vercel Git-Integration deploy. This is the fast path for solo owner changes:
+
+```bash
+./ship.sh "fix: my change"     # commits + pushes to main in ~2s. Fire-and-forget.
+```
+
+`ship.sh` commits with the local `git user.email` (which is `mohamedbhidy@gmail.com`
+— **correct**, unlike a `gh pr merge --squash` commit, which GitHub authors with the
+`…@users.noreply.github.com` email) and pushes to `main`. Vercel auto-deploys in
+~1–2 min. **It runs NO `vercel` command** — it fully respects rule #1.
+
+- **Prod-safe:** if the build fails, Vercel keeps serving the **last good deploy** —
+  a bad push can never take the site down.
+- **What it trades away vs the PR flow above:** the ChatGPT-Codex PR review and the
+  CI checks (which mirror the Vercel build) run only on PRs — the express-lane skips
+  them. Use the PR flow for risky/large changes; the express-lane for small, verified
+  owner edits. Either way, the deploy mechanism is identical: **code on `main`.**
+- **Never** substitute a `vercel deploy` here to "make it faster/live" — that is the
+  forbidden race (see _Why this exists_). If a push isn't live, the answer is in the
+  Vercel dashboard, not the CLI.
+
 ---
 
 ## ✅ iOS (TestFlight)

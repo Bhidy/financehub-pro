@@ -804,10 +804,6 @@
                             <label class="fsb-label" data-key="manager_label">Manager</label>
                             <select id="managerFilter" class="control-select px-4 text-sm"></select>
                         </div>
-                        <div class="fsb-group">
-                            <label class="fsb-label" data-key="risk_label">Risk level</label>
-                            <select id="riskFilter" class="control-select px-4 text-sm"></select>
-                        </div>
 
                         <div class="fsb-group">
                             <label class="fsb-label" data-key="fee_label">Management fee</label>
@@ -1185,7 +1181,6 @@
         const fundSearch = document.getElementById('fundSearch');
         const typeFilter = document.getElementById('fundTypeFilter');
         const managerFilter = document.getElementById('managerFilter');
-        const riskFilter = document.getElementById('riskFilter');
         const sortSelect = document.getElementById('sortSelect');
         const shariahToggle = document.getElementById('shariahToggle');
         const noLoadToggle = document.getElementById('noLoadToggle');
@@ -1403,11 +1398,9 @@
                 .sort((a, b) => a.label.localeCompare(b.label, state.lang === 'ar' ? 'ar' : 'en'));
 
             const managers = [...new Set(state.funds.map((fund) => getManagerName(fund)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
-            const risks = ['low', 'medium', 'high', 'unclassified'].filter((bucket) => state.funds.some((fund) => fund.riskBucket === bucket));
 
             populateSelectKeyed(typeFilter, typeOptions, getLabels().all_types, typeFilter.value);
             populateSelect(managerFilter, managers, getLabels().all_managers, managerFilter.value);
-            populateSelectKeyed(riskFilter, risks.map((bucket) => ({ value: bucket, label: getRiskLabel(bucket) })), getLabels().all_risks, riskFilter.value);
 
             // Default the marketplace to "Latest update" order (and list it first), while
             // preserving any sort the user has actively chosen across re-renders/lang toggles.
@@ -1494,7 +1487,6 @@
             if (fundSearch.value.trim()) chips.push({ key: 'search', label: `${getLabels().filter_search}: ${fundSearch.value.trim()}` });
             if (typeFilter.value) chips.push({ key: 'type', label: `${getLabels().filter_type}: ${typeFilter.options[typeFilter.selectedIndex]?.text || typeFilter.value}` });
             if (managerFilter.value) chips.push({ key: 'manager', label: `${getLabels().filter_manager}: ${managerFilter.value}` });
-            if (riskFilter.value) chips.push({ key: 'risk', label: `${getLabels().filter_risk}: ${getRiskLabel(riskFilter.value)}` });
             const L = getLabels();
             if (state.feeBucket) {
                 const txt = state.feeBucket === 'low' ? '<1%' : state.feeBucket === 'mid' ? '1–2%' : '>2%';
@@ -1538,7 +1530,6 @@
             if (key === 'search') fundSearch.value = '';
             if (key === 'type') typeFilter.value = '';
             if (key === 'manager') managerFilter.value = '';
-            if (key === 'risk') riskFilter.value = '';
             if (key === 'shariah') state.shariahOnly = false;
             if (key === 'fee') state.feeBucket = '';
             if (key === 'perf') state.perfMin = '';
@@ -1552,7 +1543,6 @@
             const search = normalizeText(fundSearch.value);
             const selectedType = typeFilter.value;
             const selectedManager = managerFilter.value;
-            const selectedRisk = riskFilter.value;
 
             return state.funds.filter((fund) => {
                 const haystack = [
@@ -1567,7 +1557,6 @@
                 if (search && !haystack.includes(search)) return false;
                 if (selectedType && getFundTypeSlug(fund) !== selectedType) return false;
                 if (selectedManager && getManagerName(fund) !== selectedManager) return false;
-                if (selectedRisk && fund.riskBucket !== selectedRisk) return false;
                 if (state.shariahOnly && !fund.isShariah) return false;
                 // No entry/exit fees: both subscription AND redemption fee must be 0.
                 if (state.noLoad) {
@@ -1879,7 +1868,6 @@
                 const name = escapeHtml(getFundName(fund));
                 const manager = escapeHtml(getManagerName(fund));
                 const type = escapeHtml(getFundTypeName(fund));
-                const risk = escapeHtml(getRiskLabel(fund.riskBucket));
                 const ret = getReturnForPeriod(fund);
                 const retText = formatPercent(ret);
                 const retClass = ret !== null && ret < 0 ? 'text-red-500' : 'text-emerald-600';
@@ -1909,7 +1897,6 @@
 
                             <div class="flex flex-wrap gap-2">
                                 <span class="chip">${type}</span>
-                                <span class="chip">${risk}</span>
                                 ${fund.isShariah ? `<span class="chip border-emerald-200 bg-emerald-50 text-emerald-700">${escapeHtml(getLabels().filter_shariah)}</span>` : ''}
                                 ${aum ? `<span class="chip">${aum}</span>` : ''}
                             </div>
@@ -1981,7 +1968,7 @@
             // Reset to the first page whenever the result set changes (filter / sort /
             // search / period / view). A "View more" click keeps the same signature,
             // so the grown visibleCount is preserved and only 10 more are added.
-            const filterSig = JSON.stringify([fundSearch.value, typeFilter.value, managerFilter.value, riskFilter.value, state.shariahOnly, sortSelect.value, state.period, state.view]);
+            const filterSig = JSON.stringify([fundSearch.value, typeFilter.value, managerFilter.value, state.shariahOnly, sortSelect.value, state.period, state.view]);
             if (filterSig !== state._filterSig) { state.visibleCount = PAGE_SIZE; state._filterSig = filterSig; }
             const hasResults = state.filtered.length > 0;
             resultsCount.textContent = formatNumber(state.filtered.length, { maximumFractionDigits: 0 });
@@ -2048,7 +2035,6 @@
             fundSearch.value = '';
             typeFilter.value = '';
             managerFilter.value = '';
-            riskFilter.value = '';
             sortSelect.value = 'updated-desc';
             perfFilter.value = '';
             state.shariahOnly = false;
@@ -2087,7 +2073,6 @@
             });
             typeFilter.addEventListener('change', renderFunds);
             managerFilter.addEventListener('change', renderFunds);
-            riskFilter.addEventListener('change', renderFunds);
             sortSelect.addEventListener('change', renderFunds);
             shariahToggle.addEventListener('click', () => {
                 state.shariahOnly = !state.shariahOnly;

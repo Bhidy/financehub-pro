@@ -121,6 +121,80 @@
             isolation: isolate;
         }
 
+        /* ── Vertical filter sidebar + results layout ─────────────────────── */
+        .funds-layout {
+            display: grid;
+            grid-template-columns: 21rem minmax(0, 1fr);
+            gap: 1.75rem;
+            align-items: start;
+        }
+        @media (max-width: 1080px) {
+            .funds-layout { grid-template-columns: minmax(0, 1fr); }
+        }
+        .funds-sidebar { position: sticky; top: 6.5rem; }
+        @media (max-width: 1080px) {
+            .funds-sidebar { position: static; }
+        }
+        .fsb-card {
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: 1.9rem;
+            padding: 1.5rem 1.4rem;
+            box-shadow: var(--shadow-premium);
+        }
+        .fsb-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding-bottom: 1.1rem; margin-bottom: 1.2rem;
+            border-bottom: 1px solid var(--c-border);
+        }
+        .fsb-head > span { font-family: 'Sora','IBM Plex Sans Arabic',sans-serif; font-weight: 700; font-size: 1.08rem; color: var(--c-text-main); letter-spacing: -0.02em; }
+        .fsb-reset {
+            font-size: 0.74rem; font-weight: 700; color: var(--teal-dark);
+            padding: 0.35rem 0.75rem; border-radius: 999px; transition: background-color .18s ease;
+        }
+        .fsb-reset:hover { background: rgba(20,184,166,0.10); }
+        .fsb-group { margin-bottom: 1.15rem; }
+        .fsb-group-last { margin-bottom: 0; }
+        .fsb-label {
+            display: block; margin-bottom: 0.55rem;
+            font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.14em; color: var(--c-text-muted);
+        }
+        /* segmented control */
+        .fsb-seg {
+            display: flex; gap: 0.25rem; padding: 0.28rem;
+            background: var(--c-panel); border: 1px solid var(--c-border); border-radius: 0.95rem;
+        }
+        .fsb-seg.fsb-seg-wrap { flex-wrap: wrap; }
+        .fsb-seg button {
+            flex: 1 1 auto; min-width: 2.6rem; padding: 0.5rem 0.4rem;
+            border-radius: 0.7rem; font-size: 0.78rem; font-weight: 600;
+            color: var(--c-text-muted); transition: all .18s ease; white-space: nowrap;
+        }
+        .fsb-seg button:hover { color: var(--c-text-main); }
+        .fsb-seg button.active {
+            background: linear-gradient(135deg, #14B8A6 10%, #0f766e 100%);
+            color: #fff; box-shadow: 0 6px 16px rgba(20,184,166,0.25);
+        }
+        /* toggles */
+        .fsb-toggle-group { display: flex; flex-direction: column; gap: 0.6rem; }
+        .fsb-toggle {
+            display: flex; align-items: center; gap: 0.65rem; width: 100%; text-align: start;
+            padding: 0.72rem 0.9rem; border: 1px solid var(--c-border); border-radius: 0.9rem;
+            font-size: 0.82rem; font-weight: 600; color: var(--c-text-main);
+            background: var(--c-surface); transition: all .18s ease;
+        }
+        .fsb-toggle:hover { border-color: rgba(20,184,166,0.4); }
+        .fsb-toggle-dot {
+            width: 0.85rem; height: 0.85rem; border-radius: 999px; flex-shrink: 0;
+            border: 2px solid var(--c-border); transition: all .18s ease;
+        }
+        .fsb-toggle.active { border-color: rgba(15,118,110,0.35); background: rgba(20,184,166,0.08); color: var(--teal-dark); }
+        .fsb-toggle.active .fsb-toggle-dot { background: #14B8A6; border-color: #14B8A6; box-shadow: 0 0 0 3px rgba(20,184,166,0.18); }
+        /* results header */
+        .fsb-results-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
+        .fsb-view-switch { display: flex; align-items: center; gap: 0.4rem; }
+
         .funds-hero::before,
         .funds-hero::after {
             content: "";
@@ -668,102 +742,128 @@
                 </div>
             </section>
 
-            <section id="filters" class="mt-8 reveal-block">
-                <div class="filter-shell rounded-[2.4rem] p-5 sm:p-6 lg:p-7">
-                    <div class="flex flex-col gap-4">
-                        <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-                            <div class="flex items-center gap-2 self-start xl:self-auto">
-                                <button id="gridViewBtn" class="view-btn active rounded-full px-4 py-2 text-sm font-semibold" data-view="grid" data-key="grid_view">Grid</button>
-                                <button id="tableViewBtn" class="view-btn rounded-full px-4 py-2 text-sm font-semibold" data-view="table" data-key="table_view">Table</button>
+            <section id="filters" class="funds-layout mt-8 reveal-block">
+                <!-- ── Sticky filter sidebar ─────────────────────────────────── -->
+                <aside class="funds-sidebar">
+                    <div class="fsb-card">
+                        <div class="fsb-head">
+                            <span data-key="filters_title">Filters</span>
+                            <button id="resetFilters" type="button" class="fsb-reset" data-key="reset_btn">Reset all</button>
+                        </div>
+
+                        <div class="fsb-group">
+                            <label class="fsb-label" data-key="search_label">Search fund</label>
+                            <input id="fundSearch" type="text" class="control-input px-4 text-sm" placeholder="Search by fund or manager">
+                        </div>
+                        <div class="fsb-group">
+                            <label class="fsb-label" data-key="type_label">Fund type</label>
+                            <select id="fundTypeFilter" class="control-select px-4 text-sm"></select>
+                        </div>
+                        <div class="fsb-group">
+                            <label class="fsb-label" data-key="manager_label">Manager</label>
+                            <select id="managerFilter" class="control-select px-4 text-sm"></select>
+                        </div>
+                        <div class="fsb-group">
+                            <label class="fsb-label" data-key="risk_label">Risk level</label>
+                            <select id="riskFilter" class="control-select px-4 text-sm"></select>
+                        </div>
+
+                        <div class="fsb-group">
+                            <label class="fsb-label" data-key="fee_label">Management fee</label>
+                            <div class="fsb-seg" id="feeSeg">
+                                <button type="button" data-fee="" class="active" data-key="opt_any">Any</button>
+                                <button type="button" data-fee="low">&lt;1%</button>
+                                <button type="button" data-fee="mid">1–2%</button>
+                                <button type="button" data-fee="high">&gt;2%</button>
+                            </div>
+                        </div>
+                        <div class="fsb-group">
+                            <label class="fsb-label"><span data-key="perf_label">Min. return</span> · <span id="perfPeriodLabel" class="text-starta-teal">YTD</span></label>
+                            <select id="perfFilter" class="control-select px-4 text-sm"></select>
+                        </div>
+                        <div class="fsb-group">
+                            <label class="fsb-label" data-key="dealing_label">Dealing frequency</label>
+                            <div class="fsb-seg" id="dealSeg">
+                                <button type="button" data-deal="" class="active" data-key="opt_any">Any</button>
+                                <button type="button" data-deal="daily" data-key="deal_daily">Daily</button>
+                                <button type="button" data-deal="weekly" data-key="deal_weekly">Weekly</button>
                             </div>
                         </div>
 
-                        <div class="grid gap-4 lg:grid-cols-12 mobile-stack">
-                            <label class="lg:col-span-4">
-                                <span class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-muted" data-key="search_label">Search fund</span>
-                                <input id="fundSearch" type="text" class="control-input px-4 text-sm"
-                                    placeholder="Search by fund or manager">
-                            </label>
-                            <label class="lg:col-span-2">
-                                <span class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-muted" data-key="type_label">Fund type</span>
-                                <select id="fundTypeFilter" class="control-select px-4 text-sm"></select>
-                            </label>
-                            <label class="lg:col-span-2">
-                                <span class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-muted" data-key="manager_label">Manager</span>
-                                <select id="managerFilter" class="control-select px-4 text-sm"></select>
-                            </label>
-                            <label class="lg:col-span-2">
-                                <span class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-muted" data-key="risk_label">Risk</span>
-                                <select id="riskFilter" class="control-select px-4 text-sm"></select>
-                            </label>
-                            <label class="lg:col-span-2">
-                                <span class="mb-2 block text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-muted" data-key="sort_label">Sort by</span>
-                                <select id="sortSelect" class="control-select px-4 text-sm"></select>
-                            </label>
+                        <div class="fsb-group fsb-toggle-group">
+                            <button id="shariahToggle" type="button" class="fsb-toggle">
+                                <span class="fsb-toggle-dot"></span><span data-key="shariah_only">Shariah-compliant only</span>
+                            </button>
+                            <button id="noLoadToggle" type="button" class="fsb-toggle">
+                                <span class="fsb-toggle-dot"></span><span data-key="noload_only">No entry / exit fees</span>
+                            </button>
                         </div>
 
-                        <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                            <div class="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center">
-                                <div class="flex items-center gap-3">
-                                    <button id="shariahToggle"
-                                        class="btn-secondary rounded-full px-4 py-2.5 text-sm font-semibold">
-                                        <span data-key="shariah_only">Shariah only</span>
-                                    </button>
-                                    <button id="resetFilters" class="btn-secondary rounded-full px-4 py-2.5 text-sm font-semibold" data-key="reset_btn">Reset</button>
-                                </div>
-                                <div class="flex flex-wrap gap-2" id="periodSelector">
-                                    <button class="period-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="3m">3M</button>
-                                    <button class="period-btn active rounded-full px-4 py-2 text-sm font-semibold" data-period="ytd">YTD</button>
-                                    <button class="period-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="1y">1Y</button>
-                                    <button class="period-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="3y">3Y</button>
-                                    <button class="period-btn rounded-full px-4 py-2 text-sm font-semibold" data-period="5y">5Y</button>
-                                </div>
-                            </div>
-
-                            <div class="text-sm font-medium text-muted">
-                                <span id="resultsCount" class="font-display text-2xl font-bold tracking-[-0.04em] text-main">0</span>
-                                <span data-key="results_label">funds matching your filters</span>
+                        <div class="fsb-group">
+                            <label class="fsb-label" data-key="period_label">Return period</label>
+                            <div class="fsb-seg fsb-seg-wrap" id="periodSelector">
+                                <button class="period-btn" type="button" data-period="3m">3M</button>
+                                <button class="period-btn active" type="button" data-period="ytd">YTD</button>
+                                <button class="period-btn" type="button" data-period="1y">1Y</button>
+                                <button class="period-btn" type="button" data-period="3y">3Y</button>
+                                <button class="period-btn" type="button" data-period="5y">5Y</button>
                             </div>
                         </div>
-
-                        <div id="activeFilters" class="flex flex-wrap gap-2"></div>
+                        <div class="fsb-group fsb-group-last">
+                            <label class="fsb-label" data-key="sort_label">Sort by</label>
+                            <select id="sortSelect" class="control-select px-4 text-sm"></select>
+                        </div>
                     </div>
-                </div>
-            </section>
+                </aside>
 
-            <section class="mt-8">
-                <div id="fundsGrid" class="grid gap-5 lg:grid-cols-2"></div>
-
-                <div id="fundsTableShell" class="hidden table-shell overflow-hidden rounded-[2rem]">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
-                            <thead class="bg-panel text-left">
-                                <tr class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">
-                                    <th class="px-5 py-4" data-key="th_fund">Fund</th>
-                                    <th class="px-5 py-4" data-key="th_manager">Manager</th>
-                                    <th class="px-5 py-4" data-key="th_type">Type</th>
-                                    <th class="px-5 py-4" data-key="th_nav">NAV</th>
-                                    <th class="px-5 py-4" data-key="th_period_return">Return</th>
-                                    <th class="px-5 py-4" data-key="th_update">Updated</th>
-                                </tr>
-                            </thead>
-                            <tbody id="fundsTableBody"></tbody>
-                        </table>
+                <!-- ── Results column ────────────────────────────────────────── -->
+                <div class="funds-results">
+                    <div class="fsb-results-head">
+                        <div class="text-sm font-medium text-muted">
+                            <span id="resultsCount" class="font-display text-3xl font-bold tracking-[-0.04em] text-main">0</span>
+                            <span data-key="results_label">funds matching your filters</span>
+                        </div>
+                        <div class="fsb-view-switch">
+                            <button id="gridViewBtn" class="view-btn active rounded-full px-4 py-2 text-sm font-semibold" data-view="grid" data-key="grid_view">Grid</button>
+                            <button id="tableViewBtn" class="view-btn rounded-full px-4 py-2 text-sm font-semibold" data-view="table" data-key="table_view">Table</button>
+                        </div>
                     </div>
-                </div>
 
-                <div id="viewMoreWrap" class="mt-8 hidden text-center">
-                    <button id="viewMoreBtn" type="button" class="btn-primary inline-flex items-center justify-center rounded-full px-8 py-3 text-sm font-semibold"></button>
-                </div>
+                    <div id="activeFilters" class="mb-6 flex flex-wrap gap-2"></div>
 
-                <div id="emptyState" class="hidden mt-8 rounded-[2rem] border border-border bg-surface px-8 py-16 text-center shadow-premium">
-                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-starta-teal/10 text-starta-teal">
-                        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 8h10M7 12h6m-3 8a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" />
-                        </svg>
+                    <div id="fundsGrid" class="grid gap-5 2xl:grid-cols-2"></div>
+
+                    <div id="fundsTableShell" class="hidden table-shell overflow-hidden rounded-[2rem]">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead class="bg-panel text-left">
+                                    <tr class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">
+                                        <th class="px-5 py-4" data-key="th_fund">Fund</th>
+                                        <th class="px-5 py-4" data-key="th_manager">Manager</th>
+                                        <th class="px-5 py-4" data-key="th_type">Type</th>
+                                        <th class="px-5 py-4" data-key="th_nav">NAV</th>
+                                        <th class="px-5 py-4" data-key="th_period_return">Return</th>
+                                        <th class="px-5 py-4" data-key="th_update">Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fundsTableBody"></tbody>
+                            </table>
+                        </div>
                     </div>
-                    <h3 class="mt-5 text-2xl font-display font-bold text-main" data-key="empty_title">No funds matched this filter set.</h3>
-                    <p class="mt-2 text-muted" data-key="empty_desc">Reset the filters or broaden the manager and type selection to restore the full Egypt universe.</p>
+
+                    <div id="viewMoreWrap" class="mt-8 hidden text-center">
+                        <button id="viewMoreBtn" type="button" class="btn-primary inline-flex items-center justify-center rounded-full px-8 py-3 text-sm font-semibold"></button>
+                    </div>
+
+                    <div id="emptyState" class="hidden mt-8 rounded-[2rem] border border-border bg-surface px-8 py-16 text-center shadow-premium">
+                        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-starta-teal/10 text-starta-teal">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 8h10M7 12h6m-3 8a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" />
+                            </svg>
+                        </div>
+                        <h3 class="mt-5 text-2xl font-display font-bold text-main" data-key="empty_title">No funds matched this filter set.</h3>
+                        <p class="mt-2 text-muted" data-key="empty_desc">Reset the filters or broaden the manager and type selection to restore the full Egypt universe.</p>
+                    </div>
                 </div>
             </section>
         </div>
@@ -834,9 +934,20 @@
                 manager_label: "Manager",
                 risk_label: "Risk",
                 sort_label: "Sort by",
-                shariah_only: "Shariah only",
-                reset_btn: "Reset",
+                shariah_only: "Shariah-compliant only",
+                reset_btn: "Reset all",
                 results_label: "funds matching your filters",
+                filters_title: "Filters",
+                fee_label: "Management fee",
+                perf_label: "Min. return",
+                dealing_label: "Dealing frequency",
+                period_label: "Return period",
+                opt_any: "Any",
+                deal_daily: "Daily",
+                deal_weekly: "Weekly",
+                noload_only: "No entry / exit fees",
+                perf_positive: "Positive only",
+                perf_gt: "Above",
                 sort_period_desc: "Period return",
                 sort_nav_desc: "Highest NAV",
                 sort_nav_asc: "Lowest NAV",
@@ -912,8 +1023,19 @@
                 risk_label: "المخاطر",
                 sort_label: "الترتيب",
                 shariah_only: "متوافق مع الشريعة فقط",
-                reset_btn: "إعادة تعيين",
+                reset_btn: "إعادة تعيين الكل",
                 results_label: "صندوقاً مطابقاً للفلاتر",
+                filters_title: "الفلاتر",
+                fee_label: "رسوم الإدارة",
+                perf_label: "أدنى عائد",
+                dealing_label: "دورية التداول",
+                period_label: "فترة العائد",
+                opt_any: "الكل",
+                deal_daily: "يومي",
+                deal_weekly: "أسبوعي",
+                noload_only: "بدون رسوم دخول / خروج",
+                perf_positive: "العوائد الموجبة فقط",
+                perf_gt: "أكثر من",
                 sort_period_desc: "أعلى عائد للفترة",
                 sort_nav_desc: "أعلى NAV",
                 sort_nav_asc: "أقل NAV",
@@ -994,6 +1116,10 @@
             period: 'ytd',
             view: 'grid',
             shariahOnly: false,
+            noLoad: false,
+            feeBucket: '',
+            perfMin: '',
+            dealing: '',
             compareIds: [],
             visibleCount: PAGE_SIZE,
             _filterSig: '',
@@ -1021,6 +1147,10 @@
         const riskFilter = document.getElementById('riskFilter');
         const sortSelect = document.getElementById('sortSelect');
         const shariahToggle = document.getElementById('shariahToggle');
+        const noLoadToggle = document.getElementById('noLoadToggle');
+        const perfFilter = document.getElementById('perfFilter');
+        const feeSeg = document.getElementById('feeSeg');
+        const dealSeg = document.getElementById('dealSeg');
         const langToggle = document.getElementById('langToggle');
 
         const periodMap = {
@@ -1250,6 +1380,19 @@
                 { value: 'name-asc', label: getLabels().sort_name_asc }
             ].map((option) => `<option value="${option.value}"${activeSort === option.value ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
             sortSelect.value = activeSort;
+
+            // Min-return filter options (tied to the selected period).
+            const L = getLabels();
+            const perfOptions = [
+                { value: '', label: L.opt_any },
+                { value: '0', label: L.perf_positive },
+                { value: '10', label: `${L.perf_gt} 10%` },
+                { value: '25', label: `${L.perf_gt} 25%` },
+                { value: '50', label: `${L.perf_gt} 50%` },
+            ];
+            populateSelectKeyed(perfFilter, perfOptions, L.opt_any, state.perfMin);
+            const pl = document.getElementById('perfPeriodLabel');
+            if (pl) pl.textContent = state.period === 'ytd' ? 'YTD' : state.period.toUpperCase();
         }
 
         function updateHeroMetrics() {
@@ -1311,6 +1454,18 @@
             if (typeFilter.value) chips.push({ key: 'type', label: `${getLabels().filter_type}: ${typeFilter.options[typeFilter.selectedIndex]?.text || typeFilter.value}` });
             if (managerFilter.value) chips.push({ key: 'manager', label: `${getLabels().filter_manager}: ${managerFilter.value}` });
             if (riskFilter.value) chips.push({ key: 'risk', label: `${getLabels().filter_risk}: ${getRiskLabel(riskFilter.value)}` });
+            const L = getLabels();
+            if (state.feeBucket) {
+                const txt = state.feeBucket === 'low' ? '<1%' : state.feeBucket === 'mid' ? '1–2%' : '>2%';
+                chips.push({ key: 'fee', label: `${L.fee_label}: ${txt}` });
+            }
+            if (state.perfMin !== '') {
+                const per = state.period === 'ytd' ? 'YTD' : state.period.toUpperCase();
+                const txt = state.perfMin === '0' ? L.perf_positive : `${L.perf_gt} ${state.perfMin}%`;
+                chips.push({ key: 'perf', label: `${per}: ${txt}` });
+            }
+            if (state.dealing) chips.push({ key: 'dealing', label: `${L.dealing_label}: ${state.dealing === 'daily' ? L.deal_daily : L.deal_weekly}` });
+            if (state.noLoad) chips.push({ key: 'noload', label: L.noload_only });
             if (state.shariahOnly) chips.push({ key: 'shariah', label: getLabels().filter_shariah });
             return chips;
         }
@@ -1329,12 +1484,26 @@
             });
         }
 
+        // Keep the segmented controls + toggles + perf select visually in sync with state.
+        function syncFilterUI() {
+            if (feeSeg) feeSeg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', (b.dataset.fee || '') === state.feeBucket));
+            if (dealSeg) dealSeg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', (b.dataset.deal || '') === state.dealing));
+            if (shariahToggle) shariahToggle.classList.toggle('active', state.shariahOnly);
+            if (noLoadToggle) noLoadToggle.classList.toggle('active', state.noLoad);
+            if (perfFilter && perfFilter.value !== state.perfMin) perfFilter.value = state.perfMin;
+        }
+
         function clearFilter(key) {
             if (key === 'search') fundSearch.value = '';
             if (key === 'type') typeFilter.value = '';
             if (key === 'manager') managerFilter.value = '';
             if (key === 'risk') riskFilter.value = '';
             if (key === 'shariah') state.shariahOnly = false;
+            if (key === 'fee') state.feeBucket = '';
+            if (key === 'perf') state.perfMin = '';
+            if (key === 'dealing') state.dealing = '';
+            if (key === 'noload') state.noLoad = false;
+            syncFilterUI();
             renderFunds();
         }
 
@@ -1359,6 +1528,28 @@
                 if (selectedManager && getManagerName(fund) !== selectedManager) return false;
                 if (selectedRisk && fund.riskBucket !== selectedRisk) return false;
                 if (state.shariahOnly && !fund.isShariah) return false;
+                // No entry/exit fees: both subscription AND redemption fee must be 0.
+                if (state.noLoad) {
+                    const sub = safeNumber(fund.fee_subscription), red = safeNumber(fund.fee_redemption);
+                    if (!(sub === 0 && red === 0)) return false;
+                }
+                // Management-fee bucket.
+                if (state.feeBucket) {
+                    const fee = safeNumber(fund.fee_management);
+                    if (fee === null) return false;
+                    if (state.feeBucket === 'low' && !(fee < 1)) return false;
+                    if (state.feeBucket === 'mid' && !(fee >= 1 && fee <= 2)) return false;
+                    if (state.feeBucket === 'high' && !(fee > 2)) return false;
+                }
+                // Dealing / purchase frequency.
+                if (state.dealing) {
+                    if (String(fund.purchase_frequency || '').toLowerCase() !== state.dealing) return false;
+                }
+                // Minimum return over the selected period.
+                if (state.perfMin !== '') {
+                    const ret = getReturnForPeriod(fund);
+                    if (ret === null || ret < Number(state.perfMin)) return false;
+                }
                 return true;
             }).sort((a, b) => {
                 const sort = sortSelect.value || 'updated-desc';
@@ -1745,9 +1936,7 @@
         }
 
         function renderFunds() {
-            shariahToggle.classList.toggle('bg-emerald-50', state.shariahOnly);
-            shariahToggle.classList.toggle('border-emerald-200', state.shariahOnly);
-            shariahToggle.classList.toggle('text-emerald-700', state.shariahOnly);
+            syncFilterUI();
 
             state.filtered = getFilteredFunds();
             // Reset to the first page whenever the result set changes (filter / sort /
@@ -1822,7 +2011,13 @@
             managerFilter.value = '';
             riskFilter.value = '';
             sortSelect.value = 'updated-desc';
+            perfFilter.value = '';
             state.shariahOnly = false;
+            state.noLoad = false;
+            state.feeBucket = '';
+            state.perfMin = '';
+            state.dealing = '';
+            syncFilterUI();
             renderFunds();
         }
 
@@ -1839,6 +2034,8 @@
             document.querySelectorAll('[data-period]').forEach((button) => {
                 button.classList.toggle('active', button.dataset.period === state.period);
             });
+            const pl = document.getElementById('perfPeriodLabel');
+            if (pl) pl.textContent = state.period === 'ytd' ? 'YTD' : state.period.toUpperCase();
             navHistoryCache.clear();
             renderFunds();
         }
@@ -1857,6 +2054,22 @@
                 state.shariahOnly = !state.shariahOnly;
                 renderFunds();
             });
+            noLoadToggle.addEventListener('click', () => {
+                state.noLoad = !state.noLoad;
+                renderFunds();
+            });
+            perfFilter.addEventListener('change', () => {
+                state.perfMin = perfFilter.value;
+                renderFunds();
+            });
+            feeSeg.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+                state.feeBucket = b.dataset.fee || '';
+                renderFunds();
+            }));
+            dealSeg.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+                state.dealing = b.dataset.deal || '';
+                renderFunds();
+            }));
             document.getElementById('resetFilters').addEventListener('click', resetFilters);
             document.getElementById('gridViewBtn').addEventListener('click', () => setView('grid'));
             document.getElementById('tableViewBtn').addEventListener('click', () => setView('table'));

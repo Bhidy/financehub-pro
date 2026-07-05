@@ -1,9 +1,9 @@
 /**
  * Per-fund logos scraped from snduk (public Supabase bucket), matched to our
- * fund_id by name + NAV corroboration (or identical, unambiguous name). Only
- * 100%-confident matches are included — a wrong logo is worse than none, so
- * unmatched funds fall back to the manager logo / letter monogram.
- * Regenerate: scratchpad/emit_fund_logos.py.
+ * fund_id by NAV corroboration, identical-unique name, or strong name + MANAGER
+ * agreement (+ fund-number check, unambiguous both ways). Only high-confidence
+ * matches — a wrong logo is worse than none; unmatched funds fall back to the
+ * manager logo / letter monogram.
  */
 export const FUND_LOGOS: Record<string, string> = {
     '2662': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777988756134-l4koxv0a4ka.png', // Gozoor Fixed Income Fund - AAIB [NAV]
@@ -20,12 +20,14 @@ export const FUND_LOGOS: Record<string, string> = {
     '2692': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1783009553722-4gs62jbbb8c.png', // Modkharaty Money Market Fund - FAB MIS [NAV]
     '2693': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1782319998836-u6fj2quyi8s.jpeg', // Al Baraka Bank Islamic Fund [NAV]
     '2694': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1782317427633-ydqpv6wfwff.png', // Credit Agricole Mutual Fund No. 1 [NAV]
+    '2697': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777720226148-spswe52aky.jpg', // BDC First Fund (Equity Fund) [NAME+MGR]
     '2701': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1779553229185-cot1mb1r2a7.png', // Faisal Islamic Bank of Egypt Fund [NAME=1.0/unique]
     '2704': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777982495878-2dhalvhystm.png', // Themar Money Market Fund - QNB Al Ahli [NAV]
     '2707': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1780437662633-8mbk23n9erl.png', // MID BANK First Mutual Fund [NAV]
     '2709': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777554307875-g4e5dk1985e.png', // Banque Misr Third Mutual Fund [NAV]
     '2710': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777506405916-gidrmwj5pbe.png', // Banque Misr Fourth Fund EL Hessn fund  [NAV]
     '2713': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777643364928-ho1icxkfj4o.png', // National Bank of Egypt Fund 3 - Equity [NAV]
+    '2715': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1780150686344-1472ly9e95g.png', // Tadawol QNB Equity Fund [NAME+MGR]
     '2716': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1778113180430-dfc97uclun7.jpg', // Al Thiqa Balanced fund - Credit Agrico [NAV]
     '2717': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777537666904-os5rlgirdke.png', // Al Wefak Shariah Compliant Investment  [NAV]
     '2718': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1778112801839-u2exkq03sg.jpg', // Al Hasad Daily Fund - Agricultural Ban [NAV]
@@ -44,7 +46,9 @@ export const FUND_LOGOS: Record<string, string> = {
     '2734': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777504181240-vk1z0bdi6i.png', // Pharos Fund 1 [NAV]
     '2736': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1780585084936-k9pje6bsfyo.jpg', // Konooz fund - Export Development Bank  [NAME=1.0/unique]
     '2739': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1780757433639-4jb4ng7vhva.png', // Mawared Money Market Fund – HD BANK [NAV]
+    '2741': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1780233806619-04zv696c5474.png', // SAIB Bank Fund 2 [NAME+MGR]
     '2743': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1780757301430-4n6mmjl3mdg.png', // Al Tameer Fund - Housing and Developme [NAV]
+    '2745': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777587847166-w7cvk0q2xg9.png', // NBE Seventh Mutual Fund (Fund of E [NAME+MGR]
     '2747': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777721142939-rpgc4ua0ppe.png', // Al Baraka Bank shariah compliant balan [NAV]
     '4086': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777508982275-ij1ywywtf4p.png', // Alpha Shariaa Compliant Equity Fund -  [NAV]
     '4537': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777939111896-8la9mqeydsi.png', // Ezdehar sharia compliant balanced Fund [NAV]
@@ -53,6 +57,7 @@ export const FUND_LOGOS: Record<string, string> = {
     '5432': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777585942485-3lbzl6urjms.png', // Takamol Fund CIB - Commercial Internat [NAV]
     '5555': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1778110507540-uabxcd28p6.png', // Guard Fund - Arab African Internationa [NAV]
     '5635': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777843750166-xkf5monljbg.png', // Mazid Money Market Fund - Emirates NBD [NAV]
+    '5679': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1778676003275-ya07j89xw6q.jpeg', // Al Barakat Fund - Al Baraka Bank E [NAME+MGR]
     '5737': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1778598943924-3mo9n77eq7g.jpeg', // Siula Money Market Fund - NI Capital [NAV]
     '5751': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1780579244962-miongu4fult.png', // Afaaq Fixed Income Fund [NAV]
     '5753': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777940578320-h3wilr4n1lg.jpeg', // Azimut Equity Opportunities Fund (az-f [NAV]

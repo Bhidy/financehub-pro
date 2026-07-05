@@ -149,7 +149,12 @@ async def compute_one(conn, fund_id, name, dry_run) -> bool:
     # down > ~10% or run > ~6% volatility — such a value is a redenomination artifact.
     if _MM_RE.search(name or ""):
         dd, vol = m.get("max_drawdown"), m.get("volatility_annual")
-        if (dd is not None and dd < -10) or (vol is not None and vol > 6):
+        # Fire on an artifact detected by the type-aware threshold OR when a metric is
+        # already None: a SEVERE redenomination step trips compute_all's global backstop
+        # (vol>100 / dd<-90) FIRST, nulling that metric — which would otherwise stop this
+        # guard from firing and leave the corrupted CAGR/returns exposed (suppressed=False).
+        # A healthy cash fund keeps small, non-None dd/vol, so it is unaffected.
+        if (dd is None or dd < -10) or (vol is None or vol > 6):
             # A redenomination artifact corrupts EVERY magnitude-based metric, not just
             # drawdown/volatility — so null the whole analytics set. Otherwise a cash fund
             # could still surface a false CAGR / stress-test / calculator figure downstream.

@@ -20,6 +20,13 @@ export type FundAxLabels = {
     dimDesc: { performance: string; risk: string; cost: string; stability: string; diversification: string };
     metricLabels: { annualizedReturn: string; volatility: string; positivePeriods: string; fee: string; category: string };
     tiers: { excellent: string; strong: string; average: string; weak: string; poor: string };
+    /** Clickable "how it's calculated" tooltips for the derived numbers. */
+    explainTitle: string; explainClose: string; explainApprox: string;
+    explain: {
+        overall: string; performance: string; risk: string; stability: string; cost: string;
+        diversification: string; weightedReturn: string; stress: string;
+    };
+    partLabels: { r3ann: string; r5ann: string; r1y: string; cagr: string; incep: string };
     suitTitle: string; suitSub: string; horizonTitle: string; investorTitle: string;
     horizons: { short: string; medium: string; long: string };
     horizonHint: { short: string; medium: string; long: string };
@@ -217,14 +224,28 @@ const EN: FundLabels = {
         confLow: 'Low confidence',
         dims: { performance: 'Performance', risk: 'Risk', cost: 'Cost', stability: 'Stability', diversification: 'Diversification' },
         dimDesc: {
-            performance: 'Recent annualized growth, risk-adjusted',
+            performance: 'Score from recent growth, adjusted for drawdown risk',
             risk: 'Lower volatility & shallower drawdowns score higher',
             cost: 'Lower ongoing fees score higher',
             stability: 'Steadier, more consistent returns score higher',
             diversification: 'Estimated from the fund’s mandate & asset class',
         },
-        metricLabels: { annualizedReturn: 'Annualized return', volatility: 'Volatility', positivePeriods: 'Positive periods', fee: 'Ongoing fee', category: 'Category-based' },
+        metricLabels: { annualizedReturn: 'Weighted annual return', volatility: 'Volatility', positivePeriods: 'Positive periods', fee: 'Ongoing fee', category: 'Category-based' },
         tiers: { excellent: 'Excellent', strong: 'Strong', average: 'Average', weak: 'Weak', poor: 'Poor' },
+        explainTitle: 'How this is calculated',
+        explainClose: 'Close',
+        explainApprox: 'weighted average',
+        explain: {
+            overall: 'The Starta Score is a weighted average of the five dimensions — Performance 30%, Risk 22%, Stability 20%, Cost 16%, Diversification 12%. Any dimension we can’t compute is skipped and the rest re-weighted.',
+            performance: 'The score maps the weighted annual return (below) onto 0–100 (about −5%→5, 50%→95), then nudges it by the Calmar ratio (return ÷ worst drawdown) so a strong return earned through a deep crash doesn’t score as high as one that wasn’t.',
+            risk: 'Higher = safer. A blend of annualized volatility (55%) and the worst peak-to-trough drawdown (45%) — lower values score higher. This uses the full NAV history, so an old crash still counts.',
+            stability: 'A blend of the share of positive periods (60%) and volatility (40%) — steadier, more consistent returns score higher.',
+            cost: 'From the ongoing fee (the greater of management fee / expense ratio): ~0.25%→98, 1%→78, 2%→46, 3%→15. Cheaper scores higher.',
+            diversification: 'An estimate from the fund’s asset class (underlying holdings aren’t published yet): money-market ~82, fixed income ~74, balanced ~72, equity ~50, single-sector ~34; a broader international mandate adds a little.',
+            weightedReturn: 'A blend that reflects the current regime rather than any single year: 50% the 3-year return annualized, 25% the 1-year return, 25% the since-inception CAGR.',
+            stress: 'Model estimates scale a broad-market shock by the fund’s asset-class sensitivity, and the adverse-year band is 1.65× its annualized volatility — approximations, not predictions. Historical figures are real events from this fund’s own NAV record.',
+        },
+        partLabels: { r3ann: '3-year return, annualized', r5ann: '5-year return, annualized', r1y: '1-year return', cagr: 'CAGR since inception', incep: 'Since inception, annualized' },
         suitTitle: 'Is this fund right for you?',
         suitSub: 'How this fund maps to holding periods and investor risk profiles.',
         horizonTitle: 'Investment horizon',
@@ -370,14 +391,28 @@ const AR: FundLabels = {
         confLow: 'ثقة منخفضة',
         dims: { performance: 'الأداء', risk: 'المخاطر', cost: 'التكلفة', stability: 'الاستقرار', diversification: 'التنويع' },
         dimDesc: {
-            performance: 'النمو السنوي الحديث، معدّلاً بالمخاطر',
+            performance: 'درجة من النمو الحديث، معدّلة حسب مخاطر التراجع',
             risk: 'كلما قل التذبذب والتراجع ارتفعت الدرجة',
             cost: 'كلما قلت الرسوم المستمرة ارتفعت الدرجة',
             stability: 'كلما كانت العوائد أكثر ثباتًا ارتفعت الدرجة',
             diversification: 'تقديري من تفويض الصندوق وفئة أصوله',
         },
-        metricLabels: { annualizedReturn: 'العائد السنوي', volatility: 'التذبذب', positivePeriods: 'الفترات الرابحة', fee: 'الرسوم المستمرة', category: 'حسب الفئة' },
+        metricLabels: { annualizedReturn: 'العائد السنوي المُرجّح', volatility: 'التذبذب', positivePeriods: 'الفترات الرابحة', fee: 'الرسوم المستمرة', category: 'حسب الفئة' },
         tiers: { excellent: 'ممتاز', strong: 'قوي', average: 'متوسط', weak: 'ضعيف', poor: 'ضعيف جدًا' },
+        explainTitle: 'كيف تُحسب هذه الدرجة',
+        explainClose: 'إغلاق',
+        explainApprox: 'متوسط مرجّح',
+        explain: {
+            overall: 'درجة ستارتا متوسط مرجّح للأبعاد الخمسة — الأداء 30٪، المخاطر 22٪، الاستقرار 20٪، التكلفة 16٪، التنويع 12٪. يُستبعَد أي بُعد يتعذّر حسابه ويُعاد ترجيح الباقي.',
+            performance: 'تُحوّل الدرجة العائد السنوي المُرجّح (بالأسفل) إلى مقياس 0–100 (نحو −5٪ ← 5، و50٪ ← 95)، ثم تُعدّل بنسبة كالمار (العائد ÷ أعمق تراجع) حتى لا يحصل عائد قوي تحقّق عبر انهيار حاد على درجة مماثلة لعائد تحقّق دون انهيار.',
+            risk: 'أعلى = أكثر أمانًا. مزيج من التذبذب السنوي (55٪) وأعمق تراجع من القمة إلى القاع (45٪) — القيم الأقل تحصل على درجة أعلى. يعتمد على كامل سجل صافي قيمة الأصول، لذا يظل أي انهيار قديم محتسبًا.',
+            stability: 'مزيج من نسبة الفترات الرابحة (60٪) والتذبذب (40٪) — العوائد الأكثر ثباتًا وانتظامًا تحصل على درجة أعلى.',
+            cost: 'من الرسوم المستمرة (الأكبر بين رسوم الإدارة / نسبة المصروفات): نحو 0.25٪ ← 98، 1٪ ← 78، 2٪ ← 46، 3٪ ← 15. الأرخص يحصل على درجة أعلى.',
+            diversification: 'تقدير من فئة أصول الصندوق (لم تُنشر المكوّنات الأساسية بعد): أسواق نقد ~82، دخل ثابت ~74، متوازن ~72، أسهم ~50، قطاع واحد ~34؛ ويُضاف قليلاً للتفويض الدولي الأوسع.',
+            weightedReturn: 'مزيج يعكس الوضع الحالي بدلاً من سنة واحدة: 50٪ عائد 3 سنوات محوّلاً إلى سنوي، 25٪ عائد سنة، 25٪ معدل النمو المركب منذ التأسيس.',
+            stress: 'التقديرات النموذجية تضرب صدمة سوقية عامة في حساسية فئة أصول الصندوق، ونطاق السنة السيئة هو 1.65× تذبذبها السنوي — تقريبات وليست تنبؤات. الأرقام التاريخية وقائع فعلية من سجل صافي قيمة أصول الصندوق نفسه.',
+        },
+        partLabels: { r3ann: 'عائد 3 سنوات (سنويًا)', r5ann: 'عائد 5 سنوات (سنويًا)', r1y: 'عائد سنة', cagr: 'النمو المركب منذ التأسيس', incep: 'منذ التأسيس (سنويًا)' },
         suitTitle: 'هل هذا الصندوق مناسب لك؟',
         suitSub: 'كيف يتوافق هذا الصندوق مع مدد الاستثمار وملفات مخاطر المستثمرين.',
         horizonTitle: 'مدة الاستثمار',

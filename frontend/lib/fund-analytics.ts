@@ -118,7 +118,13 @@ export type Score = {
   /** the raw metric shown NEXT TO the score (our transparency edge vs snduk). */
   metric: { kind: string; value: number | null };
   estimated?: boolean;    // true => category-based estimate, must be disclosed
+  /** For composite metrics (the weighted annual return), the components behind
+   *  the number — powers the "how it's calculated" tooltip so the shown figure
+   *  is fully reconcilable. Weights are normalized to sum to 100. */
+  breakdown?: ReturnBreakdownPart[];
 };
+
+export type ReturnBreakdownPart = { key: string; value: number; weight: number };
 
 export type Confidence = 'high' | 'medium' | 'low';
 
@@ -155,6 +161,31 @@ export function effectiveAnnualReturn(i: AnalyticsInput): number | null {
   if (!parts.length) return null;
   const wsum = weights.reduce((a, b) => a + b, 0);
   return parts.reduce((acc, p, idx) => acc + p * weights[idx], 0) / wsum;
+}
+
+const round1 = (v: number): number => Math.round(v * 10) / 10;
+
+/**
+ * The components behind effectiveAnnualReturn, with weights normalized to sum to
+ * 100 — so the UI can render a fully reconcilable "how it's calculated" tooltip
+ * (e.g. 3Y-annualized 48.4% ×50% + 1Y 59.4% ×25% + CAGR 12.1% ×25% ≈ 42.1%).
+ */
+export function annualReturnBreakdown(
+  i: AnalyticsInput,
+): { parts: ReturnBreakdownPart[]; result: number } | null {
+  const raw: ReturnBreakdownPart[] = [];
+  if (isNum(i.return3y)) raw.push({ key: 'r3ann', value: annualize(i.return3y, 3), weight: 0.5 });
+  else if (isNum(i.return5y)) raw.push({ key: 'r5ann', value: annualize(i.return5y, 5), weight: 0.5 });
+  if (isNum(i.return1y)) raw.push({ key: 'r1y', value: i.return1y, weight: 0.25 });
+  if (isNum(i.cagr)) raw.push({ key: 'cagr', value: i.cagr, weight: 0.25 });
+  else if (isNum(i.returnInception) && isNum(i.inceptionYears) && i.inceptionYears > 0) {
+    raw.push({ key: 'incep', value: annualize(i.returnInception, i.inceptionYears), weight: 0.25 });
+  }
+  if (!raw.length) return null;
+  const wsum = raw.reduce((a, p) => a + p.weight, 0);
+  const parts = raw.map((p) => ({ key: p.key, value: round1(p.value), weight: Math.round((p.weight / wsum) * 100) }));
+  const result = round1(raw.reduce((a, p) => a + p.value * p.weight, 0) / wsum);
+  return { parts, result };
 }
 
 function performanceScore(i: AnalyticsInput): number | null {
@@ -237,8 +268,9 @@ export function computeScores(i: AnalyticsInput): ScoreResult {
   const div = diversificationScore(i);
 
   const ear = effectiveAnnualReturn(i);
+  const perfBreak = annualReturnBreakdown(i);
   const scores: Score[] = [
-    { key: 'performance', value: perf, tier: perf === null ? null : tierOf(perf), metric: { kind: 'annualizedReturn', value: ear === null ? null : Math.round(ear * 10) / 10 } },
+    { key: 'performance', value: perf, tier: perf === null ? null : tierOf(perf), metric: { kind: 'annualizedReturn', value: ear === null ? null : Math.round(ear * 10) / 10 }, breakdown: perfBreak?.parts },
     { key: 'risk', value: risk, tier: risk === null ? null : tierOf(risk), metric: { kind: 'volatility', value: i.volatility } },
     { key: 'stability', value: stab, tier: stab === null ? null : tierOf(stab), metric: { kind: 'positivePeriods', value: i.positivePeriodsPct } },
     { key: 'cost', value: cost, tier: cost === null ? null : tierOf(cost), metric: { kind: 'fee', value: costBasisPct(i) } },

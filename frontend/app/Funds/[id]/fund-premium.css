@@ -206,6 +206,40 @@
 .fund-premium .score-row-metric { font-size: 0.78rem; color: var(--c-text-muted); white-space: nowrap; }
 .fund-premium .score-row-metric b { color: var(--c-text-main); font-weight: 700; font-variant-numeric: tabular-nums; }
 
+/* ── "How it's calculated" info tooltip (clickable popover) ─────────────────── */
+.fund-premium .ax-label-tip { display: inline-flex; align-items: center; gap: 0.4rem; }
+.fund-premium .ax-tip { position: relative; display: inline-flex; vertical-align: middle; }
+.fund-premium .ax-tip-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.15rem; height: 1.15rem; border-radius: 999px;
+    color: var(--c-text-muted); background: transparent; border: 0; cursor: pointer;
+    padding: 0; transition: color 140ms ease, background 140ms ease;
+}
+.fund-premium .ax-tip-btn:hover,
+.fund-premium .ax-tip-btn[aria-expanded='true'] { color: #0d9488; background: rgba(20, 184, 166, 0.12); }
+.fund-premium .ax-tip-btn:focus-visible { outline: 2px solid rgba(20, 184, 166, 0.5); outline-offset: 2px; }
+.fund-premium .ax-tip-pop {
+    position: absolute; top: calc(100% + 0.5rem); inset-inline-start: 0; z-index: 40;
+    width: min(20rem, 78vw);
+    display: flex; flex-direction: column; gap: 0.5rem;
+    padding: 0.85rem 0.95rem; border-radius: 0.9rem;
+    border: 1px solid var(--c-border); background: var(--c-surface);
+    box-shadow: var(--shadow-premium);
+    text-align: start; white-space: normal; font-weight: 400; letter-spacing: normal; text-transform: none;
+    animation: axTipIn 120ms ease;
+}
+@keyframes axTipIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.fund-premium .ax-tip-title { font-size: 0.78rem; font-weight: 700; color: var(--c-text-main); }
+.fund-premium .ax-tip-body { font-size: 0.74rem; line-height: 1.55; color: var(--c-text-muted); }
+.fund-premium .ax-tip-lead { color: var(--c-text-main); }
+.fund-premium .ax-tip-calc { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.15rem; }
+.fund-premium .ax-tip-calc-row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; font-size: 0.74rem; }
+.fund-premium .ax-tip-calc-label { color: var(--c-text-muted); }
+.fund-premium .ax-tip-calc-op { color: var(--c-text-main); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.fund-premium .ax-tip-calc-op b { font-weight: 700; }
+.fund-premium .ax-tip-calc-total { margin-top: 0.15rem; padding-top: 0.4rem; border-top: 1px dashed var(--c-border); font-weight: 600; }
+.fund-premium .ax-tip-calc-total .ax-tip-calc-label { color: var(--c-text-main); font-weight: 600; }
+
 /* methodology + disclaimer notes */
 .fund-premium .ax-method > summary {
     cursor: pointer; font-size: 0.75rem; font-weight: 600; color: #0d9488; list-style: none;

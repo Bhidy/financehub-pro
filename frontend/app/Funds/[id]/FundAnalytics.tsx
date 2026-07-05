@@ -7,6 +7,7 @@
  * t.ax (fund-i18n) so everything stays bilingual/RTL with zero logic here.
  */
 
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { FundLabels } from './fund-i18n';
 import type { ScoreResult, Score, SuitabilityResult, Insight, StressResult } from '@/lib/fund-analytics';
 import { pct, signedPct, interp } from './fund-format';
@@ -14,6 +15,104 @@ import { pct, signedPct, interp } from './fund-format';
 const MICRO = 'text-[0.68rem] uppercase tracking-[0.22em] text-muted';
 
 type Ax = FundLabels['ax'];
+
+/* ------------------------------------------------- "how it's calculated" tip */
+
+function InfoIcon() {
+    return (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+            <circle cx="12" cy="12" r="9.5" />
+            <path strokeLinecap="round" d="M12 11.2v4.8" />
+            <circle cx="12" cy="7.8" r="0.4" fill="currentColor" stroke="none" />
+        </svg>
+    );
+}
+
+/** A small info button that toggles an accessible popover explaining a derived
+ *  number. Closes on outside-click and Esc; RTL-safe via CSS logical props. */
+function InfoTip({ label, title, children }: { label: string; title: string; children: ReactNode }) {
+    const id = useId();
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLSpanElement>(null);
+    // Only one tooltip open at a time — deterministic for mouse, keyboard AND
+    // touch (a plain mousedown-outside check misses keyboard/touch activation).
+    useEffect(() => {
+        const onOther = (e: Event) => {
+            if ((e as CustomEvent).detail !== id) setOpen(false);
+        };
+        document.addEventListener('ax-tip:open', onOther as EventListener);
+        return () => document.removeEventListener('ax-tip:open', onOther as EventListener);
+    }, [id]);
+    useEffect(() => {
+        if (!open) return;
+        const onDown = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        };
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setOpen(false);
+        };
+        document.addEventListener('mousedown', onDown);
+        document.addEventListener('keydown', onKey);
+        return () => {
+            document.removeEventListener('mousedown', onDown);
+            document.removeEventListener('keydown', onKey);
+        };
+    }, [open]);
+    const toggle = () =>
+        setOpen((o) => {
+            const next = !o;
+            if (next) document.dispatchEvent(new CustomEvent('ax-tip:open', { detail: id }));
+            return next;
+        });
+    return (
+        <span className="ax-tip" ref={ref}>
+            <button
+                type="button"
+                className="ax-tip-btn"
+                aria-label={label}
+                aria-expanded={open}
+                onClick={toggle}
+            >
+                <InfoIcon />
+            </button>
+            {open && (
+                <span className="ax-tip-pop" role="dialog" aria-label={title}>
+                    <span className="ax-tip-title">{title}</span>
+                    {children}
+                </span>
+            )}
+        </span>
+    );
+}
+
+/** Popover body for one score dimension — the method, plus (for Performance) the
+ *  fully-reconcilable weighted-return breakdown with the real component numbers. */
+function ScoreExplain({ s, ax }: { s: Score; ax: Ax }) {
+    const body = (ax.explain as Record<string, string>)[s.key] ?? '';
+    const parts = s.key === 'performance' ? s.breakdown ?? [] : [];
+    return (
+        <>
+            <span className="ax-tip-body">{body}</span>
+            {parts.length > 0 && (
+                <>
+                    <span className="ax-tip-body ax-tip-lead">{ax.explain.weightedReturn}</span>
+                    <span className="ax-tip-calc">
+                        {parts.map((p) => (
+                            <span key={p.key} className="ax-tip-calc-row">
+                                <span className="ax-tip-calc-label">{(ax.partLabels as Record<string, string>)[p.key] ?? p.key}</span>
+                                <span className="ax-tip-calc-op"><b>{signedPct(p.value)}</b> × {p.weight}%</span>
+                            </span>
+                        ))}
+                        <span className="ax-tip-calc-row ax-tip-calc-total">
+                            <span className="ax-tip-calc-label">{ax.explainApprox}</span>
+                            <span className="ax-tip-calc-op">≈ <b>{signedPct(s.metric.value ?? 0)}</b></span>
+                        </span>
+                    </span>
+                </>
+            )}
+        </>
+    );
+}
 
 /* ---------------------------------------------------------------- score ring */
 
@@ -77,7 +176,12 @@ export function Scorecard({ scores, t }: { scores: ScoreResult; t: FundLabels })
                         <div className="flex flex-col items-center gap-3">
                             <ScoreRing value={scores.overall} tier={scores.overallTier ?? 'average'} />
                             <div className="text-center">
-                                <div className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-starta-teal">{ax.startaScore}</div>
+                                <div className="ax-label-tip text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-starta-teal">
+                                    {ax.startaScore}
+                                    <InfoTip label={ax.explainTitle} title={ax.startaScore}>
+                                        <span className="ax-tip-body">{ax.explain.overall}</span>
+                                    </InfoTip>
+                                </div>
                                 <div className="mt-1 text-sm font-semibold text-main">{(ax.tiers as Record<string, string>)[scores.overallTier ?? 'average']}</div>
                             </div>
                         </div>
@@ -93,6 +197,9 @@ export function Scorecard({ scores, t }: { scores: ScoreResult; t: FundLabels })
                                         <span className="score-row-name">
                                             {(ax.dims as Record<string, string>)[s.key]}
                                             {s.estimated && <span className="ax-est" title={ax.dimDesc.diversification}>{ax.estimated}</span>}
+                                            <InfoTip label={ax.explainTitle} title={(ax.dims as Record<string, string>)[s.key]}>
+                                                <ScoreExplain s={s} ax={ax} />
+                                            </InfoTip>
                                         </span>
                                         <span className="score-row-score">
                                             {s.value ?? '—'}<i>/100</i>
@@ -214,7 +321,12 @@ export function StressTest({ stress, movement, t }: { stress: StressResult; move
 
     return (
         <section className="glass-premium rounded-[1.6rem] p-5" aria-label={ax.stressTitle}>
-            <h3 className="text-base font-display font-bold tracking-[-0.02em] text-main">{ax.stressTitle}</h3>
+            <h3 className="ax-label-tip text-base font-display font-bold tracking-[-0.02em] text-main">
+                {ax.stressTitle}
+                <InfoTip label={ax.explainTitle} title={ax.stressTitle}>
+                    <span className="ax-tip-body">{ax.explain.stress}</span>
+                </InfoTip>
+            </h3>
             <p className="mt-1 text-xs leading-relaxed text-muted">{ax.stressSub}</p>
 
             {moveStats.length > 0 && (

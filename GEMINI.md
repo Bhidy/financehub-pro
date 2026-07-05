@@ -30,8 +30,8 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for the **
 - **Data Extraction:** Custom scrapers in `extractors/`
 
 ### Deployment
-- **Frontend:** Vercel (project `finhub`). Deploy = **merge a PR to `main`** → Vercel Git Integration auto-builds and `startamarkets.com` auto-follows. **Never run `vercel --prod`/`vercel alias`.** See `docs/DEPLOY_RUNBOOK.md`.
-- **Backend:** Hetzner VPS — `./scripts/deploy_backend_key.sh`.
+- **Frontend + Backend (DEFAULT):** `./ship.sh "msg"` — one direct command: commits + pushes to `main` (Vercel Git Integration auto-builds `finhub`; `startamarkets.com` auto-follows) and auto-triggers the backend deploy when `backend-core/` changed. No PR. `--verify` to health-check after. Open a PR only when you want the Codex review / CI gate on a risky change. **Never run `vercel --prod`/`vercel alias`.** See `docs/DEPLOY_RUNBOOK.md`.
+- **Backend alone:** `gh workflow run backend-deploy.yml -f reason="…"` (or `./scripts/deploy_backend_key.sh`).
 - **Database:** Supabase PostgreSQL
 
 ---
@@ -39,7 +39,7 @@ FinanceHub Pro is an enterprise-grade financial intelligence platform for the **
 ## Critical Rules
 
 1. **API URL:** The production API URL is `https://starta.46-224-223-172.sslip.io/api/v1`. Hardcode this in `frontend/lib/api.ts`.
-2. **Deployment (frontend):** Deploy = **merge a PR to `main`**. Vercel's Git Integration (project `finhub`) builds it automatically and `startamarkets.com` auto-follows — that is the ONLY web deploy path. **NEVER** run `vercel`, `vercel --prod`, `vercel alias`, or `./scripts/deploy_production.sh frontend`; those are removed/forbidden because they created a competing build that raced the git deploy (the root cause of every "changes-not-live" incident). Authoritative procedure: `docs/DEPLOY_RUNBOOK.md`.
+2. **Deployment (default):** `./ship.sh "msg"` — the deploy IS a push to `main` (Vercel's Git Integration, project `finhub`, auto-builds and `startamarkets.com` auto-follows). That push-to-`main` is the ONLY web deploy path — `ship.sh` does it directly (no PR); open a PR only when you want the Codex review. **NEVER** run `vercel`, `vercel --prod`, `vercel alias`, or `./scripts/deploy_production.sh frontend`; those created a competing build that raced the git deploy (the root cause of every "changes-not-live" incident). Authoritative procedure: `docs/DEPLOY_RUNBOOK.md`.
   3. **CSS:** Use Tailwind v4 utility classes. The color palette is defined in `frontend/app/globals.css`. Avoid purple/indigo; prefer blues, greens, teals, reds, oranges.
   4. **AI Integration:** The AI chatbot uses Groq SDK. The system prompt and tool definitions are in `frontend/app/api/chat/route.ts`.
   5. **Data Integrity:** All stock data comes from Mubasher. If data is missing, check the extraction logs (`ingestion.log`, `fill_data.log`).

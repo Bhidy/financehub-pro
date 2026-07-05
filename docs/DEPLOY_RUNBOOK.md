@@ -72,30 +72,41 @@ are healthy.
 5. Changing a static asset in `frontend/public/assets/`? Bump its `?v=X.Y.Z` query
    in the HTML or the CDN serves the stale file.
 
-### ⚡ Owner express-lane (fast path) — `./ship.sh "msg"`
+### ⚡ Owner express-lane (fast path) — `./ship.sh "msg"`  ← DEFAULT for owner changes
 
-The account owner is a repo **admin** and branch protection has `enforce_admins:false`,
-so the owner may **push straight to `main`** — which triggers the same one-and-only
-Vercel Git-Integration deploy. This is the fast path for solo owner changes:
+The account owner is a repo **admin** with `enforce_admins:false`, so the owner may
+**push straight to `main`** — which triggers the same one-and-only Vercel Git-Integration
+deploy. `ship.sh` is the enterprise ONE-COMMAND deploy: it ships the **web AND the
+backend** from a single call, no PR, no review wait.
 
 ```bash
-./ship.sh "fix: my change"     # commits + pushes to main in ~2s. Fire-and-forget.
+./ship.sh "fix: my change"     # deploy whatever changed (web + backend), ~2s, fire-and-forget
+./ship.sh "msg" --verify       # …then wait ~90s and health-check the live site
+./ship.sh "msg" --no-backend   # web only (skip backend even if backend-core changed)
+./ship.sh "msg" --backend      # force a backend deploy too
+./ship.sh --verify             # just re-verify current live prod (no commit)
 ```
 
-`ship.sh` commits with the local `git user.email` (which is `mohamedbhidy@gmail.com`
-— **correct**, unlike a `gh pr merge --squash` commit, which GitHub authors with the
-`…@users.noreply.github.com` email) and pushes to `main`. Vercel auto-deploys in
-~1–2 min. **It runs NO `vercel` command** — it fully respects rule #1.
+What it does, in order:
+1. **Guards** — refuses unless you're on `main` and `git user.email` is
+   `mohamedbhidy@gmail.com` (Vercel silently won't build commits from any other author,
+   unlike a `gh pr merge --squash` commit, which GitHub authors with `…@users.noreply`).
+2. **Web** — commits + pushes to `main`; Vercel's Git integration (project `finhub`)
+   auto-builds and `startamarkets.com` follows it. Prints the files it is shipping.
+3. **Backend** — if any `backend-core/` file changed (or `--backend`), it dispatches
+   `backend-deploy.yml` (VPS runner: git-sync → rebuild → health-gate → auto-rollback).
+4. **Verify** (`--verify`) — waits for the Vercel build, runs `./scripts/deploy-web.sh`,
+   and watches the backend run to completion.
 
-- **Prod-safe:** if the build fails, Vercel keeps serving the **last good deploy** —
-  a bad push can never take the site down.
-- **What it trades away vs the PR flow above:** the ChatGPT-Codex PR review and the
-  CI checks (which mirror the Vercel build) run only on PRs — the express-lane skips
-  them. Use the PR flow for risky/large changes; the express-lane for small, verified
-  owner edits. Either way, the deploy mechanism is identical: **code on `main`.**
-- **Never** substitute a `vercel deploy` here to "make it faster/live" — that is the
-  forbidden race (see _Why this exists_). If a push isn't live, the answer is in the
-  Vercel dashboard, not the CLI.
+- **Prod-safe:** a failed Vercel build keeps serving the last good deploy; the backend
+  action auto-rolls-back on a failed health gate. A bad push can never take prod down.
+- **Runs NO `vercel` command** — fully respects rule #1 (the deploy IS a push to `main`).
+- **Express-lane vs PR flow:** use the **express-lane by default** for owner changes;
+  use the **PR flow** only when you want the ChatGPT-Codex review / PR CI gate on a
+  risky or large change. Either way the deploy mechanism is identical: **code on `main`.**
+- **Never** substitute a `vercel deploy` to "make it faster/live" — that is the forbidden
+  race (see _Why this exists_). If a push isn't live, the answer is in the Vercel
+  dashboard, not the CLI.
 
 ---
 

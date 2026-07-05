@@ -386,9 +386,9 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
     // Raw numbers (not formatted) so the client can sign (+/−) and colour them.
     const movement = bp !== null || wp !== null ? { best: bp, worst: wp, avgGain: ag, avgLoss: al, cadence } : null;
 
-    // Hero "Compare" CTA → compare against the closest peer (user can swap on the compare page).
-    const arPrefix = lang === 'ar' ? '/ar' : '';
-    const compareHref = peers.length > 0 ? peers[0].compareHref : `${arPrefix}/Funds`;
+    // Hero "Compare" CTA → the closest peer's comparison (EN-only compare route for now,
+    // matching resolvePeers; never /ar-prefixed, which would 404).
+    const compareHref = peers.length > 0 ? peers[0].compareHref : '/Funds';
 
     return {
         t,
@@ -462,9 +462,12 @@ async function resolvePeers(fund: Fund, lang: Lang): Promise<FundClientData['pee
             .slice(0, 4);
     }
     const myId = Number(fund.fund_id);
+    // The comparison route exists ONLY at /Funds/vs/... (English). There is no
+    // /ar/Funds/vs route or rewrite, so an /ar-prefixed compare URL 404s. Link to the
+    // existing route for both locales until a bilingual compare page ships.
     return peers.map((p) => ({
         ...p,
-        compareHref: `${arPrefix}/Funds/vs/${Math.min(myId, p.id)}-vs-${Math.max(myId, p.id)}`,
+        compareHref: `/Funds/vs/${Math.min(myId, p.id)}-vs-${Math.max(myId, p.id)}`,
     }));
 }
 

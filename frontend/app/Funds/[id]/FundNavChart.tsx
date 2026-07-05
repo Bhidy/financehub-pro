@@ -181,6 +181,30 @@ export default function FundNavChart({
             seriesRef.current = series;
             applyRange(range);
 
+            // Force the internal coordinate space to match the rendered canvas.
+            // A plain applyOptions({width}) with an UNCHANGED width is a no-op, so
+            // once the 2-column layout settles the time scale can stay desynced
+            // from the pane — which strands the newest points off the visible
+            // canvas (only reachable by hovering PAST the plot frame). Toggling the
+            // width by 1px forces a real relayout, exactly like the card charts.
+            const syncWidth = () => {
+                const c = chartRef.current;
+                if (!c || !host) return;
+                const w = host.clientWidth;
+                try {
+                    if (w > 1) {
+                        c.applyOptions({ width: w - 1 });
+                        c.applyOptions({ width: w });
+                    }
+                    c.timeScale().fitContent();
+                } catch {
+                    /* torn down */
+                }
+            };
+            syncWidth();
+            requestAnimationFrame(syncWidth);
+            window.setTimeout(syncWidth, 200);
+
             // ── Robust nearest-point hover — the overlay owns hit-testing ──────
             const overlay = overlayRef.current;
             const tip = tipRef.current;
@@ -194,48 +218,78 @@ export default function FundNavChart({
                     });
 
                 // Resolve the nearest real data point for a viewport clientX.
-                const resolve = (clientX: number): Point | null => {
+                // Hybrid: trust the chart's coordinate space when it is synced with
+                // the visible canvas (precise, keeps the crosshair marker glued to
+                // the cursor); fall back to the visible-pane fraction when a residual
+                // mount desync maps the newest points off-canvas — the fraction path
+                // always resolves the pane's right edge to the latest point, so the
+                // latest NAV is reachable INSIDE the plot regardless of sync state.
+                const resolve = (
+                    clientX: number
+                ): { pt: Point; idx: number; synced: boolean; paneLeft: number; paneWidth: number } | null => {
                     const view = viewRef.current;
                     if (!view.length) return null;
                     const paneCanvas = host.querySelector('canvas');
                     const rect = (paneCanvas ?? host).getBoundingClientRect();
                     const x = clientX - rect.left;
+                    const w = rect.width;
+                    const n = view.length;
                     const ts = chart.timeScale();
-                    const logical = ts.coordinateToLogical(x);
-                    // Map logical coordinate → data index, clamped to the series.
-                    // (setData with contiguous points makes logical index == data
-                    // index, so the right edge always resolves to the last point.)
-                    let idx = logical == null ? view.length - 1 : Math.round(logical);
+                    const xLast = ts.timeToCoordinate(view[n - 1].time);
+                    const synced = xLast != null && xLast >= -1 && xLast <= w + 1;
+                    let idx: number;
+                    if (synced) {
+                        const logical = ts.coordinateToLogical(x);
+                        idx = logical == null ? n - 1 : Math.round(logical);
+                    } else {
+                        idx = w > 0 ? Math.round((x / w) * (n - 1)) : n - 1;
+                    }
                     if (idx < 0) idx = 0;
-                    if (idx > view.length - 1) idx = view.length - 1;
-                    return view[idx] ?? null;
+                    if (idx > n - 1) idx = n - 1;
+                    return { pt: view[idx], idx, synced, paneLeft: rect.left, paneWidth: w };
                 };
 
                 const showAt = (clientX: number) => {
                     if (!tip) return;
-                    const pt = resolve(clientX);
-                    if (!pt || !Number.isFinite(Number(pt.value))) {
+                    const res = resolve(clientX);
+                    if (!res || !Number.isFinite(Number(res.pt.value))) {
                         hide();
                         return;
                     }
-                    try {
-                        // setCrosshairPosition lives on the chart, not the series.
-                        chart.setCrosshairPosition(Number(pt.value), pt.time, series);
-                    } catch {
-                        /* chart torn down mid-move */
-                    }
+                    const { pt, idx, synced, paneWidth } = res;
                     const ts = chart.timeScale();
-                    const px = ts.timeToCoordinate(pt.time);
+                    const n = viewRef.current.length;
+                    // Point's visible x within the pane. Uniform (index-based) bar
+                    // spacing makes the fraction position exact and desync-proof.
+                    const fracX = n > 1 ? (idx / (n - 1)) * paneWidth : paneWidth;
+                    let px = fracX;
+                    if (synced) {
+                        // setCrosshairPosition lives on the chart, not the series.
+                        try {
+                            chart.setCrosshairPosition(Number(pt.value), pt.time, series);
+                        } catch {
+                            /* chart torn down mid-move */
+                        }
+                        const c = ts.timeToCoordinate(pt.time);
+                        if (c != null) px = c;
+                    } else {
+                        // The native marker would draw off-canvas here — drop it and
+                        // anchor the tooltip on the point's true visible position.
+                        try {
+                            chart.clearCrosshairPosition();
+                        } catch {
+                            /* already disposed */
+                        }
+                    }
                     const py = series.priceToCoordinate(Number(pt.value));
                     const dEl = tip.querySelector('[data-d]');
                     const vEl = tip.querySelector('[data-v]');
                     if (dEl) dEl.textContent = fmtDate(pt.time);
                     if (vEl) vEl.textContent = `${currency} ${Number(pt.value).toFixed(4)}`;
                     const w = host.clientWidth;
-                    const left = px == null ? clientX : px;
                     // Anchor tooltip on the resolved point (never the raw cursor),
                     // clamped inside the plot so it can't overflow the card.
-                    tip.style.left = `${Math.min(Math.max(left, 78), Math.max(w - 78, 78))}px`;
+                    tip.style.left = `${Math.min(Math.max(px, 78), Math.max(w - 78, 78))}px`;
                     tip.style.top = `${Math.max((py == null ? 24 : py) - 12, 6)}px`;
                     tip.classList.add('visible');
                 };
@@ -266,9 +320,8 @@ export default function FundNavChart({
             }
 
             resizeObserver = new ResizeObserver(() => {
-                if (!chartRef.current || !wrapRef.current) return;
-                chartRef.current.applyOptions({ width: wrapRef.current.clientWidth });
-                chartRef.current.timeScale().fitContent();
+                // Re-sync with the 1px toggle so a same-width reflow still relayouts.
+                syncWidth();
             });
             resizeObserver.observe(host);
         })();

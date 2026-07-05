@@ -230,9 +230,20 @@ export default function FundNavChart({
                 const resolve = (clientX: number): { pt: Point; idx: number; xAt: (i: number) => number | null } | null => {
                     const view = viewRef.current;
                     if (!view.length) return null;
-                    const paneCanvas = host.querySelector('canvas');
+                    const paneCanvas = host.querySelector('canvas') as HTMLCanvasElement | null;
                     const rect = (paneCanvas ?? host).getBoundingClientRect();
-                    const x = clientX - rect.left;
+                    // Convert the cursor from on-screen (visual) px to the chart's
+                    // internal CSS px. A CSS `zoom` on an ancestor (the desktop
+                    // zoom-out) scales getBoundingClientRect but NOT the width
+                    // lightweight-charts draws into — so timeToCoordinate returns
+                    // UNSCALED px while the raw cursor is SCALED. Without this the
+                    // last ~10% of the plot maps past the visible edge (the latest
+                    // NAV becomes reachable only by hovering outside the frame).
+                    const cssW = paneCanvas
+                        ? parseFloat(paneCanvas.style.width) || paneCanvas.offsetWidth || rect.width
+                        : rect.width;
+                    const scale = rect.width > 0 ? cssW / rect.width : 1;
+                    const x = (clientX - rect.left) * scale;
                     const n = view.length;
                     const ts = chart.timeScale();
                     const xAt = (i: number) => ts.timeToCoordinate(view[i].time) as number | null;

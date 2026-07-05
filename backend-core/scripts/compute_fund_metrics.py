@@ -54,13 +54,33 @@ CREATE TABLE IF NOT EXISTS fund_risk_metrics (
     max_drawdown      NUMERIC,
     nav_52w_high      NUMERIC,
     nav_52w_low       NUMERIC,
+    cagr                 NUMERIC,
+    return_inception     NUMERIC,
+    inception_years      NUMERIC,
+    downside_deviation   NUMERIC,
+    best_period          NUMERIC,
+    worst_period         NUMERIC,
+    positive_periods_pct NUMERIC,
+    avg_gain             NUMERIC,
+    avg_loss             NUMERIC,
+    avg_period_days      NUMERIC,
     computed_at       TIMESTAMPTZ DEFAULT NOW()
 );
 """
 
+# The analytics columns were added AFTER fund_risk_metrics shipped, so in production
+# `CREATE TABLE IF NOT EXISTS` is a no-op and will NOT create them. Add each column
+# idempotently (asyncpg runs multi-statement simple queries when passed no args).
+_ANALYTICS_COLS = ("cagr", "return_inception", "inception_years", "downside_deviation",
+                   "best_period", "worst_period", "positive_periods_pct",
+                   "avg_gain", "avg_loss", "avg_period_days")
+_MIGRATE = "\n".join(
+    f"ALTER TABLE fund_risk_metrics ADD COLUMN IF NOT EXISTS {c} NUMERIC;"
+    for c in _ANALYTICS_COLS)
+
 _COLS = ("points", "latest_nav", "latest_date", "return_1m", "return_3m",
          "return_6m", "return_ytd", "return_1y", "return_3y", "return_5y",
-         "volatility_annual", "max_drawdown", "nav_52w_high", "nav_52w_low")
+         "volatility_annual", "max_drawdown", "nav_52w_high", "nav_52w_low") + _ANALYTICS_COLS
 
 _UPSERT = (
     "INSERT INTO fund_risk_metrics (fund_id, " + ", ".join(_COLS) + ", computed_at) "
@@ -143,7 +163,8 @@ async def run(ids=None, limit=None, dry_run=False, min_updated=1):
                   "writes are restored. Not an error.", flush=True)
             return 0
         if not dry_run:
-            await conn.execute(DDL)  # self-migrating companion table (idempotent)
+            await conn.execute(DDL)       # self-migrating companion table (idempotent)
+            await conn.execute(_MIGRATE)  # add analytics columns on pre-existing tables
 
         universe = await get_universe(conn, ids, limit)
         stats = {"universe": len(universe), "updated": 0, "skipped": 0, "failures": []}

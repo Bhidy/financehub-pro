@@ -8,6 +8,44 @@
 
 export type Lang = 'en' | 'ar';
 
+/** Labels for the analytics layer (Score / Suitability / Insights / Stress / Calculator).
+ *  Namespaced under FundLabels.ax to keep the flat label set readable. Plain data only
+ *  (no functions) so the whole object serializes across the server→client boundary.
+ *  Strings with `{v}` / `{p}` are interpolated in the client. */
+export type FundAxLabels = {
+    higherBetter: string; methodology: string; estimated: string; noData: string;
+    scoreTag: string; scoreTitle: string; scoreSub: string; startaScore: string; overall: string;
+    confidence: string; confHigh: string; confMed: string; confLow: string;
+    dims: { performance: string; risk: string; cost: string; stability: string; diversification: string };
+    dimDesc: { performance: string; risk: string; cost: string; stability: string; diversification: string };
+    metricLabels: { annualizedReturn: string; volatility: string; positivePeriods: string; fee: string; category: string };
+    tiers: { excellent: string; strong: string; average: string; weak: string; poor: string };
+    suitTag: string; suitTitle: string; suitSub: string; horizonTitle: string; investorTitle: string;
+    horizons: { short: string; medium: string; long: string };
+    horizonHint: { short: string; medium: string; long: string };
+    statuses: { suitable: string; caution: string; unsuitable: string };
+    profiles: { conservative: string; balanced: string; aggressive: string };
+    matchSuffix: string;
+    insightsTag: string; insightsTitle: string; insightsSub: string; pro: string; con: string;
+    impact: { high: string; medium: string; low: string };
+    insightText: {
+        strongPerformance: string; consistent: string; longTrack: string; deepData: string;
+        highVolatility: string; deepDrawdown: string; highFee: string; shortTrack: string;
+    };
+    stressTag: string; stressTitle: string; stressSub: string; estimate: string; historical: string; stressDisclaimer: string;
+    scenarios: { marketDrop10: string; marketDrop20: string; adverse1y: string; worstDrawdown: string; worstPeriod: string };
+    calcTag: string; calcTitle: string; calcSub: string; calcAmount: string; calcHorizon: string;
+    calcYears1: string; calcYears3: string; calcYears5: string; calcInvested: string; calcProjected: string;
+    calcGain: string; calcRange: string; calcCagrNote: string; calcDisclaimer: string;
+    cagrTag: string; cagrTitle: string; cagrSinceInception: string; cagrOverYears: string; cagrNote: string;
+    moveTitle: string; moveBest: string; moveWorst: string; moveAvgGain: string; moveAvgLoss: string;
+    moveDaily: string; moveWeekly: string; movePeriod: string;
+    gateTitle: string; gateBody: string; gateCta: string; gateSignin: string;
+    fbTag: string; fbTitle: string; fbSub: string; fbYes: string; fbNo: string; fbThanks: string;
+    fbCommentPlaceholder: string; fbSubmit: string;
+    compareCta: string;
+};
+
 export type FundLabels = {
     // sections
     performance: string;
@@ -74,6 +112,7 @@ export type FundLabels = {
     // risk stat labels
     maxDrawdown: string;
     volatility: string;
+    downsideDeviation: string;
     // manager profile labels
     established: string;
     chairman: string;
@@ -86,6 +125,8 @@ export type FundLabels = {
     compare: string;
     unit: string;
     units: string;
+    // analytics layer (namespaced)
+    ax: FundAxLabels;
 };
 
 const EN: FundLabels = {
@@ -150,6 +191,7 @@ const EN: FundLabels = {
     adminFee: 'Administration fee',
     maxDrawdown: 'Max drawdown (all-time, peak-to-trough)',
     volatility: 'Volatility (annualized, full history)',
+    downsideDeviation: 'Downside deviation (annualized)',
     established: 'Established',
     chairman: 'Chairman',
     aum: 'Assets under management',
@@ -160,6 +202,91 @@ const EN: FundLabels = {
     compare: 'Compare',
     unit: 'unit',
     units: 'units',
+    ax: {
+        higherBetter: 'Higher is better',
+        methodology: 'How we score',
+        estimated: 'Estimate',
+        noData: 'Not enough history yet',
+        scoreTag: 'Starta Score',
+        scoreTitle: 'Fund scorecard',
+        scoreSub: 'Five dimensions, each scored 0–100 from our own NAV history. Higher is better on every axis — and we show the real number behind each score.',
+        startaScore: 'Starta Score',
+        overall: 'Overall',
+        confidence: 'Confidence',
+        confHigh: 'High confidence',
+        confMed: 'Medium confidence',
+        confLow: 'Low confidence',
+        dims: { performance: 'Performance', risk: 'Risk', cost: 'Cost', stability: 'Stability', diversification: 'Diversification' },
+        dimDesc: {
+            performance: 'Recent annualized growth, risk-adjusted',
+            risk: 'Lower volatility & shallower drawdowns score higher',
+            cost: 'Lower ongoing fees score higher',
+            stability: 'Steadier, more consistent returns score higher',
+            diversification: 'Estimated from the fund’s mandate & asset class',
+        },
+        metricLabels: { annualizedReturn: 'Annualized return', volatility: 'Volatility', positivePeriods: 'Positive periods', fee: 'Ongoing fee', category: 'Category-based' },
+        tiers: { excellent: 'Excellent', strong: 'Strong', average: 'Average', weak: 'Weak', poor: 'Poor' },
+        suitTag: 'Suitability',
+        suitTitle: 'Is this fund right for you?',
+        suitSub: 'How this fund maps to holding periods and investor risk profiles.',
+        horizonTitle: 'Investment horizon',
+        investorTitle: 'Investor profile match',
+        horizons: { short: 'Short term', medium: 'Medium term', long: 'Long term' },
+        horizonHint: { short: 'under 1 year', medium: '1–4 years', long: '5+ years' },
+        statuses: { suitable: 'Suitable', caution: 'With caution', unsuitable: 'Not suitable' },
+        profiles: { conservative: 'Conservative', balanced: 'Balanced', aggressive: 'Aggressive' },
+        matchSuffix: 'match',
+        insightsTag: 'Insights',
+        insightsTitle: 'What stands out',
+        insightsSub: 'Auto-generated from this fund’s own metrics.',
+        pro: 'Strength',
+        con: 'Watch-out',
+        impact: { high: 'High impact', medium: 'Medium impact', low: 'Low impact' },
+        insightText: {
+            strongPerformance: 'Consistently strong — about {v}% annualized in the current regime',
+            consistent: '{v}% of periods have been positive — steady, not lumpy',
+            longTrack: 'Long track record — {v} years of NAV history to judge',
+            deepData: 'Deep data — {v} NAV observations behind every metric',
+            highVolatility: 'Elevated volatility ({v}% annualized) — expect larger swings',
+            deepDrawdown: 'Has fallen {v}% peak-to-trough historically',
+            highFee: 'Above-average ongoing fee ({v}%)',
+            shortTrack: 'Short track record ({v} years) — metrics are less settled',
+        },
+        stressTag: 'Stress test',
+        stressTitle: 'How it might behave under stress',
+        stressSub: 'Estimated impact on the current NAV, alongside what actually happened historically.',
+        estimate: 'Model estimate',
+        historical: 'Historical fact',
+        stressDisclaimer: 'Estimates scale a broad-market shock by this fund’s asset-class sensitivity and volatility — approximations, not predictions. Historical figures are drawn from the fund’s own NAV record.',
+        scenarios: { marketDrop10: 'Broad market −10%', marketDrop20: 'Broad market −20%', adverse1y: 'Adverse year (95% band)', worstDrawdown: 'Worst historical drawdown', worstPeriod: 'Worst single period' },
+        calcTag: 'Calculator',
+        calcTitle: 'Project an investment',
+        calcSub: 'Illustrative growth using the fund’s realized long-run compound rate.',
+        calcAmount: 'Amount to invest',
+        calcHorizon: 'Holding period',
+        calcYears1: '1 year', calcYears3: '3 years', calcYears5: '5 years',
+        calcInvested: 'Invested', calcProjected: 'Projected value', calcGain: 'Projected gain', calcRange: 'Likely range',
+        calcCagrNote: 'Based on {v}% CAGR',
+        calcDisclaimer: 'Illustration only, based on past performance. Not a promise of future returns — funds can lose value.',
+        cagrTag: 'Compound growth',
+        cagrTitle: 'CAGR since inception',
+        cagrSinceInception: 'Total since inception',
+        cagrOverYears: 'over {v} years',
+        cagrNote: 'Compound annual growth rate — the smoothed yearly rate that turns the first NAV into the latest.',
+        moveTitle: 'Return distribution',
+        moveBest: 'Best {p}', moveWorst: 'Worst {p}', moveAvgGain: 'Average up {p}', moveAvgLoss: 'Average down {p}',
+        moveDaily: 'day', moveWeekly: 'week', movePeriod: 'period',
+        gateTitle: 'Unlock the full analysis',
+        gateBody: 'Create a free account to see the scorecard, suitability, stress tests and the investment calculator for every Egyptian fund.',
+        gateCta: 'Create free account',
+        gateSignin: 'Sign in',
+        fbTag: 'Feedback',
+        fbTitle: 'Was this helpful?',
+        fbSub: 'Help us improve this page.',
+        fbYes: 'Yes, helpful', fbNo: 'Not really', fbThanks: 'Thanks for the feedback!',
+        fbCommentPlaceholder: 'Anything we could add? (optional)', fbSubmit: 'Send',
+        compareCta: 'Compare',
+    },
 };
 
 const AR: FundLabels = {
@@ -224,6 +351,7 @@ const AR: FundLabels = {
     adminFee: 'رسوم إدارية',
     maxDrawdown: 'أقصى تراجع (منذ النشأة، من القمة إلى القاع)',
     volatility: 'التذبذب (سنوي، كامل السجل)',
+    downsideDeviation: 'انحراف الهبوط (سنوي)',
     established: 'تأسست',
     chairman: 'رئيس مجلس الإدارة',
     aum: 'الأصول تحت الإدارة',
@@ -234,6 +362,91 @@ const AR: FundLabels = {
     compare: 'قارن',
     unit: 'وثيقة',
     units: 'وثيقة',
+    ax: {
+        higherBetter: 'كلما ارتفع كان أفضل',
+        methodology: 'كيف نحتسب الدرجة',
+        estimated: 'تقديري',
+        noData: 'لا يوجد سجل كافٍ بعد',
+        scoreTag: 'درجة ستارتا',
+        scoreTitle: 'بطاقة تقييم الصندوق',
+        scoreSub: 'خمسة أبعاد، كل منها بدرجة من 0 إلى 100 محسوبة من سجل صافي قيمة الأصول لدينا. كلما ارتفعت الدرجة كان أفضل في كل بُعد — ونعرض الرقم الحقيقي خلف كل درجة.',
+        startaScore: 'درجة ستارتا',
+        overall: 'الإجمالي',
+        confidence: 'مستوى الثقة',
+        confHigh: 'ثقة عالية',
+        confMed: 'ثقة متوسطة',
+        confLow: 'ثقة منخفضة',
+        dims: { performance: 'الأداء', risk: 'المخاطر', cost: 'التكلفة', stability: 'الاستقرار', diversification: 'التنويع' },
+        dimDesc: {
+            performance: 'النمو السنوي الحديث، معدّلاً بالمخاطر',
+            risk: 'كلما قل التذبذب والتراجع ارتفعت الدرجة',
+            cost: 'كلما قلت الرسوم المستمرة ارتفعت الدرجة',
+            stability: 'كلما كانت العوائد أكثر ثباتًا ارتفعت الدرجة',
+            diversification: 'تقديري من تفويض الصندوق وفئة أصوله',
+        },
+        metricLabels: { annualizedReturn: 'العائد السنوي', volatility: 'التذبذب', positivePeriods: 'الفترات الرابحة', fee: 'الرسوم المستمرة', category: 'حسب الفئة' },
+        tiers: { excellent: 'ممتاز', strong: 'قوي', average: 'متوسط', weak: 'ضعيف', poor: 'ضعيف جدًا' },
+        suitTag: 'الملاءمة',
+        suitTitle: 'هل هذا الصندوق مناسب لك؟',
+        suitSub: 'كيف يتوافق هذا الصندوق مع مدد الاستثمار وملفات مخاطر المستثمرين.',
+        horizonTitle: 'مدة الاستثمار',
+        investorTitle: 'مطابقة ملف المستثمر',
+        horizons: { short: 'قصير الأجل', medium: 'متوسط الأجل', long: 'طويل الأجل' },
+        horizonHint: { short: 'أقل من سنة', medium: '1–4 سنوات', long: '5 سنوات فأكثر' },
+        statuses: { suitable: 'مناسب', caution: 'بحذر', unsuitable: 'غير مناسب' },
+        profiles: { conservative: 'محافظ', balanced: 'متوازن', aggressive: 'جريء' },
+        matchSuffix: 'تطابق',
+        insightsTag: 'رؤى',
+        insightsTitle: 'ما الذي يميّز الصندوق',
+        insightsSub: 'مولّدة تلقائيًا من مقاييس الصندوق نفسه.',
+        pro: 'نقطة قوة',
+        con: 'نقطة انتباه',
+        impact: { high: 'تأثير عالٍ', medium: 'تأثير متوسط', low: 'تأثير منخفض' },
+        insightText: {
+            strongPerformance: 'أداء قوي ومتسق — نحو {v}% سنويًا في الوضع الحالي',
+            consistent: '{v}% من الفترات كانت موجبة — ثبات لا تذبذب حاد',
+            longTrack: 'سجل طويل — {v} سنة من بيانات صافي قيمة الأصول للتقييم',
+            deepData: 'بيانات عميقة — {v} نقطة صافي قيمة أصول خلف كل مقياس',
+            highVolatility: 'تذبذب مرتفع ({v}% سنويًا) — توقّع تقلبات أكبر',
+            deepDrawdown: 'تراجع {v}% من القمة إلى القاع تاريخيًا',
+            highFee: 'رسوم مستمرة أعلى من المتوسط ({v}%)',
+            shortTrack: 'سجل قصير ({v} سنة) — المقاييس أقل استقرارًا',
+        },
+        stressTag: 'اختبار الضغط',
+        stressTitle: 'كيف قد يتصرف تحت الضغط',
+        stressSub: 'أثر تقديري على صافي قيمة الأصول الحالي، إلى جانب ما حدث فعليًا تاريخيًا.',
+        estimate: 'تقدير نموذجي',
+        historical: 'واقعة تاريخية',
+        stressDisclaimer: 'التقديرات تضرب صدمة سوقية عامة في حساسية فئة أصول الصندوق وتذبذبه — تقريبات وليست تنبؤات. الأرقام التاريخية مستمدة من سجل صافي قيمة أصول الصندوق نفسه.',
+        scenarios: { marketDrop10: 'هبوط السوق ٪−10', marketDrop20: 'هبوط السوق ٪−20', adverse1y: 'سنة سيئة (نطاق 95٪)', worstDrawdown: 'أسوأ تراجع تاريخي', worstPeriod: 'أسوأ فترة منفردة' },
+        calcTag: 'الحاسبة',
+        calcTitle: 'احسب توقّع استثمارك',
+        calcSub: 'نمو توضيحي باستخدام معدل النمو المركب طويل الأجل المحقق للصندوق.',
+        calcAmount: 'المبلغ المستثمر',
+        calcHorizon: 'مدة الاحتفاظ',
+        calcYears1: 'سنة واحدة', calcYears3: '3 سنوات', calcYears5: '5 سنوات',
+        calcInvested: 'المستثمر', calcProjected: 'القيمة المتوقعة', calcGain: 'الربح المتوقع', calcRange: 'النطاق المرجّح',
+        calcCagrNote: 'بناءً على معدل نمو مركب {v}%',
+        calcDisclaimer: 'توضيحي فقط بناءً على الأداء السابق. ليس وعدًا بعوائد مستقبلية — قد تنخفض قيمة الصناديق.',
+        cagrTag: 'النمو المركب',
+        cagrTitle: 'معدل النمو المركب منذ التأسيس',
+        cagrSinceInception: 'الإجمالي منذ التأسيس',
+        cagrOverYears: 'على مدى {v} سنة',
+        cagrNote: 'معدل النمو السنوي المركب — المعدل السنوي المُنعّم الذي يحوّل أول صافي قيمة أصول إلى آخرها.',
+        moveTitle: 'توزيع العوائد',
+        moveBest: 'أفضل {p}', moveWorst: 'أسوأ {p}', moveAvgGain: 'متوسط الصعود {p}', moveAvgLoss: 'متوسط الهبوط {p}',
+        moveDaily: 'يوم', moveWeekly: 'أسبوع', movePeriod: 'فترة',
+        gateTitle: 'افتح التحليل الكامل',
+        gateBody: 'أنشئ حسابًا مجانيًا لعرض بطاقة التقييم والملاءمة واختبارات الضغط وحاسبة الاستثمار لكل صندوق مصري.',
+        gateCta: 'أنشئ حسابًا مجانيًا',
+        gateSignin: 'تسجيل الدخول',
+        fbTag: 'رأيك',
+        fbTitle: 'هل كانت هذه المعلومات مفيدة؟',
+        fbSub: 'ساعدنا في تحسين هذه الصفحة.',
+        fbYes: 'نعم، مفيدة', fbNo: 'غير مفيدة', fbThanks: 'شكرًا على رأيك!',
+        fbCommentPlaceholder: 'هل من شيء نضيفه؟ (اختياري)', fbSubmit: 'إرسال',
+        compareCta: 'قارن',
+    },
 };
 
 export function fundLabels(lang: Lang): FundLabels {

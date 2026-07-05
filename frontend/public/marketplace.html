@@ -133,7 +133,9 @@
            in the committed tw-marketplace.css). minmax(0,1fr) stops the track from
            growing to the chart canvas's intrinsic width. */
         .funds-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
-        @media (min-width: 1600px) { .funds-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        /* Two cards per row once the sidebar layout has room; single column on
+           smaller / stacked (mobile) widths where two would be too cramped. */
+        @media (min-width: 1200px) { .funds-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (max-width: 1080px) {
             .funds-layout { grid-template-columns: minmax(0, 1fr); }
         }

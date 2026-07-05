@@ -113,9 +113,9 @@
         /* Funds hero — premium ambient card, seamless in both themes */
         .funds-hero {
             position: relative;
-            /* light: even tinted-glass surface — one cohesive tone, no pure-white zone */
-            background: linear-gradient(135deg, #edf6f4 0%, #e7f3ef 58%, #e1f0ea 100%);
-            border: 1px solid rgba(15, 118, 110, 0.15);
+            /* light: clean white surface, consistent with the other pages' cards */
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
             border-radius: 2.5rem;
             box-shadow: var(--shadow-premium);
             isolation: isolate;
@@ -753,7 +753,7 @@
                 </div>
 
                 <div id="viewMoreWrap" class="mt-8 hidden text-center">
-                    <button id="viewMoreBtn" type="button" class="btn-primary inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-sm font-bold tracking-wide"></button>
+                    <button id="viewMoreBtn" type="button" class="btn-primary inline-flex items-center justify-center rounded-full px-8 py-3 text-sm font-semibold"></button>
                 </div>
 
                 <div id="emptyState" class="hidden mt-8 rounded-[2rem] border border-border bg-surface px-8 py-16 text-center shadow-premium">
@@ -1660,7 +1660,7 @@
                         <div class="flex flex-col gap-6">
                             <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                                 <div class="flex gap-4">
-                                    <div class="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-border bg-surface p-2 shadow-sm">
+                                    <div class="shrink-0 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm" style="width:5.25rem;height:5.25rem;padding:0.4rem">
                                         <img src="${escapeHtml(fund.logo_url || DEFAULT_LOGO)}" alt="${manager}" loading="lazy" onerror="this.onerror=null;this.src='${DEFAULT_LOGO}';this.style.transform='none';" class="h-full w-full rounded-xl object-contain" style="transform:scale(${Number(fund.logo_scale || 1)}); transform-origin:center center;">
                                     </div>
                                     <div>
@@ -1790,8 +1790,7 @@
             if (!wrap || !btn) return;
             const remaining = state.filtered.length - state.visibleCount;
             if (remaining > 0) {
-                const step = Math.min(PAGE_SIZE, remaining);
-                btn.textContent = `${getLabels().view_more} (+${formatNumber(step, { maximumFractionDigits: 0 })})`;
+                btn.textContent = getLabels().view_more;
                 wrap.classList.remove('hidden');
             } else {
                 wrap.classList.add('hidden');

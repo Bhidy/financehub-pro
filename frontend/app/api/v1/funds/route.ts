@@ -78,7 +78,16 @@ export async function GET(request: Request) {
                 last_synced_at: asOf ?? r.last_synced_at,
             };
         });
-        return NextResponse.json(rows);
+        return NextResponse.json(rows, {
+            headers: {
+                // The listing query is heavy (per-fund nav_history subqueries, ~3s) and
+                // fund NAVs update only ~2×/day, so cache the result at the Vercel edge:
+                // the query runs at most once per 2 min instead of on EVERY visit (was
+                // x-vercel-cache: MISS every load). stale-while-revalidate keeps the page
+                // instant while a fresh copy is fetched in the background.
+                'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600',
+            },
+        });
     } catch (error: any) {
         console.error('[API] /funds error:', error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });

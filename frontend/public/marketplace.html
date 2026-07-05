@@ -553,6 +553,28 @@
         }
         .mini-chart-canvas { max-width: 100%; overflow: hidden; }
 
+        /* Premium fee box — three divided cells */
+        .fee-box {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            border: 1px solid var(--c-border);
+            border-radius: 1.4rem;
+            overflow: hidden;
+            background: var(--c-panel);
+        }
+        .fee-cell { padding: 0.85rem 0.55rem; text-align: center; min-width: 0; }
+        .fee-cell + .fee-cell { border-inline-start: 1px solid var(--c-border); }
+        .fee-label {
+            font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.07em; color: var(--c-text-muted); line-height: 1.35;
+        }
+        .fee-val {
+            margin-top: 0.4rem; font-family: 'Sora', 'IBM Plex Sans Arabic', sans-serif;
+            font-weight: 700; font-size: 1rem; color: var(--c-text-main); letter-spacing: -0.02em;
+            white-space: nowrap;
+        }
+        .fee-val.fee-free { color: var(--teal-dark); }
+
         .mini-chart::before {
             content: "";
             position: absolute;
@@ -1894,20 +1916,18 @@
 
                             <div class="mini-chart rounded-2xl bg-panel px-2 py-2" data-mini-chart data-fund-id="${escapeHtml(fund.fund_id)}" data-fund-currency="${escapeHtml(fund.currency || 'EGP')}"></div>
 
-                            <div class="flex items-center justify-between border-t border-dashed border-border/60 pt-4 text-xs">
-                                <div class="flex flex-wrap gap-x-4 gap-y-1">
-                                    <div>
-                                        <span class="text-muted text-[0.7rem] uppercase tracking-wider">${escapeHtml(getLabels().fee_sub)}:</span>
-                                        <span class="font-semibold text-main ml-1">${formatFee(fund.fee_subscription)}</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-muted text-[0.7rem] uppercase tracking-wider">${escapeHtml(getLabels().fee_red)}:</span>
-                                        <span class="font-semibold text-main ml-1">${formatFee(fund.fee_redemption)}</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-muted text-[0.7rem] uppercase tracking-wider">${escapeHtml(getLabels().fee_mgmt)}:</span>
-                                        <span class="font-semibold text-main ml-1">${formatFee(fund.fee_management)}</span>
-                                    </div>
+                            <div class="fee-box">
+                                <div class="fee-cell">
+                                    <div class="fee-label">${escapeHtml(getLabels().fee_sub)}</div>
+                                    <div class="fee-val${safeNumber(fund.fee_subscription) === 0 ? ' fee-free' : ''}">${formatFee(fund.fee_subscription)}</div>
+                                </div>
+                                <div class="fee-cell">
+                                    <div class="fee-label">${escapeHtml(getLabels().fee_red)}</div>
+                                    <div class="fee-val${safeNumber(fund.fee_redemption) === 0 ? ' fee-free' : ''}">${formatFee(fund.fee_redemption)}</div>
+                                </div>
+                                <div class="fee-cell">
+                                    <div class="fee-label">${escapeHtml(getLabels().fee_mgmt)}</div>
+                                    <div class="fee-val${safeNumber(fund.fee_management) === 0 ? ' fee-free' : ''}">${formatFee(fund.fee_management)}</div>
                                 </div>
                             </div>
 

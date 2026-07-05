@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS fund_risk_metrics (
     avg_gain             NUMERIC,
     avg_loss             NUMERIC,
     avg_period_days      NUMERIC,
+    analytics_suppressed BOOLEAN DEFAULT FALSE,
     computed_at       TIMESTAMPTZ DEFAULT NOW()
 );
 """
@@ -76,11 +77,13 @@ _ANALYTICS_COLS = ("cagr", "return_inception", "inception_years", "downside_devi
                    "avg_gain", "avg_loss", "avg_period_days")
 _MIGRATE = "\n".join(
     f"ALTER TABLE fund_risk_metrics ADD COLUMN IF NOT EXISTS {c} NUMERIC;"
-    for c in _ANALYTICS_COLS)
+    for c in _ANALYTICS_COLS) + (
+    "\nALTER TABLE fund_risk_metrics ADD COLUMN IF NOT EXISTS analytics_suppressed BOOLEAN DEFAULT FALSE;")
 
 _COLS = ("points", "latest_nav", "latest_date", "return_1m", "return_3m",
          "return_6m", "return_ytd", "return_1y", "return_3y", "return_5y",
-         "volatility_annual", "max_drawdown", "nav_52w_high", "nav_52w_low") + _ANALYTICS_COLS
+         "volatility_annual", "max_drawdown", "nav_52w_high", "nav_52w_low") \
+    + _ANALYTICS_COLS + ("analytics_suppressed",)
 
 _UPSERT = (
     "INSERT INTO fund_risk_metrics (fund_id, " + ", ".join(_COLS) + ", computed_at) "
@@ -136,6 +139,7 @@ async def compute_one(conn, fund_id, name, dry_run) -> bool:
         "SELECT date, nav FROM nav_history WHERE fund_id = $1 ORDER BY date", fund_id)
     series = [(r["date"], r["nav"]) for r in rows]
     m = compute_all(series)
+    m["analytics_suppressed"] = False
     # Skip ONLY when the fund genuinely lacks data. A None max_drawdown can also mean
     # the output backstop suppressed an absurd value — in that case we STILL upsert
     # (with NULL metrics) so the fund's stale/garbage row is corrected, not left behind.
@@ -153,6 +157,10 @@ async def compute_one(conn, fund_id, name, dry_run) -> bool:
                        "downside_deviation", "best_period", "worst_period",
                        "avg_gain", "avg_loss"):
                 m[_k] = None
+            # The return windows still hold artifact-driven values that the frontend's
+            # performance score / hasEnoughData would use — so hard-suppress the whole
+            # analytics layer for this guarded row (the flag wins on the client).
+            m["analytics_suppressed"] = True
     if dry_run:
         return True
     await conn.execute(_UPSERT, fund_id, *[m[c] for c in _COLS])

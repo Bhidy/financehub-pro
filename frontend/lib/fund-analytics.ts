@@ -461,10 +461,13 @@ export type FundAnalytics = {
   hasEnoughData: boolean;
 };
 
-/** One-call builder used by the server render to attach analytics to client props. */
-export function buildFundAnalytics(i: AnalyticsInput, currency: string | null): FundAnalytics {
+/** One-call builder used by the server render to attach analytics to client props.
+ *  `suppressed` hard-hides the layer for rows the backend flagged as data-artifact
+ *  corrupted (e.g. a cash fund with a redenomination step) — no score can be trusted
+ *  there, so hasEnoughData is forced false regardless of which primitives survived. */
+export function buildFundAnalytics(i: AnalyticsInput, currency: string | null, suppressed = false): FundAnalytics {
   const scores = computeScores(i);
-  const hasEnoughData = isNum(i.navPoints) && i.navPoints >= 8 &&
+  const hasEnoughData = !suppressed && isNum(i.navPoints) && i.navPoints >= 8 &&
     (isNum(i.cagr) || isNum(i.volatility) || isNum(i.return1y));
   return {
     scores,

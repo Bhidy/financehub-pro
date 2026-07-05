@@ -216,7 +216,7 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
             // Phase-2 analytics primitives live ONLY in fund_risk_metrics — take verbatim.
             for (const k of ['cagr', 'return_inception', 'inception_years', 'downside_deviation',
                 'best_period', 'worst_period', 'positive_periods_pct', 'avg_gain', 'avg_loss',
-                'avg_period_days']) {
+                'avg_period_days', 'analytics_suppressed']) {
                 row[k] = m[k];
             }
             for (const k of ['nav_52w_high', 'nav_52w_low', 'return_1m', 'return_3m', 'return_6m',

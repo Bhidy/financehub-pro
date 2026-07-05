@@ -363,7 +363,10 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
         classification: classificationRaw,
         strategy: str(fund, 'investment_strategy_en') || strategy,
     };
-    const analytics = buildFundAnalytics(analyticsInput, currency);
+    // Cash-fund redenomination-artifact guard (compute_fund_metrics.py) — hard-suppress
+    // the whole analytics layer so a guarded row can never surface a false score.
+    const analyticsSuppressed = isTrue(fund, 'analytics_suppressed');
+    const analytics = buildFundAnalytics(analyticsInput, currency, analyticsSuppressed);
 
     // CAGR headline stat (★ requested feature).
     const cagrVal = num(fund, 'cagr');

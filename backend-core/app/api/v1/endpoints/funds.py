@@ -59,18 +59,39 @@ async def _ensure_table() -> None:
 async def submit_feedback(fund_id: str, payload: FeedbackIn, request: Request):
     """Record a helpful / not-helpful vote (+ optional comment) for a fund page. Public."""
     await _ensure_table()
-    fp = request.headers.get("x-device-fingerprint") or (request.client.host if request.client else None)
+    fid = str(fund_id)[:50]
+    fp = ((request.headers.get("x-device-fingerprint") or
+           (request.client.host if request.client else "") or "")[:120]) or None
     ua = (request.headers.get("user-agent") or "")[:300]
     comment = (payload.comment or "").strip()[:500] or None
+    helpful = bool(payload.helpful)
     try:
-        await db.execute(
-            "INSERT INTO fund_feedback (fund_id, helpful, comment, fingerprint, user_agent) "
-            "VALUES ($1, $2, $3, $4, $5)",
-            str(fund_id)[:50], bool(payload.helpful), comment, (fp or "")[:120] or None, ua,
-        )
+        # De-dupe the two-phase flow (vote, then optional comment) into ONE row per
+        # visitor+fund: the comment submit UPDATES the existing vote instead of inserting
+        # again, so feedback_summary never double-counts. Anonymous rows (no fingerprint)
+        # can't be matched, so they insert (rare, acceptable).
+        existing = None
+        if fp:
+            existing = await db.fetch_one(
+                "SELECT id FROM fund_feedback WHERE fund_id = $1 AND fingerprint = $2 "
+                "AND created_at > NOW() - INTERVAL '2 days' ORDER BY created_at DESC LIMIT 1",
+                fid, fp,
+            )
+        if existing:
+            await db.execute(
+                "UPDATE fund_feedback SET helpful = $2, comment = COALESCE($3, comment), "
+                "created_at = NOW() WHERE id = $1",
+                existing["id"], helpful, comment,
+            )
+        else:
+            await db.execute(
+                "INSERT INTO fund_feedback (fund_id, helpful, comment, fingerprint, user_agent) "
+                "VALUES ($1, $2, $3, $4, $5)",
+                fid, helpful, comment, fp, ua,
+            )
         return {"status": "ok"}
     except Exception as e:  # noqa: BLE001 - widget UX is best-effort; never 500
-        logger.warning(f"fund_feedback insert failed for {fund_id}: {e}")
+        logger.warning(f"fund_feedback write failed for {fund_id}: {e}")
         return {"status": "skipped"}
 
 

@@ -17,9 +17,18 @@ There are **three surfaces**, deployed independently:
 
 ---
 
-## ✅ WEB — there is exactly ONE way, and it is automatic
+## ✅ WEB — the deploy is code on `main`. Default path: `./ship.sh`
 
-**Deploying the web = landing code on `main`. Nothing else. No script deploys it.**
+**Deploying the web = landing code on `main`.** Two ways to get it there — both trigger the
+SAME one-and-only Vercel Git-Integration build, and NEITHER runs `vercel`:
+
+- **DEFAULT → `./ship.sh "msg"`** — direct owner push to `main` (~5s, no PR; also deploys the
+  backend when `backend-core/` changed). This is the path for owner changes. Full usage in the
+  **⚡ Owner express-lane** section below.
+- **Reviewed path → open a PR** (steps below) — use ONLY when you deliberately want the
+  ChatGPT-Codex review + PR CI gate on a risky or large change.
+
+### Reviewed path (PR) — when you want review before it ships
 
 ```bash
 # 1. Branch (never commit straight to main).

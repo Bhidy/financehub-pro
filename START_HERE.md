@@ -44,17 +44,19 @@ This folder was previously named `Info Site/mubasher-deep-extract`. The old name
 > versions of this file) are superseded by the runbook.
 
 ```bash
-# Web — deploy = merge a PR to `main`. Vercel auto-builds; the domain auto-follows.
-# Then verify it went live (verify-only — does NOT deploy):
-./scripts/deploy-web.sh
+# DEFAULT — one direct command deploys web + backend (no PR). Owner is repo admin.
+./ship.sh "fix: my change"       # push main (Vercel auto-deploys web) + backend if backend-core/ changed
+./ship.sh "msg" --verify         # …then health-check live
+./scripts/deploy-web.sh          # verify-only (does NOT deploy)
 
 # iOS TestFlight — one command:
 ./scripts/ship-ios.sh
 ```
 
-- **Web:** merging a PR to `main` is the ENTIRE deploy — Vercel's Git Integration
-  builds `finhub` and `startamarkets.com` auto-follows. There is **no CLI deploy and
-  no alias step.** Run `./scripts/deploy-web.sh` afterwards to verify it's live.
+- **Web:** `./ship.sh "msg"` is the default — it commits + pushes to `main`, and Vercel's
+  Git Integration builds `finhub` so `startamarkets.com` auto-follows. The deploy IS the
+  push to `main`: **no CLI deploy, no alias step, never run `vercel`.** Open a PR instead only
+  when you want the Codex review / CI gate on a risky change. Verify with `./scripts/deploy-web.sh`.
 - **iOS:** `./scripts/ship-ios.sh` builds the Vite bundle, syncs into Capacitor, auto-bumps
   the build number, archives, and uploads to TestFlight in one step.
 - **Backend:** `./scripts/deploy_backend_key.sh` (Hetzner VPS, SSH key auth).

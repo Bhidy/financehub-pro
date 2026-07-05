@@ -23,15 +23,18 @@ Arabic/English content, Learn, Funds, News, Market Pulse, mobile app, or **produ
 encode the only correct, verified flow and prevent every past failure mode:
 
 ```bash
-# Web (startamarkets.com): deploy = merge a PR to `main` (Vercel auto-builds, domain auto-follows).
-# ⚠️ deploy-web.sh is VERIFY-ONLY — it does NOT deploy or alias. Never run `vercel`/`vercel alias` by hand.
-./scripts/deploy-web.sh            # health-check the LIVE site after a merge (no deploy, no alias)
+# DEFAULT — one-command DIRECT deploy (web + backend, no PR). Owner is repo admin.
+./ship.sh "fix: my change"         # commit → push main (Vercel auto-deploys web) + backend if backend-core/ changed (~5s)
+./ship.sh "msg" --verify           # …then wait ~90s and health-check the live site
+
+# Verify only (VERIFY-ONLY — never runs `vercel`/`vercel alias`):
+./scripts/deploy-web.sh            # health-check the LIVE site (no deploy, no alias)
 
 # iOS (TestFlight):
 ./scripts/ship-ios.sh              # build bundle → archive → upload
 
-# Backend (Hetzner): the ONLY path — health-gated, auto-rollback. Not SSH from a laptop.
-gh workflow run backend-deploy.yml -f reason="…"
+# Want the ChatGPT-Codex review / CI gate on a risky or large change? Open a PR instead (see runbook).
+# Backend alone (not via ship.sh): gh workflow run backend-deploy.yml -f reason="…"
 ```
 
 > **Read [`docs/CANONICAL_STATE.md`](docs/CANONICAL_STATE.md) first** — it is the verified source

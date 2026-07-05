@@ -166,6 +166,17 @@ async def compute_one(conn, fund_id, name, dry_run) -> bool:
             # performance score / hasEnoughData would use — so hard-suppress the whole
             # analytics layer for this guarded row (the flag wins on the client).
             m["analytics_suppressed"] = True
+    # ANY fund (not just cash): if compute_all's global backstop nulled a risk metric on
+    # a fund with enough history to have one (>=8 pts guarantees vol/drawdown compute),
+    # the NAV series is corrupt beyond despiking. The backstop clears vol/drawdown but
+    # NOT the CAGR/return-derived analytics — so suppress those too; otherwise e.g. an
+    # equity fund could still surface a false score.
+    if not m["analytics_suppressed"] and m["points"] >= 8 and (
+            m.get("volatility_annual") is None or m.get("max_drawdown") is None):
+        for _k in ("cagr", "return_inception", "downside_deviation", "best_period",
+                   "worst_period", "avg_gain", "avg_loss"):
+            m[_k] = None
+        m["analytics_suppressed"] = True
     if dry_run:
         return True
     await conn.execute(_UPSERT, fund_id, *[m[c] for c in _COLS])

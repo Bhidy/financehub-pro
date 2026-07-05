@@ -8,8 +8,23 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * client-side (progressive enhancement); all SEO-relevant numbers are already in
  * the server-rendered HTML, so the chart never gates indexable content.
  *
- * Defensive by design: guards the container, tears the chart down on unmount,
- * and falls back to a premium empty state when there isn't enough history.
+ * Hover model (world-class, RTL/LTR-identical):
+ *   The chart NEVER relies on the native crosshair for the tooltip. Instead a
+ *   transparent overlay OWNS hit-testing: for any cursor x over the plot it
+ *   resolves the NEAREST real data point via the time scale's own
+ *   coordinate→logical mapping, drives the crosshair marker AND the tooltip from
+ *   that single resolved point, and clamps the index to [0, n-1]. Consequences:
+ *     • The latest NAV is always reachable — the right edge resolves to the last
+ *       point instead of dying in the `rightOffset` whitespace gutter.
+ *     • The tooltip can never "vanish" while the cursor is over the plot.
+ *     • Marker, crosshair and tooltip always agree (no detachment).
+ *   The chart container is pinned to `direction: ltr` (defense-in-depth): the
+ *   plot itself is inherently LTR, so this immunises the hit-testing against any
+ *   current or future RTL layout quirk while the surrounding UI stays RTL.
+ *
+ * Defensive by design: guards the container, tears the chart + listeners down on
+ * unmount, and falls back to a premium empty state when there isn't enough
+ * history.
  */
 
 type Point = { time: string; value: number };
@@ -47,11 +62,15 @@ export default function FundNavChart({
 }) {
     const dateLocale = lang === 'ar' ? 'ar-EG' : 'en-GB';
     const wrapRef = useRef<HTMLDivElement>(null);
+    const overlayRef = useRef<HTMLDivElement>(null);
     const tipRef = useRef<HTMLDivElement>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const chartRef = useRef<any>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const seriesRef = useRef<any>(null);
+    // The currently-drawn (range-filtered) series — read by the hover overlay so
+    // cursor→index resolution always matches what's on screen.
+    const viewRef = useRef<Point[]>([]);
 
     const [all, setAll] = useState<Point[] | null>(null);
     const [range, setRange] = useState<Range>('YTD');
@@ -88,6 +107,7 @@ export default function FundNavChart({
             const filtered = cutoff === null ? all : all.filter((p) => Date.parse(`${p.time}T00:00:00Z`) >= cutoff);
             // Fall back to the full series if the window is too sparse to draw.
             const view = filtered.length >= 2 ? filtered : all;
+            viewRef.current = view;
             series.setData(view);
             chart.timeScale().fitContent();
         },
@@ -99,6 +119,7 @@ export default function FundNavChart({
         if (!all || all.length < 2 || !wrapRef.current) return;
         let cancelled = false;
         let resizeObserver: ResizeObserver | undefined;
+        let detachOverlay: (() => void) | undefined;
 
         (async () => {
             const LWC = await import('lightweight-charts');
@@ -122,7 +143,12 @@ export default function FundNavChart({
                     borderColor: 'rgba(148, 163, 184, 0.16)',
                     timeVisible: false,
                     secondsVisible: false,
-                    rightOffset: 3,
+                    // No right whitespace gutter: the latest NAV sits flush at the
+                    // plot's right edge and stays hoverable (the overlay resolves
+                    // the edge to the last point regardless).
+                    rightOffset: 0,
+                    // Keep the pinned range stable when the card reflows.
+                    lockVisibleTimeRangeOnResize: true,
                 },
                 grid: {
                     vertLines: { color: 'rgba(148, 163, 184, 0.07)' },
@@ -146,6 +172,8 @@ export default function FundNavChart({
                 priceLineColor: 'rgba(20, 184, 166, 0.5)',
                 priceLineStyle: 2,
                 lastValueVisible: true,
+                crosshairMarkerVisible: true,
+                crosshairMarkerRadius: 5,
                 priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
             });
 
@@ -153,36 +181,89 @@ export default function FundNavChart({
             seriesRef.current = series;
             applyRange(range);
 
+            // ── Robust nearest-point hover — the overlay owns hit-testing ──────
+            const overlay = overlayRef.current;
             const tip = tipRef.current;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            chart.subscribeCrosshairMove((param: any) => {
-                if (!tip) return;
-                if (!param.point || param.time == null || param.point.x < 0) {
-                    tip.classList.remove('visible');
-                    return;
-                }
-                const bar = param.seriesData.get(series);
-                const value = bar && (bar.value ?? bar.close);
-                if (value == null || !Number.isFinite(Number(value))) {
-                    tip.classList.remove('visible');
-                    return;
-                }
-                const iso = typeof param.time === 'string' ? param.time : String(param.time);
-                const dEl = tip.querySelector('[data-d]');
-                const vEl = tip.querySelector('[data-v]');
-                if (dEl)
-                    dEl.textContent = new Date(`${iso}T00:00:00Z`).toLocaleDateString(dateLocale, {
+            if (overlay) {
+                const fmtDate = (iso: string) =>
+                    new Date(`${iso}T00:00:00Z`).toLocaleDateString(dateLocale, {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',
                         timeZone: 'UTC',
                     });
-                if (vEl) vEl.textContent = `${currency} ${Number(value).toFixed(4)}`;
-                const w = host.clientWidth;
-                tip.style.left = `${Math.min(Math.max(param.point.x, 78), w - 78)}px`;
-                tip.style.top = `${Math.max(param.point.y - 10, 6)}px`;
-                tip.classList.add('visible');
-            });
+
+                // Resolve the nearest real data point for a viewport clientX.
+                const resolve = (clientX: number): Point | null => {
+                    const view = viewRef.current;
+                    if (!view.length) return null;
+                    const paneCanvas = host.querySelector('canvas');
+                    const rect = (paneCanvas ?? host).getBoundingClientRect();
+                    const x = clientX - rect.left;
+                    const ts = chart.timeScale();
+                    const logical = ts.coordinateToLogical(x);
+                    // Map logical coordinate → data index, clamped to the series.
+                    // (setData with contiguous points makes logical index == data
+                    // index, so the right edge always resolves to the last point.)
+                    let idx = logical == null ? view.length - 1 : Math.round(logical);
+                    if (idx < 0) idx = 0;
+                    if (idx > view.length - 1) idx = view.length - 1;
+                    return view[idx] ?? null;
+                };
+
+                const showAt = (clientX: number) => {
+                    if (!tip) return;
+                    const pt = resolve(clientX);
+                    if (!pt || !Number.isFinite(Number(pt.value))) {
+                        hide();
+                        return;
+                    }
+                    try {
+                        // setCrosshairPosition lives on the chart, not the series.
+                        chart.setCrosshairPosition(Number(pt.value), pt.time, series);
+                    } catch {
+                        /* chart torn down mid-move */
+                    }
+                    const ts = chart.timeScale();
+                    const px = ts.timeToCoordinate(pt.time);
+                    const py = series.priceToCoordinate(Number(pt.value));
+                    const dEl = tip.querySelector('[data-d]');
+                    const vEl = tip.querySelector('[data-v]');
+                    if (dEl) dEl.textContent = fmtDate(pt.time);
+                    if (vEl) vEl.textContent = `${currency} ${Number(pt.value).toFixed(4)}`;
+                    const w = host.clientWidth;
+                    const left = px == null ? clientX : px;
+                    // Anchor tooltip on the resolved point (never the raw cursor),
+                    // clamped inside the plot so it can't overflow the card.
+                    tip.style.left = `${Math.min(Math.max(left, 78), Math.max(w - 78, 78))}px`;
+                    tip.style.top = `${Math.max((py == null ? 24 : py) - 12, 6)}px`;
+                    tip.classList.add('visible');
+                };
+
+                const hide = () => {
+                    try {
+                        chart.clearCrosshairPosition();
+                    } catch {
+                        /* already disposed */
+                    }
+                    tip?.classList.remove('visible');
+                };
+
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const onMove = (e: any) => showAt(e.clientX);
+                overlay.addEventListener('pointermove', onMove, { passive: true });
+                overlay.addEventListener('mousemove', onMove, { passive: true });
+                overlay.addEventListener('pointerleave', hide, { passive: true });
+                overlay.addEventListener('mouseleave', hide, { passive: true });
+                overlay.addEventListener('touchend', hide, { passive: true });
+                detachOverlay = () => {
+                    overlay.removeEventListener('pointermove', onMove);
+                    overlay.removeEventListener('mousemove', onMove);
+                    overlay.removeEventListener('pointerleave', hide);
+                    overlay.removeEventListener('mouseleave', hide);
+                    overlay.removeEventListener('touchend', hide);
+                };
+            }
 
             resizeObserver = new ResizeObserver(() => {
                 if (!chartRef.current || !wrapRef.current) return;
@@ -195,6 +276,7 @@ export default function FundNavChart({
         return () => {
             cancelled = true;
             resizeObserver?.disconnect();
+            detachOverlay?.();
             if (chartRef.current) {
                 try {
                     chartRef.current.remove();
@@ -233,9 +315,18 @@ export default function FundNavChart({
             <div className="relative mt-4">
                 <div
                     ref={wrapRef}
+                    dir="ltr"
                     className="w-full overflow-hidden rounded-[1.4rem] border border-border bg-surface"
-                    style={{ minHeight: '340px' }}
+                    style={{ minHeight: '340px', direction: 'ltr' }}
                 />
+                {status === 'ready' && (
+                    <div
+                        ref={overlayRef}
+                        className="absolute inset-0 rounded-[1.4rem]"
+                        style={{ cursor: 'crosshair', zIndex: 4, touchAction: 'pan-y' }}
+                        aria-hidden="true"
+                    />
+                )}
                 {status !== 'ready' && (
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[1.4rem] border border-dashed border-border bg-surface text-center">
                         <div className="px-6">

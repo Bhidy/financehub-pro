@@ -550,6 +550,9 @@
             min-width: 0;
             max-width: 100%;
             overflow: hidden;
+            /* The plot is inherently LTR; pin it so hover hit-testing is immune to
+               the RTL page direction (defense-in-depth, matches FundNavChart). */
+            direction: ltr;
         }
         .mini-chart-canvas { max-width: 100%; overflow: hidden; }
 
@@ -1779,7 +1782,10 @@
                     // grid reflows — which left the newest points mapped off-canvas, unreachable).
                     const w = element.clientWidth;
                     if (w > 1) { chart.applyOptions({ width: w - 1 }); chart.applyOptions({ width: w }); }
-                    chart.timeScale().setVisibleLogicalRange({ from: 0, to: lastIdx + 2 });
+                    // Tiny right pad (half a bar) so the latest marker isn't clipped
+                    // by the edge — small enough not to be a real "dead zone", and the
+                    // overlay's nearest-point mapping keeps the latest NAV reachable.
+                    chart.timeScale().setVisibleLogicalRange({ from: 0, to: lastIdx + 0.6 });
                 } catch (e) { }
             };
             pinMini();
@@ -1812,15 +1818,39 @@
                 if (!chartData.length) return;
                 const rect = miniOverlay.getBoundingClientRect();
                 const lx = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
-                // Map the cursor fraction straight to the data index. This is robust even if the
-                // chart's internal coordinate space drifts from the canvas after a card reflow —
-                // the right edge always resolves to the latest NAV point.
-                const idx = rect.width > 0
-                    ? Math.max(0, Math.min(chartData.length - 1, Math.round((lx / rect.width) * (chartData.length - 1))))
-                    : chartData.length - 1;
+                const n = chartData.length;
+                const ts = chart.timeScale();
+                // On tiny cards the chart's internal coordinate space can transiently
+                // desync from the canvas after a grid reflow (the newest points get
+                // mapped off-canvas). Detect that by checking whether the last point is
+                // actually drawn on-canvas, then pick the resolver that is correct for
+                // the current state:
+                //   • SYNCED  -> exact cursor→index via coordinateToLogical, and anchor
+                //     the tooltip + native crosshair marker on the resolved point (they
+                //     stay aligned with the cursor).
+                //   • DESYNCED-> map the cursor fraction to the index (the right edge
+                //     always resolves to the latest NAV) and skip the native marker so
+                //     it can't draw off-canvas; tooltip follows the cursor.
+                let xLast = null;
+                try { xLast = ts.timeToCoordinate(chartData[n - 1].time); } catch (e) { }
+                const synced = xLast != null && xLast >= 0 && xLast <= rect.width + 1;
+                let idx;
+                if (synced) {
+                    const logical = ts.coordinateToLogical(lx);
+                    idx = (logical == null) ? n - 1 : Math.round(logical);
+                } else {
+                    idx = rect.width > 0 ? Math.round((lx / rect.width) * (n - 1)) : n - 1;
+                }
+                idx = Math.max(0, Math.min(n - 1, idx));
                 const pt = chartData[idx];
-                try { chart.setCrosshairPosition(pt.value, pt.time, series); } catch (e) { }
-                showMiniTip(pt, lx, rect.width);
+                let px = lx;
+                if (synced) {
+                    try { chart.setCrosshairPosition(pt.value, pt.time, series); } catch (e) { }
+                    try { const c = ts.timeToCoordinate(pt.time); if (c != null) px = c; } catch (e) { }
+                } else {
+                    try { chart.clearCrosshairPosition(); } catch (e) { }
+                }
+                showMiniTip(pt, px, rect.width);
             });
             miniOverlay.addEventListener('mouseleave', () => {
                 try { chart.clearCrosshairPosition(); } catch (e) { }

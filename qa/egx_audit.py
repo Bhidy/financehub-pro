@@ -244,6 +244,80 @@ async def suite_write_contract():
 
 
 # --------------------------------------------------------------------------- #
+# 14.1d FUND WRITE CONTRACT (requires DB) — dry-run the fund_risk_metrics widened
+#   upsert (AFTER applying its analytics migration) + the fund_feedback writes
+#   against the LIVE schema in a rolled-back transaction. Covers the analytics-
+#   columns widening per AGENTS.md's write-contract rule, so column/type/arity drift
+#   fails HERE (per-PR) instead of only on backend startup after deploy.
+# --------------------------------------------------------------------------- #
+def _load_module(relpath: str, name: str):
+    import importlib.util
+    path = os.path.join(os.path.dirname(__file__), "..", relpath)
+    spec = importlib.util.spec_from_file_location(name, path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+async def suite_fund_write_contract():
+    if not DATABASE_URL:
+        print("\n14.1d FUND WRITE CONTRACT: skipped (no DATABASE_URL)")
+        return
+    import asyncpg
+    from datetime import date
+    print("\n14.1d FUND WRITE CONTRACT (fund_risk_metrics + fund_feedback vs live schema)")
+    try:
+        cfm = _load_module("backend-core/scripts/compute_fund_metrics.py", "cfm_probe")
+        ffs = _load_module("backend-core/app/api/v1/endpoints/fund_feedback_sql.py", "ffs_probe")
+    except Exception as e:  # noqa: BLE001 — deps missing is not schema drift
+        skip("fund write-contract (module import failed)", f"{type(e).__name__}: {e}")
+        return
+    try:
+        conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0, command_timeout=20)
+    except (asyncpg.CannotConnectNowError, asyncpg.PostgresConnectionError,
+            OSError, asyncio.TimeoutError) as e:
+        skip("fund write-contract (DB unreachable — transient infra)", type(e).__name__)
+        return
+    tr = conn.transaction()
+    await tr.start()
+    try:
+        # Apply base DDL + analytics migration, then EXECUTE the widened upsert against
+        # the post-migrate schema (validates every column/type/arity). Rolled back after.
+        await conn.execute(cfm.DDL)
+        await conn.execute(cfm._MIGRATE)
+        probe_vals = []
+        for c in cfm._COLS:
+            if c == "latest_date":
+                probe_vals.append(date(2000, 1, 1))
+            elif c == "points":
+                probe_vals.append(1)
+            elif c == "analytics_suppressed":
+                probe_vals.append(False)
+            else:
+                probe_vals.append(1.0)
+        await conn.execute(cfm._UPSERT, "__QAFUND__", *probe_vals)
+        check(f"fund_risk_metrics widened upsert matches live schema ({len(cfm._COLS)} cols, post-migrate)", True)
+
+        # fund_feedback: exercise the EXACT insert / dedupe-select / update / summary SQL.
+        await conn.execute(ffs.FEEDBACK_DDL)
+        await conn.execute(ffs.FEEDBACK_INSERT, "__QAFUND__", True, None, "__qa_fp__", "qa")
+        row = await conn.fetchrow(ffs.FEEDBACK_SELECT_RECENT, "__QAFUND__", "__qa_fp__")
+        await conn.execute(ffs.FEEDBACK_UPDATE, row["id"], False, "qa comment")
+        await conn.fetchrow(ffs.FEEDBACK_SUMMARY, "__QAFUND__")
+        check("fund_feedback insert/dedupe/update/summary match live schema", True)
+    except asyncpg.ReadOnlySQLTransactionError:
+        # Read-only replica/incident: DDL can't run, but that is NOT drift. The migration
+        # is idempotent ADD COLUMN IF NOT EXISTS and re-validates when writable.
+        skip("fund write-contract execute-probe (DB read-only — platform incident)",
+             "re-runs when writable; not schema drift")
+    except Exception as e:  # noqa: BLE001 — any structural mismatch is a No-Go
+        check("fund writes match live schema", False, f"{type(e).__name__}: {e}")
+    finally:
+        await tr.rollback()  # never persist the probe rows
+        await conn.close()
+
+
+# --------------------------------------------------------------------------- #
 # 14.1 / live: validate the real TV client's own gates
 # --------------------------------------------------------------------------- #
 async def suite_live():
@@ -314,6 +388,7 @@ async def main(suite: str):
         await suite_resilience()
     if suite in ("all", "contract", "dataquality"):
         await suite_write_contract()        # DB dry-run: SQL vs live schema
+        await suite_fund_write_contract()   # DB dry-run: fund_risk_metrics + fund_feedback
     if suite in ("all", "live"):
         await suite_live()
     if suite in ("all", "dataquality"):

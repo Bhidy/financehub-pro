@@ -14,6 +14,20 @@ type Choice = 'yes' | 'no';
 
 const NOOP_SUBSCRIBE = () => () => {};
 
+/** The app-wide per-visitor id (same localStorage key the AI-chat / guest hooks use).
+ *  Sending it lets the backend de-dupe feedback per REAL visitor — without it the
+ *  server sees only the Vercel proxy IP and different visitors overwrite each other. */
+function deviceFp(): string {
+    try {
+        let fp = localStorage.getItem('fh_device_fp');
+        if (!fp) {
+            fp = `${Math.random().toString(36).slice(2, 10)}-${Math.random().toString(36).slice(2, 10)}`;
+            localStorage.setItem('fh_device_fp', fp);
+        }
+        return fp;
+    } catch { return ''; }
+}
+
 export default function FundFeedback({ fundId, t }: { fundId: string | number; t: FundLabels }) {
     const ax = t.ax;
     const storageKey = `fund_fb_${fundId}`;
@@ -37,9 +51,12 @@ export default function FundFeedback({ fundId, t }: { fundId: string | number; t
     const send = (helpful: boolean, body: string) => {
         // Fire-and-forget; the UX does not depend on the response.
         try {
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            const fp = deviceFp();
+            if (fp) headers['X-Device-Fingerprint'] = fp; // proxy forwards → real per-visitor dedupe key
             fetch(`/api/proxy/funds/${encodeURIComponent(String(fundId))}/feedback`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({ helpful, comment: body.slice(0, 500) }),
                 keepalive: true,
             }).catch(() => { /* endpoint may be mid-deploy — ignore */ });

@@ -17,24 +17,13 @@ from pydantic import BaseModel
 import logging
 
 from app.db.session import db
+from app.api.v1.endpoints.fund_feedback_sql import (
+    FEEDBACK_DDL, FEEDBACK_INSERT, FEEDBACK_UPDATE, FEEDBACK_SELECT_RECENT, FEEDBACK_SUMMARY)
 
 router = APIRouter(prefix="/funds", tags=["funds"])
 logger = logging.getLogger(__name__)
 
 _ensured = False
-
-_DDL = """
-CREATE TABLE IF NOT EXISTS fund_feedback (
-    id          BIGSERIAL PRIMARY KEY,
-    fund_id     TEXT NOT NULL,
-    helpful     BOOLEAN NOT NULL,
-    comment     TEXT,
-    fingerprint TEXT,
-    user_agent  TEXT,
-    created_at  TIMESTAMPTZ DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_fund_feedback_fund ON fund_feedback (fund_id);
-"""
 
 
 class FeedbackIn(BaseModel):
@@ -49,7 +38,7 @@ async def _ensure_table() -> None:
     if _ensured:
         return
     try:
-        await db.execute(_DDL)
+        await db.execute(FEEDBACK_DDL)
         _ensured = True
     except Exception as e:  # noqa: BLE001 - never let DDL break a public POST
         logger.warning(f"fund_feedback DDL skipped: {e}")
@@ -72,23 +61,11 @@ async def submit_feedback(fund_id: str, payload: FeedbackIn, request: Request):
         # can't be matched, so they insert (rare, acceptable).
         existing = None
         if fp:
-            existing = await db.fetch_one(
-                "SELECT id FROM fund_feedback WHERE fund_id = $1 AND fingerprint = $2 "
-                "AND created_at > NOW() - INTERVAL '2 days' ORDER BY created_at DESC LIMIT 1",
-                fid, fp,
-            )
+            existing = await db.fetch_one(FEEDBACK_SELECT_RECENT, fid, fp)
         if existing:
-            await db.execute(
-                "UPDATE fund_feedback SET helpful = $2, comment = COALESCE($3, comment), "
-                "created_at = NOW() WHERE id = $1",
-                existing["id"], helpful, comment,
-            )
+            await db.execute(FEEDBACK_UPDATE, existing["id"], helpful, comment)
         else:
-            await db.execute(
-                "INSERT INTO fund_feedback (fund_id, helpful, comment, fingerprint, user_agent) "
-                "VALUES ($1, $2, $3, $4, $5)",
-                fid, helpful, comment, fp, ua,
-            )
+            await db.execute(FEEDBACK_INSERT, fid, helpful, comment, fp, ua)
         return {"status": "ok"}
     except Exception as e:  # noqa: BLE001 - widget UX is best-effort; never 500
         logger.warning(f"fund_feedback write failed for {fund_id}: {e}")
@@ -99,13 +76,7 @@ async def submit_feedback(fund_id: str, payload: FeedbackIn, request: Request):
 async def feedback_summary(fund_id: str):
     """Aggregate votes for a fund (admin / future insight use). Public, read-only."""
     try:
-        row = await db.fetch_one(
-            "SELECT COUNT(*) AS total, "
-            "COUNT(*) FILTER (WHERE helpful) AS helpful, "
-            "COUNT(*) FILTER (WHERE NOT helpful) AS not_helpful "
-            "FROM fund_feedback WHERE fund_id = $1",
-            str(fund_id)[:50],
-        )
+        row = await db.fetch_one(FEEDBACK_SUMMARY, str(fund_id)[:50])
         if not row:
             return {"total": 0, "helpful": 0, "not_helpful": 0}
         return {"total": row["total"], "helpful": row["helpful"], "not_helpful": row["not_helpful"]}

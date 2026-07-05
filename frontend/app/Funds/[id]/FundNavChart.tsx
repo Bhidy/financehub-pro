@@ -218,35 +218,35 @@ export default function FundNavChart({
                     });
 
                 // Resolve the nearest real data point for a viewport clientX.
-                // Hybrid: trust the chart's coordinate space when it is synced with
-                // the visible canvas (precise, keeps the crosshair marker glued to
-                // the cursor); fall back to the visible-pane fraction when a residual
-                // mount desync maps the newest points off-canvas — the fraction path
-                // always resolves the pane's right edge to the latest point, so the
-                // latest NAV is reachable INSIDE the plot regardless of sync state.
-                const resolve = (
-                    clientX: number
-                ): { pt: Point; idx: number; synced: boolean; paneLeft: number; paneWidth: number } | null => {
+                //
+                // We map the cursor using the ACTUAL drawn positions of the first and
+                // last points (timeToCoordinate), NOT coordinateToLogical. Rationale:
+                // timeToCoordinate is always consistent with the rendered line, whereas
+                // coordinateToLogical can drift into its own coordinate space after the
+                // grid settles — which is exactly what pushed the latest point's
+                // hit-target ~30–100px past the visible plot edge. With uniform
+                // (index-based) bar spacing the map is linear, so this is exact and the
+                // right edge always resolves to the latest NAV, inside the plot.
+                const resolve = (clientX: number): { pt: Point; idx: number; xAt: (i: number) => number | null } | null => {
                     const view = viewRef.current;
                     if (!view.length) return null;
                     const paneCanvas = host.querySelector('canvas');
                     const rect = (paneCanvas ?? host).getBoundingClientRect();
                     const x = clientX - rect.left;
-                    const w = rect.width;
                     const n = view.length;
                     const ts = chart.timeScale();
-                    const xLast = ts.timeToCoordinate(view[n - 1].time);
-                    const synced = xLast != null && xLast >= -1 && xLast <= w + 1;
+                    const xAt = (i: number) => ts.timeToCoordinate(view[i].time) as number | null;
+                    const xFirst = xAt(0);
+                    const xLast = xAt(n - 1);
                     let idx: number;
-                    if (synced) {
-                        const logical = ts.coordinateToLogical(x);
-                        idx = logical == null ? n - 1 : Math.round(logical);
+                    if (n > 1 && xFirst != null && xLast != null && xLast > xFirst) {
+                        idx = Math.round(((x - xFirst) / (xLast - xFirst)) * (n - 1));
                     } else {
-                        idx = w > 0 ? Math.round((x / w) * (n - 1)) : n - 1;
+                        idx = n - 1;
                     }
                     if (idx < 0) idx = 0;
                     if (idx > n - 1) idx = n - 1;
-                    return { pt: view[idx], idx, synced, paneLeft: rect.left, paneWidth: w };
+                    return { pt: view[idx], idx, xAt };
                 };
 
                 const showAt = (clientX: number) => {
@@ -256,40 +256,26 @@ export default function FundNavChart({
                         hide();
                         return;
                     }
-                    const { pt, idx, synced, paneWidth } = res;
-                    const ts = chart.timeScale();
-                    const n = viewRef.current.length;
-                    // Point's visible x within the pane. Uniform (index-based) bar
-                    // spacing makes the fraction position exact and desync-proof.
-                    const fracX = n > 1 ? (idx / (n - 1)) * paneWidth : paneWidth;
-                    let px = fracX;
-                    if (synced) {
+                    const { pt, idx, xAt } = res;
+                    // Crosshair marker + tooltip both anchor on the point's drawn x, so
+                    // they stay glued to each other and to the rendered line.
+                    try {
                         // setCrosshairPosition lives on the chart, not the series.
-                        try {
-                            chart.setCrosshairPosition(Number(pt.value), pt.time, series);
-                        } catch {
-                            /* chart torn down mid-move */
-                        }
-                        const c = ts.timeToCoordinate(pt.time);
-                        if (c != null) px = c;
-                    } else {
-                        // The native marker would draw off-canvas here — drop it and
-                        // anchor the tooltip on the point's true visible position.
-                        try {
-                            chart.clearCrosshairPosition();
-                        } catch {
-                            /* already disposed */
-                        }
+                        chart.setCrosshairPosition(Number(pt.value), pt.time, series);
+                    } catch {
+                        /* chart torn down mid-move */
                     }
+                    const px = xAt(idx);
                     const py = series.priceToCoordinate(Number(pt.value));
                     const dEl = tip.querySelector('[data-d]');
                     const vEl = tip.querySelector('[data-v]');
                     if (dEl) dEl.textContent = fmtDate(pt.time);
                     if (vEl) vEl.textContent = `${currency} ${Number(pt.value).toFixed(4)}`;
                     const w = host.clientWidth;
+                    const left = px == null ? clientX : px;
                     // Anchor tooltip on the resolved point (never the raw cursor),
                     // clamped inside the plot so it can't overflow the card.
-                    tip.style.left = `${Math.min(Math.max(px, 78), Math.max(w - 78, 78))}px`;
+                    tip.style.left = `${Math.min(Math.max(left, 78), Math.max(w - 78, 78))}px`;
                     tip.style.top = `${Math.max((py == null ? 24 : py) - 12, 6)}px`;
                     tip.classList.add('visible');
                 };

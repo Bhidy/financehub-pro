@@ -128,6 +128,12 @@
             gap: 1.75rem;
             align-items: start;
         }
+        .funds-results { min-width: 0; }
+        /* Constrained results grid (own class — grid-cols-1/2xl:grid-cols-2 are NOT
+           in the committed tw-marketplace.css). minmax(0,1fr) stops the track from
+           growing to the chart canvas's intrinsic width. */
+        .funds-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+        @media (min-width: 1600px) { .funds-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
         @media (max-width: 1080px) {
             .funds-layout { grid-template-columns: minmax(0, 1fr); }
         }
@@ -256,6 +262,9 @@
             border: 1px solid var(--c-border);
             box-shadow: var(--shadow-premium);
             transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease;
+            /* Grid items default to min-width:auto and grow to their widest content
+               (the chart canvas). Force them to honour the grid track instead. */
+            min-width: 0;
         }
 
         .fund-card:hover {
@@ -532,7 +541,15 @@
         .mini-chart {
             position: relative;
             min-height: 5.6rem;
+            /* Constrain the lightweight-charts canvas to the card width — without
+               this, the canvas's intrinsic width forces the grid card wider than
+               its column (overflow) and the chart's ResizeObserver oscillates. */
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
         }
+        .mini-chart-canvas { max-width: 100%; overflow: hidden; }
 
         .mini-chart::before {
             content: "";
@@ -831,7 +848,7 @@
 
                     <div id="activeFilters" class="mb-6 flex flex-wrap gap-2"></div>
 
-                    <div id="fundsGrid" class="grid gap-5 2xl:grid-cols-2"></div>
+                    <div id="fundsGrid" class="funds-grid"></div>
 
                     <div id="fundsTableShell" class="hidden table-shell overflow-hidden rounded-[2rem]">
                         <div class="overflow-x-auto">

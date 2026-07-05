@@ -54,13 +54,36 @@ CREATE TABLE IF NOT EXISTS fund_risk_metrics (
     max_drawdown      NUMERIC,
     nav_52w_high      NUMERIC,
     nav_52w_low       NUMERIC,
+    cagr                 NUMERIC,
+    return_inception     NUMERIC,
+    inception_years      NUMERIC,
+    downside_deviation   NUMERIC,
+    best_period          NUMERIC,
+    worst_period         NUMERIC,
+    positive_periods_pct NUMERIC,
+    avg_gain             NUMERIC,
+    avg_loss             NUMERIC,
+    avg_period_days      NUMERIC,
+    analytics_suppressed BOOLEAN DEFAULT FALSE,
     computed_at       TIMESTAMPTZ DEFAULT NOW()
 );
 """
 
+# The analytics columns were added AFTER fund_risk_metrics shipped, so in production
+# `CREATE TABLE IF NOT EXISTS` is a no-op and will NOT create them. Add each column
+# idempotently (asyncpg runs multi-statement simple queries when passed no args).
+_ANALYTICS_COLS = ("cagr", "return_inception", "inception_years", "downside_deviation",
+                   "best_period", "worst_period", "positive_periods_pct",
+                   "avg_gain", "avg_loss", "avg_period_days")
+_MIGRATE = "\n".join(
+    f"ALTER TABLE fund_risk_metrics ADD COLUMN IF NOT EXISTS {c} NUMERIC;"
+    for c in _ANALYTICS_COLS) + (
+    "\nALTER TABLE fund_risk_metrics ADD COLUMN IF NOT EXISTS analytics_suppressed BOOLEAN DEFAULT FALSE;")
+
 _COLS = ("points", "latest_nav", "latest_date", "return_1m", "return_3m",
          "return_6m", "return_ytd", "return_1y", "return_3y", "return_5y",
-         "volatility_annual", "max_drawdown", "nav_52w_high", "nav_52w_low")
+         "volatility_annual", "max_drawdown", "nav_52w_high", "nav_52w_low") \
+    + _ANALYTICS_COLS + ("analytics_suppressed",)
 
 _UPSERT = (
     "INSERT INTO fund_risk_metrics (fund_id, " + ", ".join(_COLS) + ", computed_at) "
@@ -116,6 +139,7 @@ async def compute_one(conn, fund_id, name, dry_run) -> bool:
         "SELECT date, nav FROM nav_history WHERE fund_id = $1 ORDER BY date", fund_id)
     series = [(r["date"], r["nav"]) for r in rows]
     m = compute_all(series)
+    m["analytics_suppressed"] = False
     # Skip ONLY when the fund genuinely lacks data. A None max_drawdown can also mean
     # the output backstop suppressed an absurd value — in that case we STILL upsert
     # (with NULL metrics) so the fund's stale/garbage row is corrected, not left behind.
@@ -125,9 +149,34 @@ async def compute_one(conn, fund_id, name, dry_run) -> bool:
     # down > ~10% or run > ~6% volatility — such a value is a redenomination artifact.
     if _MM_RE.search(name or ""):
         dd, vol = m.get("max_drawdown"), m.get("volatility_annual")
-        if (dd is not None and dd < -10) or (vol is not None and vol > 6):
-            m["max_drawdown"] = None
-            m["volatility_annual"] = None
+        # Fire on an artifact detected by the type-aware threshold OR when a metric is
+        # already None: a SEVERE redenomination step trips compute_all's global backstop
+        # (vol>100 / dd<-90) FIRST, nulling that metric — which would otherwise stop this
+        # guard from firing and leave the corrupted CAGR/returns exposed (suppressed=False).
+        # A healthy cash fund keeps small, non-None dd/vol, so it is unaffected.
+        if (dd is None or dd < -10) or (vol is None or vol > 6):
+            # A redenomination artifact corrupts EVERY magnitude-based metric, not just
+            # drawdown/volatility — so null the whole analytics set. Otherwise a cash fund
+            # could still surface a false CAGR / stress-test / calculator figure downstream.
+            for _k in ("max_drawdown", "volatility_annual", "cagr", "return_inception",
+                       "downside_deviation", "best_period", "worst_period",
+                       "avg_gain", "avg_loss"):
+                m[_k] = None
+            # The return windows still hold artifact-driven values that the frontend's
+            # performance score / hasEnoughData would use — so hard-suppress the whole
+            # analytics layer for this guarded row (the flag wins on the client).
+            m["analytics_suppressed"] = True
+    # ANY fund (not just cash): if compute_all's global backstop nulled a risk metric on
+    # a fund with enough history to have one (>=8 pts guarantees vol/drawdown compute),
+    # the NAV series is corrupt beyond despiking. The backstop clears vol/drawdown but
+    # NOT the CAGR/return-derived analytics — so suppress those too; otherwise e.g. an
+    # equity fund could still surface a false score.
+    if not m["analytics_suppressed"] and m["points"] >= 8 and (
+            m.get("volatility_annual") is None or m.get("max_drawdown") is None):
+        for _k in ("cagr", "return_inception", "downside_deviation", "best_period",
+                   "worst_period", "avg_gain", "avg_loss"):
+            m[_k] = None
+        m["analytics_suppressed"] = True
     if dry_run:
         return True
     await conn.execute(_UPSERT, fund_id, *[m[c] for c in _COLS])
@@ -143,7 +192,8 @@ async def run(ids=None, limit=None, dry_run=False, min_updated=1):
                   "writes are restored. Not an error.", flush=True)
             return 0
         if not dry_run:
-            await conn.execute(DDL)  # self-migrating companion table (idempotent)
+            await conn.execute(DDL)       # self-migrating companion table (idempotent)
+            await conn.execute(_MIGRATE)  # add analytics columns on pre-existing tables
 
         universe = await get_universe(conn, ids, limit)
         stats = {"universe": len(universe), "updated": 0, "skipped": 0, "failures": []}

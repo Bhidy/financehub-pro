@@ -213,10 +213,17 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
         if (m) {
             row.max_drawdown = m.max_drawdown;
             row.volatility_annual = m.volatility_annual;
-            for (const k of ['nav_52w_high', 'nav_52w_low', 'return_1m', 'return_3m',
+            // Phase-2 analytics primitives live ONLY in fund_risk_metrics — take verbatim.
+            for (const k of ['cagr', 'return_inception', 'inception_years', 'downside_deviation',
+                'best_period', 'worst_period', 'positive_periods_pct', 'avg_gain', 'avg_loss',
+                'avg_period_days', 'analytics_suppressed']) {
+                row[k] = m[k];
+            }
+            for (const k of ['nav_52w_high', 'nav_52w_low', 'return_1m', 'return_3m', 'return_6m',
                 'return_ytd', 'return_1y', 'return_3y', 'return_5y']) {
                 if (row[k] === null || row[k] === undefined) row[k] = m[k];
             }
+            if ((row.nav_points === null || row.nav_points === undefined) && m.points != null) row.nav_points = m.points;
         }
     } catch { /* side table isolated — never break the core payload */ }
     // Harvested metadata that funds_view doesn't carry (prospectus / manager person /
@@ -252,10 +259,12 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
         if (mp) row.manager_profile = mp;
     } catch { /* isolated */ }
     toNum(row, [
-        'latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_1y', 'return_3y', 'return_5y',
+        'latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_6m', 'return_1y', 'return_3y', 'return_5y',
         'expense_ratio', 'fee_management', 'fee_subscription', 'fee_redemption',
         'nav_52w_high', 'nav_52w_low', 'aum', 'aum_millions', 'min_subscription', 'par_value',
-        'max_drawdown', 'volatility_annual',
+        'max_drawdown', 'volatility_annual', 'nav_points',
+        'cagr', 'return_inception', 'inception_years', 'downside_deviation',
+        'best_period', 'worst_period', 'positive_periods_pct', 'avg_gain', 'avg_loss', 'avg_period_days',
     ]);
     return row;
 });

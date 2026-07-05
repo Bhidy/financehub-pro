@@ -7,6 +7,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import FundPageClient, { type FundClientData } from './FundPageClient';
 import { fundLabels, fundTypeLabel, riskLabel, freqLabel, type Lang } from './fund-i18n';
 import { fundLogo } from '@/lib/fund-logos';
+import { buildFundAnalytics, type AnalyticsInput } from '@/lib/fund-analytics';
 
 /**
  * Shared, per-URL bilingual renderer for the fund-profile page. Both routes
@@ -223,6 +224,7 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
         [
             [t.maxDrawdown, num(fund, 'max_drawdown')],
             [t.volatility, num(fund, 'volatility_annual')],
+            [t.downsideDeviation, num(fund, 'downside_deviation')],
         ] as Array<[string, number | null]>
     )
         .filter((r): r is [string, number] => r[1] !== null)
@@ -249,7 +251,9 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
               ? { label: `${perfCards[0].label} ${t.returnLabel}`, value: perfCards[0].value, negative: perfCards[0].negative }
               : null;
 
-    const chips = [fundTypeValue, riskValue, isTrue(fund, 'is_shariah') ? t.shariah : null].filter(
+    // Risk-level badge removed from hero chips by design — the 0-100 Risk score +
+    // Advanced-risk section now carry risk far more precisely than a "High" pill.
+    const chips = [fundTypeValue, isTrue(fund, 'is_shariah') ? t.shariah : null].filter(
         (c): c is string => !!c
     );
 
@@ -333,6 +337,59 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
     const managerLine = manager ? `${t.managedByPrefix} ${manager}` : null;
     const monogram = (name || 'F').trim().charAt(0).toUpperCase();
 
+    // ---- Analytics layer (Scoring / Suitability / Insights / Stress-test / Calculator) ----
+    // Pure derivation from primitives fund_metrics.py already stored; see lib/fund-analytics.ts.
+    const analyticsInput: AnalyticsInput = {
+        cagr: num(fund, 'cagr'),
+        returnInception: num(fund, 'return_inception'),
+        inceptionYears: num(fund, 'inception_years'),
+        volatility: num(fund, 'volatility_annual'),
+        downsideDeviation: num(fund, 'downside_deviation'),
+        maxDrawdown: num(fund, 'max_drawdown'),
+        bestPeriod: num(fund, 'best_period'),
+        worstPeriod: num(fund, 'worst_period'),
+        positivePeriodsPct: num(fund, 'positive_periods_pct'),
+        avgGain: num(fund, 'avg_gain'),
+        avgLoss: num(fund, 'avg_loss'),
+        avgPeriodDays: num(fund, 'avg_period_days'),
+        feeManagement: num(fund, 'fee_management'),
+        expenseRatio: num(fund, 'expense_ratio'),
+        navPoints,
+        latestNav: nav,
+        return1y: num(fund, 'return_1y'),
+        return3y: num(fund, 'return_3y'),
+        return5y: num(fund, 'return_5y'),
+        fundType: str(fund, 'fund_type_en') || rawType,
+        classification: classificationRaw,
+        strategy: str(fund, 'investment_strategy_en') || strategy,
+    };
+    // Cash-fund redenomination-artifact guard (compute_fund_metrics.py) — hard-suppress
+    // the whole analytics layer so a guarded row can never surface a false score.
+    const analyticsSuppressed = isTrue(fund, 'analytics_suppressed');
+    const analytics = buildFundAnalytics(analyticsInput, currency, analyticsSuppressed);
+
+    // CAGR headline stat (★ requested feature).
+    const cagrVal = num(fund, 'cagr');
+    const retIncep = num(fund, 'return_inception');
+    const cagrStat = cagrVal !== null
+        ? { value: fmtPct(cagrVal), years: num(fund, 'inception_years'), sinceInception: retIncep !== null ? fmtPct(retIncep) : null }
+        : null;
+
+    // Best/worst-period movement panel (labelled by the series' real cadence).
+    const periodDays = num(fund, 'avg_period_days');
+    const cadence: 'day' | 'week' | 'period' =
+        periodDays === null ? 'period' : periodDays <= 2.5 ? 'day' : periodDays <= 10 ? 'week' : 'period';
+    const bp = num(fund, 'best_period');
+    const wp = num(fund, 'worst_period');
+    const ag = num(fund, 'avg_gain');
+    const al = num(fund, 'avg_loss');
+    // Raw numbers (not formatted) so the client can sign (+/−) and colour them.
+    const movement = bp !== null || wp !== null ? { best: bp, worst: wp, avgGain: ag, avgLoss: al, cadence } : null;
+
+    // Hero "Compare" CTA → the closest peer's comparison (EN-only compare route for now,
+    // matching resolvePeers; never /ar-prefixed, which would 404).
+    const compareHref = peers.length > 0 ? peers[0].compareHref : '/Funds';
+
     return {
         t,
         lang,
@@ -366,6 +423,10 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
         peers,
         faqs,
         isShariah: isTrue(fund, 'is_shariah'),
+        analytics,
+        cagrStat,
+        movement,
+        compareHref,
     };
 }
 
@@ -401,9 +462,12 @@ async function resolvePeers(fund: Fund, lang: Lang): Promise<FundClientData['pee
             .slice(0, 4);
     }
     const myId = Number(fund.fund_id);
+    // The comparison route exists ONLY at /Funds/vs/... (English). There is no
+    // /ar/Funds/vs route or rewrite, so an /ar-prefixed compare URL 404s. Link to the
+    // existing route for both locales until a bilingual compare page ships.
     return peers.map((p) => ({
         ...p,
-        compareHref: `${arPrefix}/Funds/vs/${Math.min(myId, p.id)}-vs-${Math.max(myId, p.id)}`,
+        compareHref: `/Funds/vs/${Math.min(myId, p.id)}-vs-${Math.max(myId, p.id)}`,
     }));
 }
 

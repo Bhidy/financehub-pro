@@ -222,6 +222,103 @@ def nav_52w_high_low(series) -> tuple[Optional[float], Optional[float]]:
     return round(max(window), 6), round(min(window), 6)
 
 
+def _period_returns(pts: list[tuple[date, float]]) -> tuple[list[float], list[int]]:
+    """Simple period-over-period returns and their day-gaps for a CLEAN series.
+    Shared by every consistency/downside metric so they all see identical returns."""
+    rets: list[float] = []
+    gaps: list[int] = []
+    for (d0, v0), (d1, v1) in zip(pts, pts[1:]):
+        if v0 <= 0:
+            continue
+        rets.append(v1 / v0 - 1.0)
+        gaps.append((d1 - d0).days)
+    return rets, gaps
+
+
+def avg_period_days(series) -> Optional[float]:
+    """Average day-gap between observations (~7 weekly, ~1-2 daily). Lets the UI
+    label best/worst as 'day' vs 'week' honestly instead of guessing cadence."""
+    pts = _clean(series)
+    if len(pts) < 2:
+        return None
+    _, gaps = _period_returns(pts)
+    gaps = [g for g in gaps if g > 0]
+    if not gaps:
+        return None
+    return round(sum(gaps) / len(gaps), 2)
+
+
+def cagr_pct(series) -> Optional[float]:
+    """Compound annual growth rate (%): pure geometric annualization of realized
+    growth from first to last usable NAV. RF-free and benchmark-free, so it is
+    SAFE to publish (unlike Sharpe/alpha). None under ~90 days of history —
+    annualizing a sub-quarter series manufactures meaningless extremes."""
+    pts = _clean(series)
+    if len(pts) < 2:
+        return None
+    (d0, v0), (d1, v1) = pts[0], pts[-1]
+    years = (d1 - d0).days / _YEAR_DAYS
+    if years < 0.25 or v0 <= 0 or v1 <= 0:
+        return None
+    return round(((v1 / v0) ** (1.0 / years) - 1.0) * 100.0, 4)
+
+
+def best_worst_period_pct(series) -> tuple[Optional[float], Optional[float]]:
+    """(best, worst) single-period simple return as percents; (None, None) with
+    fewer than 2 returns. 'Period' = the series' native cadence (day/week)."""
+    pts = _clean(series)
+    if len(pts) < 3:
+        return None, None
+    rets, _ = _period_returns(pts)
+    if len(rets) < 2:
+        return None, None
+    return round(max(rets) * 100.0, 4), round(min(rets) * 100.0, 4)
+
+
+def positive_periods_pct(series) -> Optional[float]:
+    """Share of periods with a strictly positive return (%) — a consistency signal
+    used by the Stability score (higher = steadier)."""
+    pts = _clean(series)
+    if len(pts) < 3:
+        return None
+    rets, _ = _period_returns(pts)
+    if not rets:
+        return None
+    up = sum(1 for r in rets if r > 0)
+    return round(up / len(rets) * 100.0, 4)
+
+
+def avg_gain_loss_pct(series) -> tuple[Optional[float], Optional[float]]:
+    """(avg positive period, avg negative period) returns as percents; either may
+    be None if the series never rose / never fell."""
+    pts = _clean(series)
+    if len(pts) < 3:
+        return None, None
+    rets, _ = _period_returns(pts)
+    gains = [r for r in rets if r > 0]
+    losses = [r for r in rets if r < 0]
+    ag = round(sum(gains) / len(gains) * 100.0, 4) if gains else None
+    al = round(sum(losses) / len(losses) * 100.0, 4) if losses else None
+    return ag, al
+
+
+def downside_deviation_pct(series) -> Optional[float]:
+    """Annualized downside deviation of periodic returns vs a 0% target. RF-free
+    (target = 0) and annualized by the series' REAL cadence like volatility, so it
+    reads a Sortino-style downside risk WITHOUT assuming an EGP risk-free rate."""
+    pts = _clean(series)
+    if len(pts) < 3:
+        return None
+    rets, gaps = _period_returns(pts)
+    gaps = [g for g in gaps if g > 0]
+    if len(rets) < 2 or not gaps:
+        return None
+    downs = [min(r, 0.0) for r in rets]
+    dvar = sum(x * x for x in downs) / len(downs)  # population downside variance vs 0
+    periods_per_year = _YEAR_DAYS / (sum(gaps) / len(gaps))
+    return round(math.sqrt(dvar) * math.sqrt(periods_per_year) * 100.0, 4)
+
+
 def compute_all(series) -> dict:
     """Bundle every metric for one fund. Sharpe/alpha/beta are intentionally
     OMITTED here: they need an EGX benchmark series + a real EGP risk-free rate,
@@ -239,6 +336,17 @@ def compute_all(series) -> dict:
         vol = None
     if dd is not None and dd < -90:
         dd = None
+    # --- Phase-2 analytics primitives (all RF-free / benchmark-free, safe to publish) ---
+    cagr = cagr_pct(pts)
+    dsd = downside_deviation_pct(pts)
+    if dsd is not None and dsd > 100:  # same corruption backstop as volatility
+        dsd = None
+    best_p, worst_p = best_worst_period_pct(pts)
+    pos_pct = positive_periods_pct(pts)
+    avg_gain, avg_loss = avg_gain_loss_pct(pts)
+    period_days = avg_period_days(pts)
+    ret_incep = total_return_pct(pts)
+    incep_years = round((pts[-1][0] - pts[0][0]).days / _YEAR_DAYS, 2) if len(pts) >= 2 else None
     return {
         "points": len(pts),
         "latest_nav": round(pts[-1][1], 6) if pts else None,
@@ -256,4 +364,15 @@ def compute_all(series) -> dict:
         "max_drawdown": dd,
         "nav_52w_high": hi,
         "nav_52w_low": lo,
+        # analytics layer (drives the Scoring / Suitability / Stress-test / Calculator UI)
+        "cagr": cagr,
+        "return_inception": ret_incep,
+        "inception_years": incep_years,
+        "downside_deviation": dsd,
+        "best_period": best_p,
+        "worst_period": worst_p,
+        "positive_periods_pct": pos_pct,
+        "avg_gain": avg_gain,
+        "avg_loss": avg_loss,
+        "avg_period_days": period_days,
     }

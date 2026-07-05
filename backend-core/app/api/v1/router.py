@@ -57,3 +57,8 @@ from app.api.v1.endpoints import subscriptions, stripe_webhooks
 api_router.include_router(subscriptions.router, prefix="/subscriptions", tags=["subscriptions"])
 api_router.include_router(stripe_webhooks.router, prefix="/stripe", tags=["stripe"])
 
+# Fund feedback ("was this helpful?") — router carries its own /funds prefix →
+# final path /api/v1/funds/{id}/feedback (matches the frontend /api/proxy call).
+from app.api.v1.endpoints import funds
+api_router.include_router(funds.router, tags=["funds"])
+

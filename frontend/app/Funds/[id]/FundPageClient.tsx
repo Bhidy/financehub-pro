@@ -3,6 +3,11 @@
 import Link from 'next/link';
 import FundNavChart from './FundNavChart';
 import type { FundLabels, Lang } from './fund-i18n';
+import type { FundAnalytics } from '@/lib/fund-analytics';
+import { Scorecard, CagrCard, Suitability, Insights, StressTest } from './FundAnalytics';
+import FundCalculator from './FundCalculator';
+import FundFeedback from './FundFeedback';
+import FundGate from './FundGate';
 import './fund-premium.css';
 
 type LabelValue = { label: string; value: string };
@@ -41,6 +46,11 @@ export type FundClientData = {
     peers: Array<{ id: number; label: string; href: string; compareHref: string }>;
     faqs: Array<{ q: string; a: string }>;
     isShariah: boolean;
+    // analytics layer
+    analytics: FundAnalytics;
+    cagrStat: { value: string; years: number | null; sinceInception: string | null } | null;
+    movement: { best: number | null; worst: number | null; avgGain: number | null; avgLoss: number | null; cadence: 'day' | 'week' | 'period' } | null;
+    compareHref: string;
 };
 
 const MICRO = 'text-[0.68rem] uppercase tracking-[0.22em] text-muted';
@@ -56,8 +66,6 @@ export default function FundPageClient(props: FundClientData) {
         lang,
         fundId,
         name,
-        nameEn,
-        nameAr,
         managerLine,
         monogram,
         heroLogo,
@@ -83,6 +91,10 @@ export default function FundPageClient(props: FundClientData) {
         managerProfile,
         peers,
         faqs,
+        analytics,
+        cagrStat,
+        movement,
+        compareHref,
     } = props;
 
     return (
@@ -112,15 +124,19 @@ export default function FundPageClient(props: FundClientData) {
                             </div>
                         </div>
 
-                        {chips.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {chips.map((c) => (
-                                    <span key={c} className="chip">
-                                        {c}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
+                        <div className="flex flex-wrap items-center gap-2.5">
+                            {chips.map((c) => (
+                                <span key={c} className="chip">
+                                    {c}
+                                </span>
+                            ))}
+                            <Link href={compareHref} className="hero-compare" aria-label={t.ax.compareCta}>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
+                                </svg>
+                                {t.ax.compareCta}
+                            </Link>
+                        </div>
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div className="summary-card rounded-[1.6rem] p-5">
@@ -193,6 +209,27 @@ export default function FundPageClient(props: FundClientData) {
                         ))}
                     </div>
                 </section>
+            )}
+
+            {/* ── CAGR (open — SEO-friendly teaser) ──────────────────────────────── */}
+            {cagrStat && <CagrCard cagr={cagrStat} t={t} />}
+
+            {/* ── Analytics cluster — free account unlocks all (gated) ───────────── */}
+            {analytics.hasEnoughData && (
+                <FundGate t={t}>
+                    <Scorecard scores={analytics.scores} t={t} />
+                    <Suitability suit={analytics.suitability} t={t} />
+                    <Insights insights={analytics.insights} t={t} />
+                    <StressTest stress={analytics.stress} movement={movement} t={t} />
+                    {analytics.calc.cagr !== null && (
+                        <FundCalculator
+                            cagr={analytics.calc.cagr}
+                            volatility={analytics.calc.volatility}
+                            currency={currency}
+                            t={t}
+                        />
+                    )}
+                </FundGate>
             )}
 
             {/* ── Fund details + thesis ─────────────────────────────────────────── */}
@@ -404,6 +441,9 @@ export default function FundPageClient(props: FundClientData) {
                     </Link>
                 </p>
             </section>
+
+            {/* ── Feedback (open) ───────────────────────────────────────────────── */}
+            <FundFeedback fundId={fundId} t={t} />
 
             {/* ── FAQ ───────────────────────────────────────────────────────────── */}
             {faqs.length > 0 && (

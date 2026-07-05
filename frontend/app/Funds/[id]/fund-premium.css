@@ -223,21 +223,6 @@
 .fund-premium .ax-method > summary::before { content: '?'; display: inline-flex; align-items: center; justify-content: center; width: 1.05rem; height: 1.05rem; border-radius: 999px; background: rgba(20, 184, 166, 0.14); font-size: 0.7rem; }
 .fund-premium .ax-note { font-size: 0.72rem; line-height: 1.6; color: var(--c-text-muted); border-top: 1px solid color-mix(in srgb, var(--c-border) 60%, transparent); padding-top: 0.75rem; }
 
-/* CAGR card */
-.fund-premium .cagr-card { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem; }
-.fund-premium .cagr-main { min-width: 0; }
-.fund-premium .cagr-value {
-    font-family: var(--font-sans, 'Manrope', sans-serif); font-size: clamp(2.4rem, 6vw, 3.4rem);
-    font-weight: 800; letter-spacing: -0.04em; line-height: 1; margin-top: 0.5rem;
-    color: #0d9488; font-variant-numeric: tabular-nums;
-}
-.fund-premium .cagr-value span { font-size: 1rem; font-weight: 600; color: var(--c-text-muted); margin-inline-start: 0.35rem; }
-.fund-premium .cagr-note { margin-top: 0.75rem; max-width: 34rem; font-size: 0.78rem; line-height: 1.6; color: var(--c-text-muted); }
-.fund-premium .cagr-side { text-align: center; }
-.fund-premium .cagr-side-stat { padding: 0.9rem 1.4rem; border-radius: 1.1rem; border: 1px solid var(--c-border); background: var(--c-surface); }
-.fund-premium .cagr-years { margin-top: 0.6rem; font-size: 0.72rem; color: var(--c-text-muted); }
-[data-theme='dark'] .fund-premium .cagr-value, [data-theme='dark'] .fund-premium .cagr-side-stat .text-starta-teal { color: #2dd4bf; }
-
 /* suitability — horizons */
 .fund-premium .horizon-card { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.95rem 1rem; border-radius: 1.1rem; border: 1px solid var(--c-border); background: var(--c-surface); }
 .fund-premium .horizon-name { font-size: 0.85rem; font-weight: 700; color: var(--c-text-main); }
@@ -330,3 +315,58 @@
 @media (prefers-reduced-motion: reduce) {
     .fund-premium .score-fill, .fund-premium .meter-fill, .fund-premium .score-ring-fill { transition: none; }
 }
+
+/* ============================================================================
+ * TWO-COLUMN LAYOUT — main analysis column + sticky sidebar (compact widgets).
+ * Single column on mobile; grid + sticky on lg+. RTL-safe (logical grid flow).
+ * ========================================================================== */
+.fund-premium .fund-layout { display: flex; flex-direction: column; gap: 1.25rem; }
+@media (min-width: 1024px) {
+    .fund-premium .fund-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 20rem;
+        align-items: start;
+        gap: 1.5rem;
+    }
+}
+.fund-premium .fund-main { display: flex; flex-direction: column; gap: 2rem; min-width: 0; }
+.fund-premium .fund-aside { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }
+@media (min-width: 1024px) {
+    /* sticky within the grid column — the taller main column lets the aside travel */
+    .fund-premium .fund-aside { position: sticky; top: 1.5rem; align-self: start; }
+}
+
+/* key-facts sidebar card */
+.fund-premium .keyfacts-cagr {
+    padding: 0.9rem 1rem; border-radius: 1.1rem;
+    background: linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(45, 212, 191, 0.04));
+    border: 1px solid rgba(20, 184, 166, 0.2);
+}
+.fund-premium .keyfacts-cagr-value {
+    font-family: var(--font-sans, 'Manrope', sans-serif); font-size: 2rem; font-weight: 800;
+    letter-spacing: -0.03em; line-height: 1; margin-top: 0.35rem; color: #0d9488; font-variant-numeric: tabular-nums;
+}
+.fund-premium .keyfacts-cagr-value span { font-size: 0.85rem; font-weight: 600; color: var(--c-text-muted); margin-inline-start: 0.2rem; }
+.fund-premium .keyfacts-cagr-meta { margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.2rem 0.75rem; font-size: 0.72rem; color: var(--c-text-muted); }
+.fund-premium .keyfacts-cagr-meta b { color: var(--c-text-main); font-weight: 700; }
+[data-theme='dark'] .fund-premium .keyfacts-cagr-value { color: #2dd4bf; }
+.fund-premium .keyfacts-list { display: flex; flex-direction: column; }
+.fund-premium .keyfacts-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem;
+    padding: 0.6rem 0; border-bottom: 1px solid color-mix(in srgb, var(--c-border) 55%, transparent);
+}
+.fund-premium .keyfacts-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.fund-premium .keyfacts-row dt { font-size: 0.75rem; color: var(--c-text-muted); }
+.fund-premium .keyfacts-row dd { font-size: 0.8rem; font-weight: 700; color: var(--c-text-main); text-align: end; }
+
+/* calculator segmented control — full width in the narrow sidebar */
+.fund-premium .calc-seg--full { display: flex; width: 100%; }
+.fund-premium .calc-seg--full .calc-seg-btn { flex: 1; text-align: center; padding-inline: 0.4rem; }
+
+/* compact gate — lightweight one-line prompt for the sidebar calculator */
+.fund-premium .fund-gate--compact .fund-gate-clip { max-height: 360px; }
+.fund-premium .fund-gate--compact .fund-gate-panel {
+    top: 50%; transform: translate(-50%, -50%); width: min(94%, 290px); padding: 1.3rem 1.1rem;
+}
+.fund-premium .fund-gate--compact .fund-gate-lock { width: 2.4rem; height: 2.4rem; margin-bottom: 0.6rem; }
+.fund-premium .fund-gate--compact .fund-gate-cta { padding: 0.55rem 1.15rem; font-size: 0.8rem; }

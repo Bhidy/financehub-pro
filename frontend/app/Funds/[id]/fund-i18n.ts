@@ -40,7 +40,7 @@ export type FundAxLabels = {
     cagrTag: string; cagrTitle: string; cagrSinceInception: string; cagrOverYears: string; cagrNote: string;
     moveTitle: string; moveBest: string; moveWorst: string; moveAvgGain: string; moveAvgLoss: string;
     moveDaily: string; moveWeekly: string; movePeriod: string;
-    gateTitle: string; gateBody: string; gateCta: string; gateSignin: string;
+    gateTitle: string; gateBody: string; gateCta: string; gateSignin: string; gateCompact: string;
     fbTag: string; fbTitle: string; fbSub: string; fbYes: string; fbNo: string; fbThanks: string;
     fbCommentPlaceholder: string; fbSubmit: string;
     compareCta: string;
@@ -280,6 +280,7 @@ const EN: FundLabels = {
         gateBody: 'Create a free account to see the scorecard, suitability, stress tests and the investment calculator for every Egyptian fund.',
         gateCta: 'Create free account',
         gateSignin: 'Sign in',
+        gateCompact: 'Free account to use the calculator',
         fbTag: 'Feedback',
         fbTitle: 'Was this helpful?',
         fbSub: 'Help us improve this page.',
@@ -440,6 +441,7 @@ const AR: FundLabels = {
         gateBody: 'أنشئ حسابًا مجانيًا لعرض بطاقة التقييم والملاءمة واختبارات الضغط وحاسبة الاستثمار لكل صندوق مصري.',
         gateCta: 'أنشئ حسابًا مجانيًا',
         gateSignin: 'تسجيل الدخول',
+        gateCompact: 'أنشئ حسابًا مجانيًا لاستخدام الحاسبة',
         fbTag: 'رأيك',
         fbTitle: 'هل كانت هذه المعلومات مفيدة؟',
         fbSub: 'ساعدنا في تحسين هذه الصفحة.',

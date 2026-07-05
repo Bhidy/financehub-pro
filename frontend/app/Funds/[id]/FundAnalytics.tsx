@@ -122,33 +122,6 @@ export function Scorecard({ scores, t }: { scores: ScoreResult; t: FundLabels })
     );
 }
 
-/* ---------------------------------------------------------------- CAGR card */
-
-export function CagrCard({ cagr, t }: { cagr: { value: string; years: number | null; sinceInception: string | null }; t: FundLabels }) {
-    const ax = t.ax;
-    return (
-        <section className={SECTION} aria-label={ax.cagrTitle}>
-            <div className="glass-premium cagr-card rounded-[2rem] p-6 sm:p-8">
-                <div className="cagr-main">
-                    <span className="section-tag">{ax.cagrTag}</span>
-                    <h3 className="mt-3 text-base font-semibold text-main">{ax.cagrTitle}</h3>
-                    <div className="cagr-value">{cagr.value}<span>/yr</span></div>
-                    <p className="cagr-note">{ax.cagrNote}</p>
-                </div>
-                <div className="cagr-side">
-                    {cagr.sinceInception && (
-                        <div className="cagr-side-stat">
-                            <div className={MICRO}>{ax.cagrSinceInception}</div>
-                            <div className="mt-1 text-lg font-display font-bold tabular-nums text-starta-teal">{cagr.sinceInception}</div>
-                        </div>
-                    )}
-                    {cagr.years != null && <div className="cagr-years">{interp(ax.cagrOverYears, { v: Math.round(cagr.years) })}</div>}
-                </div>
-            </div>
-        </section>
-    );
-}
-
 /* -------------------------------------------------------------- Suitability */
 
 function CheckIcon() {

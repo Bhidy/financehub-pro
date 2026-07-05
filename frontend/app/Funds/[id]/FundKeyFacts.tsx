@@ -1,0 +1,50 @@
+'use client';
+
+/**
+ * Sidebar "key facts" widget — folds the fund's CAGR highlight and the full fund-details
+ * grid into one compact card sized for the profile sidebar. Ungated + fully in the DOM
+ * (SEO-safe). Replaces the old full-width CAGR card + fund-details grid.
+ */
+
+import type { FundLabels } from './fund-i18n';
+import { interp } from './fund-format';
+
+type LabelValue = { label: string; value: string };
+
+export default function FundKeyFacts({
+    facts, cagr, t,
+}: {
+    facts: LabelValue[];
+    cagr: { value: string; years: number | null; sinceInception: string | null } | null;
+    t: FundLabels;
+}) {
+    if (!facts.length && !cagr) return null;
+    const ax = t.ax;
+    return (
+        <section className="glass-premium keyfacts rounded-[1.6rem] p-5" aria-label={t.fundDetails}>
+            <span className="section-tag">{t.fundDetails}</span>
+
+            {cagr && (
+                <div className="keyfacts-cagr mt-3">
+                    <div className="text-[0.62rem] uppercase tracking-[0.18em] text-muted">{ax.cagrTitle}</div>
+                    <div className="keyfacts-cagr-value">{cagr.value}<span>/yr</span></div>
+                    <div className="keyfacts-cagr-meta">
+                        {cagr.sinceInception && <span>{ax.cagrSinceInception}: <b>{cagr.sinceInception}</b></span>}
+                        {cagr.years != null && <span>{interp(ax.cagrOverYears, { v: Math.round(cagr.years) })}</span>}
+                    </div>
+                </div>
+            )}
+
+            {facts.length > 0 && (
+                <dl className="keyfacts-list mt-4">
+                    {facts.map((f) => (
+                        <div key={f.label} className="keyfacts-row">
+                            <dt>{f.label}</dt>
+                            <dd>{f.value}</dd>
+                        </div>
+                    ))}
+                </dl>
+            )}
+        </section>
+    );
+}

@@ -20,7 +20,7 @@ function LockIcon() {
     );
 }
 
-export default function FundGate({ t, children }: { t: FundLabels; children: React.ReactNode }) {
+export default function FundGate({ t, children, compact = false }: { t: FundLabels; children: React.ReactNode; compact?: boolean }) {
     const { user, isLoading } = useAuth();
     // Unlock during SSR + hydration (isLoading) so content is always in the HTML;
     // only a resolved guest sees the gate. Avoids hiding content from logged-in users.
@@ -28,6 +28,21 @@ export default function FundGate({ t, children }: { t: FundLabels; children: Rea
     const ax = t.ax;
 
     if (!locked) return <>{children}</>;
+
+    // Compact variant — a lightweight one-line prompt for a narrow sidebar widget (e.g.
+    // the calculator), so a guest doesn't see two full "Unlock the full analysis" panels.
+    if (compact) {
+        return (
+            <div className="fund-gate fund-gate--compact">
+                <div className="fund-gate-clip" aria-hidden="true">{children}</div>
+                <div className="fund-gate-panel">
+                    <span className="fund-gate-lock"><LockIcon /></span>
+                    <p className="text-sm font-semibold text-main">{ax.gateCompact}</p>
+                    <Link href="/register" className="fund-gate-cta mt-3">{ax.gateCta}</Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="fund-gate">

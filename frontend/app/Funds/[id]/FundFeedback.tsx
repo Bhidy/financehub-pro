@@ -28,7 +28,11 @@ export default function FundFeedback({ fundId, t }: { fundId: string | number; t
         () => { try { return !!localStorage.getItem(storageKey); } catch { return false; } },
         () => false,
     );
-    const done = submitted || alreadyVoted;
+    // Show the thank-you only when the user has finished (submitted) OR they voted on a
+    // PRIOR visit (alreadyVoted with no in-progress choice). While a choice is active we
+    // stay interactive so the optional comment box + Send are never skipped, even though
+    // pick() records the vote to localStorage immediately.
+    const done = submitted || (alreadyVoted && !choice);
 
     const send = (helpful: boolean, body: string) => {
         // Fire-and-forget; the UX does not depend on the response.

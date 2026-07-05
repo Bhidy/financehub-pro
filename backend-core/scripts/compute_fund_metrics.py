@@ -146,8 +146,13 @@ async def compute_one(conn, fund_id, name, dry_run) -> bool:
     if _MM_RE.search(name or ""):
         dd, vol = m.get("max_drawdown"), m.get("volatility_annual")
         if (dd is not None and dd < -10) or (vol is not None and vol > 6):
-            m["max_drawdown"] = None
-            m["volatility_annual"] = None
+            # A redenomination artifact corrupts EVERY magnitude-based metric, not just
+            # drawdown/volatility — so null the whole analytics set. Otherwise a cash fund
+            # could still surface a false CAGR / stress-test / calculator figure downstream.
+            for _k in ("max_drawdown", "volatility_annual", "cagr", "return_inception",
+                       "downside_deviation", "best_period", "worst_period",
+                       "avg_gain", "avg_loss"):
+                m[_k] = None
     if dry_run:
         return True
     await conn.execute(_UPSERT, fund_id, *[m[c] for c in _COLS])

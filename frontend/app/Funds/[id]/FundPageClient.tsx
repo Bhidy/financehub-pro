@@ -200,9 +200,8 @@ export default function FundPageClient(props: FundClientData) {
                 <div className="fund-main">
                     {/* Performance */}
                     {perfCards.length > 0 && (
-                        <section>
-                            <span className="section-tag">{t.performance}</span>
-                            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                        <section aria-label={t.performance}>
+                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                                 {perfCards.map((p) => (
                                     <div key={p.label} className="summary-card perf-card rounded-[1.4rem] p-4">
                                         <div className={MICRO}>{p.label}</div>
@@ -215,23 +214,17 @@ export default function FundPageClient(props: FundClientData) {
                         </section>
                     )}
 
-                    {/* Analytics cluster — free account unlocks all (gated) */}
+                    {/* Scorecard — free account unlocks all (gated) */}
                     {analytics.hasEnoughData && (
                         <FundGate t={t}>
-                            <div className="flex flex-col gap-8">
-                                <Scorecard scores={analytics.scores} t={t} />
-                                <Suitability suit={analytics.suitability} t={t} />
-                                <Insights insights={analytics.insights} t={t} />
-                                <StressTest stress={analytics.stress} movement={movement} t={t} />
-                            </div>
+                            <Scorecard scores={analytics.scores} t={t} />
                         </FundGate>
                     )}
 
                     {/* Investment thesis */}
                     {(strategy || objective) && (
-                        <section className="glass-premium rounded-[2rem] p-6 sm:p-7">
-                            <span className="section-tag">{t.investmentThesis}</span>
-                            <div className="mt-4 space-y-6">
+                        <section className="glass-premium rounded-[2rem] p-6 sm:p-7" aria-label={t.investmentThesis}>
+                            <div className="space-y-6">
                                 {strategy && (
                                     <div>
                                         <h3 className="text-base font-semibold text-main">{t.investmentStrategy}</h3>
@@ -253,8 +246,7 @@ export default function FundPageClient(props: FundClientData) {
                         <section className="grid gap-6 lg:grid-cols-2">
                             {fees.length > 0 && (
                                 <div className="glass-premium rounded-[2rem] p-6 sm:p-7">
-                                    <span className="section-tag">{t.costOfOwnership}</span>
-                                    <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">{t.fees}</h2>
+                                    <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.fees}</h2>
                                     <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                         {fees.map((f) => (
                                             <div key={f.label} className="summary-card rounded-[1.2rem] p-4">
@@ -268,8 +260,7 @@ export default function FundPageClient(props: FundClientData) {
 
                             {riskStats.length > 0 && (
                                 <div className="glass-premium rounded-[2rem] p-6 sm:p-7">
-                                    <span className="section-tag">{t.riskFactors}</span>
-                                    <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">{t.riskVolatility}</h2>
+                                    <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.riskVolatility}</h2>
                                     <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                         {riskStats.map((r) => (
                                             <div key={r.label} className="summary-card rounded-[1.2rem] p-4">
@@ -288,9 +279,8 @@ export default function FundPageClient(props: FundClientData) {
 
                     {/* About the manager */}
                     {managerProfile && (
-                        <section className="glass-premium rounded-[2rem] p-6 sm:p-8">
-                            <span className="section-tag">{t.managerProfile}</span>
-                            <div className="mt-4 flex flex-col gap-6 sm:flex-row sm:items-center">
+                        <section className="glass-premium rounded-[2rem] p-6 sm:p-8" aria-label={t.managerProfile}>
+                            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
                                 <div className="flex items-center gap-4">
                                     {managerProfile.logo ? (
                                         // eslint-disable-next-line @next/next/no-img-element
@@ -322,9 +312,8 @@ export default function FundPageClient(props: FundClientData) {
 
                     {/* Where to invest */}
                     {(platforms.length > 0 || prospectusUrl || tradingRows.length > 0) && (
-                        <section className="glass-premium rounded-[2rem] p-6 sm:p-8">
-                            <span className="section-tag">{t.purchaseChannels}</span>
-                            <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">{t.whereToInvest}</h2>
+                        <section className="glass-premium rounded-[2rem] p-6 sm:p-8" aria-label={t.purchaseChannels}>
+                            <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.whereToInvest}</h2>
 
                             <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(240px,0.55fr)]">
                                 <div className="flex flex-col gap-6">
@@ -396,9 +385,8 @@ export default function FundPageClient(props: FundClientData) {
                     )}
 
                     {/* Similar funds */}
-                    <section>
-                        <span className="section-tag">{t.exploreMore}</span>
-                        <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">{t.similarFunds}</h2>
+                    <section aria-label={t.exploreMore}>
+                        <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.similarFunds}</h2>
                         {peers.length > 0 && (
                             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                 {peers.map((p) => (
@@ -422,9 +410,8 @@ export default function FundPageClient(props: FundClientData) {
 
                     {/* FAQ */}
                     {faqs.length > 0 && (
-                        <section className="glass-premium rounded-[2rem] p-6 sm:p-8">
-                            <span className="section-tag">{t.fundFaq}</span>
-                            <h2 className="mt-3 text-xl font-display font-bold tracking-[-0.03em] text-main">{t.faqTitle}</h2>
+                        <section className="glass-premium rounded-[2rem] p-6 sm:p-8" aria-label={t.fundFaq}>
+                            <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.faqTitle}</h2>
                             <dl className="mt-6 space-y-5">
                                 {faqs.map((f) => (
                                     <div key={f.q} className="border-b border-border/60 pb-5 last:border-b-0 last:pb-0">
@@ -441,14 +428,22 @@ export default function FundPageClient(props: FundClientData) {
                 <aside className="fund-aside">
                     <FundKeyFacts facts={facts} cagr={cagrStat} t={t} />
 
-                    {analytics.hasEnoughData && analytics.calc.cagr !== null && (
+                    {/* Decision widgets — one free-account gate for the whole cluster */}
+                    {analytics.hasEnoughData && (
                         <FundGate t={t} compact>
-                            <FundCalculator
-                                cagr={analytics.calc.cagr}
-                                volatility={analytics.calc.volatility}
-                                currency={currency}
-                                t={t}
-                            />
+                            <div className="flex flex-col gap-5">
+                                <Suitability suit={analytics.suitability} t={t} />
+                                <Insights insights={analytics.insights} t={t} />
+                                <StressTest stress={analytics.stress} movement={movement} t={t} />
+                                {analytics.calc.cagr !== null && (
+                                    <FundCalculator
+                                        cagr={analytics.calc.cagr}
+                                        volatility={analytics.calc.volatility}
+                                        currency={currency}
+                                        t={t}
+                                    />
+                                )}
+                            </div>
                         </FundGate>
                     )}
 

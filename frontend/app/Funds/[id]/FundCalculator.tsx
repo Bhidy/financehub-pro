@@ -31,8 +31,7 @@ export default function FundCalculator({
 
     return (
         <section className="glass-premium rounded-[1.6rem] p-5" aria-label={ax.calcTitle}>
-            <span className="section-tag">{ax.calcTag}</span>
-            <h3 className="mt-2 text-base font-display font-bold tracking-[-0.02em] text-main">{ax.calcTitle}</h3>
+            <h3 className="text-base font-display font-bold tracking-[-0.02em] text-main">{ax.calcTitle}</h3>
             <p className="mt-1 text-xs leading-relaxed text-muted">{ax.calcSub}</p>
 
             <div className="mt-4 flex flex-col gap-4">

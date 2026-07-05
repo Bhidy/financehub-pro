@@ -504,7 +504,7 @@ export async function renderFundPage(idParam: string, lang: Lang) {
     };
 
     return (
-        <PublicPageShell lang={lang} altHref={altHref}>
+        <PublicPageShell lang={lang} altHref={altHref} wide>
             <JsonLd data={fundJsonLd} />
             <JsonLd data={breadcrumbJsonLd(crumbLd, SITE_URL)} />
             {data.faqs.length > 0 && (

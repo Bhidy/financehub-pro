@@ -82,6 +82,7 @@ export default function PublicPageShell({
     lang = 'en',
     altHref,
     dir,
+    wide = false,
 }: {
     children: React.ReactNode;
     lang?: Lang;
@@ -89,6 +90,8 @@ export default function PublicPageShell({
     altHref?: string;
     /** @deprecated derived from lang; kept for call-site compatibility. */
     dir?: 'ltr' | 'rtl';
+    /** Widen the content to match the header (max-w-screen-2xl vs the default max-w-7xl). */
+    wide?: boolean;
 }) {
     const direction = dir ?? (lang === 'ar' ? 'rtl' : 'ltr');
     const t = NAV_LABELS[lang];
@@ -148,7 +151,7 @@ export default function PublicPageShell({
                 </div>
             </nav>
 
-            <main className="mx-auto max-w-7xl px-6 pt-28 pb-16">{children}</main>
+            <main className={`mx-auto ${wide ? 'max-w-screen-2xl' : 'max-w-7xl'} px-6 pt-28 pb-16`}>{children}</main>
 
             {/* ── Footer: verbatim structure from the designed pages ─────────── */}
             <footer className="relative bg-surface border-t border-border overflow-hidden pt-24 pb-12">

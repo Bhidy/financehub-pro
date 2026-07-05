@@ -11,7 +11,6 @@ import type { FundLabels } from './fund-i18n';
 import type { ScoreResult, Score, SuitabilityResult, Insight, StressResult } from '@/lib/fund-analytics';
 import { pct, signedPct, interp } from './fund-format';
 
-const SECTION = 'mt-8';
 const MICRO = 'text-[0.68rem] uppercase tracking-[0.22em] text-muted';
 
 type Ax = FundLabels['ax'];
@@ -63,9 +62,8 @@ export function Scorecard({ scores, t }: { scores: ScoreResult; t: FundLabels })
     const ax = t.ax;
     const confLabel = scores.confidence === 'high' ? ax.confHigh : scores.confidence === 'medium' ? ax.confMed : ax.confLow;
     return (
-        <section className={SECTION} aria-label={ax.scoreTitle}>
-            <span className="section-tag">{ax.scoreTag}</span>
-            <div className="glass-premium mt-3 rounded-[2rem] p-6 sm:p-8">
+        <section aria-label={ax.scoreTitle}>
+            <div className="glass-premium rounded-[2rem] p-6 sm:p-8">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                         <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main sm:text-2xl">{ax.scoreTitle}</h2>
@@ -138,39 +136,34 @@ export function Suitability({ suit, t }: { suit: SuitabilityResult; t: FundLabel
     const ax = t.ax;
     const statusIcon = (s: string) => (s === 'suitable' ? <CheckIcon /> : s === 'caution' ? <MinusIcon /> : <CrossIcon />);
     return (
-        <section className={SECTION} aria-label={ax.suitTitle}>
-            <span className="section-tag">{ax.suitTag}</span>
-            <div className="glass-premium mt-3 rounded-[2rem] p-6 sm:p-8">
-                <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main sm:text-2xl">{ax.suitTitle}</h2>
-                <p className="mt-2 text-sm text-muted">{ax.suitSub}</p>
+        <section className="glass-premium rounded-[1.6rem] p-5" aria-label={ax.suitTitle}>
+            <h3 className="text-base font-display font-bold tracking-[-0.02em] text-main">{ax.suitTitle}</h3>
+            <p className="mt-1 text-xs leading-relaxed text-muted">{ax.suitSub}</p>
 
-                <div className="mt-6 grid gap-7 lg:grid-cols-2">
-                    <div>
-                        <div className={MICRO}>{ax.horizonTitle}</div>
-                        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                            {suit.horizons.map((h) => (
-                                <div key={h.key} className="horizon-card" data-status={h.status}>
-                                    <span className="horizon-name">{(ax.horizons as Record<string, string>)[h.key]}</span>
-                                    <span className="horizon-hint">{(ax.horizonHint as Record<string, string>)[h.key]}</span>
-                                    <span className="horizon-status">{statusIcon(h.status)}{(ax.statuses as Record<string, string>)[h.status]}</span>
-                                </div>
-                            ))}
+            <div className="mt-4">
+                <div className={MICRO}>{ax.horizonTitle}</div>
+                <div className="mt-2.5 grid grid-cols-3 gap-2">
+                    {suit.horizons.map((h) => (
+                        <div key={h.key} className="horizon-card" data-status={h.status}>
+                            <span className="horizon-name">{(ax.horizons as Record<string, string>)[h.key]}</span>
+                            <span className="horizon-hint">{(ax.horizonHint as Record<string, string>)[h.key]}</span>
+                            <span className="horizon-status">{statusIcon(h.status)}{(ax.statuses as Record<string, string>)[h.status]}</span>
                         </div>
-                    </div>
-                    <div>
-                        <div className={MICRO}>{ax.investorTitle}</div>
-                        <div className="mt-3 space-y-4">
-                            {suit.investorMatch.map((m) => (
-                                <div key={m.profile} className="match-row">
-                                    <div className="match-head">
-                                        <span className="text-sm font-semibold text-main">{(ax.profiles as Record<string, string>)[m.profile]}</span>
-                                        <span className="text-sm font-semibold tabular-nums text-main">{m.matchPct}% <span className="text-muted">{ax.matchSuffix}</span></span>
-                                    </div>
-                                    <div className="meter"><span className="meter-fill" data-profile={m.profile} style={{ width: `${m.matchPct}%` }} /></div>
-                                </div>
-                            ))}
+                    ))}
+                </div>
+            </div>
+            <div className="mt-5">
+                <div className={MICRO}>{ax.investorTitle}</div>
+                <div className="mt-2.5 space-y-3">
+                    {suit.investorMatch.map((m) => (
+                        <div key={m.profile} className="match-row">
+                            <div className="match-head">
+                                <span className="text-sm font-semibold text-main">{(ax.profiles as Record<string, string>)[m.profile]}</span>
+                                <span className="text-sm font-semibold tabular-nums text-main">{m.matchPct}% <span className="text-muted">{ax.matchSuffix}</span></span>
+                            </div>
+                            <div className="meter"><span className="meter-fill" data-profile={m.profile} style={{ width: `${m.matchPct}%` }} /></div>
                         </div>
-                    </div>
+                    ))}
                 </div>
             </div>
         </section>
@@ -183,22 +176,19 @@ export function Insights({ insights, t }: { insights: Insight[]; t: FundLabels }
     if (!insights.length) return null;
     const ax = t.ax;
     return (
-        <section className={SECTION} aria-label={ax.insightsTitle}>
-            <span className="section-tag">{ax.insightsTag}</span>
-            <div className="glass-premium mt-3 rounded-[2rem] p-6 sm:p-8">
-                <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main sm:text-2xl">{ax.insightsTitle}</h2>
-                <p className="mt-2 text-sm text-muted">{ax.insightsSub}</p>
-                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                    {insights.map((ins, i) => (
-                        <div key={`${ins.code}-${i}`} className="insight-card" data-kind={ins.kind}>
-                            <div className="insight-top">
-                                <span className="insight-badge">{ins.kind === 'pro' ? ax.pro : ax.con}</span>
-                                <span className="insight-impact" data-impact={ins.impact}>{(ax.impact as Record<string, string>)[ins.impact]}</span>
-                            </div>
-                            <p className="insight-text">{interp((ax.insightText as Record<string, string>)[ins.code] ?? '', { v: ins.value ?? '' })}</p>
+        <section className="glass-premium rounded-[1.6rem] p-5" aria-label={ax.insightsTitle}>
+            <h3 className="text-base font-display font-bold tracking-[-0.02em] text-main">{ax.insightsTitle}</h3>
+            <p className="mt-1 text-xs leading-relaxed text-muted">{ax.insightsSub}</p>
+            <div className="mt-4 grid gap-3">
+                {insights.map((ins, i) => (
+                    <div key={`${ins.code}-${i}`} className="insight-card" data-kind={ins.kind}>
+                        <div className="insight-top">
+                            <span className="insight-badge">{ins.kind === 'pro' ? ax.pro : ax.con}</span>
+                            <span className="insight-impact" data-impact={ins.impact}>{(ax.impact as Record<string, string>)[ins.impact]}</span>
                         </div>
-                    ))}
-                </div>
+                        <p className="insight-text">{interp((ax.insightText as Record<string, string>)[ins.code] ?? '', { v: ins.value ?? '' })}</p>
+                    </div>
+                ))}
             </div>
         </section>
     );
@@ -223,40 +213,37 @@ export function StressTest({ stress, movement, t }: { stress: StressResult; move
     if (!stress.scenarios.length && !moveStats.length) return null;
 
     return (
-        <section className={SECTION} aria-label={ax.stressTitle}>
-            <span className="section-tag">{ax.stressTag}</span>
-            <div className="glass-premium mt-3 rounded-[2rem] p-6 sm:p-8">
-                <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main sm:text-2xl">{ax.stressTitle}</h2>
-                <p className="mt-2 text-sm text-muted">{ax.stressSub}</p>
+        <section className="glass-premium rounded-[1.6rem] p-5" aria-label={ax.stressTitle}>
+            <h3 className="text-base font-display font-bold tracking-[-0.02em] text-main">{ax.stressTitle}</h3>
+            <p className="mt-1 text-xs leading-relaxed text-muted">{ax.stressSub}</p>
 
-                {moveStats.length > 0 && (
-                    <div className="mt-6">
-                        <div className={MICRO}>{ax.moveTitle}</div>
-                        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                            {moveStats.map(([label, value, neg]) => (
-                                <div key={label} className="summary-card rounded-[1.1rem] p-3.5">
-                                    <div className="text-[0.62rem] uppercase tracking-[0.16em] text-muted">{label}</div>
-                                    <div className={`mt-1.5 text-lg font-display font-bold tabular-nums ${neg ? 'text-red-500' : 'text-emerald-600'}`}>{signedPct(value as number)}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {stress.scenarios.length > 0 && (
-                    <div className="stress-list mt-6">
-                        {stress.scenarios.map((s) => (
-                            <div key={s.code} className="stress-row">
-                                <span className="stress-name">{(ax.scenarios as Record<string, string>)[s.code]}</span>
-                                <span className="stress-kind" data-kind={s.kind}>{s.kind === 'estimate' ? ax.estimate : ax.historical}</span>
-                                <span className="stress-impact tabular-nums">{signedPct(s.impactPct)}</span>
+            {moveStats.length > 0 && (
+                <div className="mt-4">
+                    <div className={MICRO}>{ax.moveTitle}</div>
+                    <div className="mt-2.5 grid grid-cols-2 gap-2.5">
+                        {moveStats.map(([label, value, neg]) => (
+                            <div key={label} className="summary-card rounded-[1.1rem] p-3">
+                                <div className="text-[0.6rem] uppercase tracking-[0.14em] text-muted">{label}</div>
+                                <div className={`mt-1 text-base font-display font-bold tabular-nums ${neg ? 'text-red-500' : 'text-emerald-600'}`}>{signedPct(value as number)}</div>
                             </div>
                         ))}
                     </div>
-                )}
+                </div>
+            )}
 
-                <p className="ax-note mt-5">{ax.stressDisclaimer}</p>
-            </div>
+            {stress.scenarios.length > 0 && (
+                <div className="stress-list mt-4">
+                    {stress.scenarios.map((s) => (
+                        <div key={s.code} className="stress-row">
+                            <span className="stress-name">{(ax.scenarios as Record<string, string>)[s.code]}</span>
+                            <span className="stress-kind" data-kind={s.kind}>{s.kind === 'estimate' ? ax.estimate : ax.historical}</span>
+                            <span className="stress-impact tabular-nums">{signedPct(s.impactPct)}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            <p className="ax-note mt-4">{ax.stressDisclaimer}</p>
         </section>
     );
 }

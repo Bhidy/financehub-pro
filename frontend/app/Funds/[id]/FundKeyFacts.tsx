@@ -22,7 +22,7 @@ export default function FundKeyFacts({
     const ax = t.ax;
     return (
         <section className="glass-premium keyfacts rounded-[1.6rem] p-5" aria-label={t.fundDetails}>
-            <span className="section-tag">{t.fundDetails}</span>
+            <h3 className="text-base font-display font-bold tracking-[-0.02em] text-main">{t.fundDetails}</h3>
 
             {cagr && (
                 <div className="keyfacts-cagr mt-3">

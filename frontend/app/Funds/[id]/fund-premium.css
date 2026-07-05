@@ -43,14 +43,6 @@
     box-shadow: var(--shadow-premium);
 }
 
-.fund-premium .section-tag {
-    font-size: 0.72rem;
-    letter-spacing: 0.24em;
-    color: var(--teal-dark);
-    text-transform: uppercase;
-    font-weight: 600;
-}
-
 .fund-premium .chip {
     display: inline-flex;
     align-items: center;
@@ -324,7 +316,7 @@
 @media (min-width: 1024px) {
     .fund-premium .fund-layout {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 20rem;
+        grid-template-columns: minmax(0, 1fr) 22rem;
         align-items: start;
         gap: 1.5rem;
     }

@@ -68,3 +68,6 @@ debug_*.json
 # Playwright MCP scratch output
 .playwright-mcp/
 .env*
+
+# stray local screenshots (not part of the app)
+fund-ar.jpeg

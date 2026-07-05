@@ -141,7 +141,7 @@ function LoginPageContent() {
     // ========================================================================
     if (isDesktop) {
         return (
-            <div className="min-h-screen w-full flex overflow-y-auto">
+            <div className="min-h-[100dvh] w-full flex overflow-y-auto">
                 {/* ================================================================
                     LEFT PANEL - Premium Dark Gradient with Animated Effects
                     ================================================================ */}

@@ -169,7 +169,7 @@ function MobileRegisterPageContent() {
 
     if (isSSR) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#0A0F1C]">
+            <div className="min-h-[100dvh] flex items-center justify-center bg-[#0A0F1C]">
                 <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         );
@@ -180,7 +180,7 @@ function MobileRegisterPageContent() {
     // ========================================================================
     if (isDesktop) {
         return (
-            <div className="min-h-screen w-full flex overflow-y-auto bg-white dark:bg-[#0A0F1C]">
+            <div className="min-h-[100dvh] w-full flex overflow-y-auto bg-white dark:bg-[#0A0F1C]">
                 {/* Left Panel - Premium Marketing */}
                 <div className="hidden lg:flex w-[48%] relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-[#0A0F1C] via-[#0D1425] to-[#0A1628]" />
@@ -541,7 +541,7 @@ function renderSharedForm(formData: any, setFormData: any, showPassword: boolean
 export default function MobileRegisterPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0A0F1C]">
+            <div className="min-h-[100dvh] flex items-center justify-center bg-white dark:bg-[#0A0F1C]">
                 <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         }>

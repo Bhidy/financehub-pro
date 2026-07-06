@@ -137,7 +137,7 @@ export default async function NewsArticlePage({ params }: Props) {
     };
 
     return (
-        <PublicPageShell lang={arabic ? 'ar' : 'en'}>
+        <PublicPageShell lang={arabic ? 'ar' : 'en'} persistLang>
             <JsonLd data={newsJsonLd} />
             <JsonLd
                 data={breadcrumbJsonLd(

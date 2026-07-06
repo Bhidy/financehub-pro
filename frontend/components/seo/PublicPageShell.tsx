@@ -83,6 +83,7 @@ export default function PublicPageShell({
     altHref,
     dir,
     wide = false,
+    persistLang = false,
 }: {
     children: React.ReactNode;
     lang?: Lang;
@@ -92,6 +93,13 @@ export default function PublicPageShell({
     dir?: 'ltr' | 'rtl';
     /** Widen the content to match the header (max-w-screen-2xl vs the default max-w-7xl). */
     wide?: boolean;
+    /** Persist this page's URL-derived language to localStorage + cookie so the
+     *  client-i18n surfaces (static marketplace / compare / home / news) stay in
+     *  the SAME language after navigation — fixing the "language suddenly flips to
+     *  English" bug globally. Opt-in: pass true ONLY from URL-based bilingual pages
+     *  (funds, news) that own their language via the URL. Do NOT pass it from
+     *  localStorage-based sections like /symbol, or their Arabic would be clobbered. */
+    persistLang?: boolean;
 }) {
     const direction = dir ?? (lang === 'ar' ? 'rtl' : 'ltr');
     const t = NAV_LABELS[lang];
@@ -100,13 +108,21 @@ export default function PublicPageShell({
     return (
         <div dir={direction} lang={lang} className={`seo-shell min-h-screen bg-page text-main ${lang === 'ar' ? 'font-arabic' : ''}`}>
             <style dangerouslySetInnerHTML={{ __html: SHELL_CSS }} />
-            {lang === 'ar' && (
+            {(lang === 'ar' || persistLang) && (
                 // The root layout hardcodes <html lang="en"> — mirror the page
-                // language onto the document element so assistive tech and
-                // search engines see an Arabic document, not an English one.
+                // language onto the document element so assistive tech and search
+                // engines see the right document. When persistLang is set, also
+                // sticky-store the language (localStorage + cookie) so the static /
+                // client-i18n surfaces (marketplace, compare, home, news) render in
+                // the SAME language after the user navigates to them.
                 <script
                     dangerouslySetInnerHTML={{
-                        __html: "document.documentElement.lang='ar';document.documentElement.dir='rtl';",
+                        __html:
+                            (lang === 'ar' ? "document.documentElement.lang='ar';document.documentElement.dir='rtl';" : '') +
+                            (persistLang
+                                ? `try{localStorage.setItem('starta-lang','${lang}');localStorage.setItem('lang','${lang}');}catch(e){}` +
+                                  `try{document.cookie='starta-lang=${lang};path=/;max-age=31536000;samesite=lax';}catch(e){}`
+                                : ''),
                     }}
                 />
             )}

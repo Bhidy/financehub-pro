@@ -386,9 +386,11 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
     // Raw numbers (not formatted) so the client can sign (+/−) and colour them.
     const movement = bp !== null || wp !== null ? { best: bp, worst: wp, avgGain: ag, avgLoss: al, cadence } : null;
 
-    // Hero "Compare" CTA → the closest peer's comparison (EN-only compare route for now,
-    // matching resolvePeers; never /ar-prefixed, which would 404).
-    const compareHref = peers.length > 0 ? peers[0].compareHref : '/Funds';
+    // Hero "Compare" CTA → the in-page picker (client). This href is only the
+    // no-JS / open-in-new-tab fallback: the bilingual compare tool pre-seeded with
+    // the closest peer, in the current language.
+    const compareHref =
+        peers.length > 0 ? peers[0].compareHref : `/Funds/Compare?ids=${fund.fund_id}&lang=${lang}`;
 
     return {
         t,
@@ -462,12 +464,13 @@ async function resolvePeers(fund: Fund, lang: Lang): Promise<FundClientData['pee
             .slice(0, 4);
     }
     const myId = Number(fund.fund_id);
-    // The comparison route exists ONLY at /Funds/vs/... (English). There is no
-    // /ar/Funds/vs route or rewrite, so an /ar-prefixed compare URL 404s. Link to the
-    // existing route for both locales until a bilingual compare page ships.
+    // Compare via the BILINGUAL comparison tool (/Funds/Compare), carrying the
+    // current language so the user stays in Arabic/English — the old /Funds/vs
+    // route was English-only and flipped the language. `lang` is also persisted in
+    // localStorage by the shell, so the tool renders correctly even without the param.
     return peers.map((p) => ({
         ...p,
-        compareHref: `/Funds/vs/${Math.min(myId, p.id)}-vs-${Math.max(myId, p.id)}`,
+        compareHref: `/Funds/Compare?ids=${Math.min(myId, p.id)},${Math.max(myId, p.id)}&lang=${lang}`,
     }));
 }
 
@@ -504,7 +507,7 @@ export async function renderFundPage(idParam: string, lang: Lang) {
     };
 
     return (
-        <PublicPageShell lang={lang} altHref={altHref} wide>
+        <PublicPageShell lang={lang} altHref={altHref} wide persistLang>
             <JsonLd data={fundJsonLd} />
             <JsonLd data={breadcrumbJsonLd(crumbLd, SITE_URL)} />
             {data.faqs.length > 0 && (

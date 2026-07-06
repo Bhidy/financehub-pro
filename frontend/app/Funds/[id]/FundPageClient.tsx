@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import FundNavChart from './FundNavChart';
 import type { FundLabels, Lang } from './fund-i18n';
@@ -9,6 +10,7 @@ import FundKeyFacts from './FundKeyFacts';
 import FundCalculator from './FundCalculator';
 import FundFeedback from './FundFeedback';
 import FundGate from './FundGate';
+import FundComparePicker from './FundComparePicker';
 import './fund-premium.css';
 
 type LabelValue = { label: string; value: string };
@@ -97,6 +99,8 @@ export default function FundPageClient(props: FundClientData) {
         compareHref,
     } = props;
 
+    const [pickerOpen, setPickerOpen] = useState(false);
+
     return (
         <div className="fund-premium">
             {/* ── Hero (full width) ─────────────────────────────────────────────── */}
@@ -130,7 +134,19 @@ export default function FundPageClient(props: FundClientData) {
                                     {c}
                                 </span>
                             ))}
-                            <Link href={compareHref} className="hero-compare" aria-label={t.ax.compareCta}>
+                            <Link
+                                href={compareHref}
+                                className="hero-compare"
+                                aria-label={t.ax.compareCta}
+                                aria-haspopup="dialog"
+                                onClick={(e) => {
+                                    // Open the in-page picker; let modified clicks fall through
+                                    // to the (bilingual) compare tool as a no-JS/new-tab fallback.
+                                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+                                    e.preventDefault();
+                                    setPickerOpen(true);
+                                }}
+                            >
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4" />
                                 </svg>
@@ -450,6 +466,16 @@ export default function FundPageClient(props: FundClientData) {
                     <FundFeedback fundId={fundId} t={t} />
                 </aside>
             </div>
+
+            {pickerOpen && (
+                <FundComparePicker
+                    onClose={() => setPickerOpen(false)}
+                    currentId={String(fundId)}
+                    currentName={name}
+                    lang={lang}
+                    t={t}
+                />
+            )}
         </div>
     );
 }

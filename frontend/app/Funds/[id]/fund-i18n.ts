@@ -27,6 +27,11 @@ export type FundAxLabels = {
         diversification: string; weightedReturn: string; stress: string;
     };
     partLabels: { r3ann: string; r5ann: string; r1y: string; cagr: string; incep: string };
+    /** Fund-comparison picker modal (opened from the "Compare" CTA). */
+    comparePicker: {
+        title: string; hint: string; search: string; loading: string; error: string;
+        noMatch: string; pickPrompt: string; selected: string; go: string; thisFund: string;
+    };
     suitTitle: string; suitSub: string; horizonTitle: string; investorTitle: string;
     horizons: { short: string; medium: string; long: string };
     horizonHint: { short: string; medium: string; long: string };
@@ -246,6 +251,18 @@ const EN: FundLabels = {
             stress: 'Model estimates scale a broad-market shock by the fund’s asset-class sensitivity, and the adverse-year band is 1.65× its annualized volatility — approximations, not predictions. Historical figures are real events from this fund’s own NAV record.',
         },
         partLabels: { r3ann: '3-year return, annualized', r5ann: '5-year return, annualized', r1y: '1-year return', cagr: 'CAGR since inception', incep: 'Since inception, annualized' },
+        comparePicker: {
+            title: 'Compare with…',
+            hint: 'Pick up to {n} funds to see them side by side.',
+            search: 'Search by fund or manager',
+            loading: 'Loading funds…',
+            error: 'Couldn’t load funds — please try again.',
+            noMatch: 'No funds match your search.',
+            pickPrompt: 'Select at least one fund',
+            selected: '{n} selected',
+            go: 'Compare now',
+            thisFund: 'This fund',
+        },
         suitTitle: 'Is this fund right for you?',
         suitSub: 'How this fund maps to holding periods and investor risk profiles.',
         horizonTitle: 'Investment horizon',
@@ -413,6 +430,18 @@ const AR: FundLabels = {
             stress: 'التقديرات النموذجية تضرب صدمة سوقية عامة في حساسية فئة أصول الصندوق، ونطاق السنة السيئة هو 1.65× تذبذبها السنوي — تقريبات وليست تنبؤات. الأرقام التاريخية وقائع فعلية من سجل صافي قيمة أصول الصندوق نفسه.',
         },
         partLabels: { r3ann: 'عائد 3 سنوات (سنويًا)', r5ann: 'عائد 5 سنوات (سنويًا)', r1y: 'عائد سنة', cagr: 'النمو المركب منذ التأسيس', incep: 'منذ التأسيس (سنويًا)' },
+        comparePicker: {
+            title: 'قارن مع…',
+            hint: 'اختر حتى {n} صناديق لعرضها جنبًا إلى جنب.',
+            search: 'ابحث بالاسم أو مدير الصندوق',
+            loading: 'جارٍ تحميل الصناديق…',
+            error: 'تعذّر تحميل الصناديق — يرجى المحاولة مجددًا.',
+            noMatch: 'لا توجد صناديق مطابقة لبحثك.',
+            pickPrompt: 'اختر صندوقًا واحدًا على الأقل',
+            selected: 'المحدد: {n}',
+            go: 'قارن الآن',
+            thisFund: 'هذا الصندوق',
+        },
         suitTitle: 'هل هذا الصندوق مناسب لك؟',
         suitSub: 'كيف يتوافق هذا الصندوق مع مدد الاستثمار وملفات مخاطر المستثمرين.',
         horizonTitle: 'مدة الاستثمار',

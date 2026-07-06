@@ -303,6 +303,13 @@ export default function FundPageClient(props: FundClientData) {
                         </section>
                     )}
 
+                    {/* Scorecard — free account unlocks all (gated) */}
+                    {analytics.hasEnoughData && (
+                        <FundGate t={t}>
+                            <Scorecard scores={analytics.scores} t={t} />
+                        </FundGate>
+                    )}
+
                     {/* Where to invest */}
                     {(platforms.length > 0 || prospectusUrl || tradingRows.length > 0) && (
                         <section className="glass-premium rounded-[2rem] p-6 sm:p-8" aria-label={t.purchaseChannels}>
@@ -375,13 +382,6 @@ export default function FundPageClient(props: FundClientData) {
 
                             <p className="mt-6 border-t border-border/60 pt-3 text-xs text-muted">{t.channelsDisclaimer}</p>
                         </section>
-                    )}
-
-                    {/* Scorecard — free account unlocks all (gated) */}
-                    {analytics.hasEnoughData && (
-                        <FundGate t={t}>
-                            <Scorecard scores={analytics.scores} t={t} />
-                        </FundGate>
                     )}
 
                     {/* Similar funds */}

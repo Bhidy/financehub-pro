@@ -214,13 +214,6 @@ export default function FundPageClient(props: FundClientData) {
                         </section>
                     )}
 
-                    {/* Scorecard — free account unlocks all (gated) */}
-                    {analytics.hasEnoughData && (
-                        <FundGate t={t}>
-                            <Scorecard scores={analytics.scores} t={t} />
-                        </FundGate>
-                    )}
-
                     {/* Investment thesis */}
                     {(strategy || objective) && (
                         <section className="glass-premium rounded-[2rem] p-6 sm:p-7" aria-label={t.investmentThesis}>
@@ -382,6 +375,13 @@ export default function FundPageClient(props: FundClientData) {
 
                             <p className="mt-6 border-t border-border/60 pt-3 text-xs text-muted">{t.channelsDisclaimer}</p>
                         </section>
+                    )}
+
+                    {/* Scorecard — free account unlocks all (gated) */}
+                    {analytics.hasEnoughData && (
+                        <FundGate t={t}>
+                            <Scorecard scores={analytics.scores} t={t} />
+                        </FundGate>
                     )}
 
                     {/* Similar funds */}

@@ -93,8 +93,10 @@ function basics(fund: Fund, lang: Lang) {
     const nameAr = str(fund, 'fund_name');
     const nameFallback = lang === 'ar' ? `صندوق ${fund.fund_id}` : `Fund ${fund.fund_id}`;
     const name = lang === 'ar' ? nameAr || nameEn || nameFallback : nameEn || nameAr || nameFallback;
-    const canonicalEn = fundPath(fund.fund_id, nameEn, nameAr);
-    const canonicalAr = `/ar${canonicalEn}`;
+    const canonicalEn = fundPath(fund.fund_id, nameEn, nameAr, 'en');
+    // Arabic canonical carries the ARABIC slug (/ar/Funds/{id}-{arabic-slug});
+    // any older /ar URL with the English slug 308s here via the ID-keyed route.
+    const canonicalAr = fundPath(fund.fund_id, nameEn, nameAr, 'ar');
     const managerEn = str(fund, 'manager_name_en') || str(fund, 'owner_name_en') || str(fund, 'issuer_en');
     const managerAr = str(fund, 'manager_name') || str(fund, 'owner_name');
     const manager = lang === 'ar' ? managerAr || managerEn : managerEn || managerAr;
@@ -138,7 +140,8 @@ export async function fundMetadata(idParam: string, lang: Lang): Promise<Metadat
         description,
         alternates: {
             canonical: encodeURI(canonical),
-            languages: { en: encodeURI(canonicalEn), ar: encodeURI(canonicalAr), 'x-default': encodeURI(canonicalEn) },
+            // x-default = Arabic: the site's default language is Arabic (Egypt-first).
+            languages: { en: encodeURI(canonicalEn), ar: encodeURI(canonicalAr), 'x-default': encodeURI(canonicalAr) },
         },
         openGraph: {
             type: 'website',
@@ -433,7 +436,6 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
 }
 
 async function resolvePeers(fund: Fund, lang: Lang): Promise<FundClientData['peers']> {
-    const arPrefix = lang === 'ar' ? '/ar' : '';
     let peers = (await getFundPeers(fund.fund_id))
         .map((p) => {
             const peerId = typeof p.peer_fund_id === 'number' ? p.peer_fund_id : Number(p.peer_fund_id);
@@ -442,7 +444,7 @@ async function resolvePeers(fund: Fund, lang: Lang): Promise<FundClientData['pee
             const ar = typeof p.peer_fund_name === 'string' && p.peer_fund_name.trim() ? p.peer_fund_name.trim() : null;
             if (!en && !ar) return null;
             const label = lang === 'ar' ? ar || en! : en || ar!;
-            return { id: peerId, label, href: `${arPrefix}${fundPath(peerId, en, ar)}` };
+            return { id: peerId, label, href: encodeURI(fundPath(peerId, en, ar, lang)) };
         })
         .filter((p): p is { id: number; label: string; href: string } => p !== null);
     if (peers.length === 0) {
@@ -458,7 +460,7 @@ async function resolvePeers(fund: Fund, lang: Lang): Promise<FundClientData['pee
                 if (!Number.isInteger(id) || id <= 0 || seen.has(id) || (!en && !ar)) return null;
                 seen.add(id);
                 const label = lang === 'ar' ? ar || en! : en || ar!;
-                return { id, label, href: `${arPrefix}${fundPath(id, en, ar)}` };
+                return { id, label, href: encodeURI(fundPath(id, en, ar, lang)) };
             })
             .filter((p): p is { id: number; label: string; href: string } => p !== null)
             .slice(0, 4);

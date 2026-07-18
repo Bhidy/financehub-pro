@@ -1,34 +1,43 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { SITE_URL, absUrl } from '@/lib/seo';
+import { notFound, permanentRedirect } from 'next/navigation';
+import { SITE_URL, absUrl, arabicSlug, assertUniqueSlugs, canonicalRedirectTarget, glossaryPath } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import {
     GLOSSARY_TERMS,
     GLOSSARY_SITE_LINKS,
     firstSentence,
-    getGlossaryTerm,
+    getGlossaryTermByParam,
     relatedGlossaryTerms,
 } from '@/content/glossary-terms';
 
 /**
- * Arabic glossary term page at /ar/Learn/glossary/{slug}. Fully static:
- * content comes from content/glossary-terms.ts only (no db). Uses the SAME
- * hreflang languages map as the English page so the pair is reciprocal.
+ * Arabic glossary term page. Canonical URL carries the ARABIC-term slug:
+ * /ar/Learn/glossary/{arabic-slug}. The legacy English slug (the catalogue
+ * key) still resolves and 308s to the Arabic canonical, so indexed URLs never
+ * 404. Fully static: content comes from content/glossary-terms.ts only (no
+ * db). Uses the SAME hreflang languages map as the English page (reciprocal).
  */
 
 type Props = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams() {
-    return GLOSSARY_TERMS.map((t) => ({ slug: t.slug }));
+    // Build gate: an EN/AR slug collision would point one URL at two terms
+    // (or an alias at the wrong one) — fail the build, never ship it.
+    assertUniqueSlugs(
+        'glossary terms (EN ∪ AR)',
+        GLOSSARY_TERMS.flatMap((t) => [...new Set([t.slug, arabicSlug(t.ar.term) || t.slug])])
+    );
+    // Prerender the Arabic canonicals; legacy EN slugs render on demand → 308.
+    return GLOSSARY_TERMS.map((t) => ({ slug: arabicSlug(t.ar.term) || t.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
-    const term = getGlossaryTerm(slug);
+    const term = getGlossaryTermByParam(slug);
     if (!term) return {};
-    const path = `/ar/Learn/glossary/${slug}`;
+    const path = encodeURI(glossaryPath(term.slug, term.ar.term, 'ar'));
     const description = firstSentence(term.ar.definition);
     return {
         title: `${term.ar.term} — تعريف`,
@@ -36,9 +45,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: path,
             languages: {
-                en: `/Learn/glossary/${slug}`,
+                en: `/Learn/glossary/${term.slug}`,
                 ar: path,
-                'x-default': `/Learn/glossary/${slug}`,
+                // x-default = Arabic: the site's default language is Arabic.
+                'x-default': path,
             },
         },
         openGraph: {
@@ -54,12 +64,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function GlossaryTermArabicPage({ params }: Props) {
     const { slug } = await params;
-    const term = getGlossaryTerm(slug);
+    const term = getGlossaryTermByParam(slug);
     if (!term) notFound();
 
-    const path = `/ar/Learn/glossary/${slug}`;
-    const related = relatedGlossaryTerms(slug);
-    const siteLinks = GLOSSARY_SITE_LINKS[slug] ?? [];
+    const path = glossaryPath(term.slug, term.ar.term, 'ar');
+    // 308 legacy/stale slugs (e.g. the old English slug) to the Arabic canonical.
+    const redirectTarget = canonicalRedirectTarget(`/ar/Learn/glossary/${slug}`, path);
+    if (redirectTarget) permanentRedirect(redirectTarget);
+    const related = relatedGlossaryTerms(term.slug);
+    const siteLinks = GLOSSARY_SITE_LINKS[term.slug] ?? [];
 
     const definedTermJsonLd = {
         '@context': 'https://schema.org',
@@ -128,7 +141,7 @@ export default async function GlossaryTermArabicPage({ params }: Props) {
                     {related.map((t) => (
                         <li key={t.slug}>
                             <Link
-                                href={`/ar/Learn/glossary/${t.slug}`}
+                                href={encodeURI(glossaryPath(t.slug, t.ar.term, 'ar'))}
                                 prefetch={false}
                                 className="inline-block rounded-full border border-border bg-surface px-3.5 py-1.5 text-sm font-medium text-main transition-colors hover:border-teal-300 hover:text-starta-teal"
                             >

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
         'Egyptian Exchange (EGX) stocks ranked by trailing dividend yield — the highest-yielding EGX shares with live prices, updated daily. Ranking is mechanical, not a recommendation.',
     alternates: {
         canonical: '/markets/top-dividend-yield',
-        languages: { en: '/markets/top-dividend-yield', ar: '/ar/markets/top-dividend-yield', 'x-default': '/markets/top-dividend-yield' },
+        languages: { en: '/markets/top-dividend-yield', ar: '/ar/markets/top-dividend-yield', 'x-default': '/ar/markets/top-dividend-yield' },
     },
     openGraph: {
         type: 'website',

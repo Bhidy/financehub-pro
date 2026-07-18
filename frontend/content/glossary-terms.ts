@@ -8,6 +8,8 @@
  * used in the Egyptian market (كوبون، مكرر الربحية، وثائق الصناديق…).
  */
 
+import { arabicSlug } from '@/lib/seo';
+
 export type GlossaryTerm = {
     slug: string;
     en: { term: string; definition: string; related?: string[] };
@@ -565,20 +567,6 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
         },
     },
     {
-        slug: 'broker',
-        en: {
-            term: 'Brokerage Firm (Broker)',
-            definition:
-                'A brokerage firm is a licensed intermediary that executes buy and sell orders on the Egyptian Exchange on behalf of investors, in exchange for a commission. To trade EGX shares you open an account with a licensed broker, obtain a Unified Investor Code, and place orders through the broker’s platform or dealers.',
-            related: ['unified-investor-code', 'stock', 'stamp-duty'],
-        },
-        ar: {
-            term: 'شركة السمسرة (الوسيط)',
-            definition:
-                'شركة السمسرة وسيط مرخّص ينفّذ أوامر الشراء والبيع في البورصة المصرية نيابة عن المستثمرين مقابل عمولة. وللتداول في أسهم البورصة تفتح حسابًا لدى شركة سمسرة مرخّصة، وتحصل على كود موحد للمستثمر، وتُصدر أوامرك عبر منصة الشركة أو من خلال متعامليها.',
-        },
-    },
-    {
         slug: 'circuit-breaker-egx',
         en: {
             term: 'Price Limits & Circuit Breakers',
@@ -621,20 +609,6 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
         },
     },
     {
-        slug: 'ex-dividend-date',
-        en: {
-            term: 'Ex-Dividend Date',
-            definition:
-                'The ex-dividend date is the cut-off from which a share trades without the right to the upcoming dividend: an investor must own the share before this date to receive the payment. On or after it, the buyer is not entitled to that distribution, and the share price typically adjusts down by roughly the dividend amount.',
-            related: ['dividend', 'coupon', 'stock'],
-        },
-        ar: {
-            term: 'تاريخ التوزيع (تاريخ عدم الأحقية)',
-            definition:
-                'تاريخ عدم الأحقية هو الموعد الذي يبدأ من عنده تداول السهم دون حق التوزيع القادم: فيجب أن يمتلك المستثمر السهم قبل هذا التاريخ ليحصل على الدفعة. واعتبارًا منه لا يستحق المشتري ذلك التوزيع، ويتراجع سعر السهم عادةً بمقدار قيمة التوزيع تقريبًا.',
-        },
-    },
-    {
         slug: 'foreign-ownership-limit',
         en: {
             term: 'Foreign Ownership & Free Float',
@@ -653,6 +627,21 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
 /** Look up a term by slug (undefined for unknown slugs → caller calls notFound). */
 export function getGlossaryTerm(slug: string): GlossaryTerm | undefined {
     return GLOSSARY_TERMS.find((t) => t.slug === slug);
+}
+
+/**
+ * Look up a term by a ROUTE PARAM (arrives percent-encoded): matches the
+ * English catalogue slug OR the Arabic-term slug. The Arabic tree resolves
+ * both and 308s the English form to the Arabic canonical.
+ */
+export function getGlossaryTermByParam(slugParam: string): GlossaryTerm | undefined {
+    let decoded = slugParam;
+    try {
+        decoded = decodeURIComponent(slugParam);
+    } catch {
+        // malformed escapes: compare raw
+    }
+    return GLOSSARY_TERMS.find((t) => t.slug === decoded || arabicSlug(t.ar.term) === decoded);
 }
 
 /**

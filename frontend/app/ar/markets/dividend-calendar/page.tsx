@@ -15,7 +15,7 @@ export const metadata: Metadata = {
         'توزيعات الأرباح القادمة والأخيرة في البورصة المصرية (EGX): تواريخ عدم الأحقية والمبالغ لكل سهم وتواريخ الصرف لشركات البورصة. محدَّث مع بيانات السوق.',
     alternates: {
         canonical: '/ar/markets/dividend-calendar',
-        languages: { en: '/markets/dividend-calendar', ar: '/ar/markets/dividend-calendar', 'x-default': '/markets/dividend-calendar' },
+        languages: { en: '/markets/dividend-calendar', ar: '/ar/markets/dividend-calendar', 'x-default': '/ar/markets/dividend-calendar' },
     },
     openGraph: {
         type: 'website',

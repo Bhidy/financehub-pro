@@ -5,7 +5,7 @@
 (function () {
     'use strict';
 
-    var lang = localStorage.getItem('starta-lang') || localStorage.getItem('lang') || 'en';
+    var lang = localStorage.getItem('starta-lang') || localStorage.getItem('lang') || 'ar'; // site default: Arabic
 
     // ─── Translations Dictionary ─────────────────────────────────────────
     var T_SHOWCASE = {
@@ -1003,7 +1003,7 @@
         toggle.addEventListener('click', function () {
             // We use a short timeout to run *after* portfolio-list.js's sync click handler
             setTimeout(function () {
-                var nextLang = localStorage.getItem('starta-lang') || localStorage.getItem('lang') || 'en';
+                var nextLang = localStorage.getItem('starta-lang') || localStorage.getItem('lang') || 'ar';
                 if (nextLang !== lang) {
                     lang = nextLang;
                     renderShowcase();

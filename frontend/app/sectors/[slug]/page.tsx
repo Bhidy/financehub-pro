@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getAllTickers, getSectors } from '@/lib/public-data';
-import { SITE_URL, slugify, symbolPath } from '@/lib/seo';
+import { SITE_URL, sectorPath, slugify, symbolPath } from '@/lib/seo';
+import { sectorAr } from '@/content/sector-names-ar';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -78,7 +79,15 @@ export async function generateMetadata({
     return {
         title: `${match.sector_name} Stocks on the EGX — Prices & Market Caps`,
         description,
-        alternates: { canonical, languages: { en: canonical, ar: `/ar/sectors/${slugify(match.sector_name)}`, 'x-default': canonical } },
+        // AR canonical carries the Arabic-name slug; x-default = Arabic (site default).
+        alternates: {
+            canonical,
+            languages: {
+                en: canonical,
+                ar: encodeURI(sectorPath(match.sector_name, sectorAr(match.sector_name), 'ar')),
+                'x-default': encodeURI(sectorPath(match.sector_name, sectorAr(match.sector_name), 'ar')),
+            },
+        },
         openGraph: {
             type: 'website',
             title: `${match.sector_name} Stocks on the EGX — Prices & Market Caps | Starta Markets`,

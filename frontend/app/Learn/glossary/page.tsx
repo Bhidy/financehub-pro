@@ -23,7 +23,7 @@ export const metadata: Metadata = {
         languages: {
             en: PATH,
             ar: '/ar/Learn/glossary',
-            'x-default': PATH,
+            'x-default': '/ar/Learn/glossary',
         },
     },
     openGraph: {

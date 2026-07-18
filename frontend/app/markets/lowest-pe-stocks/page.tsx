@@ -20,7 +20,7 @@ export const metadata: Metadata = {
         'Egyptian Exchange (EGX) stocks ranked by the lowest trailing price-to-earnings (P/E) ratio — a mechanical value screen of the cheapest EGX shares by earnings multiple, with live prices, updated daily. Information, not a recommendation.',
     alternates: {
         canonical: '/markets/lowest-pe-stocks',
-        languages: { en: '/markets/lowest-pe-stocks', ar: '/ar/markets/lowest-pe-stocks', 'x-default': '/markets/lowest-pe-stocks' },
+        languages: { en: '/markets/lowest-pe-stocks', ar: '/ar/markets/lowest-pe-stocks', 'x-default': '/ar/markets/lowest-pe-stocks' },
     },
     openGraph: {
         type: 'website',

@@ -28,7 +28,7 @@ export const metadata: Metadata = {
         languages: {
             en: '/Funds/best-mutual-funds-egypt-2026',
             ar: '/ar/Funds/best-mutual-funds-egypt-2026',
-            'x-default': '/Funds/best-mutual-funds-egypt-2026',
+            'x-default': '/ar/Funds/best-mutual-funds-egypt-2026',
         },
     },
     openGraph: {

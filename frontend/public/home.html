@@ -4,6 +4,7 @@
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=1.0.1"></script>
+    <script src="/assets/starta-lang-boot.js?v=1.0.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Starta | Master the EGX</title>
@@ -3979,7 +3980,7 @@
         const langToggle = document.getElementById('langToggle');
         function getStoredLanguage() {
             const stored = localStorage.getItem('starta-lang') || localStorage.getItem('lang');
-            return stored === 'ar' ? 'ar' : 'en';
+            return stored === 'en' ? 'en' : 'ar'; // site default: Arabic
         }
         function applyTranslations(lang) {
             document.querySelectorAll('[data-key]').forEach(el => {

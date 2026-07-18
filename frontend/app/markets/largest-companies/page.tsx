@@ -20,7 +20,7 @@ export const metadata: Metadata = {
         'The biggest companies on the Egyptian Exchange (EGX) ranked by market capitalisation — the largest Egyptian listed stocks with live prices, updated daily. Ranking is mechanical, not a recommendation.',
     alternates: {
         canonical: '/markets/largest-companies',
-        languages: { en: '/markets/largest-companies', ar: '/ar/markets/largest-companies', 'x-default': '/markets/largest-companies' },
+        languages: { en: '/markets/largest-companies', ar: '/ar/markets/largest-companies', 'x-default': '/ar/markets/largest-companies' },
     },
     openGraph: {
         type: 'website',

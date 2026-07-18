@@ -15,7 +15,7 @@ export const metadata: Metadata = {
         'أسهم البورصة المصرية (EGX) مرتبة حسب عائد التوزيع — أعلى الأسهم المصرية توزيعًا للأرباح بأسعارها المباشرة، محدَّثة يوميًا. الترتيب آلي وليس توصية.',
     alternates: {
         canonical: '/ar/markets/top-dividend-yield',
-        languages: { en: '/markets/top-dividend-yield', ar: '/ar/markets/top-dividend-yield', 'x-default': '/markets/top-dividend-yield' },
+        languages: { en: '/markets/top-dividend-yield', ar: '/ar/markets/top-dividend-yield', 'x-default': '/ar/markets/top-dividend-yield' },
     },
     openGraph: {
         type: 'website',

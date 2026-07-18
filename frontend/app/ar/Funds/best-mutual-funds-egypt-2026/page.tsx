@@ -23,7 +23,7 @@ export const metadata: Metadata = {
         languages: {
             en: '/Funds/best-mutual-funds-egypt-2026',
             ar: '/ar/Funds/best-mutual-funds-egypt-2026',
-            'x-default': '/Funds/best-mutual-funds-egypt-2026',
+            'x-default': '/ar/Funds/best-mutual-funds-egypt-2026',
         },
     },
     openGraph: {
@@ -96,7 +96,7 @@ export default async function BestFundsArPage() {
             '@type': 'ListItem',
             position: i + 1,
             name: arName(f),
-            url: absUrl(fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'))),
+            url: absUrl(fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), 'ar')),
         })),
     };
     const faq = [
@@ -156,7 +156,7 @@ export default async function BestFundsArPage() {
                                     <tr key={String(f.fund_id)} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                         <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                         <td className="px-4 py-2.5">
-                                            <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'))} className="font-semibold text-main hover:text-starta-teal">
+                                            <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), 'ar')} className="font-semibold text-main hover:text-starta-teal">
                                                 {arName(f)}
                                             </Link>
                                         </td>
@@ -196,7 +196,7 @@ export default async function BestFundsArPage() {
                                     return (
                                         <tr key={String(f.fund_id)} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                             <td className="px-4 py-2.5">
-                                                <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'))} className="font-semibold text-main hover:text-starta-teal">{arName(f)}</Link>
+                                                <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), 'ar')} className="font-semibold text-main hover:text-starta-teal">{arName(f)}</Link>
                                             </td>
                                             <td className="px-4 py-2.5 font-bold text-emerald-600 tabular-nums" dir="ltr">{fmtPct(num(f, 'return_1y'))}</td>
                                             <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtPct(num(f, 'return_3y'))}</td>

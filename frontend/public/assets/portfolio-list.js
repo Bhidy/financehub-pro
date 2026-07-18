@@ -5,7 +5,7 @@
 (function () {
     'use strict';
 
-    var lang = localStorage.getItem('starta-lang') || localStorage.getItem('lang') || 'en';
+    var lang = localStorage.getItem('starta-lang') || localStorage.getItem('lang') || 'ar'; // site default: Arabic
 
     /* ─── Nav translations ────────────────────────────────────────────── */
     var NAV = {

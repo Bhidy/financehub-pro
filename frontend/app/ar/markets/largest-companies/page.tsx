@@ -15,7 +15,7 @@ export const metadata: Metadata = {
         'أكبر الشركات المدرجة في البورصة المصرية (EGX) مرتبة حسب القيمة السوقية — أضخم الأسهم المصرية بأسعارها المباشرة، محدَّثة يوميًا. الترتيب آلي وليس توصية.',
     alternates: {
         canonical: '/ar/markets/largest-companies',
-        languages: { en: '/markets/largest-companies', ar: '/ar/markets/largest-companies', 'x-default': '/markets/largest-companies' },
+        languages: { en: '/markets/largest-companies', ar: '/ar/markets/largest-companies', 'x-default': '/ar/markets/largest-companies' },
     },
     openGraph: {
         type: 'website',

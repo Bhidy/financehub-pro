@@ -7,7 +7,7 @@
     'use strict';
 
     /* ─── State ───────────────────────────────────────────────────────── */
-    var lang     = localStorage.getItem('starta-lang') || localStorage.getItem('lang') || 'en';
+    var lang     = localStorage.getItem('starta-lang') || localStorage.getItem('lang') || 'ar'; // site default: Arabic
     var pfId     = location.pathname.split('/').filter(Boolean)[1] || 'demo';
 
     /* ─── Nav translations ────────────────────────────────────────────── */

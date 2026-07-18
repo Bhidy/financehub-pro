@@ -9,6 +9,11 @@ export const SITE_URL = 'https://startamarkets.com';
 export const SITE_NAME = 'Starta Markets';
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
+/** The two public site languages. Arabic is the site's default language:
+ *  x-default hreflang points at the Arabic twin, and the static pages fall
+ *  back to Arabic when no stored preference exists. */
+export type SiteLang = 'en' | 'ar';
+
 /**
  * Unicode-safe slugifier (Arabic + Latin). Keeps letters/numbers of any
  * script, collapses everything else to single dashes, caps length at a word
@@ -27,16 +32,85 @@ export function slugify(input: string | null | undefined, maxLen = 80): string {
     return (lastDash > 40 ? cut.slice(0, lastDash) : cut).replace(/-+$/g, '');
 }
 
-/** Canonical news-article path: /News/{id}-{slug} (bare /News/{id} 308s here). */
+/**
+ * Arabic-canonical slugifier. Strips presentation-only codepoints (tatweel,
+ * harakat/diacritics, superscript alef) BEFORE slugifying so a vowelized copy
+ * edit ("مُتوازن" vs "متوازن") can never fork a URL, then applies the same
+ * deterministic slugify. Used ONLY for the /ar/* canonical slugs — the base
+ * slugify() behavior is a frozen contract for existing EN/news URLs.
+ */
+export function arabicSlug(input: string | null | undefined, maxLen = 80): string {
+    if (!input) return '';
+    const stripped = input.normalize('NFKC').replace(/[\u0640\u064B-\u065F\u0670]/g, '');
+    return slugify(stripped, maxLen);
+}
+
+/** Canonical news-article path: /News/{id}-{slug} (bare /News/{id} 308s here).
+ *  Single URL per article; Arabic articles already carry Arabic slugs because
+ *  the slug derives from the (Arabic) headline. */
 export function newsPath(id: number | string, headline?: string | null): string {
     const slug = slugify(headline);
     return slug ? `/News/${id}-${slug}` : `/News/${id}`;
 }
 
-/** Canonical fund path: /Funds/{fund_id}-{slug}. */
-export function fundPath(fundId: number | string, nameEn?: string | null, nameAr?: string | null): string {
-    const slug = slugify(nameEn || nameAr);
-    return slug ? `/Funds/${fundId}-${slug}` : `/Funds/${fundId}`;
+/**
+ * Canonical fund path, per language:
+ *   en → /Funds/{fund_id}-{en-slug}
+ *   ar → /ar/Funds/{fund_id}-{arabic-slug}   (falls back to the EN slug when
+ *        the fund has no Arabic name — never an empty slug segment)
+ * The route is ID-keyed, so a stale/foreign slug always resolves and 308s to
+ * this canonical — changing the AR slug is self-healing for old URLs.
+ */
+export function fundPath(
+    fundId: number | string,
+    nameEn?: string | null,
+    nameAr?: string | null,
+    lang: SiteLang = 'en'
+): string {
+    const slug = lang === 'ar' ? arabicSlug(nameAr) || slugify(nameEn) : slugify(nameEn || nameAr);
+    const prefix = lang === 'ar' ? '/ar' : '';
+    return slug ? `${prefix}/Funds/${fundId}-${slug}` : `${prefix}/Funds/${fundId}`;
+}
+
+/** Canonical Learn-topic path: /Learn/{slug} | /ar/Learn/{arabic-slug}.
+ *  slugEn is the topic's stable catalogue key; the AR slug derives from the
+ *  Arabic title (EN slug fallback keeps the URL resolvable regardless). */
+export function learnPath(slugEn: string, titleAr?: string | null, lang: SiteLang = 'en'): string {
+    if (lang === 'ar') return `/ar/Learn/${arabicSlug(titleAr) || slugEn}`;
+    return `/Learn/${slugEn}`;
+}
+
+/** Canonical glossary-term path: /Learn/glossary/{slug} | /ar/Learn/glossary/{arabic-slug}. */
+export function glossaryPath(slugEn: string, termAr?: string | null, lang: SiteLang = 'en'): string {
+    if (lang === 'ar') return `/ar/Learn/glossary/${arabicSlug(termAr) || slugEn}`;
+    return `/Learn/glossary/${slugEn}`;
+}
+
+/** Canonical sector path: /sectors/{en-slug} | /ar/sectors/{arabic-slug}.
+ *  Both slugs derive from names (EN from the DB sector_name, AR from the
+ *  hand-authored Arabic display name); pages resolve either form and 308 to
+ *  the canonical for the tree they serve. */
+export function sectorPath(sectorNameEn: string, sectorNameAr?: string | null, lang: SiteLang = 'en'): string {
+    if (lang === 'ar') return `/ar/sectors/${arabicSlug(sectorNameAr) || slugify(sectorNameEn)}`;
+    return `/sectors/${slugify(sectorNameEn)}`;
+}
+
+/**
+ * Build-time collision gate for slug-keyed localized routes. Call from
+ * generateStaticParams with the UNION of EN + AR slugs for a family: any
+ * duplicate would make two documents claim one URL (or an alias resolve to
+ * the wrong document), so the build must fail loudly, not ship it.
+ */
+export function assertUniqueSlugs(family: string, slugs: string[]): void {
+    const seen = new Map<string, number>();
+    for (const s of slugs) seen.set(s, (seen.get(s) ?? 0) + 1);
+    const dupes = [...seen.entries()].filter(([, n]) => n > 1).map(([s]) => s);
+    if (dupes.length > 0) {
+        throw new Error(
+            `[seo] ${family}: slug collision(s) across EN/AR slugs: ${dupes.join(', ')} — ` +
+                'disambiguate the colliding titles/terms before shipping.'
+        );
+    }
 }
 
 /** Canonical symbol path: /symbol/{SYMBOL} (uppercase enforced by middleware). */

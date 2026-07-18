@@ -12,7 +12,7 @@ export const metadata: Metadata = {
         'كيف تجمع ستارتا ماركتس بيانات وأخبار البورصة المصرية وتتحقق منها وتنشرها — معايير المصادر، وعملية الدقة، والإفصاح عن استخدام الذكاء الاصطناعي، وسياسة التصحيحات.',
     alternates: {
         canonical: '/ar/editorial-policy',
-        languages: { en: '/editorial-policy', ar: '/ar/editorial-policy', 'x-default': '/editorial-policy' },
+        languages: { en: '/editorial-policy', ar: '/ar/editorial-policy', 'x-default': '/ar/editorial-policy' },
     },
 };
 

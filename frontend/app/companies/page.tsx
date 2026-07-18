@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: 'EGX Listed Companies — All Egyptian Exchange Stocks',
     description:
         'Complete directory of companies listed on the Egyptian Exchange (EGX), sorted by market capitalization — live prices, sectors and market caps, updated daily.',
-    alternates: { canonical: '/companies', languages: { en: '/companies', ar: '/ar/companies', 'x-default': '/companies' } },
+    alternates: { canonical: '/companies', languages: { en: '/companies', ar: '/ar/companies', 'x-default': '/ar/companies' } },
     openGraph: {
         type: 'website',
         title: 'EGX Listed Companies — All Egyptian Exchange Stocks | Starta Markets',

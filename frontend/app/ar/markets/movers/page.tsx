@@ -15,7 +15,7 @@ export const metadata: Metadata = {
         'أكبر الرابحين والخاسرين والأسهم الأكثر نشاطًا في البورصة المصرية (EGX) اليوم حسب نسبة التغير وحجم التداول — محدَّث كل 15 دقيقة.',
     alternates: {
         canonical: '/ar/markets/movers',
-        languages: { en: '/markets/movers', ar: '/ar/markets/movers', 'x-default': '/markets/movers' },
+        languages: { en: '/markets/movers', ar: '/ar/markets/movers', 'x-default': '/ar/markets/movers' },
     },
     openGraph: {
         type: 'website',

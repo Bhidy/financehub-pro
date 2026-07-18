@@ -471,7 +471,7 @@
 
     function init() {
         const stored = localStorage.getItem("starta-lang") || localStorage.getItem("lang");
-        setLanguage(stored === "ar" ? "ar" : "en", { refresh: false });
+        setLanguage(stored === "en" ? "en" : "ar", { refresh: false }); // site default: Arabic
         renderCategories();
         document.getElementById("langToggle").addEventListener("click", () => setLanguage(state.lang === "ar" ? "en" : "ar"));
         if (document.body.dataset.page === "listing") {

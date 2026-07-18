@@ -17,7 +17,7 @@ export const metadata: Metadata = {
         'How Starta Markets sources, verifies and publishes Egyptian Exchange market data and news — our sourcing standards, accuracy process, AI-assistance disclosure and corrections policy.',
     alternates: {
         canonical: '/editorial-policy',
-        languages: { en: '/editorial-policy', ar: '/ar/editorial-policy', 'x-default': '/editorial-policy' },
+        languages: { en: '/editorial-policy', ar: '/ar/editorial-policy', 'x-default': '/ar/editorial-policy' },
     },
 };
 

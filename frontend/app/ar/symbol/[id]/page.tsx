@@ -142,7 +142,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             languages: {
                 en: `/symbol/${symbol}`,
                 ar: `/ar/symbol/${symbol}`,
-                'x-default': `/symbol/${symbol}`,
+                'x-default': `/ar/symbol/${symbol}`,
             },
         },
         openGraph: {

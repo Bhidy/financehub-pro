@@ -12,7 +12,7 @@ export const metadata: Metadata = {
         'How Starta Markets handles corrections to Egyptian Exchange data and news, and how to report a possible error. We correct mistakes promptly and transparently.',
     alternates: {
         canonical: '/corrections',
-        languages: { en: '/corrections', ar: '/ar/corrections', 'x-default': '/corrections' },
+        languages: { en: '/corrections', ar: '/ar/corrections', 'x-default': '/ar/corrections' },
     },
 };
 

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL, learnPath } from '@/lib/seo';
 import LearnTopicArticle, { learnTopics } from '@/components/seo/LearnTopicArticle';
 
 /**
@@ -26,8 +26,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             canonical: `/Learn/${slug}`,
             languages: {
                 en: `/Learn/${slug}`,
-                ar: `/ar/Learn/${slug}`,
-                'x-default': `/Learn/${slug}`,
+                // AR canonical carries the Arabic-title slug; x-default = Arabic
+                // (the site's default language).
+                ar: encodeURI(learnPath(topic.slug, topic.ar.title, 'ar')),
+                'x-default': encodeURI(learnPath(topic.slug, topic.ar.title, 'ar')),
             },
         },
         openGraph: {

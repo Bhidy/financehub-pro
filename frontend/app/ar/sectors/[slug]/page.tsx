@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getAllTickers, getSectors } from '@/lib/public-data';
-import { SITE_URL, slugify } from '@/lib/seo';
+import { SITE_URL, canonicalRedirectTarget, sectorPath, slugify } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { sectorAr } from '@/content/sector-names-ar';
 
-/** Arabic twin of /sectors/{slug}. Slug is derived from the English
- * sector_name (same rule as EN), so both trees resolve identically. */
+/** Arabic twin of /sectors/{slug}. The CANONICAL slug is Arabic (from the
+ * sector's Arabic display name); the legacy English-derived slug still
+ * resolves and 308s to the Arabic canonical, so indexed URLs never 404. */
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,13 @@ function decodeSlug(raw: string): string {
 async function resolveSector(rawSlug: string): Promise<{ sector_name: string; companies: number; market_cap: number | null } | null> {
     const slug = decodeSlug(rawSlug);
     const sectors = await getSectors();
-    return sectors.find((s) => slugify(s.sector_name) === slug) || null;
+    return (
+        sectors.find(
+            (s) =>
+                sectorPath(s.sector_name, sectorAr(s.sector_name), 'ar') === `/ar/sectors/${slug}` ||
+                slugify(s.sector_name) === slug
+        ) || null
+    );
 }
 
 const fmtCap = (n: number | null): string => {
@@ -34,14 +41,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const match = await resolveSector(slug);
     if (!match) return { title: 'القطاع غير موجود', robots: { index: false, follow: false } };
     const ar = sectorAr(match.sector_name) || match.sector_name;
-    const canonical = `/ar/sectors/${slugify(match.sector_name)}`;
+    // Arabic canonical slug; x-default = Arabic (the site's default language).
+    const canonical = encodeURI(sectorPath(match.sector_name, sectorAr(match.sector_name), 'ar'));
     const description = `شركات قطاع ${ar} المدرجة في البورصة المصرية (EGX) — الأسعار المباشرة والقيمة السوقية، محدَّثة يوميًا.`.slice(0, 160);
     return {
         title: `أسهم قطاع ${ar} في البورصة المصرية — الأسعار والقيمة السوقية`,
         description,
         alternates: {
             canonical,
-            languages: { en: `/sectors/${slugify(match.sector_name)}`, ar: canonical, 'x-default': `/sectors/${slugify(match.sector_name)}` },
+            languages: { en: `/sectors/${slugify(match.sector_name)}`, ar: canonical, 'x-default': canonical },
         },
         openGraph: { type: 'website', title: `أسهم قطاع ${ar} في البورصة المصرية | ستارتا ماركتس`, description, url: canonical, locale: 'ar_EG' },
     };
@@ -51,6 +59,12 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
     const { slug } = await params;
     const match = await resolveSector(slug);
     if (!match) notFound();
+    // 308 the legacy English-derived slug (or any stale form) to the Arabic canonical.
+    const redirectTarget = canonicalRedirectTarget(
+        `/ar/sectors/${slug}`,
+        sectorPath(match.sector_name, sectorAr(match.sector_name), 'ar')
+    );
+    if (redirectTarget) permanentRedirect(redirectTarget);
     const ar = sectorAr(match.sector_name) || match.sector_name;
     const tickers = (await getAllTickers()).filter((t) => t.sector_name === match.sector_name);
     const asOf = tickers.reduce<string | null>((mx, t) => (t.last_updated && (!mx || new Date(t.last_updated) > new Date(mx)) ? t.last_updated : mx), null);

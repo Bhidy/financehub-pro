@@ -18,7 +18,7 @@ export const metadata: Metadata = {
         'مؤشر EGX30 — المؤشر الرئيسي للبورصة المصرية — قيمته المباشرة والتغير اليومي والنطاق السنوي والشركات الثلاثين المكونة له، محدث خلال جلسة التداول.',
     alternates: {
         canonical: '/ar/markets/egx30',
-        languages: { en: '/markets/egx30', ar: '/ar/markets/egx30', 'x-default': '/markets/egx30' },
+        languages: { en: '/markets/egx30', ar: '/ar/markets/egx30', 'x-default': '/ar/markets/egx30' },
     },
     openGraph: {
         type: 'website',

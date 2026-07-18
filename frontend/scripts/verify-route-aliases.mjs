@@ -146,6 +146,65 @@ const checks = [
     file: "public/llms.txt",
     assert: (text) => text.includes("https://startamarkets.com/"),
   },
+
+  // ── Arabic-first release gate (AR slugs + default language, 2026-07-18) ──
+  // The site's default language is Arabic and /ar/* canonical URLs carry
+  // Arabic slugs. These checks pin both contracts.
+  {
+    name: "seo.ts keeps the Arabic slug engine (arabicSlug + lang-aware fundPath)",
+    file: "lib/seo.ts",
+    assert: (text) =>
+      /export function arabicSlug\(/.test(text) &&
+      /export function fundPath\([\s\S]*?lang: SiteLang = 'en'/.test(text) &&
+      /export function learnPath\(/.test(text) &&
+      /export function glossaryPath\(/.test(text) &&
+      /export function sectorPath\(/.test(text),
+  },
+  {
+    name: "funds sitemap emits the Arabic twins alongside English",
+    file: "app/sitemaps/[name]/route.ts",
+    assert: (text) => /fundPath\(r\.fund_id, r\.fund_name_en, r\.fund_name, 'ar'\)/.test(text),
+  },
+  {
+    name: "Arabic sector display names are collision-free (they mint /ar/sectors slugs)",
+    file: "content/sector-names-ar.ts",
+    assert: (text) => {
+      const values = [...text.matchAll(/'[^']+':\s*'([^']+)',/g)].map((m) => m[1]);
+      return values.length >= 20 && new Set(values).size === values.length;
+    },
+  },
+  {
+    name: "lang-boot asset exists and defaults to Arabic",
+    file: "public/assets/starta-lang-boot.js",
+    assert: (text) => /var lang = "ar"/.test(text) && /stored === "en"/.test(text),
+  },
+  ...seoPages.map((page) => ({
+    name: `${page} loads the shared lang-boot (first-paint RTL, Arabic default)`,
+    file: `public/${page}.html`,
+    assert: (text) => /<script src=["']\/assets\/starta-lang-boot\.js(?:\?[^"']*)?["']><\/script>/.test(text),
+  })),
+  ...["home", "learn-topic", "learn", "terms", "fund-compare", "marketplace", "fund-details", "privacy"].map((page) => ({
+    name: `${page} no-preference language default is Arabic`,
+    file: `public/${page}.html`,
+    assert: (text) =>
+      text.includes("return stored === 'en' ? 'en' : 'ar';") &&
+      !text.includes("return stored === 'ar' ? 'ar' : 'en';"),
+  })),
+  {
+    name: "market-pulse asset defaults to Arabic",
+    file: "public/assets/market-pulse.js",
+    assert: (text) => text.includes('setLanguage(stored === "en" ? "en" : "ar", false)'),
+  },
+  {
+    name: "news asset defaults to Arabic",
+    file: "public/assets/news-public.js",
+    assert: (text) => text.includes('setLanguage(stored === "en" ? "en" : "ar", { refresh: false })'),
+  },
+  ...["portfolio-detail", "portfolio-list", "portfolio-showcase"].map((asset) => ({
+    name: `${asset} asset defaults to Arabic`,
+    file: `public/assets/${asset}.js`,
+    assert: (text) => !/localStorage\.getItem\('lang'\) \|\| 'en'/.test(text),
+  })),
 ];
 
 async function run() {

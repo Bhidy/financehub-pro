@@ -12,7 +12,7 @@ export const metadata: Metadata = {
         'كيف تتعامل ستارتا ماركتس مع تصحيحات بيانات وأخبار البورصة المصرية، وكيفية الإبلاغ عن خطأ محتمل. نصحّح الأخطاء بسرعة وشفافية.',
     alternates: {
         canonical: '/ar/corrections',
-        languages: { en: '/corrections', ar: '/ar/corrections', 'x-default': '/corrections' },
+        languages: { en: '/corrections', ar: '/ar/corrections', 'x-default': '/ar/corrections' },
     },
 };
 

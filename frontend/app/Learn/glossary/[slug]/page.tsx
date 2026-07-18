@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { SITE_URL, absUrl } from '@/lib/seo';
+import { SITE_URL, absUrl, glossaryPath } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import {
@@ -39,8 +39,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             canonical: path,
             languages: {
                 en: path,
-                ar: `/ar/Learn/glossary/${slug}`,
-                'x-default': path,
+                // AR canonical carries the Arabic-term slug; x-default = Arabic
+                // (the site's default language).
+                ar: encodeURI(glossaryPath(term.slug, term.ar.term, 'ar')),
+                'x-default': encodeURI(glossaryPath(term.slug, term.ar.term, 'ar')),
             },
         },
         openGraph: {

@@ -15,7 +15,7 @@ export const metadata: Metadata = {
         'أسهم البورصة المصرية (EGX) مرتبة حسب أقل مكرر ربحية (P/E) — فلترة آلية لأرخص الأسهم المصرية من حيث مضاعف الأرباح، بأسعارها المباشرة، محدَّثة يوميًا. معلوماتي وليس توصية.',
     alternates: {
         canonical: '/ar/markets/lowest-pe-stocks',
-        languages: { en: '/markets/lowest-pe-stocks', ar: '/ar/markets/lowest-pe-stocks', 'x-default': '/markets/lowest-pe-stocks' },
+        languages: { en: '/markets/lowest-pe-stocks', ar: '/ar/markets/lowest-pe-stocks', 'x-default': '/ar/markets/lowest-pe-stocks' },
     },
     openGraph: {
         type: 'website',

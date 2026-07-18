@@ -23,6 +23,16 @@ The living checklist that keeps the 2026-07 SEO foundation healthy. Owner column
 - Any change to a designed static page requires a browser screenshot check (design is canonical; curl is not verification).
 - New page types must ship: canonical, JSON-LD, data-gated sitemap entries (page 404 gate ⊇ sitemap gate), and an `as-of` + source provenance line for financial data.
 
+## URL + language contracts (2026-07-18: Arabic-first)
+- **The site's default language is ARABIC.** No stored preference → static pages render Arabic RTL (`getStoredLanguage()` falls back to `'ar'`; `assets/starta-lang-boot.js` stamps `lang`/`dir` in `<head>` before first paint). Stored preference keys: `starta-lang` (canonical) + legacy `lang`, mirrored to the `starta-lang` cookie by `PublicPageShell persistLang`.
+- **`/ar/*` canonical URLs carry ARABIC slugs**, built ONLY by the lang-aware helpers in `frontend/lib/seo.ts` (`fundPath(id, en, ar, 'ar')`, `learnPath`, `glossaryPath`, `sectorPath`; `arabicSlug` strips tatweel/diacritics first). Sitemaps, pages, hreflang and internal links must share these builders — never hand-build an `/ar/...` slug.
+  - Funds: `/ar/Funds/{id}-{arabic-slug}` (ID-keyed → stale/EN slugs 308 automatically).
+  - Learn: `/ar/Learn/{arabic-title-slug}`; glossary: `/ar/Learn/glossary/{arabic-term-slug}`; sectors: `/ar/sectors/{arabic-name-slug}` — all three ALSO resolve the legacy English slug and 308 to the Arabic canonical (never remove the alias resolution; indexed URLs depend on it).
+  - `generateStaticParams` gates (`assertUniqueSlugs`) fail the build on any EN∪AR slug collision; the sector map (`content/sector-names-ar.ts`) uniqueness is enforced by `verify:routes`.
+- **x-default hreflang = the Arabic URL** on every EN/AR pair (the home cluster keeps `x-default: /` — the root serves by preference and defaults to Arabic). Keep new paired pages consistent.
+- Path SEGMENTS stay Latin (`/ar/Funds`, `/ar/markets/...`) — middleware case-canonicalization and the binding URL contracts depend on them; only the content SLUG is Arabic.
+- `Location` headers and `<loc>`/hreflang values must be percent-encoded (`encodeURI`) — raw unicode in a Location header 500s (PR #127 lesson).
+
 ## Data invariants (break these → misleading financial display)
 - Trading currency comes from `market_tickers.currency` per line (FAITA/EGBE/VLMRA = USD); fundamentals (market cap, statements) are EGP.
 - `name_ar` comes ONLY from TradingView ar-localized descriptions via `refresh_company_names.py` — never from `ticker_aliases`.

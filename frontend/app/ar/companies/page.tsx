@@ -16,7 +16,7 @@ export const metadata: Metadata = {
         'دليل كامل لجميع الشركات المدرجة في البورصة المصرية (EGX) مرتبة حسب القيمة السوقية — الأسعار المباشرة والقطاعات والقيمة السوقية، محدَّث يوميًا.',
     alternates: {
         canonical: '/ar/companies',
-        languages: { en: '/companies', ar: '/ar/companies', 'x-default': '/companies' },
+        languages: { en: '/companies', ar: '/ar/companies', 'x-default': '/ar/companies' },
     },
     openGraph: {
         type: 'website',

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
-import { SITE_URL, absUrl, newsPath, fundPath, symbolPath, slugify } from '@/lib/seo';
+import { SITE_URL, absUrl, newsPath, fundPath, symbolPath, slugify, learnPath, glossaryPath, sectorPath } from '@/lib/seo';
+import { sectorAr } from '@/content/sector-names-ar';
 import learnTopics from '@/content/learn-topics.generated';
 import { GLOSSARY_TERMS } from '@/content/glossary-terms';
 
@@ -123,8 +124,8 @@ async function sectorEntries(): Promise<Entry[]> {
          ORDER BY sector_name`
     );
     return result.rows.flatMap((r: any) => [
-        { loc: absUrl(`/sectors/${slugify(r.sector_name)}`), changefreq: 'daily', priority: '0.7' },
-        { loc: absUrl(`/ar/sectors/${slugify(r.sector_name)}`), changefreq: 'daily', priority: '0.6' },
+        { loc: absUrl(sectorPath(r.sector_name, null, 'en')), changefreq: 'daily', priority: '0.7' },
+        { loc: absUrl(sectorPath(r.sector_name, sectorAr(r.sector_name), 'ar')), changefreq: 'daily', priority: '0.6' },
     ]);
 }
 
@@ -193,8 +194,8 @@ async function glossaryEntries(): Promise<Entry[]> {
         { loc: absUrl('/ar/Learn/glossary'), changefreq: 'monthly', priority: '0.7' },
     ];
     for (const t of GLOSSARY_TERMS) {
-        entries.push({ loc: absUrl(`/Learn/glossary/${t.slug}`), changefreq: 'yearly', priority: '0.5' });
-        entries.push({ loc: absUrl(`/ar/Learn/glossary/${t.slug}`), changefreq: 'yearly', priority: '0.5' });
+        entries.push({ loc: absUrl(glossaryPath(t.slug, t.ar.term, 'en')), changefreq: 'yearly', priority: '0.5' });
+        entries.push({ loc: absUrl(glossaryPath(t.slug, t.ar.term, 'ar')), changefreq: 'yearly', priority: '0.5' });
     }
     return entries;
 }
@@ -247,19 +248,30 @@ async function fundEntries(): Promise<Entry[]> {
          WHERE fund_id::text ~ '^[0-9]+$'
          ORDER BY fund_id`
     );
-    return result.rows.map((r: any) => ({
-        loc: absUrl(fundPath(r.fund_id, r.fund_name_en, r.fund_name)),
-        lastmod: r.last_nav_date,
-        changefreq: 'daily',
-        priority: '0.7',
-    }));
+    // EN + AR pairs (reciprocal hreflang lives in the pages' metadata). The AR
+    // canonical carries the Arabic slug — absUrl percent-encodes it for <loc>.
+    return result.rows.flatMap((r: any) => [
+        {
+            loc: absUrl(fundPath(r.fund_id, r.fund_name_en, r.fund_name, 'en')),
+            lastmod: r.last_nav_date,
+            changefreq: 'daily',
+            priority: '0.7',
+        },
+        {
+            loc: absUrl(fundPath(r.fund_id, r.fund_name_en, r.fund_name, 'ar')),
+            lastmod: r.last_nav_date,
+            changefreq: 'daily',
+            priority: '0.7',
+        },
+    ]);
 }
 
 async function learnEntries(): Promise<Entry[]> {
-    // EN + AR pairs (reciprocal hreflang lives in the pages' metadata).
-    return (learnTopics as Array<{ slug: string }>).flatMap((t) => [
-        { loc: absUrl(`/Learn/${t.slug}`), changefreq: 'monthly', priority: '0.7' },
-        { loc: absUrl(`/ar/Learn/${t.slug}`), changefreq: 'monthly', priority: '0.7' },
+    // EN + AR pairs (reciprocal hreflang lives in the pages' metadata). The AR
+    // canonical carries the Arabic-title slug.
+    return (learnTopics as Array<{ slug: string; ar: { title: string } }>).flatMap((t) => [
+        { loc: absUrl(learnPath(t.slug, t.ar.title, 'en')), changefreq: 'monthly', priority: '0.7' },
+        { loc: absUrl(learnPath(t.slug, t.ar.title, 'ar')), changefreq: 'monthly', priority: '0.7' },
     ]);
 }
 

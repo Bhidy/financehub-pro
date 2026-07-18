@@ -44,7 +44,7 @@ export async function generateMetadata(
             languages: {
                 en: symbolPath(symbol),
                 ar: `/ar${symbolPath(symbol)}`,
-                'x-default': symbolPath(symbol),
+                'x-default': `/ar${symbolPath(symbol)}`,
             },
         },
             };
@@ -69,7 +69,7 @@ export async function generateMetadata(
             languages: {
                 en: symbolPath(symbol),
                 ar: `/ar${symbolPath(symbol)}`,
-                'x-default': symbolPath(symbol),
+                'x-default': `/ar${symbolPath(symbol)}`,
             },
         },
         openGraph: {

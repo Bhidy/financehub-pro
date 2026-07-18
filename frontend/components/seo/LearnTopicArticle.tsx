@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL, learnPath } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import topicsJson from '@/content/learn-topics.generated';
@@ -58,8 +58,8 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
     const arabic = lang === 'ar';
     const content = arabic ? topic.ar : topic.en;
     const coverImage = arabic ? topic.coverImageAr : topic.coverImageEn;
-    const basePath = arabic ? '/ar/Learn' : '/Learn';
-    const path = `${basePath}/${topic.slug}`;
+    // Canonical per language: AR URLs carry the Arabic-title slug.
+    const path = learnPath(topic.slug, topic.ar.title, lang);
     const related = nextTopics(topic.slug);
     const faqs = LEARN_FAQS[topic.slug]?.[lang] ?? [];
     const faqJsonLd = faqPageJsonLd(topic.slug, lang);
@@ -70,7 +70,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
         headline: content.title,
         description: content.summary,
         inLanguage: lang,
-        mainEntityOfPage: SITE_URL + path,
+        mainEntityOfPage: SITE_URL + encodeURI(path),
         image: SITE_URL + coverImage,
         publisher: { '@id': `${SITE_URL}/#organization` },
         author: {
@@ -95,7 +95,10 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
           ];
 
     return (
-        <PublicPageShell lang={arabic ? 'ar' : 'en'} altHref={arabic ? `/Learn/${topic.slug}` : `/ar/Learn/${topic.slug}`}>
+        <PublicPageShell
+            lang={arabic ? 'ar' : 'en'}
+            altHref={encodeURI(learnPath(topic.slug, topic.ar.title, arabic ? 'en' : 'ar'))}
+        >
             <JsonLd data={articleJsonLd} />
             {faqJsonLd && <JsonLd data={faqJsonLd} />}
             <JsonLd
@@ -214,7 +217,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     {related.map((t) => (
                         <li key={t.slug}>
                             <Link
-                                href={`${basePath}/${t.slug}`}
+                                href={encodeURI(learnPath(t.slug, t.ar.title, lang))}
                                 className="text-sm font-medium text-main hover:text-starta-teal"
                             >
                                 {(arabic ? t.ar : t.en).title}

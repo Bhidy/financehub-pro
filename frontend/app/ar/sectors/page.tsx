@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getSectors } from '@/lib/public-data';
-import { SITE_URL, absUrl, slugify } from '@/lib/seo';
+import { SITE_URL, absUrl, sectorPath } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { sectorAr } from '@/content/sector-names-ar';
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
         'تصفح شركات البورصة المصرية (EGX) حسب القطاع — عدد الشركات والقيمة السوقية الإجمالية لكل قطاع، محدَّث يوميًا.',
     alternates: {
         canonical: '/ar/sectors',
-        languages: { en: '/sectors', ar: '/ar/sectors', 'x-default': '/sectors' },
+        languages: { en: '/sectors', ar: '/ar/sectors', 'x-default': '/ar/sectors' },
     },
     openGraph: {
         type: 'website',
@@ -48,7 +48,7 @@ export default async function SectorsArPage() {
             '@type': 'ListItem',
             position: i + 1,
             name: sectorAr(s.sector_name) || s.sector_name,
-            url: absUrl(`/ar/sectors/${slugify(s.sector_name)}`),
+            url: absUrl(sectorPath(s.sector_name, sectorAr(s.sector_name), 'ar')),
         })),
     };
 
@@ -77,7 +77,7 @@ export default async function SectorsArPage() {
                         {sectors.map((s) => (
                             <tr key={s.sector_name} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5">
-                                    <Link href={`/ar/sectors/${slugify(s.sector_name)}`} className="font-semibold text-main hover:text-starta-teal">
+                                    <Link href={encodeURI(sectorPath(s.sector_name, sectorAr(s.sector_name), 'ar'))} className="font-semibold text-main hover:text-starta-teal">
                                         {sectorAr(s.sector_name) || s.sector_name}
                                     </Link>
                                 </td>

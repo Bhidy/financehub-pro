@@ -1624,7 +1624,7 @@
 
     bind();
     const stored = localStorage.getItem("starta-lang") || localStorage.getItem("lang");
-    setLanguage(stored === "ar" ? "ar" : "en", false);
+    setLanguage(stored === "en" ? "en" : "ar", false); // site default: Arabic
     loadMarket();
 
     // M-1: background refresh so the dashboard never silently goes stale.

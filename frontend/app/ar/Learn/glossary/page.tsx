@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { SITE_URL, absUrl } from '@/lib/seo';
+import { SITE_URL, absUrl, glossaryPath } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { GLOSSARY_TERMS, firstSentence } from '@/content/glossary-terms';
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
         languages: {
             en: '/Learn/glossary',
             ar: PATH,
-            'x-default': '/Learn/glossary',
+            'x-default': PATH,
         },
     },
     openGraph: {
@@ -46,7 +46,7 @@ export default function GlossaryIndexArabicPage() {
             '@type': 'DefinedTerm',
             name: t.ar.term,
             description: firstSentence(t.ar.definition),
-            url: absUrl(`${PATH}/${t.slug}`),
+            url: absUrl(glossaryPath(t.slug, t.ar.term, 'ar')),
             inDefinedTermSet: absUrl(PATH),
         })),
     };
@@ -84,7 +84,7 @@ export default function GlossaryIndexArabicPage() {
                             className="rounded-xl border border-border bg-surface p-4 transition-colors hover:border-teal-300"
                         >
                             <Link
-                                href={`${PATH}/${t.slug}`}
+                                href={encodeURI(glossaryPath(t.slug, t.ar.term, 'ar'))}
                                 prefetch={false}
                                 className="font-bold text-main hover:text-starta-teal"
                             >

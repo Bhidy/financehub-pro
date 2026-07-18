@@ -165,6 +165,21 @@ const nextConfig = {
         destination: '/Market-Pulse',
         permanent: true,
       },
+      // Bare Arabic hub paths have no server page of their own (the designed
+      // static hubs are single-URL, language-by-preference pages that now
+      // default to Arabic). They used to 404; send them to the hubs. Detail
+      // routes (/ar/Funds/{id}, /ar/Learn/{slug}) are deeper paths and are
+      // not matched by these exact-path sources.
+      {
+        source: '/ar/Funds',
+        destination: '/Funds',
+        permanent: true,
+      },
+      {
+        source: '/ar/Learn',
+        destination: '/Learn',
+        permanent: true,
+      },
     ];
   },
 

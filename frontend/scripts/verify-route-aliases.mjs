@@ -69,6 +69,15 @@ const checks = [
     assert: (text) => /classList\.add\(resolved\)/.test(text),
   },
   {
+    // Theme contract: LIGHT is the default on EVERY surface. This provider
+    // once defaulted to dark and force-applied it outside .seo-shell pages,
+    // flipping light users to dark on /login, /register and /settings.
+    name: "app ThemeProvider defaults to light (no second dark default)",
+    file: "components/ThemeProvider.tsx",
+    assert: (text) =>
+      /useState<Theme>\("light"\)/.test(text) && !/\|\|\s*"dark"/.test(text),
+  },
+  {
     // Language contract: static pages must be able to localize links into
     // server-rendered /ar twins. The global helper + anchor rewriter live in
     // the lang-boot script that every static page loads before paint.

@@ -140,27 +140,31 @@
         @media (max-width: 1080px) {
             .funds-layout { grid-template-columns: minmax(0, 1fr); }
         }
-        /* The rail is taller than the viewport now — it must scroll INTERNALLY.
-           A plain sticky rail pins its top and makes the lower filters
-           unreachable until the whole fund list has been scrolled past. */
+        /* Filter rail — "scroll-then-stick" (negative sticky offset).
+           ------------------------------------------------------------------
+           The rail is TALLER than the viewport, which breaks naive approaches:
+             • plain `top: 6.5rem` sticky pins the TOP, so the rail's lower
+               filters stay cut off below the fold until the whole fund list
+               has been scrolled past;
+             • an inner `overflow-y: auto` crops the rail into its own
+               scrollbox — a second, competing scrollbar, which is worse.
+           The correct pattern for a too-tall sticky sidebar is a NEGATIVE
+           sticky offset: `top` is set to (viewportHeight − railHeight − gap),
+           so the rail scrolls up WITH the page exactly like normal content
+           until its BOTTOM edge reaches the viewport bottom, and only then
+           pins. The end of the filters is always reachable by ordinary page
+           scrolling, nothing is cropped, and there is no nested scrollbar.
+           `--rail-top` is recomputed in JS (see syncRailStickyOffset) whenever
+           the rail's height or the viewport changes; when the rail is SHORTER
+           than the viewport it falls back to a classic top-pinned sticky.
+           Native CSS sticky does the work — no scroll listeners, no jank. */
         .funds-sidebar {
             position: sticky;
-            top: 6.5rem;
-            max-height: calc(100vh - 8rem);
-            overflow-y: auto;
-            overscroll-behavior: contain;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(20, 184, 166, 0.35) transparent;
-            padding-inline-end: 2px;
-        }
-        .funds-sidebar::-webkit-scrollbar { width: 5px; }
-        .funds-sidebar::-webkit-scrollbar-track { background: transparent; }
-        .funds-sidebar::-webkit-scrollbar-thumb {
-            background: rgba(20, 184, 166, 0.35);
-            border-radius: 999px;
+            top: var(--rail-top, 6.5rem);
         }
         @media (max-width: 1080px) {
-            .funds-sidebar { position: static; max-height: none; overflow-y: visible; }
+            /* Stacked layout: the rail is just normal flow content. */
+            .funds-sidebar { position: static; top: auto; }
         }
         .fsb-card {
             background: var(--c-surface);
@@ -2519,6 +2523,49 @@
             });
         }
 
+        // ── Filter rail sticky offset ────────────────────────────────────────
+        // Implements the "scroll-then-stick" pattern documented on
+        // `.funds-sidebar`. Sets --rail-top so a rail TALLER than the viewport
+        // gets a NEGATIVE sticky offset (scrolls with the page until its bottom
+        // edge lands at the viewport bottom, then pins), while a SHORTER rail
+        // keeps the classic top-pinned behaviour. Recomputed on rail resize
+        // (filters expand/collapse, language swap) and on viewport resize.
+        const RAIL_TOP_GAP = 104;    // clears the fixed 5rem header (6.5rem)
+        const RAIL_BOTTOM_GAP = 24;  // breathing room at the viewport bottom
+        const sidebarEl = document.querySelector('.funds-sidebar');
+
+        function syncRailStickyOffset() {
+            if (!sidebarEl) return;
+            // Below the stacked breakpoint the rail is static — nothing to do.
+            if (window.matchMedia('(max-width: 1080px)').matches) {
+                sidebarEl.style.removeProperty('--rail-top');
+                return;
+            }
+            const railHeight = sidebarEl.offsetHeight; // LAYOUT px (pre-zoom)
+            if (!railHeight) return;
+            // starta-theme.js applies `body { zoom: 0.9 }`, so window.innerHeight
+            // (visual px) and offsetHeight / the CSS `top` value (layout px) live
+            // in different scales. Derive the factor from the rail itself and
+            // convert the viewport into layout px, or the rail pins early and
+            // leaves a dead gap at the bottom.
+            const scale = sidebarEl.getBoundingClientRect().height / railHeight || 1;
+            const viewportLayout = window.innerHeight / scale;
+            const available = viewportLayout - RAIL_TOP_GAP - RAIL_BOTTOM_GAP;
+            const top = railHeight <= available
+                ? RAIL_TOP_GAP
+                : viewportLayout - railHeight - RAIL_BOTTOM_GAP; // negative
+            sidebarEl.style.setProperty('--rail-top', `${Math.round(top)}px`);
+        }
+
+        function watchRailHeight() {
+            if (!sidebarEl) return;
+            syncRailStickyOffset();
+            if (typeof ResizeObserver !== 'undefined') {
+                new ResizeObserver(syncRailStickyOffset).observe(sidebarEl);
+            }
+            window.addEventListener('resize', syncRailStickyOffset);
+        }
+
         function revealSections() {
             document.querySelectorAll('.reveal-block').forEach((element) => {
                 gsap.fromTo(element, { y: 30, opacity: 0 }, {
@@ -2540,6 +2587,7 @@
         setLanguage(getStoredLanguage());
         loadFundsData();
         revealSections();
+        watchRailHeight();
     </script>
 </body>
 

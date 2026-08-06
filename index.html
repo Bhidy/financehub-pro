@@ -1936,9 +1936,15 @@
         }
         .tour-allocation {
             display: grid;
-            grid-template-columns: 2.45rem 1fr 2.1rem;
+            /* First column was sized for 4-letter tickers; it now carries fund-type
+               names ("Money market" / "دخل ثابت"), so it needs room to stay 1 line. */
+            grid-template-columns: 5.4rem 1fr 2.1rem;
             align-items: center;
             gap: 0.45rem;
+        }
+        .tour-allocation .tour-title {
+            font-size: 0.66rem;
+            line-height: 1.15;
         }
         .tour-message {
             border-radius: 0.85rem;

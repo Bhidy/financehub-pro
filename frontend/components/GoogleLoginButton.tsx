@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import { AUTH_LABELS } from "@/lib/auth-i18n";
+import type { StoredLang } from "@/hooks/useStoredLang";
 
 interface GoogleLoginButtonProps {
     onSuccess?: () => void;
@@ -11,6 +13,12 @@ interface GoogleLoginButtonProps {
     className?: string;
     mode?: "login" | "register";
     isMobile?: boolean;
+    /**
+     * Language of the button label. Defaults to "en" so existing call sites
+     * keep their current copy; the auth pages pass the visitor's stored
+     * language (see hooks/useStoredLang).
+     */
+    lang?: StoredLang;
 }
 
 // Official Google "G" logo SVG
@@ -42,8 +50,10 @@ export default function GoogleLoginButton({
     className = "",
     mode = "login",
     isMobile,
+    lang = "en",
 }: GoogleLoginButtonProps) {
     const [isLoading, setIsLoading] = useState(false);
+    const labels = AUTH_LABELS[lang].common;
 
     const handleGoogleLogin = async () => {
         setIsLoading(true);
@@ -133,7 +143,7 @@ export default function GoogleLoginButton({
                 <>
                     <GoogleLogo />
                     <span>
-                        {mode === "register" ? "Sign up with Google" : "Continue with Google"}
+                        {mode === "register" ? labels.googleSignUp : labels.googleContinue}
                     </span>
                 </>
             )}
@@ -141,8 +151,8 @@ export default function GoogleLoginButton({
     );
 }
 
-// OR Divider Component
-export function OrDivider() {
+// OR Divider Component — `lang` defaults to "en" to preserve existing call sites.
+export function OrDivider({ lang = "en" }: { lang?: StoredLang }) {
     return (
         <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
@@ -150,7 +160,7 @@ export function OrDivider() {
             </div>
             <div className="relative flex justify-center text-sm">
                 <span className="px-4 bg-slate-50 dark:bg-[#0B1121] text-slate-500 dark:text-slate-500 font-medium">
-                    or
+                    {AUTH_LABELS[lang].common.or}
                 </span>
             </div>
         </div>

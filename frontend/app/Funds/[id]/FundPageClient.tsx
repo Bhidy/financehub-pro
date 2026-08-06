@@ -215,7 +215,9 @@ export default function FundPageClient(props: FundClientData) {
                                     {headlineReturn ? (
                                         <Signed value={headlineReturn.value} negative={headlineReturn.negative} />
                                     ) : (
-                                        <span className="text-main">—</span>
+                                        // Muted, like every other unknown on the page — a
+                                        // full-contrast dash in the hero KPI slot reads as data.
+                                        <span className="text-muted">—</span>
                                     )}
                                 </div>
                                 <p className="mt-2 text-sm text-muted">{t.totalNavReturn}</p>
@@ -495,12 +497,6 @@ export default function FundPageClient(props: FundClientData) {
                                 <Suitability suit={analytics.suitability} t={t} />
                                 <Insights insights={analytics.insights} t={t} />
                                 <StressTest stress={analytics.stress} movement={movement} t={t} />
-                                <FundCalculator
-                                    cagr={analytics.calc.cagr}
-                                    volatility={analytics.calc.volatility}
-                                    currency={currency}
-                                    t={t}
-                                />
                             </div>
                         </FundGate>
                     ) : (
@@ -508,11 +504,22 @@ export default function FundPageClient(props: FundClientData) {
                             <AnalyticsPending title={t.ax.suitTitle} sub={t.ax.suitSub} note={t.ax.limitedHistoryShort} />
                             <AnalyticsPending title={t.ax.insightsTitle} sub={t.ax.insightsSub} note={t.ax.limitedHistoryShort} />
                             <AnalyticsPending title={t.ax.stressTitle} sub={t.ax.stressSub} note={t.ax.limitedHistoryShort} />
-                            {/* No trustworthy CAGR on short-history/suppressed funds — the
-                                calculator renders its own honest no-data state. */}
-                            <FundCalculator cagr={null} volatility={null} currency={currency} t={t} />
                         </div>
                     )}
+
+                    {/* The calculator is OUTSIDE the freemium gate, deliberately: it must
+                        be usable on every fund by every visitor. Inside the gate it sat
+                        ~1,677px down a 360px clip — blurred, aria-hidden and
+                        pointer-events:none — so no logged-out visitor could reach it at
+                        all. It projects from the fund's own realized annualized return
+                        and renders its own honest empty state when there is none. */}
+                    <FundCalculator
+                        cagr={analytics.calc.cagr}
+                        cagrBasis={analytics.calc.cagrBasis}
+                        volatility={analytics.calc.volatility}
+                        currency={currency}
+                        t={t}
+                    />
 
                     <FundFeedback fundId={fundId} t={t} />
                 </aside>

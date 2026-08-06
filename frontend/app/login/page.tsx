@@ -19,11 +19,13 @@ import { useState, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Zap, BarChart3, Shield, Check, ArrowRight } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Layers, BarChart3, Calculator, Shield, Check, ArrowRight, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
 import { useMobileRoutes } from "@/components/chatbot/hooks/useMobileRoutes";
 import { useDeviceDetect } from "@/hooks/useDeviceDetect";
+import { useStoredLang } from "@/hooks/useStoredLang";
+import { AUTH_LABELS } from "@/lib/auth-i18n";
 import { createCheckoutSession } from "@/lib/api";
 import {
     captureReturnPath,
@@ -38,6 +40,15 @@ function LoginPageContent() {
     const { login } = useAuth();
     const { getRoute } = useMobileRoutes();
     const { isDesktop, isSSR } = useDeviceDetect();
+
+    // Language comes from STORAGE (mechanism #2) — /login has no /ar twin, so an
+    // Arabic visitor arriving from an Arabic footer must get Arabic copy here.
+    const lang = useStoredLang();
+    const isRtl = lang === "ar";
+    const labels = AUTH_LABELS[lang];
+    const t = labels.login;
+    const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
+    const arrowHover = isRtl ? "group-hover:-translate-x-1" : "group-hover:translate-x-1";
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -71,9 +82,14 @@ function LoginPageContent() {
         const googleAuth = param("google_auth");
         const errorParam = param("error");
 
+        // The stash is single-use: consume it on the FIRST read regardless of
+        // outcome. A partial payload (token but no user, say) would otherwise
+        // match no branch below and linger in sessionStorage, to be replayed on
+        // the next /login mount.
+        if (handoff) clearAuthHandoff();
+
         if (errorParam) {
-            clearAuthHandoff();
-            setError("Google login failed. Please try again.");
+            setError(t.errors.googleFailed);
             return;
         }
 
@@ -105,21 +121,21 @@ function LoginPageContent() {
             } catch (e) {
                 console.error("Failed to parse Google auth response", e);
                 clearAuthHandoff();
-                setError("Google login failed. Please try again.");
+                setError(t.errors.googleFailed);
             }
         }
-    }, [searchParams, router, homeRoute]);
+    }, [searchParams, router, homeRoute, t]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
         if (!email.trim()) {
-            setError("Please enter your email");
+            setError(labels.common.emailRequired);
             return;
         }
         if (!password.trim()) {
-            setError("Please enter your password");
+            setError(t.errors.passwordRequired);
             return;
         }
 
@@ -142,7 +158,7 @@ function LoginPageContent() {
             router.replace(resolvePostAuthDestination(searchParams.get("redirect")));
         } else {
             setIsLoading(false);
-            setError(result.error || "Login failed");
+            setError(result.error || t.errors.loginFailed);
         }
     };
 
@@ -155,11 +171,13 @@ function LoginPageContent() {
         );
     }
 
-    // Feature items for left panel
+    // Feature items for left panel — these must describe what the site SHIPS
+    // today (mutual funds, NAV history, wealth/risk tools). The AI analyst is
+    // hidden, so no auth screen may sell it.
     const features = [
-        { icon: Zap, text: "Instant Market Insights", delay: 0.1 },
-        { icon: BarChart3, text: "Deep Fundamental Analysis", delay: 0.2 },
-        { icon: Shield, text: "Institutional-Grade Data", delay: 0.3 },
+        { icon: Layers, text: t.features[0], delay: 0.1 },
+        { icon: BarChart3, text: t.features[1], delay: 0.2 },
+        { icon: Calculator, text: t.features[2], delay: 0.3 },
     ];
 
     // ========================================================================
@@ -167,7 +185,11 @@ function LoginPageContent() {
     // ========================================================================
     if (isDesktop) {
         return (
-            <div className="fixed inset-0 flex overflow-hidden bg-white dark:bg-[#0A0F1C]">
+            <div
+                dir={isRtl ? "rtl" : "ltr"}
+                lang={lang}
+                className={`fixed inset-0 flex overflow-hidden bg-white dark:bg-[#0A0F1C] ${isRtl ? "font-arabic" : ""}`}
+            >
                 {/* ================================================================
                     LEFT PANEL - Premium Dark Gradient with Animated Effects
                     ================================================================ */}
@@ -218,11 +240,11 @@ function LoginPageContent() {
                             className="mb-8"
                         >
                             <h1 className="text-[42px] xl:text-5xl font-bold text-white leading-[1.1] tracking-tight mb-3">
-                                Your Personal
+                                {t.heroLine1}
                             </h1>
                             <h1 className="text-[42px] xl:text-5xl font-bold leading-[1.1] tracking-tight">
                                 <span className="bg-gradient-to-r from-[#14B8A6] via-[#2DD4BF] to-[#14B8A6] bg-clip-text text-transparent">
-                                    AI Market Analyst
+                                    {t.heroLine2}
                                 </span>
                             </h1>
                         </motion.div>
@@ -234,8 +256,7 @@ function LoginPageContent() {
                             transition={{ duration: 0.6, delay: 0.2 }}
                             className="text-slate-400 text-lg leading-relaxed mb-14 max-w-[420px]"
                         >
-                            Professional-grade financial intelligence for the Egyptian market.
-                            Get instant answers, analyze stocks, and make informed decisions.
+                            {t.heroDescription}
                         </motion.p>
 
                         {/* Premium Feature Cards */}
@@ -243,7 +264,7 @@ function LoginPageContent() {
                             {features.map((feature, idx) => (
                                 <motion.div
                                     key={idx}
-                                    initial={{ opacity: 0, x: -30 }}
+                                    initial={{ opacity: 0, x: isRtl ? 30 : -30 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ duration: 0.5, delay: 0.3 + feature.delay }}
                                     className="group relative"
@@ -282,7 +303,7 @@ function LoginPageContent() {
                                 ))}
                             </div>
                             <p className="text-slate-500 text-sm">
-                                <span className="text-white font-semibold">2,500+</span> traders trust Starta
+                                <span className="text-white font-semibold">{t.socialProof}</span>
                             </p>
                         </motion.div>
                     </div>
@@ -304,10 +325,10 @@ function LoginPageContent() {
                         {/* Header */}
                         <div className="mb-10">
                             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
-                                Welcome back
+                                {t.title}
                             </h1>
                             <p className="text-slate-500 dark:text-slate-400">
-                                Sign in to your account to continue
+                                {t.subtitle}
                             </p>
                         </div>
 
@@ -333,13 +354,13 @@ function LoginPageContent() {
                             {/* Email */}
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                    Email address
+                                    {labels.common.emailLabel}
                                 </label>
                                 <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'email'
                                     ? 'ring-2 ring-[#14B8A6]/20 shadow-lg shadow-[#14B8A6]/5'
                                     : ''
                                     }`}>
-                                    <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'email' ? 'text-[#14B8A6]' : 'text-slate-400'
+                                    <Mail className={`absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'email' ? 'text-[#14B8A6]' : 'text-slate-400'
                                         }`} />
                                     <input
                                         type="email"
@@ -347,8 +368,8 @@ function LoginPageContent() {
                                         onChange={(e) => setEmail(e.target.value)}
                                         onFocus={() => setFocusedField('email')}
                                         onBlur={() => setFocusedField(null)}
-                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-sm"
-                                        placeholder="name@company.com"
+                                        className="w-full ps-12 pe-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-sm"
+                                        placeholder={labels.common.emailPlaceholder}
                                         autoComplete="email"
                                     />
                                 </div>
@@ -357,13 +378,13 @@ function LoginPageContent() {
                             {/* Password */}
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                    Password
+                                    {labels.common.passwordLabel}
                                 </label>
                                 <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'password'
                                     ? 'ring-2 ring-[#14B8A6]/20 shadow-lg shadow-[#14B8A6]/5'
                                     : ''
                                     }`}>
-                                    <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'password' ? 'text-[#14B8A6]' : 'text-slate-400'
+                                    <Lock className={`absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'password' ? 'text-[#14B8A6]' : 'text-slate-400'
                                         }`} />
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -371,14 +392,14 @@ function LoginPageContent() {
                                         onChange={(e) => setPassword(e.target.value)}
                                         onFocus={() => setFocusedField('password')}
                                         onBlur={() => setFocusedField(null)}
-                                        className="w-full pl-12 pr-12 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-sm"
-                                        placeholder="Enter your password"
+                                        className="w-full ps-12 pe-12 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-sm"
+                                        placeholder={t.passwordPlaceholder}
                                         autoComplete="current-password"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
+                                        className="absolute end-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
                                     >
                                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
@@ -403,13 +424,13 @@ function LoginPageContent() {
                                             <Check className="w-3 h-3 text-white" />
                                         </motion.div>
                                     </div>
-                                    <span className="text-sm text-slate-600 dark:text-slate-400 select-none">Remember me</span>
+                                    <span className="text-sm text-slate-600 dark:text-slate-400 select-none">{t.rememberMe}</span>
                                 </label>
                                 <Link
                                     href={getRoute('forgotPassword')}
                                     className="text-sm font-medium text-[#14B8A6] hover:text-[#0D9488] transition-colors"
                                 >
-                                    Forgot password?
+                                    {t.forgotPassword}
                                 </Link>
                             </div>
 
@@ -434,8 +455,8 @@ function LoginPageContent() {
                                         <Loader2 className="w-5 h-5 animate-spin" />
                                     ) : (
                                         <>
-                                            Sign In
-                                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                            {t.submit}
+                                            <ArrowIcon className={`w-4 h-4 ${arrowHover} transition-transform`} />
                                         </>
                                     )}
                                 </span>
@@ -444,13 +465,14 @@ function LoginPageContent() {
 
                         {/* Divider */}
                         <div className="my-8">
-                            <OrDivider />
+                            <OrDivider lang={lang} />
                         </div>
 
                         {/* Google Login */}
                         <div className="relative">
                             <GoogleLoginButton
                                 mode="login"
+                                lang={lang}
                                 onError={(err) => setError(err)}
                             />
                         </div>
@@ -458,9 +480,9 @@ function LoginPageContent() {
                         {/* Register link */}
                         <div className="text-center mt-8">
                             <p className="text-slate-500 dark:text-slate-400 text-sm">
-                                Don't have an account?{" "}
+                                {t.noAccount}{" "}
                                 <Link href={`/register${searchParams.toString() ? `?${searchParams.toString()}` : ''}`} className="text-[#14B8A6] font-semibold hover:text-[#0D9488] transition-colors hover:underline">
-                                    Create free account
+                                    {t.createFreeAccount}
                                 </Link>
                             </p>
                         </div>
@@ -469,7 +491,7 @@ function LoginPageContent() {
                         <div className="text-center mt-12 pt-8 border-t border-slate-100 dark:border-white/5">
                             <p className="text-xs text-slate-400 flex items-center justify-center gap-2">
                                 <Shield className="w-3.5 h-3.5" />
-                                © 2026 Starta. Secure & Encrypted.
+                                {labels.common.secureFooter}
                             </p>
                         </div>
                     </motion.div>
@@ -482,7 +504,11 @@ function LoginPageContent() {
     // MOBILE LAYOUT - Ultra Premium Single Column
     // ========================================================================
     return (
-        <div className="relative w-full h-[100dvh] bg-white dark:bg-[#0A0F1C] overflow-y-auto">
+        <div
+            dir={isRtl ? "rtl" : "ltr"}
+            lang={lang}
+            className={`relative w-full h-[100dvh] bg-white dark:bg-[#0A0F1C] overflow-y-auto ${isRtl ? "font-arabic" : ""}`}
+        >
             {/* Animated Background */}
             <div className="fixed inset-0">
                 <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-[#14B8A6]/5 to-transparent dark:from-[#14B8A6]/10" />
@@ -510,10 +536,10 @@ function LoginPageContent() {
                         {/* Header */}
                         <div className="mb-8 text-center">
                             <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-                                Welcome back
+                                {t.title}
                             </h1>
                             <p className="text-slate-500 dark:text-slate-400 text-sm">
-                                Sign in to your account to continue
+                                {t.subtitle}
                             </p>
                         </div>
 
@@ -539,16 +565,16 @@ function LoginPageContent() {
                             {/* Email */}
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                    Email address
+                                    {labels.common.emailLabel}
                                 </label>
                                 <div className="relative">
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                    <Mail className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/20 transition-all text-sm"
-                                        placeholder="name@company.com"
+                                        className="w-full ps-12 pe-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/20 transition-all text-sm"
+                                        placeholder={labels.common.emailPlaceholder}
                                         autoComplete="email"
                                     />
                                 </div>
@@ -557,22 +583,22 @@ function LoginPageContent() {
                             {/* Password */}
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                    Password
+                                    {labels.common.passwordLabel}
                                 </label>
                                 <div className="relative">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                    <Lock className="absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                     <input
                                         type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-12 pr-12 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/20 transition-all text-sm"
-                                        placeholder="Enter your password"
+                                        className="w-full ps-12 pe-12 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/20 transition-all text-sm"
+                                        placeholder={t.passwordPlaceholder}
                                         autoComplete="current-password"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                        className="absolute end-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                                     >
                                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
@@ -591,13 +617,13 @@ function LoginPageContent() {
                                     >
                                         {rememberMe && <Check className="w-3 h-3 text-white" />}
                                     </div>
-                                    <span className="text-sm text-slate-600 dark:text-slate-400">Remember me</span>
+                                    <span className="text-sm text-slate-600 dark:text-slate-400">{t.rememberMe}</span>
                                 </label>
                                 <Link
                                     href={getRoute('forgotPassword')}
                                     className="text-sm font-medium text-[#14B8A6] hover:text-[#0D9488] transition-colors"
                                 >
-                                    Forgot password?
+                                    {t.forgotPassword}
                                 </Link>
                             </div>
 
@@ -611,8 +637,8 @@ function LoginPageContent() {
                                     <Loader2 className="w-5 h-5 animate-spin" />
                                 ) : (
                                     <>
-                                        Sign In
-                                        <ArrowRight className="w-4 h-4" />
+                                        {t.submit}
+                                        <ArrowIcon className="w-4 h-4" />
                                     </>
                                 )}
                             </button>
@@ -620,21 +646,22 @@ function LoginPageContent() {
 
                         {/* Divider */}
                         <div className="my-6">
-                            <OrDivider />
+                            <OrDivider lang={lang} />
                         </div>
 
                         {/* Google Login */}
                         <GoogleLoginButton
                             mode="login"
+                            lang={lang}
                             onError={(err) => setError(err)}
                         />
 
                         {/* Register link */}
                         <div className="text-center mt-6">
                             <p className="text-slate-500 dark:text-slate-400 text-sm">
-                                Don't have an account?{" "}
+                                {t.noAccount}{" "}
                                 <Link href={`/register${searchParams.toString() ? `?${searchParams.toString()}` : ''}`} className="text-[#14B8A6] font-semibold hover:text-[#0D9488] transition-colors">
-                                    Create free account
+                                    {t.createFreeAccount}
                                 </Link>
                             </p>
                         </div>
@@ -645,7 +672,7 @@ function LoginPageContent() {
                 <div className="text-center py-4">
                     <p className="text-xs text-slate-400 flex items-center justify-center gap-2">
                         <Shield className="w-3.5 h-3.5" />
-                        © 2026 Starta. Secure & Encrypted.
+                        {labels.common.secureFooter}
                     </p>
                 </div>
             </div>

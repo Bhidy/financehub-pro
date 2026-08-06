@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { OAUTH_STATE_COOKIE } from "../url/route";
 
 // API Base URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://starta.46-224-223-172.sslip.io";
@@ -43,12 +44,16 @@ export async function GET(request: NextRequest) {
     // Parse state to determine if mobile and return origin
     let isMobile = false;
     let returnOrigin: string | null = null;
+    let stateNonce: string | null = null;
 
     if (state) {
         try {
             const stateData = JSON.parse(decodeURIComponent(state));
             isMobile = stateData.mobile === true;
             returnOrigin = stateData.returnTo;
+            stateNonce = typeof stateData.nonce === "string" ? stateData.nonce : null;
+            // Legacy opaque state was wrapped as { legacy: "mobile" } by the url route.
+            if (stateData.legacy === "mobile") isMobile = true;
         } catch (e) {
             // Legacy: check if state simply equals "mobile"
             isMobile = state === "mobile";
@@ -62,6 +67,22 @@ export async function GET(request: NextRequest) {
     const successRedirect = "/login";
     const successDestination = "/Funds"; // /login's fallback when nothing better is known
     const loginRedirect = "/login";
+
+    // ── OAuth CSRF check ─────────────────────────────────────────────────────
+    // The nonce minted in /api/auth/google/url is bound to this browser via an
+    // HttpOnly cookie. A mismatch means the flow was not started here — i.e. a
+    // login-CSRF attempt to plant someone else's session — so refuse it.
+    // Native-app flows start outside this proxy and legitimately carry no nonce,
+    // and a browser with no cookie (cleared mid-flow) falls back to the previous
+    // behaviour rather than locking a legitimate user out.
+    const expectedNonce = request.cookies.get(OAUTH_STATE_COOKIE)?.value ?? null;
+    const isNativeState = isMobile && (!returnOrigin || returnOrigin.startsWith(APP_SCHEME));
+    if (!isNativeState && expectedNonce && stateNonce !== expectedNonce) {
+        console.error("Google OAuth state nonce mismatch — refusing callback");
+        return NextResponse.redirect(
+            new URL(`${loginRedirect}?error=${encodeURIComponent("Login session expired. Please try again.")}`, request.url)
+        );
+    }
 
     // Handle errors from Google
     if (error) {
@@ -190,7 +211,19 @@ export async function GET(request: NextRequest) {
         redirectUrl.searchParams.set("google_auth", "success");
         redirectUrl.searchParams.set("redirect", successDestination);
 
-        return NextResponse.redirect(redirectUrl);
+        // This Location header carries the access + refresh tokens, so it must
+        // never be stored by a shared cache, and the browser must not forward the
+        // token-bearing URL as a Referer to anything (the site default is
+        // origin-when-cross-origin, which still sends the FULL url same-origin).
+        const successResponse = NextResponse.redirect(redirectUrl, {
+            headers: {
+                "Cache-Control": "no-store, private",
+                "Referrer-Policy": "no-referrer",
+            },
+        });
+        // The nonce is single-use — burn it so a captured callback URL can't be replayed.
+        successResponse.cookies.delete(OAUTH_STATE_COOKIE);
+        return successResponse;
     } catch (error) {
         console.error("Google callback error:", error);
         return NextResponse.redirect(

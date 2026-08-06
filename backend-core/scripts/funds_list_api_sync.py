@@ -123,6 +123,35 @@ ON CONFLICT (fund_id) DO UPDATE SET
 """
 
 
+#: Fund names that end with / contain an explicit currency marker. The Mubasher
+#: list API frequently omits `currency`, and blindly defaulting to EGP printed
+#: "EGP 1.01" on USD-denominated funds — a misleading financial figure. The name
+#: is the issuer's own denomination label, so it is authoritative when present.
+_CURRENCY_MARKERS = (
+    ("USD", ("usd", "dollar", "دولار")),
+    ("EUR", ("eur", "euro", "يورو")),
+    ("SAR", ("sar", "riyal", "ريال")),
+    ("AED", ("aed", "dirham", "درهم")),
+    ("GBP", ("gbp", "sterling", "استرليني", "إسترليني")),
+)
+
+
+def _derive_currency(en, name_en, ar_name=None) -> str:
+    """Resolve a fund's denomination.
+
+    Order: the API's own `currency` → an explicit currency marker in the English
+    or Arabic fund name → EGP. Never default a fund whose name says "USD" to EGP.
+    """
+    explicit = (en.get("currency") or "").strip().upper()
+    if explicit:
+        return explicit
+    hay = f"{name_en or ''} {ar_name or ''}".lower()
+    for code, needles in _CURRENCY_MARKERS:
+        if any(n in hay for n in needles):
+            return code
+    return "EGP"
+
+
 def _fund_insert_row(en, ar_name=None):
     """PURE: map a Mubasher english list-API row (+ optional Arabic name) to the arg
     tuple for _INSERT_FUND, or None if the fund lacks the data to render a real page
@@ -142,7 +171,7 @@ def _fund_insert_row(en, ar_name=None):
         str(fid),
         name_en,
         (ar_name or "").strip() or name_en,
-        (en.get("currency") or "EGP") or "EGP",
+        _derive_currency(en, name_en, ar_name),
         manager,
         (str(en.get("owner") or "").strip() or None),
         nav,

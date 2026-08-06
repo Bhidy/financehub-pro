@@ -19,12 +19,14 @@ import { useRouter } from "next/navigation";
 import {
     ArrowLeft, Loader2, ArrowRight, CheckCircle2, RefreshCw,
     AlertCircle, Lock, TrendingUp, Shield, Mail,
-    Sparkles, BarChart3, Users
+    ArrowLeftRight, Calculator, Users
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api";
 import { useMobileRoutes } from "@/components/chatbot/hooks/useMobileRoutes";
 import { useDeviceDetect } from "@/hooks/useDeviceDetect";
+import { useStoredLang, type StoredLang } from "@/hooks/useStoredLang";
+import { AUTH_LABELS, type AuthLabels } from "@/lib/auth-i18n";
 import Link from "next/link";
 
 type Step = "EMAIL" | "OTP" | "NEW_PASSWORD" | "SUCCESS";
@@ -33,6 +35,13 @@ function ForgotPasswordContent() {
     const router = useRouter();
     const { getRoute } = useMobileRoutes();
     const { isDesktop, isSSR } = useDeviceDetect();
+
+    // Language comes from STORAGE (mechanism #2) — /forgot-password has no /ar
+    // twin, so an Arabic visitor must get Arabic copy on this same URL.
+    const lang = useStoredLang();
+    const isRtl = lang === "ar";
+    const labels = AUTH_LABELS[lang];
+    const t = labels.forgot;
 
     const [step, setStep] = useState<Step>("EMAIL");
     const [isLoading, setIsLoading] = useState(false);
@@ -51,7 +60,7 @@ function ForgotPasswordContent() {
         if (e) e.preventDefault();
         setError(null);
         if (!email.includes("@")) {
-            setError("Please enter a valid email address");
+            setError(t.errors.invalidEmail);
             return;
         }
 
@@ -60,7 +69,7 @@ function ForgotPasswordContent() {
             await api.post("/auth/forgot-password", { email });
             setStep("OTP");
         } catch (err: any) {
-            setError(err.response?.data?.detail || "Failed to send code. Please try again.");
+            setError(err.response?.data?.detail || t.errors.sendCodeFailed);
         } finally {
             setIsLoading(false);
         }
@@ -70,7 +79,7 @@ function ForgotPasswordContent() {
     const handleVerifyOtp = async () => {
         const code = otp.join("");
         if (code.length !== 4) {
-            setError("Please enter the complete 4-digit code");
+            setError(t.errors.incompleteCode);
             return;
         }
         setError(null);
@@ -80,7 +89,7 @@ function ForgotPasswordContent() {
             setResetToken(res.data.reset_token);
             setStep("NEW_PASSWORD");
         } catch (err: any) {
-            setError(err.response?.data?.detail || "Invalid code. Please check your email.");
+            setError(err.response?.data?.detail || t.errors.invalidCode);
             setOtp(["", "", "", ""]);
         } finally {
             setIsLoading(false);
@@ -93,11 +102,11 @@ function ForgotPasswordContent() {
         setError(null);
 
         if (newPassword.length < 6) {
-            setError("Password must be at least 6 characters");
+            setError(t.errors.passwordTooShort);
             return;
         }
         if (newPassword !== confirmPassword) {
-            setError("Passwords do not match");
+            setError(labels.common.passwordsMismatch);
             return;
         }
 
@@ -109,7 +118,7 @@ function ForgotPasswordContent() {
             });
             setStep("SUCCESS");
         } catch (err: any) {
-            setError(err.response?.data?.detail || "Failed to reset password.");
+            setError(err.response?.data?.detail || t.errors.resetFailed);
         } finally {
             setIsLoading(false);
         }
@@ -158,7 +167,11 @@ function ForgotPasswordContent() {
     // ========================================================================
     if (isDesktop) {
         return (
-            <div className="min-h-screen w-full flex overflow-y-auto bg-white dark:bg-[#0A0F1C]">
+            <div
+                dir={isRtl ? "rtl" : "ltr"}
+                lang={lang}
+                className={`min-h-screen w-full flex overflow-y-auto bg-white dark:bg-[#0A0F1C] ${isRtl ? "font-arabic" : ""}`}
+            >
                 {/* Left Panel - Premium Marketing */}
                 <div className="hidden lg:flex w-[48%] relative overflow-hidden">
                     {/* Base Gradient */}
@@ -195,7 +208,7 @@ function ForgotPasswordContent() {
                                     </div>
                                 </div>
                                 <span className="text-xl font-bold text-white tracking-tight">Starta</span>
-                                <div className="ml-2 px-2 py-0.5 bg-[#14B8A6]/20 rounded-full">
+                                <div className="ms-2 px-2 py-0.5 bg-[#14B8A6]/20 rounded-full">
                                     <span className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider">BETA</span>
                                 </div>
                             </Link>
@@ -210,11 +223,11 @@ function ForgotPasswordContent() {
                                 className="mb-6"
                             >
                                 <h1 className="text-[44px] xl:text-[52px] 2xl:text-[58px] font-bold text-white leading-[1.05] tracking-tight mb-2">
-                                    Unlock Full
+                                    {t.heroLine1}
                                 </h1>
                                 <h1 className="text-[44px] xl:text-[52px] 2xl:text-[58px] font-bold leading-[1.05] tracking-tight">
                                     <span className="bg-gradient-to-r from-[#14B8A6] via-[#2DD4BF] to-[#14B8A6] bg-clip-text text-transparent">
-                                        AI Analysis
+                                        {t.heroLine2}
                                     </span>
                                 </h1>
                             </motion.div>
@@ -225,24 +238,24 @@ function ForgotPasswordContent() {
                                 transition={{ duration: 0.6, delay: 0.2 }}
                                 className="text-slate-400 text-lg xl:text-xl leading-relaxed mb-10 max-w-[460px]"
                             >
-                                Recover your account to continue accessing professional-grade market intelligence.
+                                {t.heroDescription}
                             </motion.p>
 
                             <div className="space-y-3">
                                 {[
-                                    { icon: Sparkles, text: "Unlimited AI Conversations", description: "Ask anything about stocks" },
-                                    { icon: BarChart3, text: "Deep Fundamental Analysis", description: "Professional-grade metrics" },
-                                    { icon: Shield, text: "Daily Market Updates", description: "Stay ahead of the market" },
+                                    { icon: Shield, text: t.benefits[0].title, description: t.benefits[0].description },
+                                    { icon: ArrowLeftRight, text: t.benefits[1].title, description: t.benefits[1].description },
+                                    { icon: Calculator, text: t.benefits[2].title, description: t.benefits[2].description },
                                 ].map((benefit, idx) => (
                                     <motion.div
                                         key={idx}
-                                        initial={{ opacity: 0, x: -30 }}
+                                        initial={{ opacity: 0, x: isRtl ? 30 : -30 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ duration: 0.5, delay: 0.3 + idx * 0.1 }}
                                         className="group relative"
                                     >
                                         <div className="relative flex items-center gap-4 p-4 xl:p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] hover:bg-white/[0.06] hover:border-[#14B8A6]/40 transition-all duration-500 cursor-default overflow-hidden">
-                                            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-[#14B8A6] via-[#3B82F6] to-[#14B8A6] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                            <div className="absolute start-0 top-0 bottom-0 w-[3px] bg-gradient-to-b from-[#14B8A6] via-[#3B82F6] to-[#14B8A6] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                             <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-[#14B8A6]/20 to-[#14B8A6]/5 border border-[#14B8A6]/20 flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg shadow-[#14B8A6]/10">
                                                 <benefit.icon className="w-5 h-5 text-[#14B8A6]" />
                                             </div>
@@ -275,7 +288,7 @@ function ForgotPasswordContent() {
                             <div className="flex items-center gap-1.5">
                                 <Users className="w-4 h-4 text-[#14B8A6]" />
                                 <p className="text-slate-400 text-sm">
-                                    Join <span className="text-white font-semibold">2,500+</span> traders
+                                    <span className="text-white font-semibold">{t.socialProof}</span>
                                 </p>
                             </div>
                         </motion.div>
@@ -286,13 +299,13 @@ function ForgotPasswordContent() {
                 <div className="flex-1 flex flex-col justify-center px-6 lg:px-12 xl:px-20 2xl:px-28 py-10 relative overflow-hidden">
                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(20,184,166,0.03)_0%,_transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top_right,_rgba(20,184,166,0.06)_0%,_transparent_50%)]" />
 
-                    <div className="hidden lg:block absolute top-8 left-12">
+                    <div className="hidden lg:block absolute top-8 start-12">
                         <button
                             onClick={() => step === "EMAIL" ? router.push(getRoute('login')) : setStep("EMAIL")}
                             className="flex items-center gap-2 text-slate-500 hover:text-[#14B8A6] transition-colors"
                         >
-                            <ArrowLeft className="w-5 h-5" />
-                            <span>Back to login</span>
+                            {isRtl ? <ArrowRight className="w-5 h-5" /> : <ArrowLeft className="w-5 h-5" />}
+                            <span>{t.backToLogin}</span>
                         </button>
                     </div>
 
@@ -304,7 +317,7 @@ function ForgotPasswordContent() {
                     >
                         {/* Desktop form content is essentially the same as mobile but with different wrapper styling logic handled by the single component structure below */}
                         {/* We will reuse the same Step Logic but rendered in this container */}
-                        {renderFormContent(step, email, setEmail, otp, otpRefs, handleOtpChange, handleOtpKeyDown, newPassword, setNewPassword, confirmPassword, setConfirmPassword, handleRequestOtp, handleVerifyOtp, handleResetPassword, isLoading, error, focusedField, setFocusedField, router, getRoute, setStep, handleRequestOtp)}
+                        {renderFormContent(step, email, setEmail, otp, otpRefs, handleOtpChange, handleOtpKeyDown, newPassword, setNewPassword, confirmPassword, setConfirmPassword, handleRequestOtp, handleVerifyOtp, handleResetPassword, isLoading, error, focusedField, setFocusedField, router, getRoute, setStep, handleRequestOtp, labels, lang, isRtl)}
                     </motion.div>
                 </div>
             </div>
@@ -315,7 +328,11 @@ function ForgotPasswordContent() {
     // MOBILE LAYOUT - Ultra Premium Single Column
     // ========================================================================
     return (
-        <div className="relative w-full h-[100dvh] bg-white dark:bg-[#0A0F1C] overflow-y-auto">
+        <div
+            dir={isRtl ? "rtl" : "ltr"}
+            lang={lang}
+            className={`relative w-full h-[100dvh] bg-white dark:bg-[#0A0F1C] overflow-y-auto ${isRtl ? "font-arabic" : ""}`}
+        >
             {/* Animated Background */}
             <div className="fixed inset-0">
                 <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-[#14B8A6]/5 to-transparent dark:from-[#14B8A6]/10" />
@@ -329,8 +346,8 @@ function ForgotPasswordContent() {
                         onClick={() => step === "EMAIL" ? router.push(getRoute('login')) : setStep("EMAIL")}
                         className="flex items-center gap-2 text-slate-500 hover:text-[#14B8A6] transition-colors"
                     >
-                        <ArrowLeft className="w-5 h-5" />
-                        <span>Back</span>
+                        {isRtl ? <ArrowRight className="w-5 h-5" /> : <ArrowLeft className="w-5 h-5" />}
+                        <span>{t.back}</span>
                     </button>
 
                     <div className="flex items-center gap-2">
@@ -346,12 +363,12 @@ function ForgotPasswordContent() {
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={step}
-                            initial={{ opacity: 0, x: 20 }}
+                            initial={{ opacity: 0, x: isRtl ? -20 : 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
+                            exit={{ opacity: 0, x: isRtl ? 20 : -20 }}
                             transition={{ duration: 0.3 }}
                         >
-                            {renderFormContent(step, email, setEmail, otp, otpRefs, handleOtpChange, handleOtpKeyDown, newPassword, setNewPassword, confirmPassword, setConfirmPassword, handleRequestOtp, handleVerifyOtp, handleResetPassword, isLoading, error, focusedField, setFocusedField, router, getRoute, setStep, handleRequestOtp)}
+                            {renderFormContent(step, email, setEmail, otp, otpRefs, handleOtpChange, handleOtpKeyDown, newPassword, setNewPassword, confirmPassword, setConfirmPassword, handleRequestOtp, handleVerifyOtp, handleResetPassword, isLoading, error, focusedField, setFocusedField, router, getRoute, setStep, handleRequestOtp, labels, lang, isRtl)}
                         </motion.div>
                     </AnimatePresence>
                 </div>
@@ -360,7 +377,7 @@ function ForgotPasswordContent() {
                 <div className="text-center py-4">
                     <p className="text-xs text-slate-400 flex items-center justify-center gap-2">
                         <Shield className="w-3.5 h-3.5" />
-                        © 2026 Starta. Secure & Encrypted.
+                        {labels.common.secureFooter}
                     </p>
                 </div>
             </div>
@@ -369,16 +386,20 @@ function ForgotPasswordContent() {
 }
 
 // Helper to render form content based on step to avoid duplication
-function renderFormContent(step: Step, email: string, setEmail: any, otp: string[], otpRefs: any, handleOtpChange: any, handleOtpKeyDown: any, newPassword: string, setNewPassword: any, confirmPassword: string, setConfirmPassword: any, handleRequestOtp: any, handleVerifyOtp: any, handleResetPassword: any, isLoading: boolean, error: string | null, focusedField: any, setFocusedField: any, router: any, getRoute: any, setStep: any, resendEmail: any) {
+function renderFormContent(step: Step, email: string, setEmail: any, otp: string[], otpRefs: any, handleOtpChange: any, handleOtpKeyDown: any, newPassword: string, setNewPassword: any, confirmPassword: string, setConfirmPassword: any, handleRequestOtp: any, handleVerifyOtp: any, handleResetPassword: any, isLoading: boolean, error: string | null, focusedField: any, setFocusedField: any, router: any, getRoute: any, setStep: any, resendEmail: any, labels: AuthLabels, lang: StoredLang, isRtl: boolean) {
+    const t = labels.forgot;
+    const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
+    const arrowHover = isRtl ? "group-hover:-translate-x-1" : "group-hover:translate-x-1";
+
     if (step === "EMAIL") {
         return (
             <>
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
-                        Forgot Password?
+                        {t.emailTitle}
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 text-[15px]">
-                        Enter your email address and we'll send you a verification code to reset your password.
+                        {t.emailSubtitle}
                     </p>
                 </div>
 
@@ -396,18 +417,18 @@ function renderFormContent(step: Step, email: string, setEmail: any, otp: string
                 <form onSubmit={handleRequestOtp} className="space-y-5">
                     <div className="space-y-2">
                         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            Email Address
+                            {labels.common.emailLabel}
                         </label>
                         <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'email' ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10' : ''}`}>
-                            <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'email' ? 'text-[#14B8A6]' : 'text-slate-400'}`} />
+                            <Mail className={`absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'email' ? 'text-[#14B8A6]' : 'text-slate-400'}`} />
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 onFocus={() => setFocusedField('email')}
                                 onBlur={() => setFocusedField(null)}
-                                className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
-                                placeholder="name@company.com"
+                                className="w-full ps-12 pe-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
+                                placeholder={labels.common.emailPlaceholder}
                                 autoComplete="email"
                                 autoFocus
                             />
@@ -425,8 +446,8 @@ function renderFormContent(step: Step, email: string, setEmail: any, otp: string
                         <span className="relative text-white flex items-center gap-2">
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                                 <>
-                                    Send Code
-                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                    {t.sendCode}
+                                    <ArrowIcon className={`w-4 h-4 ${arrowHover} transition-transform`} />
                                 </>
                             )}
                         </span>
@@ -441,15 +462,15 @@ function renderFormContent(step: Step, email: string, setEmail: any, otp: string
             <>
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
-                        Check your Email
+                        {t.otpTitle}
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 text-[15px]">
-                        We sent a 4-digit code to <span className="text-[#14B8A6] font-semibold">{email}</span>
+                        {t.otpSubtitlePrefix} <span className="text-[#14B8A6] font-semibold">{email}</span>
                     </p>
                 </div>
 
                 <div className="space-y-6">
-                    <div className="flex gap-3 justify-center">
+                    <div className="flex gap-3 justify-center" dir="ltr">
                         {otp.map((digit, idx) => (
                             <input
                                 key={idx}
@@ -477,12 +498,12 @@ function renderFormContent(step: Step, email: string, setEmail: any, otp: string
                     )}
 
                     <div className="text-center pt-4">
-                        <p className="text-sm text-slate-500 mb-2">Didn't receive code?</p>
+                        <p className="text-sm text-slate-500 mb-2">{t.noCode}</p>
                         <button
                             onClick={() => resendEmail()}
                             className="text-[#14B8A6] font-semibold hover:text-[#0D9488] flex items-center justify-center gap-2 mx-auto transition-colors"
                         >
-                            <RefreshCw className="w-4 h-4" /> Resend Email
+                            <RefreshCw className="w-4 h-4" /> {t.resend}
                         </button>
                     </div>
                 </div>
@@ -495,10 +516,10 @@ function renderFormContent(step: Step, email: string, setEmail: any, otp: string
             <>
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
-                        Create New Password
+                        {t.newPasswordTitle}
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 text-[15px]">
-                        Your identity is verified. Set your new password below.
+                        {t.newPasswordSubtitle}
                     </p>
                 </div>
 
@@ -516,36 +537,36 @@ function renderFormContent(step: Step, email: string, setEmail: any, otp: string
                 <form onSubmit={handleResetPassword} className="space-y-5">
                     <div className="space-y-2">
                         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            New Password
+                            {t.newPasswordLabel}
                         </label>
                         <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'newpass' ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10' : ''}`}>
-                            <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'newpass' ? 'text-[#14B8A6]' : 'text-slate-400'}`} />
+                            <Lock className={`absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'newpass' ? 'text-[#14B8A6]' : 'text-slate-400'}`} />
                             <input
                                 type="password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 onFocus={() => setFocusedField('newpass')}
                                 onBlur={() => setFocusedField(null)}
-                                className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
-                                placeholder="Min. 6 characters"
+                                className="w-full ps-12 pe-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
+                                placeholder={t.newPasswordPlaceholder}
                             />
                         </div>
                     </div>
 
                     <div className="space-y-2">
                         <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            Confirm Password
+                            {labels.common.confirmPasswordLabel}
                         </label>
                         <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'confirm' ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10' : ''}`}>
-                            <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'confirm' ? 'text-[#14B8A6]' : 'text-slate-400'}`} />
+                            <Lock className={`absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'confirm' ? 'text-[#14B8A6]' : 'text-slate-400'}`} />
                             <input
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 onFocus={() => setFocusedField('confirm')}
                                 onBlur={() => setFocusedField(null)}
-                                className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
-                                placeholder="Re-enter password"
+                                className="w-full ps-12 pe-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
+                                placeholder={t.confirmPasswordPlaceholder}
                             />
                         </div>
                     </div>
@@ -559,7 +580,7 @@ function renderFormContent(step: Step, email: string, setEmail: any, otp: string
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                         <div className="absolute inset-0 shadow-xl shadow-[#14B8A6]/30" />
                         <span className="relative text-white flex items-center gap-2">
-                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Reset Password"}
+                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.resetPassword}
                         </span>
                     </button>
                 </form>
@@ -579,10 +600,10 @@ function renderFormContent(step: Step, email: string, setEmail: any, otp: string
                     <CheckCircle2 className="w-12 h-12" />
                 </div>
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-                    Password Reset!
+                    {t.successTitle}
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 mb-10 max-w-xs mx-auto">
-                    Your account has been successfully recovered. You can now log in with your new password.
+                    {t.successBody}
                 </p>
 
                 <button
@@ -593,8 +614,8 @@ function renderFormContent(step: Step, email: string, setEmail: any, otp: string
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                     <div className="absolute inset-0 shadow-xl shadow-[#14B8A6]/30" />
                     <span className="relative text-white flex items-center gap-2">
-                        Back to Login
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        {t.backToLoginCta}
+                        <ArrowIcon className={`w-4 h-4 ${arrowHover} transition-transform`} />
                     </span>
                 </button>
             </motion.div>

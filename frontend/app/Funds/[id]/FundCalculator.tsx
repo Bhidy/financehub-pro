@@ -11,7 +11,9 @@
 
 import { useMemo, useState } from 'react';
 import type { FundLabels } from './fund-i18n';
-import { projectInvestmentPlan } from '@/lib/fund-analytics';
+import { projectInvestmentPlan, type ProjectionRate } from '@/lib/fund-analytics';
+
+type CagrBasis = ProjectionRate['basis'];
 import { money, signedPct, interp } from './fund-format';
 
 const LBL = 'text-[0.62rem] uppercase tracking-[0.18em] text-muted';
@@ -26,9 +28,23 @@ function yearsLabel(n: number, ax: FundLabels['ax']) {
     return `${n} ${ax.calcYearsMany}`;
 }
 
+/** Human window label for the rate's basis, so the disclosure is never vague. */
+function basisWindow(basis: CagrBasis | null | undefined, ax: FundLabels['ax']): string | null {
+    if (basis === '5y') return `5 ${ax.calcYearsFew}`;
+    if (basis === '3y') return `3 ${ax.calcYearsFew}`;
+    if (basis === '1y') return ax.calcYears1;
+    return null; // 'full' / 'inception' use the full-history wording
+}
+
 export default function FundCalculator({
-    cagr, volatility, currency, t,
-}: { cagr: number | null; volatility: number | null; currency: string; t: FundLabels }) {
+    cagr, cagrBasis, volatility, currency, t,
+}: {
+    cagr: number | null;
+    cagrBasis?: CagrBasis | null;
+    volatility: number | null;
+    currency: string;
+    t: FundLabels;
+}) {
     const ax = t.ax;
     // '' is allowed so the fields can be fully cleared while typing; math treats '' as 0.
     const [amount, setAmount] = useState<number | ''>(10_000);
@@ -115,7 +131,14 @@ export default function FundCalculator({
                         <div className="calc-stat-label">{ax.calcRange}</div>
                         <div className="calc-stat-value text-sm tabular-nums">{money(proj.low, currency)} – {money(proj.high, currency)}</div>
                     </div>
-                    <p className="text-[0.68rem] text-muted">{interp(ax.calcCagrNote, { v: proj.cagrUsed })}</p>
+                    <p className="text-[0.68rem] text-muted">
+                        {(() => {
+                            const w = basisWindow(cagrBasis, ax);
+                            return w
+                                ? interp(ax.calcCagrNoteWindow, { v: proj.cagrUsed, w })
+                                : interp(ax.calcCagrNote, { v: proj.cagrUsed });
+                        })()}
+                    </p>
                 </div>
             ) : (
                 /* proj is null either because the fund has no usable history (cagr null)

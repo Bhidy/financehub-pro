@@ -163,6 +163,35 @@ export function effectiveAnnualReturn(i: AnalyticsInput): number | null {
   return parts.reduce((acc, p, idx) => acc + p * weights[idx], 0) / wsum;
 }
 
+/**
+ * The GEOMETRIC (compound) annual return to project a plan from — never an
+ * arithmetic average of period returns.
+ *
+ * Preferred source is `cagr`: a true endpoint-to-endpoint geometric
+ * annualization over the fund's FULL cleaned NAV history. The pipeline returns
+ * null for it below ~90 days of our own NAV series, which left the calculator
+ * dead on a third of the universe — including funds whose page simultaneously
+ * displayed a full scorecard built from provider-supplied period returns.
+ *
+ * So when `cagr` is unavailable we geometrically annualize the LONGEST
+ * published cumulative return instead (5Y → ^(1/5), 3Y → ^(1/3), inception →
+ * ^(1/years), else the 1Y figure, which is already annual). That is still a
+ * compound growth rate, never a mean of means — and `basis` tells the UI which
+ * window was used so the disclosure stays honest.
+ */
+export type ProjectionRate = { rate: number; basis: 'full' | '5y' | '3y' | 'inception' | '1y' };
+
+export function projectionRate(i: AnalyticsInput): ProjectionRate | null {
+  if (isNum(i.cagr)) return { rate: i.cagr, basis: 'full' };
+  if (isNum(i.return5y)) return { rate: annualize(i.return5y, 5), basis: '5y' };
+  if (isNum(i.return3y)) return { rate: annualize(i.return3y, 3), basis: '3y' };
+  if (isNum(i.returnInception) && isNum(i.inceptionYears) && i.inceptionYears > 0) {
+    return { rate: annualize(i.returnInception, i.inceptionYears), basis: 'inception' };
+  }
+  if (isNum(i.return1y)) return { rate: i.return1y, basis: '1y' };
+  return null;
+}
+
 const round1 = (v: number): number => Math.round(v * 10) / 10;
 
 /**
@@ -538,7 +567,13 @@ export type FundAnalytics = {
   stress: StressResult;
   fundKind: FundKind;
   /** Enough context for the client-side calculator to run without re-fetching. */
-  calc: { cagr: number | null; volatility: number | null; currency: string | null };
+  calc: {
+    cagr: number | null;
+    /** Which window the rate came from, so the UI can disclose it accurately. */
+    cagrBasis: ProjectionRate['basis'] | null;
+    volatility: number | null;
+    currency: string | null;
+  };
   /** Do we have enough to responsibly show the analytics layer at all? */
   hasEnoughData: boolean;
 };
@@ -557,7 +592,16 @@ export function buildFundAnalytics(i: AnalyticsInput, currency: string | null, s
     insights: computeInsights(i, scores),
     stress: computeStressTest(i),
     fundKind: classifyFund(i),
-    calc: { cagr: i.cagr, volatility: i.volatility, currency },
+    calc: (() => {
+      // Suppressed funds (data artefacts) must never drive a projection.
+      const pr = suppressed ? null : projectionRate(i);
+      return {
+        cagr: pr ? Math.round(pr.rate * 100) / 100 : null,
+        cagrBasis: pr ? pr.basis : null,
+        volatility: i.volatility,
+        currency,
+      };
+    })(),
     hasEnoughData,
   };
 }

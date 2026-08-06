@@ -52,7 +52,7 @@ export type FundAxLabels = {
     calcTitle: string; calcSub: string; calcAmount: string; calcMonthly: string; calcHorizon: string;
     calcYears1: string; calcYears2: string; calcYearsFew: string; calcYearsMany: string;
     calcInvested: string; calcProjected: string;
-    calcGain: string; calcRange: string; calcCagrNote: string; calcDisclaimer: string;
+    calcGain: string; calcRange: string; calcCagrNote: string; calcCagrNoteWindow: string; calcDisclaimer: string;
     calcEnterAmounts: string;
     cagrTitle: string; cagrSinceInception: string; cagrOverYears: string;
     moveTitle: string; moveBest: string; moveWorst: string; moveAvgGain: string; moveAvgLoss: string;
@@ -318,6 +318,7 @@ const EN: FundLabels = {
         calcYears1: '1 year', calcYears2: '2 years', calcYearsFew: 'years', calcYearsMany: 'years',
         calcInvested: 'Invested', calcProjected: 'Projected value', calcGain: 'Projected gain', calcRange: 'Likely range',
         calcCagrNote: 'Based on the fund’s realized {v}% annualized return over its full history',
+        calcCagrNoteWindow: 'Based on the fund’s realized {v}% annualized return over its last {w}',
         calcDisclaimer: 'Illustration only, based on past performance. Not a promise of future returns — funds can lose value. Monthly contributions compound monthly.',
         calcEnterAmounts: 'Enter an amount to project.',
         cagrTitle: 'CAGR since inception',
@@ -506,6 +507,7 @@ const AR: FundLabels = {
         calcYears1: 'سنة واحدة', calcYears2: 'سنتان', calcYearsFew: 'سنوات', calcYearsMany: 'سنة',
         calcInvested: 'المستثمر', calcProjected: 'القيمة المتوقعة', calcGain: 'الربح المتوقع', calcRange: 'النطاق المرجّح',
         calcCagrNote: 'بناءً على العائد السنوي المحقق {v}% عبر كامل تاريخ الصندوق',
+        calcCagrNoteWindow: 'بناءً على العائد السنوي المحقق {v}% خلال آخر {w}',
         calcDisclaimer: 'توضيحي فقط بناءً على الأداء السابق. ليس وعدًا بعوائد مستقبلية — قد تنخفض قيمة الصناديق. تتراكم المساهمات الشهرية بمعدل شهري مركب.',
         calcEnterAmounts: 'أدخل مبلغاً لعرض التوقع.',
         cagrTitle: 'معدل النمو المركب منذ التأسيس',

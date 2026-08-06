@@ -71,6 +71,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("theme", newTheme);
         } catch { /* private mode */ }
         applyThemeToDocument(newTheme);
+        // BOTH theme providers are mounted (this one via app/providers.tsx, and
+        // components/ThemeProvider inside it) and different components consume
+        // each. Announce the change so the other provider — and the static-page
+        // engine — update their state too; without this, a toggle from Settings
+        // left SiteNav's provider stale and its next click was a silent no-op.
+        document.dispatchEvent(new CustomEvent("starta:themechange", { detail: { theme: newTheme } }));
     };
 
     const toggleTheme = () => {

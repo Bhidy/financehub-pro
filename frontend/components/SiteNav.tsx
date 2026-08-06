@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Sun, Moon, Menu, X, History } from "lucide-react";
+import { Sun, Moon, Menu, X, History, LogOut, UserRound } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { AUTH_LABELS } from "@/lib/auth-i18n";
 
 interface MobileChatActions {
     onNewChat?: () => void;
@@ -26,11 +28,29 @@ const NAV_LINKS = [
     { href: "/Learn", en: "LEARN", ar: "تعلّم" },
 ];
 
+/**
+ * Auth pill styles — Sign In is the secondary (outlined) action, Create Account
+ * the primary (filled teal) one, both matching the existing nav pill geometry.
+ */
+const AUTH_PILL_BASE =
+    "px-5 py-2 rounded-full text-xs font-bold tracking-widest transition-all duration-200 hover:-translate-y-px";
+const AUTH_PILL_SECONDARY =
+    `${AUTH_PILL_BASE} border border-slate-200 dark:border-white/[0.09] bg-white/50 dark:bg-[rgba(14,16,16,0.56)] text-slate-700 dark:text-[#eef2f6] hover:text-[#14B8A6] hover:border-[rgba(20,184,166,0.5)]`;
+const AUTH_PILL_PRIMARY =
+    `${AUTH_PILL_BASE} bg-[#14B8A6] text-white hover:bg-[#0D9488] shadow-sm shadow-[#14B8A6]/30`;
+
 export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }: SiteNavProps) {
     const { theme, toggleTheme } = useTheme();
     const [mobileOpen, setMobileOpen] = useState(false);
     const pathname = usePathname();
     const isAiChat = pathname === "/AiChat";
+
+    // Auth affordances. `isLoading` is true on the server AND on the hydrating
+    // client render (AuthProvider only reads localStorage in an effect), so
+    // gating on it is hydration-safe and also avoids flashing "Sign In" at a
+    // visitor who is in fact already signed in.
+    const { isAuthenticated, isLoading: isAuthLoading, logout } = useAuth();
+    const authLabels = AUTH_LABELS[lang === "ar" ? "ar" : "en"].nav;
 
     return (
         <>
@@ -72,6 +92,34 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                             >
                                 {lang === "ar" ? "اعرف ملف مخاطرك" : "FREE RISK PROFILE"}
                             </a>
+                        )}
+
+                        {/* Auth — real links, desktop/tablet only; mobile lives in overlay */}
+                        {!isAuthLoading && (
+                            isAuthenticated ? (
+                                <div className="hidden md:flex items-center gap-2">
+                                    <a href="/settings" className={`hidden md:inline-flex items-center gap-2 ${AUTH_PILL_SECONDARY}`}>
+                                        <UserRound className="w-3.5 h-3.5" />
+                                        {authLabels.account}
+                                    </a>
+                                    <button
+                                        onClick={logout}
+                                        className={`hidden md:inline-flex items-center gap-2 ${AUTH_PILL_SECONDARY}`}
+                                    >
+                                        <LogOut className="w-3.5 h-3.5" />
+                                        {authLabels.signOut}
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="hidden md:flex items-center gap-2">
+                                    <a href="/login" className={`inline-flex items-center ${AUTH_PILL_SECONDARY}`}>
+                                        {authLabels.signIn}
+                                    </a>
+                                    <a href="/register" className={`inline-flex items-center ${AUTH_PILL_PRIMARY}`}>
+                                        {authLabels.createAccount}
+                                    </a>
+                                </div>
+                            )
                         )}
 
                         {/* Theme — desktop only; mobile lives in overlay */}
@@ -161,6 +209,46 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                             >
                                 {lang === "ar" ? "اعرف ملف مخاطرك" : "FREE RISK PROFILE"}
                             </a>
+                        )}
+
+                        {/* Auth — same real links as the desktop nav */}
+                        {!isAuthLoading && (
+                            isAuthenticated ? (
+                                <div className="mt-3 flex gap-3">
+                                    <a
+                                        href="/settings"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold tracking-widest border border-slate-200 dark:border-white/[0.09] bg-slate-50 dark:bg-white/[0.04] text-slate-700 dark:text-[#eef2f6]"
+                                    >
+                                        <UserRound className="w-4 h-4" />
+                                        {authLabels.account}
+                                    </a>
+                                    <button
+                                        onClick={() => { logout(); setMobileOpen(false); }}
+                                        className="flex-1 flex items-center justify-center gap-2 py-3 rounded-full text-sm font-bold tracking-widest border border-slate-200 dark:border-white/[0.09] bg-slate-50 dark:bg-white/[0.04] text-slate-700 dark:text-[#eef2f6]"
+                                    >
+                                        <LogOut className="w-4 h-4" />
+                                        {authLabels.signOut}
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="mt-3 flex gap-3">
+                                    <a
+                                        href="/login"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="flex-1 flex items-center justify-center py-3 rounded-full text-sm font-bold tracking-widest border border-slate-200 dark:border-white/[0.09] bg-slate-50 dark:bg-white/[0.04] text-slate-700 dark:text-[#eef2f6]"
+                                    >
+                                        {authLabels.signIn}
+                                    </a>
+                                    <a
+                                        href="/register"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="flex-1 flex items-center justify-center py-3 rounded-full text-sm font-bold tracking-widest bg-[#14B8A6] text-white shadow-sm shadow-[#14B8A6]/30"
+                                    >
+                                        {authLabels.createAccount}
+                                    </a>
+                                </div>
+                            )
                         )}
 
                         {/* Settings row — theme + language */}

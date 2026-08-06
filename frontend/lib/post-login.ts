@@ -24,10 +24,30 @@ const HANDOFF_KEY = 'starta-auth-handoff';
 const RETURN_KEY = 'starta-return-to';
 const DEFAULT_DESTINATION = '/Funds';
 
-/** Accept only same-origin relative paths: "/x…" but never "//…" or "/\…". */
+/**
+ * Accept only same-origin relative paths.
+ *
+ * A prefix regex alone is NOT enough: the WHATWG URL parser strips TAB, CR and
+ * LF *before* parsing, so "/\t/evil.com" passes a naive `^/(?![/\\])` test and
+ * then resolves to https://evil.com — a working open redirect (an attacker
+ * delivers it as ?redirect=%2F%09%2Fevil.com). We therefore (1) reject every
+ * C0/DEL control character, and (2) resolve the candidate and require the
+ * result to be the SAME ORIGIN, returning the re-serialized path so nothing
+ * exotic survives. Never relax this to a pattern-only check.
+ */
 export function sanitizeReturnPath(raw: string | null | undefined): string | null {
     if (!raw) return null;
-    return /^\/(?![/\\])/.test(raw) ? raw : null;
+    // eslint-disable-next-line no-control-regex
+    if (/[\u0000-\u001F\u007F]/.test(raw)) return null;
+    if (!/^\/(?![/\\])/.test(raw)) return null;
+    try {
+        const base = typeof window !== 'undefined' ? window.location.origin : 'https://startamarkets.com';
+        const url = new URL(raw, base);
+        if (url.origin !== base) return null;
+        return `${url.pathname}${url.search}${url.hash}`;
+    } catch {
+        return null;
+    }
 }
 
 export type AuthHandoff = Partial<Record<

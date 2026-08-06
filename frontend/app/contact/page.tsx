@@ -34,8 +34,8 @@ export default function ContactPage() {
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Contact Starta Markets</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-main">
-                We read everything. For the fastest answer about a stock or fund, try the{' '}
-                <Link href="/AiChat" className="font-semibold text-starta-teal hover:underline">AI analyst</Link> first —
+                We read everything. For the fastest answer about a stock or fund, browse the{' '}
+                <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">fund profiles</Link> first —
                 for everything else, email us:
             </p>
 
@@ -52,7 +52,7 @@ export default function ContactPage() {
             </div>
 
             <p className="mt-8 max-w-3xl text-sm leading-relaxed text-muted" dir="rtl" lang="ar">
-                للاستفسارات والدعم راسلنا على البريد أعلاه — وللأسئلة السريعة عن أي سهم أو صندوق جرّب المحلل الذكي.
+                للاستفسارات والدعم راسلنا على البريد أعلاه — وللأسئلة السريعة عن أي سهم أو صندوق تصفّح صفحات الصناديق.
             </p>
         </PublicPageShell>
     );

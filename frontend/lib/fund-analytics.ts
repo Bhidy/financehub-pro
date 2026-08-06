@@ -479,6 +479,56 @@ export function projectInvestment(
   };
 }
 
+export type PlanProjection = Projection & { lumpSum: number; monthly: number };
+
+/**
+ * Project a full plan — optional lump sum + optional monthly contribution — using the
+ * fund's realized CAGR (the geometric-mean annual return over its full NAV history).
+ * Monthly contributions compound at the equivalent monthly rate (ordinary annuity,
+ * end-of-month). Same ±0.6σ soft band as projectInvestment; same "not a guarantee"
+ * disclaimer requirement.
+ */
+export function projectInvestmentPlan(
+  lumpSum: number, monthly: number, years: number, cagr: number | null, volatility: number | null,
+): PlanProjection | null {
+  if (!isNum(years) || years <= 0 || !isNum(cagr)) return null;
+  const lump = isNum(lumpSum) && lumpSum > 0 ? lumpSum : 0;
+  const contrib = isNum(monthly) && monthly > 0 ? monthly : 0;
+  if (lump <= 0 && contrib <= 0) return null;
+
+  const months = Math.round(years * 12);
+  const grow = (annualRate: number) => {
+    const r = Math.max(-0.95, annualRate);
+    const mr = Math.pow(1 + r, 1 / 12) - 1;
+    const lumpFv = lump * Math.pow(1 + r, years);
+    const contribFv = Math.abs(mr) < 1e-9
+      ? contrib * months
+      : contrib * ((Math.pow(1 + mr, months) - 1) / mr);
+    return lumpFv + contribFv;
+  };
+
+  const r = cagr / 100;
+  const vol = isNum(volatility) ? volatility / 100 : 0;
+  const spread = 0.6 * vol;
+  const base = grow(r);
+  const low = grow(r - spread);
+  const high = grow(r + spread);
+  const invested = lump + contrib * months;
+
+  return {
+    years,
+    lumpSum: Math.round(lump),
+    monthly: Math.round(contrib),
+    invested: Math.round(invested),
+    base: Math.round(base),
+    low: Math.round(Math.min(low, base)),
+    high: Math.round(Math.max(high, base)),
+    gain: Math.round(base - invested),
+    gainPct: invested > 0 ? Math.round((base / invested - 1) * 1000) / 10 : 0,
+    cagrUsed: Math.round(cagr * 100) / 100,
+  };
+}
+
 /* ------------------------------------------------------------ convenience */
 
 export type FundAnalytics = {

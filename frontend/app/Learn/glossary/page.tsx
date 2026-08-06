@@ -107,8 +107,8 @@ export default function GlossaryIndexPage() {
                     Visit the Learn academy
                 </Link>{' '}
                 or{' '}
-                <Link href="/AiChat" prefetch={false} className="font-semibold text-starta-teal hover:underline">
-                    ask the AI analyst
+                <Link href="/Funds" prefetch={false} className="font-semibold text-starta-teal hover:underline">
+                    explore the mutual funds
                 </Link>
                 .
             </p>

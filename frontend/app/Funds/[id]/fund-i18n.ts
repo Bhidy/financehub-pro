@@ -46,8 +46,9 @@ export type FundAxLabels = {
     };
     stressTitle: string; stressSub: string; estimate: string; historical: string; stressDisclaimer: string;
     scenarios: { marketDrop10: string; marketDrop20: string; adverse1y: string; worstDrawdown: string; worstPeriod: string };
-    calcTitle: string; calcSub: string; calcAmount: string; calcHorizon: string;
-    calcYears1: string; calcYears3: string; calcYears5: string; calcInvested: string; calcProjected: string;
+    calcTitle: string; calcSub: string; calcAmount: string; calcMonthly: string; calcHorizon: string;
+    calcYears1: string; calcYears2: string; calcYearsFew: string; calcYearsMany: string;
+    calcYears3: string; calcYears5: string; calcInvested: string; calcProjected: string;
     calcGain: string; calcRange: string; calcCagrNote: string; calcDisclaimer: string;
     cagrTitle: string; cagrSinceInception: string; cagrOverYears: string;
     moveTitle: string; moveBest: string; moveWorst: string; moveAvgGain: string; moveAvgLoss: string;
@@ -294,12 +295,14 @@ const EN: FundLabels = {
         stressDisclaimer: 'Estimates scale a broad-market shock by this fund’s asset-class sensitivity and volatility — approximations, not predictions. Historical figures are drawn from the fund’s own NAV record.',
         scenarios: { marketDrop10: 'Broad market −10%', marketDrop20: 'Broad market −20%', adverse1y: 'Adverse year (95% band)', worstDrawdown: 'Worst historical drawdown', worstPeriod: 'Worst single period' },
         calcTitle: 'Project an investment',
-        calcSub: 'Illustrative growth using the fund’s realized long-run compound rate.',
-        calcAmount: 'Amount to invest',
+        calcSub: 'Illustrative growth using the fund’s realized annualized return (geometric mean over its full history) — auto-filled, not a promise.',
+        calcAmount: 'One-time amount',
+        calcMonthly: 'Monthly contribution',
         calcHorizon: 'Holding period',
-        calcYears1: '1 year', calcYears3: '3 years', calcYears5: '5 years',
+        calcYears1: '1 year', calcYears2: '2 years', calcYearsFew: 'years', calcYearsMany: 'years',
+        calcYears3: '3 years', calcYears5: '5 years',
         calcInvested: 'Invested', calcProjected: 'Projected value', calcGain: 'Projected gain', calcRange: 'Likely range',
-        calcCagrNote: 'Based on {v}% CAGR',
+        calcCagrNote: 'Based on the fund’s realized {v}% annualized return over its full history',
         calcDisclaimer: 'Illustration only, based on past performance. Not a promise of future returns — funds can lose value.',
         cagrTitle: 'CAGR since inception',
         cagrSinceInception: 'Total since inception',
@@ -473,12 +476,14 @@ const AR: FundLabels = {
         stressDisclaimer: 'التقديرات تضرب صدمة سوقية عامة في حساسية فئة أصول الصندوق وتذبذبه — تقريبات وليست تنبؤات. الأرقام التاريخية مستمدة من سجل صافي قيمة أصول الصندوق نفسه.',
         scenarios: { marketDrop10: 'هبوط السوق ٪−10', marketDrop20: 'هبوط السوق ٪−20', adverse1y: 'سنة سيئة (نطاق 95٪)', worstDrawdown: 'أسوأ تراجع تاريخي', worstPeriod: 'أسوأ فترة منفردة' },
         calcTitle: 'احسب توقّع استثمارك',
-        calcSub: 'نمو توضيحي باستخدام معدل النمو المركب طويل الأجل المحقق للصندوق.',
-        calcAmount: 'المبلغ المستثمر',
+        calcSub: 'نمو توضيحي باستخدام العائد السنوي المحقق للصندوق (المتوسط الهندسي عبر كامل تاريخه) — يُملأ تلقائياً وليس وعداً.',
+        calcAmount: 'مبلغ لمرة واحدة',
+        calcMonthly: 'استثمار شهري',
         calcHorizon: 'مدة الاحتفاظ',
-        calcYears1: 'سنة واحدة', calcYears3: '3 سنوات', calcYears5: '5 سنوات',
+        calcYears1: 'سنة واحدة', calcYears2: 'سنتان', calcYearsFew: 'سنوات', calcYearsMany: 'سنة',
+        calcYears3: '3 سنوات', calcYears5: '5 سنوات',
         calcInvested: 'المستثمر', calcProjected: 'القيمة المتوقعة', calcGain: 'الربح المتوقع', calcRange: 'النطاق المرجّح',
-        calcCagrNote: 'بناءً على معدل نمو مركب {v}%',
+        calcCagrNote: 'بناءً على العائد السنوي المحقق {v}% عبر كامل تاريخ الصندوق',
         calcDisclaimer: 'توضيحي فقط بناءً على الأداء السابق. ليس وعدًا بعوائد مستقبلية — قد تنخفض قيمة الصناديق.',
         cagrTitle: 'معدل النمو المركب منذ التأسيس',
         cagrSinceInception: 'الإجمالي منذ التأسيس',

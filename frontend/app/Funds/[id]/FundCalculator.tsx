@@ -2,32 +2,42 @@
 
 /**
  * Interactive investment calculator — a compact, single-column widget sized for the
- * profile sidebar (~20rem) and full-width on mobile. Projects a lump sum forward using
- * the fund's realized long-run CAGR (RF-free) via lib/fund-analytics.projectInvestment,
- * with a volatility-derived band. Recomputes instantly; the "not a guarantee" disclaimer
- * is always visible.
+ * profile sidebar (~20rem) and full-width on mobile. Projects a plan forward —
+ * lump sum, monthly contribution, or both — using the fund's realized annualized
+ * return (geometric mean over its full NAV history) via
+ * lib/fund-analytics.projectInvestmentPlan, with a volatility-derived band.
+ * Recomputes instantly; the "not a guarantee" disclaimer is always visible.
  */
 
 import { useMemo, useState } from 'react';
 import type { FundLabels } from './fund-i18n';
-import { projectInvestment } from '@/lib/fund-analytics';
+import { projectInvestmentPlan } from '@/lib/fund-analytics';
 import { money, signedPct, interp } from './fund-format';
 
-const HORIZONS = [1, 3, 5] as const;
 const LBL = 'text-[0.62rem] uppercase tracking-[0.18em] text-muted';
+const MAX_YEARS = 30;
+
+/** Arabic-correct year pluralization (1 سنة / 2 سنتان / 3–10 سنوات / 11+ سنة);
+ *  English collapses to "1 year" / "n years" through the same label keys. */
+function yearsLabel(n: number, ax: FundLabels['ax']) {
+    if (n === 1) return ax.calcYears1;
+    if (n === 2) return ax.calcYears2;
+    if (n <= 10) return `${n} ${ax.calcYearsFew}`;
+    return `${n} ${ax.calcYearsMany}`;
+}
 
 export default function FundCalculator({
     cagr, volatility, currency, t,
 }: { cagr: number | null; volatility: number | null; currency: string; t: FundLabels }) {
     const ax = t.ax;
     const [amount, setAmount] = useState<number>(10_000);
-    const [years, setYears] = useState<number>(3);
+    const [monthly, setMonthly] = useState<number>(1_000);
+    const [years, setYears] = useState<number>(5);
 
     const proj = useMemo(
-        () => projectInvestment(amount, years, cagr, volatility),
-        [amount, years, cagr, volatility],
+        () => projectInvestmentPlan(amount, monthly, years, cagr, volatility),
+        [amount, monthly, years, cagr, volatility],
     );
-    const yearLabel = (y: number) => (y === 1 ? ax.calcYears1 : y === 3 ? ax.calcYears3 : ax.calcYears5);
 
     return (
         <section className="glass-premium rounded-[1.6rem] p-5" aria-label={ax.calcTitle}>
@@ -48,19 +58,33 @@ export default function FundCalculator({
                     </div>
                 </label>
 
-                <div>
-                    <span className={LBL}>{ax.calcHorizon}</span>
-                    <div className="calc-seg calc-seg--full mt-1.5" role="tablist" aria-label={ax.calcHorizon}>
-                        {HORIZONS.map((y) => (
-                            <button
-                                key={y} type="button" role="tab" aria-selected={years === y}
-                                className="calc-seg-btn" data-active={years === y}
-                                onClick={() => setYears(y)}
-                            >
-                                {yearLabel(y)}
-                            </button>
-                        ))}
+                <label className="block">
+                    <span className={LBL}>{ax.calcMonthly}</span>
+                    <div className="calc-input mt-1.5">
+                        <input
+                            type="number" inputMode="numeric" min={0} step={100}
+                            value={Number.isFinite(monthly) ? monthly : ''}
+                            onChange={(e) => setMonthly(Math.max(0, Number(e.target.value) || 0))}
+                            aria-label={ax.calcMonthly}
+                        />
+                        <span className="calc-input-suffix">{currency}</span>
                     </div>
+                </label>
+
+                <div>
+                    <div className="flex items-center justify-between">
+                        <span className={LBL}>{ax.calcHorizon}</span>
+                        <span className="text-xs font-bold text-main tabular-nums">{yearsLabel(years, ax)}</span>
+                    </div>
+                    <input
+                        type="range" min={1} max={MAX_YEARS} step={1}
+                        value={years}
+                        onChange={(e) => setYears(Math.min(MAX_YEARS, Math.max(1, Number(e.target.value) || 1)))}
+                        aria-label={ax.calcHorizon}
+                        aria-valuetext={yearsLabel(years, ax)}
+                        className="mt-2 w-full cursor-pointer"
+                        style={{ accentColor: '#14B8A6' }}
+                    />
                 </div>
             </div>
 

@@ -23,22 +23,22 @@ type Lang = 'en' | 'ar';
 const NAV_LABELS: Record<Lang, Record<string, string>> = {
     en: {
         home: 'HOME', funds: 'MUTUAL FUNDS', pulse: 'MARKET PULSE', news: 'MARKET NEWS',
-        portfolio: 'MY PORTFOLIO', learn: 'LEARN', cta: 'Try Now',
+        portfolio: 'MY PORTFOLIO', learn: 'LEARN', cta: 'Free Risk Profile',
     },
     ar: {
         home: 'الرئيسية', funds: 'الصناديق الاستثمارية', pulse: 'نبض السوق', news: 'أخبار السوق',
-        portfolio: 'محفظتي', learn: 'تعلّم', cta: 'جرّب الآن',
+        portfolio: 'محفظتي', learn: 'تعلّم', cta: 'اعرف ملف مخاطرك',
     },
 };
 
 const FOOTER_LABELS: Record<Lang, Record<string, string>> = {
     en: {
         desc: 'Next-generation financial intelligence platform. Empowering Egyptian market investors with unified data, institutional-grade AI analytics, and responsive portfolio tools.',
-        cta: 'Launch Starta AI',
+        cta: 'Explore Funds',
         col1: 'PLATFORM', col2: 'RESEARCH', col3: 'RESOURCES',
         home: 'Home', funds: 'Mutual Funds', pulse: 'Market Pulse',
         news: 'Market News', learn: 'Learn Catalog', portfolio: 'Smart Portfolio',
-        chat: 'AI Assistant', account: 'Create Account', login: 'Sign In',
+        calculators: 'Wealth Calculators', risk: 'Risk Assessment', account: 'Create Account', login: 'Sign In',
         discTitle: 'Regulatory Disclaimer',
         disclaimer: 'Starta Markets is a financial data and technology platform. All content, tools, and AI analyses provided are for informational and educational purposes only, and should not be construed as investment advice, recommendations, or endorsements to buy or sell any security or mutual fund. Financial markets carry high volatility and risks; every investor is fully responsible for their own investment due diligence.',
         copy: '© 2026 Starta Markets. All Rights Reserved.',
@@ -48,11 +48,11 @@ const FOOTER_LABELS: Record<Lang, Record<string, string>> = {
     },
     ar: {
         desc: 'منصة الجيل القادم للتحليل المالي الذكي. نمكّن مستثمري السوق المصري ببيانات موحدة، تحليلات ذكاء اصطناعي بمستوى مؤسسي، وأدوات متطورة لإدارة المحفظة.',
-        cta: 'ابدأ مع مساعد ستارتا',
+        cta: 'استكشف الصناديق',
         col1: 'المنصة', col2: 'الأبحاث', col3: 'المصادر',
         home: 'الرئيسية', funds: 'الصناديق الاستثمارية', pulse: 'نبض السوق',
         news: 'أخبار السوق', learn: 'أكاديمية ستارتا', portfolio: 'المحفظة الذكية',
-        chat: 'المساعد الذكي', account: 'إنشاء حساب', login: 'تسجيل الدخول',
+        calculators: 'حاسبات الثروة', risk: 'تقييم المخاطر', account: 'إنشاء حساب', login: 'تسجيل الدخول',
         discTitle: 'إخلاء المسؤولية التنظيمي',
         disclaimer: 'ستارتا ماركتس منصة بيانات وتقنيات مالية. جميع المحتويات والأدوات وتحليلات الذكاء الاصطناعي المقدمة لأغراض معلوماتية وتعليمية فقط، ولا تُعد نصيحة استثمارية أو توصية أو تزكية لشراء أو بيع أي ورقة مالية أو صندوق استثمار. الأسواق المالية عالية التقلب والمخاطر؛ وكل مستثمر مسؤول مسؤولية كاملة عن قراراته الاستثمارية.',
         copy: '© 2026 ستارتا ماركتس. جميع الحقوق محفوظة.',
@@ -127,7 +127,7 @@ export default function PublicPageShell({
                 />
             )}
             <Script src="/assets/starta-theme.js?v=1.0.1" strategy="beforeInteractive" />
-            <Script src="/assets/starta-mobile-nav.js?v=1.0.4" strategy="lazyOnload" />
+            <Script src="/assets/starta-mobile-nav.js?v=1.0.5" strategy="lazyOnload" />
 
             {/* ── Header: verbatim structure from the designed pages ─────────── */}
             <nav className="fixed top-0 w-full z-50 border-b border-border bg-page/80 backdrop-blur-xl transition-all duration-300">
@@ -148,7 +148,7 @@ export default function PublicPageShell({
 
                     <div className="flex items-center gap-3 ml-3">
                         <Link
-                            href="/AiChat"
+                            href="/RiskAssessment"
                             prefetch={false}
                             className="hidden md:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
                             data-key="nav_cta"
@@ -186,7 +186,7 @@ export default function PublicPageShell({
                             <p className="text-sm text-muted leading-relaxed">{f.desc}</p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full lg:w-auto">
-                            <Link href="/AiChat" prefetch={false} className="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase">
+                            <Link href="/Funds" prefetch={false} className="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase">
                                 <span>{f.cta}</span>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6" /></svg>
                             </Link>
@@ -211,7 +211,8 @@ export default function PublicPageShell({
                         <div className="space-y-4">
                             <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col3}</h4>
                             <ul className="space-y-2.5 text-sm">
-                                <li><Link href="/AiChat" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.chat}</Link></li>
+                                <li><Link href="/Calculators" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.calculators}</Link></li>
+                                <li><Link href="/RiskAssessment" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.risk}</Link></li>
                                 <li><Link href="/register" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.account}</Link></li>
                                 <li><Link href="/login" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.login}</Link></li>
                             </ul>

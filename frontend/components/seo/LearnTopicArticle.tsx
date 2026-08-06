@@ -172,8 +172,8 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                                 استكشف صناديق الاستثمار المصرية
                             </Link>{' '}
                             أو{' '}
-                            <Link href="/AiChat" className="font-semibold text-starta-teal hover:underline">
-                                اسأل المحلل الذكي
+                            <Link href="/Funds/Compare" className="font-semibold text-starta-teal hover:underline">
+                                قارن بين الصناديق
                             </Link>
                             .
                         </>
@@ -184,8 +184,8 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                                 explore Egyptian mutual funds
                             </Link>{' '}
                             or{' '}
-                            <Link href="/AiChat" className="font-semibold text-starta-teal hover:underline">
-                                ask the AI analyst
+                            <Link href="/Funds/Compare" className="font-semibold text-starta-teal hover:underline">
+                                compare funds side by side
                             </Link>
                             .
                         </>

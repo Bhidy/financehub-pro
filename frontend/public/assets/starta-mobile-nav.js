@@ -21,7 +21,7 @@
     window.__startaMobileNav = true;
 
     var TEAL = "#14B8A6";
-    var CTA_HREF = "/AiChat";
+    var CTA_HREF = "/RiskAssessment";
 
     // Net-new chrome strings (everything else flows through the page's data-key i18n).
     var STR = {
@@ -323,7 +323,7 @@
 
     function ctaLabel() {
         var existing = document.querySelector('[data-key="nav_cta"]');
-        return existing ? existing.textContent.trim() : (lang() === "ar" ? "جرّب الآن" : "Try Now");
+        return existing ? existing.textContent.trim() : (lang() === "ar" ? "اعرف ملف مخاطرك" : "Free Risk Profile");
     }
 
     /* -------------------------------------------------------------- behavior */

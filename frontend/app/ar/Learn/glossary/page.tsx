@@ -106,8 +106,8 @@ export default function GlossaryIndexArabicPage() {
                         زر أكاديمية التعلّم
                     </Link>{' '}
                     أو{' '}
-                    <Link href="/AiChat" prefetch={false} className="font-semibold text-starta-teal hover:underline">
-                        اسأل المحلل الذكي
+                    <Link href="/Funds" prefetch={false} className="font-semibold text-starta-teal hover:underline">
+                        استكشف صناديق الاستثمار
                     </Link>
                     .
                 </p>

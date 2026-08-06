@@ -217,6 +217,25 @@ async function run() {
     // Expected missing file
   }
 
+  // The legacy "Pro Terminal" AppSidebar shell is permanently removed
+  // (2026-08-06, owner decision). Production never rendered it; on localhost
+  // it leaked onto any route missing from ShellWrapper's old isolation lists.
+  // It must never come back — neither the component nor a mount of it.
+  try {
+    await access(path.join(root, "components/AppSidebar.tsx"), constants.F_OK);
+    console.error("FAIL: components/AppSidebar.tsx must not exist — the legacy Pro Terminal sidebar was permanently removed.");
+    process.exit(1);
+  } catch {
+    // Expected missing file
+  }
+  {
+    const shellWrapper = await readFile(path.join(root, "components/ShellWrapper.tsx"), "utf8");
+    if (/AppSidebar/.test(shellWrapper.replace(/^\s*\/\/.*$/gm, ""))) {
+      console.error("FAIL: ShellWrapper must not import or render AppSidebar — the legacy Pro Terminal sidebar was permanently removed.");
+      process.exit(1);
+    }
+  }
+
   for (const check of checks) {
     const fullPath = path.join(root, check.file);
     const text = await readFile(fullPath, "utf8");

@@ -182,11 +182,11 @@ export default function MobileSettingsPage() {
                                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your account preferences</p>
                             </div>
                             <Link
-                                href="https://startamarkets.com/AiChat"
+                                href="/"
                                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 text-slate-900 dark:text-white transition-all font-semibold text-sm shadow-sm"
                             >
                                 <ArrowLeft className="w-4 h-4" />
-                                Back to Chat
+                                Back to Home
                             </Link>
                         </div>
                     </div>
@@ -212,7 +212,7 @@ export default function MobileSettingsPage() {
                 <header className="sticky top-0 z-30 px-5 py-4 flex items-center justify-between bg-slate-50 dark:bg-[#0A0F1C]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#13b8a6]/20 blur-[40px] rounded-full pointer-events-none" />
                     <button
-                        onClick={() => router.push('https://startamarkets.com/AiChat')}
+                        onClick={() => router.push('/')}
                         className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white transition-all active:scale-95 z-10"
                     >
                         <ArrowLeft className="w-5 h-5" />

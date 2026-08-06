@@ -52,8 +52,11 @@ export async function GET(request: NextRequest) {
         }
     }
 
-    // Unified Routing: Redirect always to root paths
-    const successRedirect = "/AiChat";
+    // Unified Routing: finish the login on /login (it consumes the token params
+    // and stores them) and then send the user to the home page. The chatbot page
+    // is currently hidden from the website, so we no longer land users on /AiChat.
+    const successRedirect = "/login";
+    const successDestination = "/"; // where /login sends the user after storing tokens
     const loginRedirect = "/login";
 
     // Handle errors from Google
@@ -114,20 +117,38 @@ export async function GET(request: NextRequest) {
         // MOBILE (Capacitor app): bounce the tokens back into the native app via a
         // custom URL scheme deep link. Safari reliably opens the app from an HTML
         // location redirect (a plain Location header to a custom scheme is flaky).
-        if (isMobile) {
-            // Only honour a returnOrigin that is the known app scheme; otherwise
-            // fall back to the default. Blocks scheme-injection (e.g. https://evil).
+        //
+        // Guard: a genuine native request always carries returnTo = the app scheme
+        // (StartaMobileApp) or the legacy bare "mobile" state (no returnTo at all).
+        // A web returnTo with mobile:true is a misdetected desktop/mobile-web login —
+        // deep-linking there strands the user on a dead page, so fall through to the
+        // normal web redirect instead.
+        const isNativeAppFlow =
+            isMobile && (!returnOrigin || returnOrigin.startsWith(APP_SCHEME));
+        if (isNativeAppFlow) {
             const schemeBase = returnOrigin && returnOrigin.startsWith(APP_SCHEME) ? returnOrigin : "com.mubasher.startamarkets://oauth";
             const sep = schemeBase.includes("?") ? "&" : "?";
-            const deepLink =
-                `${schemeBase}${sep}token=${encodeURIComponent(data.access_token)}` +
+            const tokenQuery =
+                `token=${encodeURIComponent(data.access_token)}` +
                 `&refresh_token=${encodeURIComponent(data.refresh_token || "")}` +
                 `&user=${encodeURIComponent(JSON.stringify(data.user))}&google_auth=success`;
+            const deepLink = `${schemeBase}${sep}${tokenQuery}`;
+            // Web fallback: if the custom scheme has no handler (app not installed,
+            // or an edge case slipped past the guard), finish the login on the web
+            // instead of leaving the user stranded on this page.
+            const webFallback =
+                `${request.nextUrl.origin}${successRedirect}?${tokenQuery}` +
+                `&redirect=${encodeURIComponent(successDestination)}`;
             return new NextResponse(
                 `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">` +
                 `<meta http-equiv="refresh" content="0;url=${deepLink}"></head>` +
                 `<body style="font-family:system-ui;text-align:center;padding:48px 24px;color:#0b1220">Signing you in…` +
-                `<script>location.href=${JSON.stringify(deepLink)}</script></body></html>`,
+                `<p style="margin-top:16px;font-size:14px;color:#64748b">Not redirected? ` +
+                `<a href=${JSON.stringify(deepLink)}>Open the app</a> or ` +
+                `<a href=${JSON.stringify(webFallback)}>continue in the browser</a>.</p>` +
+                `<script>location.href=${JSON.stringify(deepLink)};` +
+                `setTimeout(function(){location.href=${JSON.stringify(webFallback)}},2500);</script>` +
+                `</body></html>`,
                 { headers: { "content-type": "text/html; charset=utf-8", "Cache-Control": "no-store" } }
             );
         }
@@ -148,6 +169,7 @@ export async function GET(request: NextRequest) {
         }
         redirectUrl.searchParams.set("user", encodeURIComponent(JSON.stringify(data.user)));
         redirectUrl.searchParams.set("google_auth", "success");
+        redirectUrl.searchParams.set("redirect", successDestination);
 
         return NextResponse.redirect(redirectUrl);
     } catch (error) {

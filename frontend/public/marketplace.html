@@ -4,7 +4,7 @@
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=1.0.1"></script>
-    <script src="/assets/starta-lang-boot.js?v=1.0.0"></script><script src="/assets/starta-mobile-nav.js?v=1.0.4" defer></script>
+    <script src="/assets/starta-lang-boot.js?v=1.0.0"></script><script src="/assets/starta-mobile-nav.js?v=1.0.5" defer></script>
     <script src="/assets/fund-logos.js?v=2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -543,7 +543,7 @@
 
         .mini-chart {
             position: relative;
-            min-height: 5.6rem;
+            min-height: 7.4rem;
             /* Constrain the lightweight-charts canvas to the card width — without
                this, the canvas's intrinsic width forces the grid card wider than
                its column (overflow) and the chart's ResizeObserver oscillates. */
@@ -557,8 +557,9 @@
         }
         .mini-chart-canvas { max-width: 100%; overflow: hidden; }
 
-        /* Premium fee box — three divided cells */
-        .fee-box {
+        /* Returns strip — three divided period-return cells (replaces the old fee box:
+           fees live inside the fund profile now; the list stays focused on returns). */
+        .ret-strip {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             border: 1px solid var(--c-border);
@@ -566,18 +567,37 @@
             overflow: hidden;
             background: var(--c-panel);
         }
-        .fee-cell { padding: 0.85rem 0.55rem; text-align: center; min-width: 0; }
-        .fee-cell + .fee-cell { border-inline-start: 1px solid var(--c-border); }
-        .fee-label {
+        .ret-cell { padding: 0.85rem 0.55rem; text-align: center; min-width: 0; }
+        .ret-cell + .ret-cell { border-inline-start: 1px solid var(--c-border); }
+        .ret-cell-label {
             font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
             letter-spacing: 0.07em; color: var(--c-text-muted); line-height: 1.35;
         }
-        .fee-val {
+        .ret-cell-val {
             margin-top: 0.4rem; font-family: 'Sora', 'IBM Plex Sans Arabic', sans-serif;
-            font-weight: 700; font-size: 1rem; color: var(--c-text-main); letter-spacing: -0.02em;
-            white-space: nowrap;
+            font-weight: 700; font-size: 1rem; letter-spacing: -0.02em;
+            white-space: nowrap; direction: ltr;
         }
-        .fee-val.fee-free { color: var(--teal-dark); }
+
+        /* Risk chip — color-coded bucket */
+        .risk-chip { gap: 0.4rem; }
+        .risk-chip .risk-dot { width: 0.5rem; height: 0.5rem; border-radius: 999px; flex-shrink: 0; }
+        .risk-chip.risk-low { border-color: rgba(16,185,129,0.35); color: #059669; background: rgba(16,185,129,0.07); }
+        .risk-chip.risk-low .risk-dot { background: #10b981; }
+        .risk-chip.risk-medium { border-color: rgba(245,158,11,0.35); color: #b45309; background: rgba(245,158,11,0.08); }
+        .risk-chip.risk-medium .risk-dot { background: #f59e0b; }
+        .risk-chip.risk-high { border-color: rgba(239,68,68,0.35); color: #dc2626; background: rgba(239,68,68,0.07); }
+        .risk-chip.risk-high .risk-dot { background: #ef4444; }
+        [data-theme="dark"] .risk-chip.risk-low { color: #34d399; }
+        [data-theme="dark"] .risk-chip.risk-medium { color: #fbbf24; }
+        [data-theme="dark"] .risk-chip.risk-high { color: #f87171; }
+
+        /* Card link resets — the fund name/logo are real anchors now */
+        .fund-card-link { color: inherit; text-decoration: none; }
+        .fund-card-link:hover h3 { color: var(--teal-dark); }
+
+        /* NAV range inputs */
+        .fsb-range-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
 
         .mini-chart::before {
             content: "";
@@ -643,14 +663,54 @@
             color: var(--c-text-main);
         }
 
-        .table-shell {
+        /* ── Table view: each fund is its own separated card-row ─────────────
+           Zeed-style clean list — one rounded card per fund, returns-focused. */
+        .ftable { display: flex; flex-direction: column; gap: 0.85rem; }
+        .ftable-cols {
+            display: grid;
+            grid-template-columns: minmax(15rem, 2.2fr) 1fr 0.8fr 0.9fr 0.65fr 0.65fr 0.65fr 6rem;
+            gap: 0.9rem; align-items: center;
+        }
+        .ftable-head {
+            padding: 0.35rem 1.4rem;
+            font-size: 0.64rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.16em; color: var(--c-text-muted);
+        }
+        .ftable-row {
+            padding: 1rem 1.4rem;
             background: var(--c-surface);
             border: 1px solid var(--c-border);
+            border-radius: 1.4rem;
             box-shadow: var(--shadow-premium);
+            cursor: pointer;
+            transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+            min-width: 0;
         }
-
-        .table-row:hover {
-            background: rgba(20, 184, 166, 0.04);
+        .ftable-row:hover {
+            transform: translateY(-2px);
+            border-color: rgba(20, 184, 166, 0.32);
+            box-shadow: 0 18px 42px rgba(20, 184, 166, 0.1);
+        }
+        .ftable-cell { min-width: 0; }
+        .ftable-num { font-weight: 700; white-space: nowrap; direction: ltr; }
+        .ftable-logo {
+            width: 3.1rem; height: 3.1rem; flex-shrink: 0; padding: 0.3rem;
+            border: 1px solid var(--c-border); border-radius: 0.9rem;
+            background: var(--c-surface); overflow: hidden;
+        }
+        .ftable-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 0.55rem; }
+        .ftable-name { font-weight: 700; color: var(--c-text-main); letter-spacing: -0.01em; line-height: 1.3; }
+        .ftable-name:hover { color: var(--teal-dark); }
+        @media (max-width: 960px) {
+            .ftable-head { display: none; }
+            .ftable-cols { grid-template-columns: 1fr 1fr; }
+            .ftable-cols > .ftable-fundcell { grid-column: 1 / -1; }
+            .ftable-cell[data-mob-label]::before {
+                content: attr(data-mob-label);
+                display: block;
+                font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+                letter-spacing: 0.14em; color: var(--c-text-muted); margin-bottom: 0.3rem;
+            }
         }
 
         .section-tag {
@@ -753,10 +813,10 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <button onclick="window.location.href='https://startamarkets.com/AiChat'"
+                <button onclick="window.location.href='/RiskAssessment'"
                     class="hidden md:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
                     data-key="nav_cta">
-                    Try Now
+                    Free Risk Profile
                 </button>
                 <button id="themeToggle" class="nav-pill rounded-full p-2.5 flex items-center justify-center relative w-10 h-10" type="button" aria-label="Toggle theme">
                     <svg class="dark-icon w-5 h-5 absolute transition-opacity duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -808,6 +868,19 @@
                             <label class="fsb-label" data-key="manager_label">Manager</label>
                             <select id="managerFilter" class="control-select px-4 text-sm"></select>
                         </div>
+                        <div class="fsb-group">
+                            <label class="fsb-label" data-key="issuer_label">Issuer</label>
+                            <select id="issuerFilter" class="control-select px-4 text-sm"></select>
+                        </div>
+                        <div class="fsb-group">
+                            <label class="fsb-label" data-key="risk_label">Risk</label>
+                            <div class="fsb-seg" id="riskSeg">
+                                <button type="button" data-risk="" class="active" data-key="opt_any">Any</button>
+                                <button type="button" data-risk="low" data-key="risk_low">Low</button>
+                                <button type="button" data-risk="medium" data-key="risk_medium">Medium</button>
+                                <button type="button" data-risk="high" data-key="risk_high">High</button>
+                            </div>
+                        </div>
 
                         <div class="fsb-group">
                             <label class="fsb-label" data-key="fee_label">Management fee</label>
@@ -823,11 +896,27 @@
                             <select id="perfFilter" class="control-select px-4 text-sm"></select>
                         </div>
                         <div class="fsb-group">
-                            <label class="fsb-label" data-key="dealing_label">Dealing frequency</label>
+                            <label class="fsb-label" data-key="dealing_label">Subscription frequency</label>
                             <div class="fsb-seg" id="dealSeg">
                                 <button type="button" data-deal="" class="active" data-key="opt_any">Any</button>
                                 <button type="button" data-deal="daily" data-key="deal_daily">Daily</button>
                                 <button type="button" data-deal="weekly" data-key="deal_weekly">Weekly</button>
+                            </div>
+                        </div>
+                        <div class="fsb-group">
+                            <label class="fsb-label" data-key="redemption_label">Redemption frequency</label>
+                            <div class="fsb-seg" id="redSeg">
+                                <button type="button" data-red="" class="active" data-key="opt_any">Any</button>
+                                <button type="button" data-red="daily" data-key="deal_daily">Daily</button>
+                                <button type="button" data-red="weekly" data-key="deal_weekly">Weekly</button>
+                                <button type="button" data-red="monthly" data-key="deal_monthly">Monthly</button>
+                            </div>
+                        </div>
+                        <div class="fsb-group">
+                            <label class="fsb-label" data-key="nav_range_label">NAV range (EGP)</label>
+                            <div class="fsb-range-row">
+                                <input id="navMinInput" type="number" min="0" inputmode="decimal" class="control-input px-3 text-sm" placeholder="Min">
+                                <input id="navMaxInput" type="number" min="0" inputmode="decimal" class="control-input px-3 text-sm" placeholder="Max">
                             </div>
                         </div>
 
@@ -874,22 +963,18 @@
 
                     <div id="fundsGrid" class="funds-grid"></div>
 
-                    <div id="fundsTableShell" class="hidden table-shell overflow-hidden rounded-[2rem]">
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-sm">
-                                <thead class="bg-panel text-left">
-                                    <tr class="text-[0.68rem] uppercase tracking-[0.18em] text-muted">
-                                        <th class="px-5 py-4" data-key="th_fund">Fund</th>
-                                        <th class="px-5 py-4" data-key="th_manager">Manager</th>
-                                        <th class="px-5 py-4" data-key="th_type">Type</th>
-                                        <th class="px-5 py-4" data-key="th_nav">NAV</th>
-                                        <th class="px-5 py-4" data-key="th_period_return">Return</th>
-                                        <th class="px-5 py-4" data-key="th_update">Updated</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="fundsTableBody"></tbody>
-                            </table>
+                    <div id="fundsTableShell" class="hidden ftable">
+                        <div class="ftable-head ftable-cols" aria-hidden="true">
+                            <div data-key="th_fund">Fund</div>
+                            <div data-key="th_type">Type</div>
+                            <div data-key="th_risk">Risk</div>
+                            <div data-key="th_nav">NAV</div>
+                            <div>YTD</div>
+                            <div data-key="th_1y">1Y</div>
+                            <div data-key="th_3y">3Y</div>
+                            <div></div>
                         </div>
+                        <div id="fundsTableBody" class="ftable-rows flex flex-col gap-3"></div>
                     </div>
 
                     <div id="viewMoreWrap" class="mt-8 hidden text-center">
@@ -945,8 +1030,8 @@
             <p class="text-muted text-lg mb-12" data-key="close_text">
                 Starta turns the full mutual-funds market into a cleaner workflow, from discovery to fund-level due diligence.
             </p>
-            <button onclick="window.location.href='https://startamarkets.com/AiChat'"
-                class="px-12 py-5 text-white font-bold text-lg rounded-full btn-primary" data-key="close_btn">Try Starta Now</button>
+            <button onclick="window.location.href='/RiskAssessment'"
+                class="px-12 py-5 text-white font-bold text-lg rounded-full btn-primary" data-key="close_btn">Know Your Risk Profile</button>
             <div class="mt-24 pt-10 text-xs text-muted font-mono border-t border-border">&copy; 2026 Starta Financial Intelligence.</div>
         </div>
     </footer>
@@ -963,7 +1048,7 @@
                 nav_news: "MARKET NEWS",
                 nav_portfolio: "MY PORTFOLIO",
                 nav_about: "ABOUT US",
-                nav_cta: "TRY NOW",
+                nav_cta: "FREE RISK PROFILE",
                 marketplace_tag: "Mutual Funds",
                 marketplace_title: "Comprehensive coverage",
                 marketplace_subline: "Accurate, up-to-date data to help you compare funds and make better decisions.",
@@ -974,6 +1059,7 @@
                 type_label: "Fund type",
                 manager_label: "Manager",
                 risk_label: "Risk",
+                issuer_label: "Issuer",
                 sort_label: "Sort by",
                 shariah_only: "Shariah-compliant only",
                 reset_btn: "Reset all",
@@ -981,11 +1067,16 @@
                 filters_title: "Filters",
                 fee_label: "Management fee",
                 perf_label: "Min. return",
-                dealing_label: "Dealing frequency",
+                dealing_label: "Subscription frequency",
+                redemption_label: "Redemption frequency",
+                nav_range_label: "NAV range (EGP)",
+                nav_min: "Min",
+                nav_max: "Max",
                 period_label: "Return period",
                 opt_any: "Any",
                 deal_daily: "Daily",
                 deal_weekly: "Weekly",
+                deal_monthly: "Monthly",
                 noload_only: "No entry / exit fees",
                 perf_positive: "Positive only",
                 perf_gt: "Above",
@@ -998,21 +1089,31 @@
                 th_fund: "Fund",
                 th_manager: "Manager",
                 th_type: "Type",
+                th_risk: "Risk",
                 th_nav: "NAV",
+                th_1y: "1Y",
+                th_3y: "3Y",
                 th_period_return: "Return",
                 th_update: "Updated",
+                ret_ytd: "YTD",
+                ret_1y: "1 Year",
+                ret_3y: "3 Years",
                 empty_title: "No funds matched this filter set.",
                 empty_desc: "Reset the filters or broaden the manager and type selection to restore the full Egypt universe.",
                 close_title: "Research with clarity, then act.",
                 close_text: "Starta turns the full mutual-funds market into a cleaner workflow, from discovery to fund-level due diligence.",
-                close_btn: "Try Starta Now",
+                close_btn: "Know Your Risk Profile",
                 all_types: "All types",
                 all_managers: "All managers",
+                all_issuers: "All issuers",
                 all_risks: "All risk buckets",
                 filter_search: "Search",
                 filter_type: "Type",
                 filter_manager: "Manager",
+                filter_issuer: "Issuer",
                 filter_risk: "Risk",
+                filter_redemption: "Redemption",
+                filter_nav_range: "NAV",
                 filter_shariah: "Shariah only",
                 invest_now: "View profile",
                 no_chart: "No history yet",
@@ -1051,7 +1152,7 @@
                 nav_news: "أخبار السوق",
                 nav_portfolio: "محفظتي",
                 nav_about: "معلومات عنا",
-                nav_cta: "جرّب الآن",
+                nav_cta: "اعرف ملف مخاطرك",
                 marketplace_tag: "الصناديق الاستثمارية",
                 marketplace_title: "تغطية شاملة",
                 marketplace_subline: "بيانات دقيقة ومحدثة تساعدك على مقارنة الصناديق واتخاذ قرارات أفضل.",
@@ -1062,6 +1163,7 @@
                 type_label: "نوع الصندوق",
                 manager_label: "مدير الاستثمار",
                 risk_label: "المخاطر",
+                issuer_label: "الجهة المصدرة",
                 sort_label: "الترتيب",
                 shariah_only: "متوافق مع الشريعة فقط",
                 reset_btn: "إعادة تعيين الكل",
@@ -1069,11 +1171,16 @@
                 filters_title: "الفلاتر",
                 fee_label: "رسوم الإدارة",
                 perf_label: "أدنى عائد",
-                dealing_label: "دورية التداول",
+                dealing_label: "دورية الاكتتاب",
+                redemption_label: "دورية الاسترداد",
+                nav_range_label: "نطاق سعر الوثيقة (ج.م)",
+                nav_min: "أدنى",
+                nav_max: "أقصى",
                 period_label: "فترة العائد",
                 opt_any: "الكل",
                 deal_daily: "يومي",
                 deal_weekly: "أسبوعي",
+                deal_monthly: "شهري",
                 noload_only: "بدون رسوم دخول / خروج",
                 perf_positive: "العوائد الموجبة فقط",
                 perf_gt: "أكثر من",
@@ -1086,21 +1193,31 @@
                 th_fund: "الصندوق",
                 th_manager: "المدير",
                 th_type: "النوع",
+                th_risk: "المخاطر",
                 th_nav: "NAV",
+                th_1y: "سنة",
+                th_3y: "3 سنوات",
                 th_period_return: "العائد",
                 th_update: "آخر تحديث",
+                ret_ytd: "منذ بداية العام",
+                ret_1y: "سنة",
+                ret_3y: "3 سنوات",
                 empty_title: "لم نجد صناديق بهذا المزيج من الفلاتر.",
                 empty_desc: "أعد ضبط الفلاتر أو وسّع اختيار المدير والنوع لاستعادة كامل سوق مصر.",
                 close_title: "ابحث بوضوح ثم تحرك بثقة.",
                 close_text: "تحول ستارتا سوق الصناديق بالكامل إلى تجربة أنظف من الاكتشاف وحتى دراسة كل صندوق.",
-                close_btn: "ابدأ مع ستارتا",
+                close_btn: "اعرف ملف مخاطرك",
                 all_types: "كل الأنواع",
                 all_managers: "كل المديرين",
+                all_issuers: "كل الجهات المصدرة",
                 all_risks: "كل مستويات المخاطر",
                 filter_search: "بحث",
                 filter_type: "النوع",
                 filter_manager: "المدير",
+                filter_issuer: "الجهة المصدرة",
                 filter_risk: "المخاطر",
+                filter_redemption: "الاسترداد",
+                filter_nav_range: "سعر الوثيقة",
                 filter_shariah: "شريعة فقط",
                 invest_now: "عرض الصفحة",
                 no_chart: "لا يوجد تاريخ بعد",
@@ -1161,6 +1278,10 @@
             feeBucket: '',
             perfMin: '',
             dealing: '',
+            redemption: '',
+            risk: '',
+            navMin: '',
+            navMax: '',
             compareIds: [],
             visibleCount: PAGE_SIZE,
             _filterSig: '',
@@ -1191,6 +1312,11 @@
         const perfFilter = document.getElementById('perfFilter');
         const feeSeg = document.getElementById('feeSeg');
         const dealSeg = document.getElementById('dealSeg');
+        const redSeg = document.getElementById('redSeg');
+        const riskSeg = document.getElementById('riskSeg');
+        const issuerFilter = document.getElementById('issuerFilter');
+        const navMinInput = document.getElementById('navMinInput');
+        const navMaxInput = document.getElementById('navMaxInput');
         const langToggle = document.getElementById('langToggle');
 
         const periodMap = {
@@ -1213,14 +1339,6 @@
             const num = Number(value);
             return Number.isFinite(num) ? num : null;
         };
-
-        function formatFee(value) {
-            if (value === null || value === undefined || value === '') return '—';
-            const num = Number(value);
-            if (Number.isNaN(num)) return '—';
-            if (num === 0) return getLabels().fee_free;
-            return `${num.toFixed(2)}%`;
-        }
 
         const getLocale = () => state.lang === 'ar' ? 'ar-EG' : 'en-US';
         const getLabels = () => translations[state.lang];
@@ -1299,6 +1417,15 @@
             return (lang === 'ar' ? localizedPair(arabic, english) : localizedPair(english, arabic)) || getLabels().manager_unavailable;
         }
 
+        // Issuer = the owning institution (owner_name / owner_name_en), distinct
+        // from the investment manager. The `issuer` column itself is NULL in the
+        // API, so owner_name is the reliable source.
+        function getIssuerName(fund, lang = state.lang) {
+            const english = localizedPair(fund.owner_name_en, fund.owner);
+            const arabic = localizedPair(fund.owner_name, fund.owner_name_en);
+            return (lang === 'ar' ? localizedPair(arabic, english) : localizedPair(english, arabic)) || null;
+        }
+
         function getReturnForPeriod(fund, period = state.period) {
             const candidates = periodMap[period] || [];
             for (const key of candidates) {
@@ -1371,6 +1498,8 @@
                 if (translations[state.lang][key]) el.innerHTML = translations[state.lang][key];
             });
             fundSearch.placeholder = getLabels().search_placeholder;
+            navMinInput.placeholder = getLabels().nav_min;
+            navMaxInput.placeholder = getLabels().nav_max;
             populateFilterOptions();
             renderFunds();
         }
@@ -1402,9 +1531,11 @@
                 .sort((a, b) => a.label.localeCompare(b.label, state.lang === 'ar' ? 'ar' : 'en'));
 
             const managers = [...new Set(state.funds.map((fund) => getManagerName(fund)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+            const issuers = [...new Set(state.funds.map((fund) => getIssuerName(fund)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
 
             populateSelectKeyed(typeFilter, typeOptions, getLabels().all_types, typeFilter.value);
             populateSelect(managerFilter, managers, getLabels().all_managers, managerFilter.value);
+            populateSelect(issuerFilter, issuers, getLabels().all_issuers, issuerFilter.value);
 
             // Default the marketplace to "Latest update" order (and list it first), while
             // preserving any sort the user has actively chosen across re-renders/lang toggles.
@@ -1502,6 +1633,16 @@
                 chips.push({ key: 'perf', label: `${per}: ${txt}` });
             }
             if (state.dealing) chips.push({ key: 'dealing', label: `${L.dealing_label}: ${state.dealing === 'daily' ? L.deal_daily : L.deal_weekly}` });
+            if (issuerFilter.value) chips.push({ key: 'issuer', label: `${L.filter_issuer}: ${issuerFilter.value}` });
+            if (state.risk) chips.push({ key: 'risk', label: `${L.filter_risk}: ${getRiskLabel(state.risk)}` });
+            if (state.redemption) {
+                const freqTxt = state.redemption === 'daily' ? L.deal_daily : state.redemption === 'weekly' ? L.deal_weekly : L.deal_monthly;
+                chips.push({ key: 'redemption', label: `${L.filter_redemption}: ${freqTxt}` });
+            }
+            if (state.navMin !== '' || state.navMax !== '') {
+                const range = `${state.navMin !== '' ? state.navMin : '0'}–${state.navMax !== '' ? state.navMax : '∞'}`;
+                chips.push({ key: 'navrange', label: `${L.filter_nav_range}: ${range}` });
+            }
             if (state.noLoad) chips.push({ key: 'noload', label: L.noload_only });
             if (state.shariahOnly) chips.push({ key: 'shariah', label: getLabels().filter_shariah });
             return chips;
@@ -1525,19 +1666,27 @@
         function syncFilterUI() {
             if (feeSeg) feeSeg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', (b.dataset.fee || '') === state.feeBucket));
             if (dealSeg) dealSeg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', (b.dataset.deal || '') === state.dealing));
+            if (redSeg) redSeg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', (b.dataset.red || '') === state.redemption));
+            if (riskSeg) riskSeg.querySelectorAll('button').forEach((b) => b.classList.toggle('active', (b.dataset.risk || '') === state.risk));
             if (shariahToggle) shariahToggle.classList.toggle('active', state.shariahOnly);
             if (noLoadToggle) noLoadToggle.classList.toggle('active', state.noLoad);
             if (perfFilter && perfFilter.value !== state.perfMin) perfFilter.value = state.perfMin;
+            if (navMinInput && navMinInput.value !== state.navMin) navMinInput.value = state.navMin;
+            if (navMaxInput && navMaxInput.value !== state.navMax) navMaxInput.value = state.navMax;
         }
 
         function clearFilter(key) {
             if (key === 'search') fundSearch.value = '';
             if (key === 'type') typeFilter.value = '';
             if (key === 'manager') managerFilter.value = '';
+            if (key === 'issuer') issuerFilter.value = '';
+            if (key === 'risk') state.risk = '';
             if (key === 'shariah') state.shariahOnly = false;
             if (key === 'fee') state.feeBucket = '';
             if (key === 'perf') state.perfMin = '';
             if (key === 'dealing') state.dealing = '';
+            if (key === 'redemption') state.redemption = '';
+            if (key === 'navrange') { state.navMin = ''; state.navMax = ''; }
             if (key === 'noload') state.noLoad = false;
             syncFilterUI();
             renderFunds();
@@ -1561,7 +1710,16 @@
                 if (search && !haystack.includes(search)) return false;
                 if (selectedType && getFundTypeSlug(fund) !== selectedType) return false;
                 if (selectedManager && getManagerName(fund) !== selectedManager) return false;
+                if (issuerFilter.value && getIssuerName(fund) !== issuerFilter.value) return false;
+                if (state.risk && fund.riskBucket !== state.risk) return false;
                 if (state.shariahOnly && !fund.isShariah) return false;
+                // Redemption frequency.
+                if (state.redemption) {
+                    if (String(fund.redemption_frequency || '').toLowerCase() !== state.redemption) return false;
+                }
+                // NAV price range.
+                if (state.navMin !== '' && !(fund.latestNav !== null && fund.latestNav >= Number(state.navMin))) return false;
+                if (state.navMax !== '' && !(fund.latestNav !== null && fund.latestNav <= Number(state.navMax))) return false;
                 // No entry/exit fees: both subscription AND redemption fee must be 0.
                 if (state.noLoad) {
                     const sub = safeNumber(fund.fee_subscription), red = safeNumber(fund.fee_redemption);
@@ -1720,7 +1878,7 @@
                     attributionLogo: false,
                 },
                 width: element.clientWidth,
-                height: 94,
+                height: 118,
                 rightPriceScale: {
                     visible: false,
                     borderVisible: false,
@@ -1906,47 +2064,52 @@
                 const updated = escapeHtml(formatDate(fund.lastUpdated));
                 const isSelected = state.compareIds.includes(String(fund.fund_id));
 
+                const riskChip = fund.riskBucket !== 'unclassified'
+                    ? `<span class="chip risk-chip risk-${fund.riskBucket}"><span class="risk-dot"></span>${escapeHtml(getRiskLabel(fund.riskBucket))}</span>`
+                    : '';
+                const retCell = (period, labelKey) => {
+                    const value = getReturnForPeriod(fund, period);
+                    const cls = value === null ? 'text-muted' : value < 0 ? 'text-red-500' : 'text-emerald-600';
+                    return `
+                        <div class="ret-cell">
+                            <div class="ret-cell-label">${escapeHtml(getLabels()[labelKey])}</div>
+                            <div class="ret-cell-val ${cls}">${escapeHtml(formatPercent(value))}</div>
+                        </div>`;
+                };
+
                 return `
                     <article class="fund-card rounded-[2rem] p-6 sm:p-7">
                         <div class="flex flex-col gap-6">
                             <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-                                <div class="flex gap-4">
+                                <a class="fund-card-link flex gap-4" href="${fundHref(fund.fund_id)}">
                                     <div class="shrink-0 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm" style="width:5.25rem;height:5.25rem;padding:0.4rem">
                                         <img src="${escapeHtml(fund.logo_url || DEFAULT_LOGO)}" alt="${manager}" loading="lazy" onerror="this.onerror=null;this.src='${DEFAULT_LOGO}';this.style.transform='none';" class="h-full w-full rounded-xl object-contain" style="transform:scale(${Number(fund.logo_scale || 1)}); transform-origin:center center;">
                                     </div>
                                     <div>
-                                        <h3 class="text-xl font-display font-bold tracking-[-0.04em] text-main">${name}</h3>
+                                        <h3 class="text-xl font-display font-bold tracking-[-0.04em] text-main transition-colors">${name}</h3>
                                         <p class="mt-1 text-sm text-muted">${manager}</p>
                                     </div>
-                                </div>
+                                </a>
                                 <div class="${state.lang === 'ar' ? 'sm:text-left' : 'sm:text-right'}">
                                     <div class="text-[0.68rem] uppercase tracking-[0.2em] text-muted">${state.period.toUpperCase()}</div>
-                                    <div class="mt-2 text-2xl font-display font-bold ${retClass}">${retText}</div>
+                                    <div class="mt-2 text-2xl font-display font-bold ${retClass}" style="direction:ltr">${retText}</div>
                                     <button type="button" class="compare-btn mt-3 rounded-full px-3 py-2 text-xs font-bold ${isSelected ? 'active' : ''}" data-compare-fund="${escapeHtml(fund.fund_id)}">${escapeHtml(isSelected ? getLabels().compare_added : getLabels().compare_add)}</button>
                                 </div>
                             </div>
 
                             <div class="flex flex-wrap gap-2">
                                 <span class="chip">${type}</span>
+                                ${riskChip}
                                 ${fund.isShariah ? `<span class="chip border-emerald-200 bg-emerald-50 text-emerald-700">${escapeHtml(getLabels().filter_shariah)}</span>` : ''}
                                 ${aum ? `<span class="chip">${aum}</span>` : ''}
                             </div>
 
                             <div class="mini-chart rounded-2xl bg-panel px-2 py-2" data-mini-chart data-fund-id="${escapeHtml(fund.fund_id)}" data-fund-currency="${escapeHtml(fund.currency || 'EGP')}"></div>
 
-                            <div class="fee-box">
-                                <div class="fee-cell">
-                                    <div class="fee-label">${escapeHtml(getLabels().fee_sub)}</div>
-                                    <div class="fee-val${safeNumber(fund.fee_subscription) === 0 ? ' fee-free' : ''}">${formatFee(fund.fee_subscription)}</div>
-                                </div>
-                                <div class="fee-cell">
-                                    <div class="fee-label">${escapeHtml(getLabels().fee_red)}</div>
-                                    <div class="fee-val${safeNumber(fund.fee_redemption) === 0 ? ' fee-free' : ''}">${formatFee(fund.fee_redemption)}</div>
-                                </div>
-                                <div class="fee-cell">
-                                    <div class="fee-label">${escapeHtml(getLabels().fee_mgmt)}</div>
-                                    <div class="fee-val${safeNumber(fund.fee_management) === 0 ? ' fee-free' : ''}">${formatFee(fund.fee_management)}</div>
-                                </div>
+                            <div class="ret-strip">
+                                ${retCell('ytd', 'ret_ytd')}
+                                ${retCell('1y', 'ret_1y')}
+                                ${retCell('3y', 'ret_3y')}
                             </div>
 
                             <div class="grid gap-4 rounded-[1.4rem] bg-panel p-4 sm:grid-cols-3">
@@ -1971,23 +2134,38 @@
         }
 
         function renderTable(funds) {
+            const L = getLabels();
             tableBody.innerHTML = funds.map((fund) => {
-                const ret = getReturnForPeriod(fund);
-                const retClass = ret !== null && ret < 0 ? 'text-red-500' : 'text-emerald-600';
                 const isSelected = state.compareIds.includes(String(fund.fund_id));
+                const retVal = (period) => {
+                    const value = getReturnForPeriod(fund, period);
+                    const cls = value === null ? 'text-muted' : value < 0 ? 'text-red-500' : 'text-emerald-600';
+                    return `<span class="ftable-num ${cls}">${escapeHtml(formatPercent(value))}</span>`;
+                };
+                const riskCell = fund.riskBucket !== 'unclassified'
+                    ? `<span class="chip risk-chip risk-${fund.riskBucket}"><span class="risk-dot"></span>${escapeHtml(getRiskLabel(fund.riskBucket))}</span>`
+                    : `<span class="text-muted">—</span>`;
                 return `
-                    <tr class="table-row cursor-pointer border-t border-slate-100 text-main" onclick="window.location.href='${fundHref(fund.fund_id)}'">
-                        <td class="px-5 py-4">
-                            <div class="font-semibold"><a href="${fundHref(fund.fund_id)}" onclick="event.stopPropagation();">${escapeHtml(getFundName(fund))}</a></div>
-                            <div class="mt-1 text-xs text-muted">${escapeHtml(fund.symbol || fund.fund_id)}</div>
-                            <button type="button" class="compare-btn mt-3 rounded-full px-3 py-2 text-xs font-bold ${isSelected ? 'active' : ''}" data-compare-fund="${escapeHtml(fund.fund_id)}" onclick="event.stopPropagation();">${escapeHtml(isSelected ? getLabels().compare_added : getLabels().compare_add)}</button>
-                        </td>
-                        <td class="px-5 py-4 text-muted">${escapeHtml(getManagerName(fund))}</td>
-                        <td class="px-5 py-4 text-muted">${escapeHtml(getFundTypeName(fund))}</td>
-                        <td class="px-5 py-4 font-semibold">${escapeHtml(fund.currency)} ${escapeHtml(formatNumber(fund.latestNav))}</td>
-                        <td class="px-5 py-4 font-semibold ${retClass}">${escapeHtml(formatPercent(ret))}</td>
-                        <td class="px-5 py-4 text-muted">${escapeHtml(formatDate(fund.lastUpdated))}</td>
-                    </tr>
+                    <article class="ftable-row ftable-cols" data-fund-href="${fundHref(fund.fund_id)}">
+                        <div class="ftable-cell ftable-fundcell flex items-center gap-3">
+                            <a class="ftable-logo" href="${fundHref(fund.fund_id)}" aria-hidden="true" tabindex="-1">
+                                <img src="${escapeHtml(fund.logo_url || DEFAULT_LOGO)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${DEFAULT_LOGO}';">
+                            </a>
+                            <div class="min-w-0">
+                                <a class="ftable-name block truncate" href="${fundHref(fund.fund_id)}">${escapeHtml(getFundName(fund))}</a>
+                                <div class="mt-0.5 truncate text-xs text-muted">${escapeHtml(getManagerName(fund))}</div>
+                            </div>
+                        </div>
+                        <div class="ftable-cell text-sm text-muted" data-mob-label="${escapeHtml(L.th_type)}">${escapeHtml(getFundTypeName(fund))}</div>
+                        <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_risk)}">${riskCell}</div>
+                        <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_nav)}"><span class="ftable-num text-main">${escapeHtml(fund.currency)} ${escapeHtml(formatNumber(fund.latestNav))}</span></div>
+                        <div class="ftable-cell" data-mob-label="YTD">${retVal('ytd')}</div>
+                        <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_1y)}">${retVal('1y')}</div>
+                        <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_3y)}">${retVal('3y')}</div>
+                        <div class="ftable-cell">
+                            <button type="button" class="compare-btn rounded-full px-3 py-2 text-xs font-bold ${isSelected ? 'active' : ''}" data-compare-fund="${escapeHtml(fund.fund_id)}">${escapeHtml(isSelected ? L.compare_added : L.compare_add)}</button>
+                        </div>
+                    </article>
                 `;
             }).join('');
         }
@@ -1999,7 +2177,12 @@
             // Reset to the first page whenever the result set changes (filter / sort /
             // search / period / view). A "View more" click keeps the same signature,
             // so the grown visibleCount is preserved and only 10 more are added.
-            const filterSig = JSON.stringify([fundSearch.value, typeFilter.value, managerFilter.value, state.shariahOnly, sortSelect.value, state.period, state.view]);
+            const filterSig = JSON.stringify([
+                fundSearch.value, typeFilter.value, managerFilter.value, issuerFilter.value,
+                state.risk, state.redemption, state.navMin, state.navMax,
+                state.feeBucket, state.perfMin, state.dealing, state.noLoad,
+                state.shariahOnly, sortSelect.value, state.period, state.view
+            ]);
             if (filterSig !== state._filterSig) { state.visibleCount = PAGE_SIZE; state._filterSig = filterSig; }
             const hasResults = state.filtered.length > 0;
             resultsCount.textContent = formatNumber(state.filtered.length, { maximumFractionDigits: 0 });
@@ -2043,6 +2226,25 @@
             }
         }
 
+        // Deep-linkable filters: /Funds?type=money_market&risk=low&shariah=1&view=table
+        // lets other pages (e.g. the Risk Assessment results) land pre-filtered.
+        function applyUrlFilters() {
+            const params = new URLSearchParams(window.location.search);
+            const type = (params.get('type') || '').toLowerCase();
+            if (type && [...typeFilter.options].some((option) => option.value === type)) {
+                typeFilter.value = type;
+            }
+            const risk = (params.get('risk') || '').toLowerCase();
+            if (['low', 'medium', 'high'].includes(risk)) state.risk = risk;
+            if (params.get('shariah') === '1') state.shariahOnly = true;
+            if (params.get('view') === 'table') {
+                state.view = 'table';
+                document.querySelectorAll('.view-btn').forEach((button) => {
+                    button.classList.toggle('active', button.dataset.view === state.view);
+                });
+            }
+        }
+
         async function loadFundsData() {
             try {
                 const response = await fetch('/api/v1/funds?market=EGX');
@@ -2053,6 +2255,7 @@
                     .filter((fund) => fund.fund_id && (fund.fund_name || fund.fund_name_en) && fund.latestNav !== null && fund.latestNav > 0);
                 updateHeroMetrics();
                 populateFilterOptions();
+                applyUrlFilters();
                 renderFunds();
             } catch (error) {
                 console.error(error);
@@ -2066,6 +2269,7 @@
             fundSearch.value = '';
             typeFilter.value = '';
             managerFilter.value = '';
+            issuerFilter.value = '';
             sortSelect.value = 'updated-desc';
             perfFilter.value = '';
             state.shariahOnly = false;
@@ -2073,6 +2277,10 @@
             state.feeBucket = '';
             state.perfMin = '';
             state.dealing = '';
+            state.redemption = '';
+            state.risk = '';
+            state.navMin = '';
+            state.navMax = '';
             syncFilterUI();
             renderFunds();
         }
@@ -2125,6 +2333,23 @@
                 state.dealing = b.dataset.deal || '';
                 renderFunds();
             }));
+            redSeg.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+                state.redemption = b.dataset.red || '';
+                renderFunds();
+            }));
+            riskSeg.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+                state.risk = b.dataset.risk || '';
+                renderFunds();
+            }));
+            issuerFilter.addEventListener('change', renderFunds);
+            navMinInput.addEventListener('input', () => {
+                state.navMin = navMinInput.value.trim();
+                renderFunds();
+            });
+            navMaxInput.addEventListener('input', () => {
+                state.navMax = navMaxInput.value.trim();
+                renderFunds();
+            });
             document.getElementById('resetFilters').addEventListener('click', resetFilters);
             document.getElementById('gridViewBtn').addEventListener('click', () => setView('grid'));
             document.getElementById('tableViewBtn').addEventListener('click', () => setView('table'));
@@ -2166,6 +2391,17 @@
                     event.preventDefault();
                     state.compareIds = state.compareIds.filter((id) => id !== removeButton.getAttribute('data-remove-compare'));
                     renderFunds();
+                    return;
+                }
+
+                // Row-level navigation for table rows. Handled here (not via inline
+                // onclick) so the compare button above always wins — an inline
+                // stopPropagation on the button used to kill this document-level
+                // handler and made Compare a no-op in table view.
+                if (event.target.closest?.('a, button, input, select, label')) return;
+                const fundRow = event.target.closest?.('[data-fund-href]');
+                if (fundRow) {
+                    window.location.href = fundRow.getAttribute('data-fund-href');
                 }
             });
             window.addEventListener('pagehide', () => {

@@ -45,7 +45,7 @@
     <link rel="stylesheet" href="/assets/portfolio-showcase.css?v=1.1.14">
 
     <!-- Mobile navigation (shared ultra-premium burger menu) -->
-    <script src="/assets/starta-mobile-nav.js?v=1.0.4" defer></script>
+    <script src="/assets/starta-mobile-nav.js?v=1.0.5" defer></script>
 
     <!-- tailwind compiled at build time: assets/tw-home.css (was: CDN runtime compiler + inline config) -->
 
@@ -2259,10 +2259,10 @@
             </div>
 
             <div class="flex items-center gap-3 ml-3">
-                <button onclick="window.location.href='https://startamarkets.com/AiChat'"
+                <button onclick="window.location.href='/RiskAssessment'"
                     class="hidden md:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
                     data-key="nav_cta">
-                    Try Now
+                    Free Risk Profile
                 </button>
                 <div class="nav-controls">
                     <button id="themeToggle" class="control-btn group relative" aria-label="Toggle theme">
@@ -2300,9 +2300,9 @@
                     Unify real-time data, AI analysis, news context, portfolio insights, and fund intelligence in one platform built for better investment decisions.
                 </p>
                 <div class="flex flex-wrap gap-4 pt-4">
-                    <button onclick="window.location.href='https://startamarkets.com/AiChat'"
-                        class="px-10 py-4 font-bold text-lg rounded-lg btn-primary" data-key="hero_btn">Try Now for
-                        Free</button>
+                    <button onclick="window.location.href='/Funds'"
+                        class="px-10 py-4 font-bold text-lg rounded-lg btn-primary" data-key="hero_btn">Explore Mutual
+                        Funds</button>
                     <button onclick="document.getElementById('funds-section').scrollIntoView({behavior: 'smooth'})"
                         class="px-10 py-4 font-bold text-lg rounded-lg btn-secondary" data-key="hero_btn_funds">Mutual Funds</button>
                 </div>
@@ -2334,7 +2334,6 @@
                                 <button class="tour-tab" type="button" role="tab" data-tour-tab="2" aria-selected="false" aria-label="Market News"></button>
                                 <button class="tour-tab" type="button" role="tab" data-tour-tab="3" aria-selected="false" aria-label="Learn"></button>
                                 <button class="tour-tab" type="button" role="tab" data-tour-tab="4" aria-selected="false" aria-label="Portfolio"></button>
-                                <button class="tour-tab" type="button" role="tab" data-tour-tab="5" aria-selected="false" aria-label="AI Chatbot"></button>
                             </div>
                             <div class="tour-stage">
                                 <section class="tour-view is-active" data-tour-view="0" role="tabpanel">
@@ -2398,7 +2397,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="tour-footer"><span data-key="tour_funds_footer">COMPARE FUNDS</span><span>01 / 06</span></div>
+                                    <div class="tour-footer"><span data-key="tour_funds_footer">COMPARE FUNDS</span><span>01 / 05</span></div>
                                 </section>
 
                                 <section class="tour-view" data-tour-view="1" role="tabpanel">
@@ -2436,7 +2435,7 @@
                                             <div class="tour-row"><span class="tour-title">HRHO</span><span class="tour-sub">25.12</span><span class="tour-positive">+1.62%</span></div>
                                         </div>
                                     </div>
-                                    <div class="tour-footer"><span data-key="tour_pulse_footer">MARKET BREADTH</span><span>02 / 06</span></div>
+                                    <div class="tour-footer"><span data-key="tour_pulse_footer">MARKET BREADTH</span><span>02 / 05</span></div>
                                 </section>
 
                                 <section class="tour-view" data-tour-view="2" role="tabpanel">
@@ -2482,7 +2481,7 @@
                                             <div class="tour-row"><span class="tour-dot"></span><span class="tour-sub" data-key="tour_news_third">Banks lead turnover while consumer names consolidate</span></div>
                                         </div>
                                     </div>
-                                    <div class="tour-footer"><span data-key="tour_news_footer">READ ALL NEWS</span><span>03 / 06</span></div>
+                                    <div class="tour-footer"><span data-key="tour_news_footer">READ ALL NEWS</span><span>03 / 05</span></div>
                                 </section>
 
                                 <section class="tour-view" data-tour-view="3" role="tabpanel">
@@ -2528,7 +2527,7 @@
                                             <div class="tour-answer selected"><span data-key="tour_quiz_answer">Future cash flows</span><span>✓</span></div>
                                         </div>
                                     </div>
-                                    <div class="tour-footer"><span data-key="tour_learn_footer">CONTINUE LEARNING</span><span>04 / 06</span></div>
+                                    <div class="tour-footer"><span data-key="tour_learn_footer">CONTINUE LEARNING</span><span>04 / 05</span></div>
                                 </section>
 
                                 <section class="tour-view" data-tour-view="4" role="tabpanel">
@@ -2571,52 +2570,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="tour-footer"><span data-key="tour_portfolio_footer">PORTFOLIO INSIGHT</span><span>05 / 06</span></div>
-                                </section>
-
-                                <section class="tour-view" data-tour-view="5" role="tabpanel">
-                                    <div class="tour-head">
-                                        <span class="tour-label" data-key="tour_ai_title">AI CHATBOT</span>
-                                        <span class="tour-status" data-key="tour_ai_live">AI LIVE</span>
-                                    </div>
-                                    <div class="tour-body">
-                                        <div class="tour-surface primary tour-ai-workspace tour-animate" style="--order: 1;">
-                                            <div class="tour-ai-orb">AI</div>
-                                            <div class="tour-message user" data-key="tour_ai_question">Compare the risk of my funds.</div>
-                                            <div class="tour-ai-answer" style="margin-top: 0.58rem;">
-                                                <span class="tour-ai-mark">AI</span>
-                                                <div class="tour-message ai" data-key="tour_ai_answer">Your allocation is balanced. Money-market funds reduce volatility while growth funds improve return potential.</div>
-                                            </div>
-                                            <div class="tour-ai-evidence">
-                                                <div class="tour-kpi">
-                                                    <span class="tour-meta" data-key="tour_ai_insight">RISK COMPARISON</span>
-                                                    <span class="tour-pill" data-key="tour_confidence">87% CONFIDENCE</span>
-                                                </div>
-                                                <div class="tour-compare">
-                                                    <div><div class="tour-sub" data-key="tour_cash_funds">INCOME FUND</div><div class="tour-compare-bar"><span style="width: 28%;"></span></div></div><span class="tour-positive">4.3%</span>
-                                                    <div><div class="tour-sub" data-key="tour_growth_funds">GROWTH FUND</div><div class="tour-compare-bar"><span style="width: 78%; opacity: .56;"></span></div></div><span class="tour-title">18.6%</span>
-                                                </div>
-                                                <div class="tour-recommendation">
-                                                    <div>
-                                                        <div class="tour-meta" data-key="tour_recommendation">RECOMMENDED MIX</div>
-                                                        <div class="tour-sub" data-key="tour_recommendation_text">Reduce volatility, retain upside</div>
-                                                    </div>
-                                                    <span class="tour-positive">50 / 50</span>
-                                                </div>
-                                                <div class="tour-sources">
-                                                    <span class="tour-source">NAV</span>
-                                                    <span class="tour-source" data-key="tour_returns">RETURNS</span>
-                                                    <span class="tour-source" data-key="tour_source_liquidity">LIQUIDITY</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="tour-surface tour-animate" style="--order: 2;">
-                                            <div class="tour-kpi"><span class="tour-meta" data-key="tour_suggestions">SUGGESTED QUESTIONS</span><span class="tour-chip" data-key="tour_ready">READY</span></div>
-                                            <div class="tour-row"><span class="tour-sub" data-key="tour_prompt_one">Find lower-risk funds</span><span class="tour-pill">+</span></div>
-                                            <div class="tour-row"><span class="tour-sub" data-key="tour_prompt_two">Explain my return</span><span class="tour-pill">+</span></div>
-                                        </div>
-                                    </div>
-                                    <div class="tour-footer"><span data-key="tour_ai_footer">ASK STARTA</span><span>06 / 06</span></div>
+                                    <div class="tour-footer"><span data-key="tour_portfolio_footer">PORTFOLIO INSIGHT</span><span>05 / 05</span></div>
                                 </section>
                             </div>
                         </div>
@@ -2680,125 +2634,6 @@
                 You have charts. You have news. So why do you still feel uncertain? <br>
                 Starta translates the chaos of the ticker tape into a coherent, actionable thesis.
             </p>
-        </div>
-    </section>
-
-    <!-- 4. THE BRAIN -->
-    <section id="brain" class="py-40 bg-surface border-t border-border relative overflow-hidden section-premium-xl">
-        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-12 items-center">
-            
-            <!-- Left Column: Titles -->
-            <div class="space-y-6 reveal-text">
-                <span class="section-tag" data-key="brain_tag">CORE LOGIC</span>
-                <h2 class="text-4xl md:text-5xl font-display font-bold text-main leading-tight" data-key="brain_title">Your AI Assistant for Market<br>Insight and Decisions.</h2>
-            </div>
-
-            <!-- Middle Column: EXACT Mobile Mockup and Podium -->
-            <div class="flex flex-col items-center justify-center relative">
-                <!-- Outer background glow for premium feel -->
-                <div class="absolute inset-0 bg-starta-teal/5 blur-[100px] rounded-full pointer-events-none"></div>
-                
-                <div class="relative perspective-1000 h-[650px] md:h-[820px] flex flex-col items-center justify-end z-10 w-full">
-                    <!-- The exact original mobile frame -->
-                    <div class="glass-premium w-[300px] md:w-[360px] h-[630px] md:h-[800px] rounded-[2.5rem] md:rounded-[3.2rem] transform rotate-y-12 hover:rotate-y-0 transition-transform duration-1000 flex flex-col relative overflow-hidden border-run shadow-premium z-20 mb-[-20px]">
-                        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-starta-teal/5 to-transparent opacity-50">
-                        </div>
-                        <div class="p-6 h-full flex flex-col relative z-10">
-                            <div class="flex justify-between items-center mb-6">
-                                <span class="text-[10px] text-muted font-mono tracking-widest flex items-center gap-2"
-                                    data-key="mockup_header">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> LIVE EGX FEED •
-                                    12ms
-                                </span>
-                                <div class="flex gap-1">
-                                    <div class="w-1 h-4 bg-starta-teal rounded-full"></div>
-                                    <div class="w-1 h-2 bg-gray-500 rounded-full"></div>
-                                </div>
-                            </div>
-                            <div class="flex-grow space-y-6">
-                                <div class="self-end bg-panel p-4 rounded-2xl rounded-tr-sm text-sm text-main border border-border backdrop-blur-md shadow-sm max-w-[85%] min-h-[50px] flex items-center transition-all duration-300"
-                                    id="user-bubble">
-                                    <span id="hero-user-text"></span><span class="typing-cursor user-cursor"></span>
-                                </div>
-                                <div class="flex gap-4 items-start" id="ai-bubble" style="opacity: 0;">
-                                    <div
-                                        class="w-8 h-8 rounded-full bg-starta-teal flex-shrink-0 flex items-center justify-center font-bold text-white text-xs">
-                                        AI</div>
-                                    <div class="space-y-3 w-full">
-                                        <div
-                                            class="glass-premium p-5 rounded-2xl rounded-tl-sm text-sm text-muted border border-starta-teal/20 min-h-[80px]">
-                                            <div id="hero-ai-header"
-                                                class="text-[10px] text-starta-teal font-bold mb-2 tracking-widest opacity-0">
-                                                ANALYSIS</div>
-                                            <span id="hero-ai-text" class="text-main leading-relaxed"></span><span
-                                                class="typing-cursor ai-cursor"></span>
-                                        </div>
-                                        <div id="hero-data-card"
-                                            class="glass-premium p-4 rounded-xl border border-border opacity-0 transform translate-y-4">
-                                            <div
-                                                class="flex justify-between text-[10px] text-muted mb-2 font-mono uppercase">
-                                                <span id="card-label-1">Metric</span>
-                                                <span id="card-label-2">Value</span>
-                                            </div>
-                                            <div class="flex justify-between text-sm text-main font-bold mb-1">
-                                                <span id="card-metric">Net Interest Margin</span>
-                                                <span id="card-value">6.4%</span>
-                                            </div>
-                                            <div class="w-full h-1 bg-gray-700/20 rounded-full overflow-hidden">
-                                                <div id="card-progress" class="h-full bg-starta-teal w-[75%] animate-pulse"></div>
-                                            </div>
-                                            <div id="card-context" class="text-[10px] text-green-500 mt-2 text-right">
-                                                Outperforming Sector Avg</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Premium floating shadow base -->
-                    <div class="relative w-full max-w-[280px] md:max-w-[340px] mt-6 flex justify-center z-10">
-                        <!-- Base soft shadow -->
-                        <div class="w-[85%] h-6 bg-black/10 dark:bg-black/40 blur-xl rounded-[50%]"></div>
-                        <!-- Sharp center glow to ground it -->
-                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[2px] bg-starta-teal/30 dark:bg-starta-teal/40 blur-[4px] rounded-full"></div>
-                        <!-- Very sharp inner line -->
-                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40%] h-[1px] bg-starta-teal/50 blur-[1px] rounded-full"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column: Text & Features -->
-            <div class="space-y-8 reveal-text">
-                <div class="pl-6 border-l-2 border-starta-teal space-y-4">
-                    <h3 class="text-2xl text-main font-light" data-key="brain_sub">Institutional-Grade Logic.</h3>
-                    <p class="text-muted copy-premium leading-relaxed" data-key="brain_text">
-                        Starta isn't a chatbot wrapper. We engineered it with the cognitive architecture of a senior
-                        equity analyst. It doesn't guess—it uses deterministic valuation models.
-                    </p>
-                </div>
-                
-                <div class="flex flex-col gap-4">
-                    <div class="p-6 bg-panel rounded-[1.5rem] border border-border flex items-start gap-5 hover:border-starta-teal/40 transition-colors shadow-sm">
-                        <div class="w-12 h-12 rounded-full bg-starta-teal/10 flex items-center justify-center flex-shrink-0 text-starta-teal shadow-inner">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        </div>
-                        <div class="pt-1">
-                            <div class="text-starta-teal font-bold mb-1.5 text-[15px]" data-key="brain_feat1_title">Deterministic</div>
-                            <div class="text-sm text-muted leading-relaxed" data-key="brain_feat1_text">Hard-coded Math</div>
-                        </div>
-                    </div>
-                    <div class="p-6 bg-panel rounded-[1.5rem] border border-border flex items-start gap-5 hover:border-starta-teal/40 transition-colors shadow-sm">
-                        <div class="w-12 h-12 rounded-full bg-starta-teal/10 flex items-center justify-center flex-shrink-0 text-starta-teal shadow-inner">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
-                        </div>
-                        <div class="pt-1">
-                            <div class="text-starta-teal font-bold mb-1.5 text-[15px]" data-key="brain_feat2_title">Zero Bias</div>
-                            <div class="text-sm text-muted leading-relaxed" data-key="brain_feat2_text">Pure Data Driven</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -3356,8 +3191,8 @@
                     <!-- CTA row -->
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between glass-premium rounded-xl border border-border p-4 gap-4">
                         <p class="text-xs text-muted max-w-xs" data-key="sim_cta_note">Start with any amount. Consistency builds wealth over time.</p>
-                        <a href="/AiChat" class="px-6 py-2.5 rounded-xl font-bold text-sm btn-primary inline-flex items-center gap-2 shrink-0">
-                            <span data-key="sim_cta">Ask AI Analyst</span>
+                        <a href="/Calculators" class="px-6 py-2.5 rounded-xl font-bold text-sm btn-primary inline-flex items-center gap-2 shrink-0">
+                            <span data-key="sim_cta">Open the Wealth Calculators</span>
                             <svg class="w-3.5 h-3.5 arrow-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                         </a>
                     </div>
@@ -3587,8 +3422,8 @@
             <p class="text-muted copy-premium mb-12" data-key="close_text">
                 Ask better questions, get clearer answers, and make every financial decision with confidence.
             </p>
-            <button onclick="window.location.href='https://startamarkets.com/AiChat'"
-                class="px-12 py-5 text-white font-bold text-lg rounded-full btn-primary" data-key="close_btn">Try Starta Now</button>
+            <button onclick="window.location.href='/Funds'"
+                class="px-12 py-5 text-white font-bold text-lg rounded-full btn-primary" data-key="close_btn">Explore the Funds</button>
         </div>
     </section>
 
@@ -3614,8 +3449,8 @@
                 </div>
                 <!-- Premium Status & Newsletter/CTA -->
                 <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full lg:w-auto">
-                    <a href="https://startamarkets.com/AiChat" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase">
-                        <span data-key="footer_cta_btn">Launch Starta AI</span>
+                    <a href="/Funds" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase">
+                        <span data-key="footer_cta_btn">Explore Funds</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
                     </a>
                 </div>
@@ -3642,7 +3477,8 @@
                 <div class="space-y-4">
                     <h4 class="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold" data-key="footer_col3_title">RESOURCES</h4>
                     <ul class="space-y-2.5 text-sm">
-                        <li><a href="https://startamarkets.com/AiChat" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_chat">AI Assistant</a></li>
+                        <li><a href="/Calculators" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_calc">Wealth Calculators</a></li>
+                        <li><a href="/RiskAssessment" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_risk">Risk Assessment</a></li>
                         <li><a href="https://startamarkets.com/register" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_account">Create Account</a></li>
                         <li><a href="https://startamarkets.com/login" class="text-muted hover:text-starta-teal transition-colors font-medium" data-key="footer_lnk_login">Sign In</a></li>
                     </ul>
@@ -3730,29 +3566,25 @@
         // --- TRANSLATION ENGINE ---
         const translations = {
             en: {
-                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US", nav_cta: "TRY NOW",
+                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US", nav_cta: "FREE RISK PROFILE",
                 about_tag: "OUR MISSION", about_title: "Empowering Investors with Clearer Market Vision.", about_text: "At Starta, we build intelligent financial tools that help investors understand the market, track stocks, analyze news, and manage investment decisions from one unified platform. Our mission is to turn complex financial data into clear, actionable insights that support smarter and more confident investing.", about_val1_title: "Innovation", about_val1_text: "Smart technology that helps investors understand the market faster and act with more confidence.", about_val2_title: "Transparency", about_val2_text: "Clear data and insights that give investors a stronger view before making decisions.", about_vision: "Redefining the Investment Experience", about_vision_text: "We combine market data, AI-powered analysis, and simple design to deliver a clearer, faster, and more professional way to monitor the market and manage investments.",
                 hero_kicker: "Institutional AI Research",
                 hero_title: `A Smarter Vision<br>for <span class="text-gradient">Investing.</span>`,
                 hero_sub: `Unify real-time data, AI analysis, news context, portfolio insights, and fund intelligence in one platform built for better investment decisions.`,
                 hero_point1: "Instant Analyst Chat", hero_point2: "Automated Savings Plans", hero_point3: "Arabic + English Fluency",
-                hero_btn: "Get Started", hero_btn_funds: "Mutual Funds", hero_btn_pulse: "Market Pulse",
+                hero_btn: "Explore Mutual Funds", hero_btn_funds: "Mutual Funds", hero_btn_pulse: "Market Pulse",
                 mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> STARTA Platform`,
-                tour_preview: "PREVIEW", tour_live_mock: "LIVE MOCK", tour_curated: "CURATED", tour_academy: "ACADEMY", tour_private: "PRIVATE", tour_ai_live: "AI LIVE",
+                tour_preview: "PREVIEW", tour_live_mock: "LIVE MOCK", tour_curated: "CURATED", tour_academy: "ACADEMY", tour_private: "PRIVATE",
                 tour_ytd: "YTD", tour_open: "OPEN", tour_value: "VALUE",
                 tour_funds_title: "MUTUAL FUNDS", tour_funds_spotlight: "FEATURED FUND", tour_funds_name: "Income Plus Fund", tour_funds_kind: "Fixed income · Daily liquidity", tour_nav: "NAV", tour_risk: "Risk level", tour_low_risk: "LOW RISK", tour_minimum: "Minimum", tour_funds_fit: "PORTFOLIO FIT", tour_yield_target: "YIELD TARGET", tour_liquidity: "REDEMPTION", tour_daily: "DAILY", tour_income: "Income Core", tour_growth_curve: "GROWTH CURVE", tour_vs_benchmark: "+4.12% VS EGX30", tour_dividend_event: "DIVIDEND", tour_funds_footer: "COMPARE FUNDS",
                 tour_pulse_title: "MARKET PULSE", tour_pulse_index: "EGX 30 · LIVE", tour_advancers: "ADVANCERS", tour_decliners: "DECLINERS", tour_active_symbols: "ACTIVE SYMBOLS", tour_pulse_footer: "MARKET BREADTH",
                 tour_news_title: "MARKET NEWS", tour_news_sector: "EARNINGS · BANKING", tour_news_story: "CIB profit growth lifts banking sentiment", tour_news_summary: "Revenue expansion and resilient margins lead today's institutional brief.", tour_news_impact: "IMPACT", tour_news_positive: "POSITIVE", tour_market_reaction: "MARKET REACTION", tour_revenue: "REVENUE +26%", tour_margin: "NIM 6.4%", tour_sector_banks: "BANKS", tour_news_secondary: "EGX closes higher as institutional buying rises", tour_news_third: "Banks lead turnover while consumer names consolidate", tour_news_digest: "MARKET DIGEST", tour_sentiment: "SENTIMENT", tour_news_footer: "READ ALL NEWS",
                 tour_learn_title: "LEARN", tour_learn_course: "VALUATION BASICS", tour_learn_module: "Master Fair Value", tour_learn_progress: "DONE", tour_today_concept: "TODAY'S CONCEPT", tour_dcf_formula: "FAIR VALUE = DISCOUNTED FUTURE CASH FLOWS", tour_lesson_done: "Reading Statements", tour_lesson_now: "Understanding Fair Value", tour_lesson_next: "Risk and Return", tour_done: "DONE", tour_now: "NOW", tour_next: "NEXT", tour_estimated_time: "NEXT SESSION · 12 MIN", tour_knowledge_score: "KNOWLEDGE SCORE", tour_quick_check: "QUICK CHECK", tour_quiz_question: "What does DCF convert into today's value?", tour_quiz_answer: "Future cash flows", tour_minutes: "12 MIN", tour_learn_footer: "CONTINUE LEARNING",
                 tour_portfolio_title: "PORTFOLIO", tour_total_value: "TOTAL VALUE", tour_today: "TODAY", tour_allocation: "ALLOCATION", tour_risk_score: "RISK SCORE", tour_moderate: "MODERATE", tour_dividends: "DIVIDENDS", tour_portfolio_footer: "PORTFOLIO INSIGHT",
-                tour_ai_title: "AI CHATBOT", tour_ai_question: "Compare the risk of my funds.", tour_ai_answer: "Balanced allocation. Cash funds reduce volatility while growth funds increase return potential.", tour_ai_insight: "RISK COMPARISON", tour_confidence: "87% CONFIDENCE", tour_cash_funds: "INCOME FUND", tour_growth_funds: "GROWTH FUND", tour_recommendation: "RECOMMENDED MIX", tour_recommendation_text: "Reduce volatility, retain upside", tour_returns: "RETURNS", tour_source_liquidity: "LIQUIDITY", tour_ready: "READY", tour_suggestions: "SUGGESTED QUESTIONS", tour_prompt_one: "Find lower-risk funds", tour_prompt_two: "Explain my return", tour_ai_footer: "ASK STARTA",
                 trusted_by: "Follow Your Prefered Stocks",
                 gap_tag: "THE PROBLEM",
                 gap_title: `Data Without Insight <br>is Just <span class="text-muted line-through decoration-starta-teal decoration-4">Noise</span>.`,
                 gap_text: "Charts alone do not create edge. Starta converts market noise into a clear investment thesis with valuation anchors, catalysts, and risk scenarios.",
-                brain_tag: "Starta AI Assistant", brain_title: "Your AI Assistant for Market<br>Insight and Decisions.", brain_sub: "Smart investment assistant.",
-                brain_text: "An intelligent investment assistant that answers your questions using market data, news, portfolio insights, and financial indicators, giving you clear analysis and practical insights to help you understand opportunities and risks and make decisions with confidence.",
-                brain_feat1_title: "Instant Analysis", brain_feat1_text: "Fast answers and analysis powered by market data", brain_feat2_title: "Clearer Insights", brain_feat2_text: "Explains numbers and news in a simple, practical way",
                 mf_title: "Mutual Funds.<br>Inside Starta.", mf_text: "Explore every mutual fund with verified pricing, updated performance, and comprehensive comparison.",
                 mf_stat_coverage: "Covered Funds", mf_stat_best: "Best YTD", mf_stat_houses: "Fund Houses", mf_cta: "Explore Mutual Funds",
                 mf_cards_text: "Best yearly performers.", mf_view_all: "View All Funds",
@@ -3785,7 +3617,7 @@
                 p1_name: "The Starter", p1_sub: "Essential market data for the casual investor", p1_price: "Free", p1_btn: "Get Started", p1_f1: "5 chats per day with Starta AI Analyst", p1_f2: "3 Institutional Downloads", p1_f3: "3 Full Balance Sheets", p1_f4: "3 5-Year Cash Flows", p1_f5: "Financial Statements (TTM)", p1_f6: "All Financial Ratios", p1_f7: "Comprehensive Info", p1_f8: "3 PDF Exports",
                 p2_name: "The Analyst", p2_sub: "Real-time intelligence for active traders", curr: "EGP", p2_bill: "Monthly or 662 EGP Annually (20% off)", p2_btn: "Get Started", p2_f1: "Unlimited AI Chat", p2_f2: "Unlimited Income Statements", p2_f3: "Unlimited Balance Sheets", p2_f4: "Unlimited Cash Flows", p2_f5: "Full Financial History", p2_f6: "Complete Ratios & KPIs", p2_f7: "Advanced Excel Exports", p2_f8: "Unlimited PDF Reports", p2_f9: "Daily Market Briefing",
                 p3_name: "Institutional", p3_sub: "API access and raw data for funds", p3_price: "Custom", p3_btn: "Contact Sales", p3_f1: "Direct API Access", p3_f2: "Custom Risk Models", p3_f3: "Dedicated Account Mgr", p3_f4: "White-label Reports", p3_f5: "Custom Data Integration", p3_f6: "Historical Tick Data", p3_f7: "Model Fine-Tuning", p3_f8: "99.9% Uptime SLA", p3_f9: "Priority Support",
-                close_title: "Decide With Confidence.", close_text: "Ask better questions, get clearer answers, and make every financial decision with confidence.", close_btn: "Activate Starta",
+                close_title: "Decide With Confidence.", close_text: "Ask better questions, get clearer answers, and make every financial decision with confidence.", close_btn: "Explore the Funds",
                 why_funds_tag: "SMART SAVING", why_funds_title: "Why Mutual Funds?",
                 why_funds_c1_title: "High Returns", why_funds_c1_text: "Competitive yields that consistently outperform traditional banking.",
                 why_funds_c2_title: "Flexible Liquidity", why_funds_c2_text: "No lock-in periods. Access your money whenever you need it.",
@@ -3798,7 +3630,6 @@
                 calc_tag: "WEALTH PROJECTION", calc_title: "The Power of Compound Returns.",
                 calc_goal_title: "Reach Your Goal", calc_goal_desc: "How much to invest monthly to reach a specific amount.",
                 calc_save_title: "Build Your Future", calc_save_desc: "See how much your monthly savings will grow over time.",
-                brain_load1: "Analyzing market signals", brain_load2: "Cross-checking EGX data", brain_load3: "Insight ready", dialect_egy: "EGYPTIAN DIALECT", dialect_msa: "MODERN STANDARD",
                 hp_pulse_tag: "MARKET PULSE", hp_pulse_live_badge: "LIVE DATA", hp_pulse_title: "Real-Time EGX Snapshot.", hp_pulse_text: "Direct market data, listed equities, index direction, and market breadth — brought together in one premium live terminal view.",
                 hp_pulse_cta: "Open Market Pulse", hp_pulse_stat1: "EGX 30 Index", hp_pulse_stat2: "Advancers / Decliners", hp_pulse_stat3: "Trading Value", hp_pulse_stat4: "Market Status",
                 hp_pulse_col1: "Symbol", hp_pulse_col2: "Last Price", hp_pulse_col3: "Chg%", hp_pulse_footer: "Simulated data for illustration",
@@ -3809,7 +3640,7 @@
                 hp_learn_cta: "Explore All Topics", hp_learn_read: "Read topic",
                 footer_desc: "Next-generation financial intelligence platform. Empowering Egyptian market investors with unified data, institutional-grade AI analytics, and responsive portfolio tools.",
                 footer_status: "System Status: Fully Operational",
-                footer_cta_btn: "Launch Starta AI",
+                footer_cta_btn: "Explore Funds",
                 footer_col1_title: "PLATFORM",
                 footer_col2_title: "RESEARCH",
                 footer_col3_title: "RESOURCES",
@@ -3820,7 +3651,8 @@
                 footer_lnk_news: "Market News",
                 footer_lnk_learn: "Learn Catalog",
                 footer_lnk_portfolio: "Smart Portfolio",
-                footer_lnk_chat: "AI Assistant",
+                footer_lnk_calc: "Wealth Calculators",
+                footer_lnk_risk: "Risk Assessment",
                 footer_lnk_account: "Create Account",
                 footer_lnk_login: "Sign In",
                 footer_disc_title: "Regulatory Disclaimer",
@@ -3849,33 +3681,29 @@
                 sim_fixed: "Fixed Income", sim_fixed_desc: "Bonds for stability",
                 sim_gold: "Gold", sim_gold_desc: "Inflation hedge",
                 sim_cta_note: "Start with any amount. Consistency builds wealth over time.",
-                sim_cta: "Ask AI Analyst",
+                sim_cta: "Open the Wealth Calculators",
                 sim_disclaimer: "For illustrative purposes only. Not investment advice."
             },
             ar: {
-                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا", nav_cta: "جرّب الآن",
+                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا", nav_cta: "اعرف ملف مخاطرك",
                 about_tag: "مهمتنا", about_title: "تمكين المستثمر من رؤية السوق بوضوح.", about_text: "في ستارتا، نبني أدوات مالية ذكية تساعد المستثمر على فهم السوق، متابعة الأسهم، تحليل الأخبار، وإدارة قراراته الاستثمارية من منصة واحدة. مهمتنا هي تحويل البيانات المالية المعقدة إلى رؤى واضحة وقابلة للتنفيذ تساعد على اتخاذ قرارات استثمارية أكثر وعيًا وثقة.", about_val1_title: "الابتكار", about_val1_text: "تقنيات ذكية تساعد المستثمر على فهم السوق بشكل أسرع واتخاذ قرارات بثقة أكبر.", about_val2_title: "الشفافية", about_val2_text: "بيانات ورؤى واضحة تمنح المستثمر رؤية أقوى قبل اتخاذ القرار.", about_vision: "إعادة تعريف تجربة الاستثمار", about_vision_text: "نجمع بين بيانات السوق، والتحليل المدعوم بالذكاء الاصطناعي، وتجربة استخدام بسيطة لنقدم طريقة أوضح وأسرع وأكثر احترافية لمتابعة السوق وإدارة الاستثمارات.",
                 hero_kicker: "بحث استثماري مدعوم بالذكاء الاصطناعي",
                 hero_title: `رؤية أذكى<br><span class="text-gradient">للاستثمار</span>`,
                 hero_sub: `منصة واحدة تجمع بيانات السوق اللحظية، وتحليلات الذكاء الاصطناعي، وتأثير الأخبار، ورؤى المحفظة، وتحليلات الصناديق، لتساعدك على اتخاذ قرارات استثمارية أفضل بثقة ووضوح.`,
                 hero_point1: "محادثة تحليلية فورية", hero_point2: "خطط ادخار تلقائية", hero_point3: "فهم عربي وإنجليزي باحترافية",
-                hero_btn: "ابدأ الآن", hero_btn_funds: "الصناديق الاستثمارية", hero_btn_pulse: "نبض السوق",
+                hero_btn: "استكشف صناديق الاستثمار", hero_btn_funds: "الصناديق الاستثمارية", hero_btn_pulse: "نبض السوق",
                 mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> منصة ستارتا`,
-                tour_preview: "عرض تجريبي", tour_live_mock: "عرض مباشر", tour_curated: "مختارة", tour_academy: "الأكاديمية", tour_private: "خاص", tour_ai_live: "AI مباشر",
+                tour_preview: "عرض تجريبي", tour_live_mock: "عرض مباشر", tour_curated: "مختارة", tour_academy: "الأكاديمية", tour_private: "خاص",
                 tour_ytd: "هذا العام", tour_open: "مفتوح", tour_value: "القيمة",
                 tour_funds_title: "الصناديق الاستثمارية", tour_funds_spotlight: "صندوق مميز", tour_funds_name: "صندوق الدخل بلس", tour_funds_kind: "دخل ثابت · سيولة يومية", tour_nav: "صافي القيمة", tour_risk: "مستوى المخاطر", tour_low_risk: "مخاطر منخفضة", tour_minimum: "الحد الأدنى", tour_funds_fit: "ملاءمة المحفظة", tour_yield_target: "العائد المستهدف", tour_liquidity: "الاسترداد", tour_daily: "يومي", tour_income: "دخل أساسي", tour_growth_curve: "منحنى النمو", tour_vs_benchmark: "+4.12% مقابل EGX30", tour_dividend_event: "توزيعات", tour_funds_footer: "قارن الصناديق",
                 tour_pulse_title: "نبض السوق", tour_pulse_index: "EGX 30 · مباشر", tour_advancers: "صاعدة", tour_decliners: "هابطة", tour_active_symbols: "الأسهم النشطة", tour_pulse_footer: "اتساع السوق",
                 tour_news_title: "أخبار السوق", tour_news_sector: "أرباح · البنوك", tour_news_story: "نمو أرباح التجاري الدولي يدعم معنويات قطاع البنوك", tour_news_summary: "توسع الإيرادات وصلابة الهوامش يتصدران الملخص المؤسسي اليوم.", tour_news_impact: "التأثير", tour_news_positive: "إيجابي", tour_market_reaction: "استجابة السوق", tour_revenue: "الإيرادات +26%", tour_margin: "الهامش 6.4%", tour_sector_banks: "البنوك", tour_news_secondary: "البورصة تغلق مرتفعة مع صعود شراء المؤسسات", tour_news_third: "البنوك تقود التداول وأسهم المستهلك تستقر", tour_news_digest: "ملخص السوق", tour_sentiment: "المعنويات", tour_news_footer: "اقرأ كل الأخبار",
                 tour_learn_title: "تعلّم", tour_learn_course: "أساسيات التقييم", tour_learn_module: "أتقن القيمة العادلة", tour_learn_progress: "مكتمل", tour_today_concept: "مفهوم اليوم", tour_dcf_formula: "القيمة العادلة = التدفقات المستقبلية المخصومة", tour_lesson_done: "قراءة القوائم", tour_lesson_now: "فهم القيمة العادلة", tour_lesson_next: "المخاطرة والعائد", tour_done: "مكتمل", tour_now: "الآن", tour_next: "التالي", tour_estimated_time: "الجلسة التالية · 12 دقيقة", tour_knowledge_score: "مستوى المعرفة", tour_quick_check: "اختبر فهمك", tour_quiz_question: "ماذا يحوّل نموذج DCF إلى قيمة اليوم؟", tour_quiz_answer: "التدفقات النقدية المستقبلية", tour_minutes: "12 دقيقة", tour_learn_footer: "تابع التعلّم",
                 tour_portfolio_title: "المحفظة", tour_total_value: "إجمالي القيمة", tour_today: "اليوم", tour_allocation: "التوزيع", tour_risk_score: "درجة المخاطر", tour_moderate: "متوسط", tour_dividends: "التوزيعات", tour_portfolio_footer: "رؤية المحفظة",
-                tour_ai_title: "المساعد الذكي", tour_ai_question: "قارن مخاطر صناديقي.", tour_ai_answer: "توزيع متوازن. صناديق النقد تقلل التذبذب بينما تزيد صناديق النمو فرص العائد.", tour_ai_insight: "مقارنة المخاطر", tour_confidence: "ثقة 87%", tour_cash_funds: "صندوق الدخل", tour_growth_funds: "صندوق النمو", tour_recommendation: "التوزيع المقترح", tour_recommendation_text: "تقليل التذبذب مع فرص نمو", tour_returns: "العوائد", tour_source_liquidity: "السيولة", tour_ready: "جاهز", tour_suggestions: "أسئلة مقترحة", tour_prompt_one: "ابحث عن صناديق أقل مخاطرة", tour_prompt_two: "اشرح عائد محفظتي", tour_ai_footer: "اسأل ستارتا",
                 trusted_by: "تابع اسهمك المفضلة",
                 gap_tag: "المشكلة",
                 gap_title: `البيانات بلا فهم <br>ليست سوى <span class="text-muted line-through decoration-starta-teal decoration-4">ضوضاء</span>.`,
                 gap_text: "الرسوم البيانية والأخبار وحدها لا تكفي لاتخاذ قرار استثماري. ستارتا تحوّل بيانات السوق إلى تحليل واضح يشمل القيمة العادلة، أهم المحفزات، وأبرز المخاطر.",
-                brain_tag: "مساعد ستارتا الذكي", brain_title: "مساعدك الذكي لفهم السوق<br>واتخاذ القرار", brain_sub: "مساعد استثماري ذكي.",
-                brain_text: "يجيب عن أسئلتك اعتمادًا على بيانات السوق، الأخبار، المحفظة، والمؤشرات المالية، ليمنحك تحليلات واضحة ورؤى عملية تساعدك على فهم الفرص والمخاطر واتخاذ القرار بثقة.",
-                brain_feat1_title: "تحليل فوري", brain_feat1_text: "إجابات وتحليلات سريعة مدعومة ببيانات السوق", brain_feat2_title: "رؤية أوضح", brain_feat2_text: "يفسر الأرقام والأخبار بلغة بسيطة وقراءة عملية",
                 mf_title: "الصناديق الاستثمارية.<br>داخل ستارتا.", mf_text: "استكشف كافة الصناديق مع أسعار موثقة، أداء محدث، ومقارنة شاملة",
                 mf_stat_coverage: "الصناديق المغطاة", mf_stat_best: "أفضل عائد سنوي", mf_stat_houses: "مديرو الصناديق", mf_cta: "استكشف الصناديق",
                 mf_cards_text: "أفضل الصناديق أداءً سنويًا", mf_view_all: "عرض كل الصناديق",
@@ -3907,7 +3735,7 @@
                 p1_name: "المبتدئ", p1_sub: "بيانات سوق أساسية للمستثمر الفردي", p1_price: "مجاني", p1_btn: "ابدأ الآن", p1_f1: "5 محادثات يومية مع محلل ستارتا", p1_f2: "3 تنزيلات مؤسسية", p1_f3: "3 ميزانيات عمومية كاملة", p1_f4: "3 قوائم تدفقات نقدية لخمس سنوات", p1_f5: "قوائم مالية (TTM)", p1_f6: "جميع النسب المالية", p1_f7: "بيانات شاملة عن الشركات", p1_f8: "3 تقارير PDF",
                 p2_name: "المحلل", p2_sub: "ذكاء لحظي للمتداول النشط", curr: "ج.م", p2_bill: "شهريًا أو 662 ج.م سنويًا (خصم 20%)", p2_btn: "ابدأ الآن", p2_f1: "محادثات غير محدودة مع المحلل", p2_f2: "قوائم دخل غير محدودة", p2_f3: "ميزانيات عمومية غير محدودة", p2_f4: "تدفقات نقدية غير محدودة", p2_f5: "سجل مالي تاريخي كامل", p2_f6: "نسب ومؤشرات أداء كاملة", p2_f7: "تصدير Excel متقدم", p2_f8: "تقارير PDF غير محدودة", p2_f9: "إحاطة سوق يومية",
                 p3_name: "المؤسسات", p3_sub: "وصول API وبيانات خام للصناديق", p3_price: "مخصص", p3_btn: "تواصل مع المبيعات", p3_f1: "وصول مباشر إلى API", p3_f2: "نماذج مخاطر مخصصة", p3_f3: "مدير حساب مخصص", p3_f4: "تقارير بعلامتك التجارية", p3_f5: "تكامل بيانات مخصص", p3_f6: "بيانات تاريخية دقيقة", p3_f7: "تخصيص نموذج الذكاء الاصطناعي", p3_f8: "اتفاقية إتاحة 99.9%", p3_f9: "دعم هندسي أولوية 24/7",
-                close_title: "قرارات أوضح بثقة.", close_text: "اطرح أسئلة أفضل، واحصل على إجابات أدق، واتخذ قراراتك المالية بثقة أكبر.", close_btn: "فعّل ستارتا الآن",
+                close_title: "قرارات أوضح بثقة.", close_text: "اطرح أسئلة أفضل، واحصل على إجابات أدق، واتخذ قراراتك المالية بثقة أكبر.", close_btn: "استكشف الصناديق",
                 why_funds_tag: "ادخار ذكي", why_funds_title: "ليه صناديق الاستثمار؟",
                 why_funds_c1_title: "عوائد مرتفعة", why_funds_c1_text: "عائدات تنافسية تتفوق باستمرار على حسابات الادخار التقليدية.",
                 why_funds_c2_title: "سيولة مرنة", why_funds_c2_text: "بدون فترات تجميد. اسحب أموالك في أي وقت تحتاج إليها.",
@@ -3920,7 +3748,6 @@
                 calc_tag: "توقع الثروة", calc_title: "جرب قوة العائد التراكمي",
                 calc_goal_title: "حقق هدفك", calc_goal_desc: "احسب المبلغ المطلوب استثماره شهرياً للوصول لهدفك.",
                 calc_save_title: "ابنِ مستقبلك", calc_save_desc: "شاهد كيف ستنمو مدخراتك الشهرية مع مرور الوقت.",
-                brain_load1: "جارٍ تحليل إشارات السوق", brain_load2: "جارٍ تدقيق بيانات EGX", brain_load3: "تم تجهيز الخلاصة", dialect_egy: "اللهجة المصرية", dialect_msa: "العربية الفصحى",
                 app_store: "متجر التطبيقات", google_play: "جوجل بلاي",
                 comp_title: "لماذا نتفوق.", comp_feat: "الميزة", comp_others: "منصات التداول", comp_logic: "منهجية مؤسسية", comp_arabic: "لغة السوق", comp_data: "دقة بيانات موثقة",
                 sec_tag: "البنية التحتية", sec_title: "أمان بمستوى مصرفي",
@@ -3933,7 +3760,7 @@
                 hp_learn_tag: "أكاديمية ستارتا", hp_learn_title: "ابنِ ذكاءك الاستثماري.", hp_learn_sub: "من أساسيات السوق إلى نماذج التقييم المتقدمة — وحدات تعليمية مبنية لمستثمر السوق المصري.", hp_learn_stat1: "١٠ موضوعات", hp_learn_stat2: "عربي وإنجليزي", hp_learn_stat3: "لجميع المستويات",
                 hp_learn_cta: "استعرض جميع المواضيع", hp_learn_read: "اقرأ الموضوع",
                 footer_desc: "منصة الجيل القادم للتحليل المالي الذكي. نمكّن مستثمري السوق المصري ببيانات موحدة، تحليلات ذكاء اصطناعي بمستوى مؤسسي، وأدوات متطورة لإدارة المحفظة.",
-                footer_cta_btn: "ابدأ مع مساعد ستارتا",
+                footer_cta_btn: "استكشف الصناديق",
                 footer_col1_title: "المنصة",
                 footer_col2_title: "الأبحاث",
                 footer_col3_title: "المصادر",
@@ -3943,7 +3770,8 @@
                 footer_lnk_news: "أخبار السوق",
                 footer_lnk_learn: "أكاديمية ستارتا",
                 footer_lnk_portfolio: "المحفظة الذكية",
-                footer_lnk_chat: "المساعد الذكي",
+                footer_lnk_calc: "حاسبات الثروة",
+                footer_lnk_risk: "تقييم المخاطر",
                 footer_lnk_account: "إنشاء حساب",
                 footer_lnk_login: "تسجيل الدخول",
                 footer_disc_title: "إخلاء المسؤولية القانونية",
@@ -3972,7 +3800,7 @@
                 sim_fixed: "دخل ثابت", sim_fixed_desc: "سندات للاستقرار",
                 sim_gold: "ذهب", sim_gold_desc: "تحوط ضد التضخم",
                 sim_cta_note: "ابدأ بأي مبلغ. الانتظام هو سر بناء الثروة.",
-                sim_cta: "اسأل المحلل الذكي",
+                sim_cta: "افتح حاسبات الثروة",
                 sim_disclaimer: "لأغراض توضيحية فقط. ليست نصيحة استثمارية."
             }
         };
@@ -3994,175 +3822,6 @@
         applyTranslations(initialLang);
         langToggle.innerText = initialLang === 'ar' ? 'EN' : 'AR';
 
-        const platformLogicScenarios = {
-            en: [
-                {
-                    user: "Analyze CIB's margin growth vs sector.",
-                    aiHeader: "FUNDAMENTAL ANALYSIS",
-                    ai: "Net Interest Margin expanded by 45bps YoY to 6.4%, underscoring robust asset repricing. Fair value models still suggest room for upside.",
-                    card: {
-                        l1: "Metric",
-                        l2: "Value",
-                        metric: "Net Interest Margin",
-                        value: "6.4%",
-                        context: "Outperforming Sector (5.8%)",
-                        width: "76%"
-                    }
-                },
-                {
-                    user: "Is FWRY expensive at current levels?",
-                    aiHeader: "VALUATION CHECK",
-                    ai: "The stock still trades at a premium, but revenue momentum and higher-quality margins keep the valuation debate balanced rather than stretched.",
-                    card: {
-                        l1: "Current P/E",
-                        l2: "Sector Avg",
-                        metric: "FWRY Valuation",
-                        value: "45.2x",
-                        context: "Premium to Sector (12.0x)",
-                        width: "64%"
-                    }
-                },
-                {
-                    user: "What's the technical setup for HRHO?",
-                    aiHeader: "TECHNICAL SIGNAL",
-                    ai: "Momentum remains constructive. Price is holding above the 50-day average, with improving participation and a cleaner resistance break profile.",
-                    card: {
-                        l1: "Indicator",
-                        l2: "Signal",
-                        metric: "RSI (14)",
-                        value: "Bullish",
-                        context: "Breakout Confirmed",
-                        width: "71%"
-                    }
-                }
-            ],
-            ar: [
-                {
-                    user: "حلل نمو هامش الفائدة لدى التجاري الدولي مقارنة بالقطاع.",
-                    aiHeader: "تحليل أساسي",
-                    ai: "اتسع هامش صافي الفائدة بنحو 45 نقطة أساس إلى 6.4%، ما يعكس قوة إعادة تسعير الأصول واستمرار الزخم التشغيلي.",
-                    card: {
-                        l1: "المقياس",
-                        l2: "القيمة",
-                        metric: "هامش صافي الفائدة",
-                        value: "6.4%",
-                        context: "يتفوق على القطاع (5.8%)",
-                        width: "76%"
-                    }
-                },
-                {
-                    user: "هل تقييم فوري مرتفع عند المستويات الحالية؟",
-                    aiHeader: "فحص التقييم",
-                    ai: "السهم ما زال يتداول بعلاوة واضحة، لكن نمو الإيرادات وجودة الهوامش يخففان من حدة هذا الارتفاع في التقييم.",
-                    card: {
-                        l1: "مكرر الربحية",
-                        l2: "متوسط القطاع",
-                        metric: "تقييم فوري",
-                        value: "45.2x",
-                        context: "علاوة على القطاع (12.0x)",
-                        width: "64%"
-                    }
-                },
-                {
-                    user: "ما هي الإشارة الفنية الحالية لسهم هيرميس؟",
-                    aiHeader: "إشارة فنية",
-                    ai: "الزخم ما زال داعمًا. السهم يحافظ على التداول فوق متوسط 50 يوم مع تحسن في المشاركة وتأكيد أفضل للاختراق.",
-                    card: {
-                        l1: "المؤشر",
-                        l2: "الإشارة",
-                        metric: "RSI (14)",
-                        value: "صاعد",
-                        context: "تأكيد الاختراق",
-                        width: "71%"
-                    }
-                }
-            ]
-        };
-
-        let platformLogicTimeline = null;
-        let platformLogicScenarioIndex = 0;
-
-        function playPlatformLogicSequence() {
-            const userText = document.getElementById('hero-user-text');
-            const aiText = document.getElementById('hero-ai-text');
-            const aiHeader = document.getElementById('hero-ai-header');
-            const dataCard = document.getElementById('hero-data-card');
-            const userBubble = document.getElementById('user-bubble');
-            const aiBubble = document.getElementById('ai-bubble');
-            const cardProgress = document.getElementById('card-progress');
-            if (!userText || !aiText || !aiHeader || !dataCard || !userBubble || !aiBubble || !cardProgress) return;
-
-            const lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
-            const scenarios = platformLogicScenarios[lang];
-            const current = scenarios[platformLogicScenarioIndex];
-            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-            if (platformLogicTimeline) {
-                platformLogicTimeline.kill();
-                platformLogicTimeline = null;
-            }
-
-            userText.textContent = '';
-            aiText.textContent = '';
-            aiHeader.textContent = current.aiHeader;
-            document.getElementById('card-label-1').textContent = current.card.l1;
-            document.getElementById('card-label-2').textContent = current.card.l2;
-            document.getElementById('card-metric').textContent = current.card.metric;
-            document.getElementById('card-value').textContent = current.card.value;
-            document.getElementById('card-context').textContent = current.card.context;
-            cardProgress.style.width = current.card.width;
-            userBubble.style.opacity = '';
-            userBubble.style.transform = '';
-            aiBubble.style.opacity = '';
-            aiBubble.style.transform = '';
-            dataCard.style.opacity = '';
-            dataCard.style.transform = '';
-
-            if (reduceMotion) {
-                userText.textContent = current.user;
-                aiText.textContent = current.ai;
-                aiHeader.style.opacity = '1';
-                dataCard.style.opacity = '1';
-                dataCard.style.transform = 'none';
-                aiBubble.style.opacity = '1';
-                aiBubble.style.transform = 'none';
-                return;
-            }
-
-            platformLogicTimeline = gsap.timeline({
-                onComplete: () => {
-                    platformLogicScenarioIndex = (platformLogicScenarioIndex + 1) % scenarios.length;
-                    playPlatformLogicSequence();
-                }
-            });
-
-            platformLogicTimeline
-                .set(userText, { text: "" })
-                .set(aiText, { text: "" })
-                .set(aiHeader, { opacity: 0, text: current.aiHeader })
-                .set(dataCard, { opacity: 0, y: 10 })
-                .set(userBubble, { opacity: 1, scale: 1 })
-                .set(aiBubble, { opacity: 0, scale: 0.95 })
-                .to(userText, { text: current.user, duration: 1.45, ease: 'none' })
-                .to({}, { duration: 0.3 })
-                .to(aiBubble, { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.2)' })
-                .to(aiHeader, { opacity: 1, duration: 0.3 }, '-=0.2')
-                .to(aiText, { text: current.ai, duration: 2.8, ease: 'none' })
-                .call(() => {
-                    document.getElementById('card-label-1').innerText = current.card.l1;
-                    document.getElementById('card-label-2').innerText = current.card.l2;
-                    document.getElementById('card-metric').innerText = current.card.metric;
-                    document.getElementById('card-value').innerText = current.card.value;
-                    document.getElementById('card-context').innerText = current.card.context;
-                    cardProgress.style.width = current.card.width;
-                })
-                .to(dataCard, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' })
-                .to({}, { duration: 2.7 })
-                .to([userBubble, aiBubble], { opacity: 0, duration: 0.5 });
-        }
-
-        playPlatformLogicSequence();
-
         langToggle.addEventListener('click', () => {
             const currentLang = document.documentElement.lang;
             const newLang = currentLang === 'en' ? 'ar' : 'en';
@@ -4176,7 +3835,6 @@
             gsap.to("body", {
                 opacity: 0, duration: 0.2, onComplete: () => {
                     applyTranslations(newLang);
-                    platformLogicScenarioIndex = 0;
                     renderTopFunds();
                     setMarketTimestamp();
                     _hpNewsData = null; // force re-fetch in new language
@@ -4184,7 +3842,6 @@
                     renderHpAcademy(newLang);
                     if (typeof renderRows === 'function') renderRows();
                     updateHeroTourLabels();
-                    playPlatformLogicSequence();
                     gsap.to("body", { opacity: 1, duration: 0.2 });
                 }
             });

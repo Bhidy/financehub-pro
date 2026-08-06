@@ -49,13 +49,12 @@ export default function GoogleLoginButton({
         setIsLoading(true);
 
         try {
-            // Detect mobile from current URL path OR domain
-            const currentPath = window.location.pathname;
-            const hostname = window.location.hostname;
-
-            // CRITICAL: startamarkets.com is ALWAYS a mobile-only domain
-            const isStartaDomain = hostname === 'startamarkets.com' || hostname === 'www.startamarkets.com';
-            const isMobileFlow = isMobile ?? isStartaDomain;
+            // The web flow is NEVER a mobile deep-link flow. The Capacitor app builds
+            // its own state (mobile:true + app-scheme returnTo) in StartaMobileApp and
+            // does not go through this button, so only an explicit prop opts in here.
+            // (A domain heuristic here once marked every startamarkets.com visitor as
+            // mobile, which stranded desktop users on the deep-link hand-off page.)
+            const isMobileFlow = isMobile === true;
 
             // 1. ENTERPRISE FIX: Use internal Next.js Proxy to avoid CORS/Network issues
             // This calls our local route /api/auth/google/url/route.ts service-side

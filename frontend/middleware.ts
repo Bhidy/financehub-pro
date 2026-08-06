@@ -25,6 +25,8 @@ const CANONICAL_SEGMENTS: Record<string, string> = {
     'funds': 'Funds',
     'fund': 'Fund',
     'learn': 'Learn',
+    'calculators': 'Calculators',
+    'riskassessment': 'RiskAssessment',
     'market-pulse': 'Market-Pulse',
     'portfolio': 'Portfolio',
     'companies': 'companies',

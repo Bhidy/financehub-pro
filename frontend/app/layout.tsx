@@ -165,7 +165,8 @@ export default function RootLayout({
         <Providers>
           <ThemeProvider>
             <ToastProvider>
-              {/* ShellWrapper conditionally renders sidebar based on route */}
+              {/* ShellWrapper is a plain pass-through (legacy finhub styling only).
+                  The old AppSidebar shell is permanently removed — build-gated. */}
               <ShellWrapper>
                 {children}
               </ShellWrapper>

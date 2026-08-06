@@ -67,10 +67,10 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                         {/* TRY NOW — hidden on /AiChat (already there), desktop/tablet only */}
                         {!isAiChat && (
                             <a
-                                href="/AiChat"
+                                href="/RiskAssessment"
                                 className="hidden md:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest border border-[rgba(45,212,191,0.45)] bg-[rgba(45,212,191,0.08)] text-slate-900 dark:text-[#eef2f6] hover:bg-[rgba(45,212,191,0.2)] hover:-translate-y-px transition-all duration-200"
                             >
-                                {lang === "ar" ? "جرّب الآن" : "TRY NOW"}
+                                {lang === "ar" ? "اعرف ملف مخاطرك" : "FREE RISK PROFILE"}
                             </a>
                         )}
 
@@ -155,11 +155,11 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                         {/* TRY NOW — hidden on /AiChat */}
                         {!isAiChat && (
                             <a
-                                href="/AiChat"
+                                href="/RiskAssessment"
                                 onClick={() => setMobileOpen(false)}
                                 className="mt-4 flex items-center justify-center px-6 py-3 rounded-full text-sm font-bold tracking-widest border border-[rgba(45,212,191,0.45)] bg-[rgba(45,212,191,0.08)] text-slate-900 dark:text-[#eef2f6]"
                             >
-                                {lang === "ar" ? "جرّب الآن" : "TRY NOW"}
+                                {lang === "ar" ? "اعرف ملف مخاطرك" : "FREE RISK PROFILE"}
                             </a>
                         )}
 

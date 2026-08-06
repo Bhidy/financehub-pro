@@ -9,7 +9,7 @@
  * Starta token system. Default currency is EGP (Egypt-first site).
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CalcLabels, CurrencyCode } from './calculators-i18n';
 import { tpl } from './calculators-i18n';
 import {
@@ -17,6 +17,7 @@ import {
     CURRENCY_ORDER,
     formatPercent,
     formatShort,
+    formatYears,
     growingAnnuityFV,
     moneyFormatters,
 } from './calc-shared';
@@ -578,6 +579,10 @@ function CompareChart({
 
 const STEP_COUNT = 5;
 
+/** Age fields must be whole years — the chart/table math indexes year arrays,
+ *  so a fractional age (e.g. 26.5) would produce NaN paths and labels. */
+const INT_FIELDS: readonly FieldId[] = ['currentAge', 'retireAge', 'lifeExpectancy'];
+
 function presetValues(code: CurrencyCode): Values {
     const cfg = CURRENCY_CONFIG[code];
     return {
@@ -607,14 +612,33 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
     const [calc, setCalc] = useState<CalcResult | null>(null);
     const [tab, setTab] = useState<'compare' | 'goal' | 'current'>('compare');
 
+    const wizardRef = useRef<HTMLDivElement>(null);
+    const stepHeadingRef = useRef<HTMLHeadingElement>(null);
+    const prevStepRef = useRef(step);
+
+    /* On step change: scroll back to the top of the wizard and move focus to
+       the new step's heading (same pattern as RiskAssessmentClient). */
+    useEffect(() => {
+        if (prevStepRef.current === step) return;
+        prevStepRef.current = step;
+        wizardRef.current?.scrollIntoView({ block: 'start' });
+        stepHeadingRef.current?.focus({ preventScroll: true });
+    }, [step]);
+
     const cfg = CURRENCY_CONFIG[currency];
     const sym = L.currency.symbols[currency];
     const fm = moneyFormatters(sym);
     const eg = (v: string) => tpl(L.common.eg, { v });
 
     const setField = (field: FieldId) => (v: string) => {
-        setValues((prev) => ({ ...prev, [field]: v }));
+        let next = v;
+        if (INT_FIELDS.includes(field) && v !== '') {
+            const parsed = parseFloat(v);
+            if (!Number.isNaN(parsed)) next = String(Math.trunc(parsed));
+        }
+        setValues((prev) => ({ ...prev, [field]: next }));
         setErrors(null);
+        setCalc(null); // any input edit invalidates the computed results until Calculate runs again
     };
     const fieldErr = (field: FieldId): string | null => errors?.find((e) => e.field === field)?.msg ?? null;
 
@@ -623,6 +647,7 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
         setValues(presetValues(code));
         setErrors(null);
         setCalc(null);
+        setStep(1); // never leave the user parked on a now-empty Results step
     };
     const doReset = () => {
         changeCurrency(currency);
@@ -691,7 +716,11 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
 
     const stepCard = (title: string, children: React.ReactNode) => (
         <section className="calc-fade rounded-2xl border border-border bg-surface p-6 sm:p-7">
-            <h3 className="mb-5 flex items-center gap-2.5 text-base font-extrabold tracking-tight text-main">
+            <h3
+                ref={stepHeadingRef}
+                tabIndex={-1}
+                className="mb-5 flex items-center gap-2.5 text-base font-extrabold tracking-tight text-main outline-none"
+            >
                 <span aria-hidden className="inline-block h-4 w-1 rounded-full bg-starta-teal" />
                 {title}
             </h3>
@@ -796,7 +825,7 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
     );
 
     return (
-        <div>
+        <div ref={wizardRef}>
             {/* currency selector */}
             <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-border bg-surface p-4 text-center">
                 <label htmlFor="ret-currency" className="mb-2 block text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
@@ -942,6 +971,13 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
 
             {/* STEP 5 — Results */}
             {step === 5 && calc && (
+                <>
+                    {/* focus target for the step-change effect (visually the results
+                        speak for themselves; screen readers get the step title).
+                        Outside the space-y wrapper so it adds no layout gap. */}
+                    <h3 ref={stepHeadingRef} tabIndex={-1} className="sr-only">
+                        {`5 · ${R.stepTitles[4]}`}
+                    </h3>
                 <div className="calc-fade space-y-6">
                     {/* stat cards */}
                     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -1053,7 +1089,7 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
                                         [R.results.scAnnualContribution, fm.money(calc.currentAnnualContrib)],
                                         [R.results.scTotalAtRetirement, fm.money(calc.totalAvailable)],
                                         [R.results.scShortfall, fm.money(calc.shortfall)],
-                                        [R.results.scFundsLast, tpl(L.common.nYears, { n: calc.yearsLastCurrent.toFixed(1) })],
+                                        [R.results.scFundsLast, formatYears(Number(calc.yearsLastCurrent.toFixed(1)), L.common)],
                                     ],
                                 },
                                 {
@@ -1064,7 +1100,7 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
                                         [R.results.scAnnualContribution, fm.money(calc.goalAnnualContrib)],
                                         [R.results.scTotalAtRetirement, fm.money(calc.netNeeded)],
                                         [R.results.scShortfall, fm.money(0)],
-                                        [R.results.scFundsLast, tpl(L.common.nYears, { n: calc.yearsToPayOut })],
+                                        [R.results.scFundsLast, formatYears(calc.yearsToPayOut, L.common)],
                                     ],
                                 },
                             ].map((card) => (
@@ -1106,7 +1142,9 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
                                     key={key}
                                     type="button"
                                     role="tab"
+                                    id={`ret-tab-${key}`}
                                     aria-selected={tab === key}
+                                    aria-controls={`ret-panel-${key}`}
                                     onClick={() => setTab(key)}
                                     className={`flex-1 rounded-full px-3 py-2 text-xs font-bold transition-colors ${
                                         tab === key ? 'bg-starta-teal text-white shadow-lg shadow-starta-teal/20' : 'text-muted hover:text-main'
@@ -1118,7 +1156,13 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
                         </div>
 
                         {tab === 'compare' && (
-                            <div className="calc-fade rounded-2xl border border-border bg-surface p-5 sm:p-6">
+                            <div
+                                id="ret-panel-compare"
+                                role="tabpanel"
+                                aria-labelledby="ret-tab-compare"
+                                tabIndex={0}
+                                className="calc-fade rounded-2xl border border-border bg-surface p-5 sm:p-6"
+                            >
                                 <h4 className="text-sm font-extrabold tracking-tight text-main">{R.results.chartTitle}</h4>
                                 <CompareChart d={calc.d} goalRate={calc.goalSavePercent} symbol={sym} L={R} yearTickTpl={L.common.yearTick} />
                                 <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted">
@@ -1138,8 +1182,16 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
                                 <p className="mt-3 text-center text-[11px] leading-relaxed text-muted">{R.results.chartNote}</p>
                             </div>
                         )}
-                        {tab === 'goal' && renderTable(goalRows, tpl(R.results.goalTableTitle, { p: formatPercent(calc.goalSavePercent) }))}
-                        {tab === 'current' && renderTable(currentRows, tpl(R.results.currentTableTitle, { p: formatPercent(calc.d.savePercent) }))}
+                        {tab === 'goal' && (
+                            <div id="ret-panel-goal" role="tabpanel" aria-labelledby="ret-tab-goal" tabIndex={0}>
+                                {renderTable(goalRows, tpl(R.results.goalTableTitle, { p: formatPercent(calc.goalSavePercent) }))}
+                            </div>
+                        )}
+                        {tab === 'current' && (
+                            <div id="ret-panel-current" role="tabpanel" aria-labelledby="ret-tab-current" tabIndex={0}>
+                                {renderTable(currentRows, tpl(R.results.currentTableTitle, { p: formatPercent(calc.d.savePercent) }))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex gap-3">
@@ -1163,6 +1215,7 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
                         </p>
                     </div>
                 </div>
+                </>
             )}
         </div>
     );

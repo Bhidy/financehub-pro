@@ -25,6 +25,12 @@ import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
 import { useMobileRoutes } from "@/components/chatbot/hooks/useMobileRoutes";
 import { useDeviceDetect } from "@/hooks/useDeviceDetect";
 import { createCheckoutSession } from "@/lib/api";
+import {
+    captureReturnPath,
+    clearAuthHandoff,
+    readAuthHandoff,
+    resolvePostAuthDestination,
+} from "@/lib/post-login";
 
 function LoginPageContent() {
     const router = useRouter();
@@ -42,15 +48,31 @@ function LoginPageContent() {
     const [focusedField, setFocusedField] = useState<string | null>(null);
     const homeRoute = getRoute('home');
 
-    // Handle Google OAuth callback
+    // Remember where the user came from (validated ?redirect= or same-origin
+    // referrer) so we can send them BACK there after authenticating. Runs once;
+    // the OAuth round-trip re-mount keeps the earlier value (Google referrer is
+    // cross-origin and is ignored by captureReturnPath).
     useEffect(() => {
-        const token = searchParams.get("token");
-        const refreshToken = searchParams.get("refresh_token");
-        const userStr = searchParams.get("user");
-        const googleAuth = searchParams.get("google_auth");
-        const errorParam = searchParams.get("error");
+        captureReturnPath(searchParams.get("redirect"));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Handle Google OAuth callback. The root layout scrubs the token params out
+    // of the URL into sessionStorage before analytics can see them — so read
+    // through the hand-off stash first, with the raw query as fallback.
+    useEffect(() => {
+        const handoff = readAuthHandoff();
+        const param = (key: string): string | null =>
+            searchParams.get(key) ?? (handoff ? handoff[key as keyof typeof handoff] ?? null : null);
+
+        const token = param("token");
+        const refreshToken = param("refresh_token");
+        const userStr = param("user");
+        const googleAuth = param("google_auth");
+        const errorParam = param("error");
 
         if (errorParam) {
+            clearAuthHandoff();
             setError("Google login failed. Please try again.");
             return;
         }
@@ -63,22 +85,27 @@ function LoginPageContent() {
                     localStorage.setItem("fh_refresh_token", refreshToken);
                 }
                 localStorage.setItem("fh_user", JSON.stringify(user));
+                clearAuthHandoff();
 
-                if (searchParams.get("checkout") === "true" && searchParams.get("plan") === "analyst") {
+                const destination = resolvePostAuthDestination(param("redirect"));
+                if (param("checkout") === "true" && param("plan") === "analyst") {
                     createCheckoutSession("price_1T66bq2UXuH5fA2IQIuSelxJ").then(data => {
                         if (data?.url) window.location.href = data.url;
-                        else router.push(searchParams.get("redirect") || getRoute('home'));
+                        else router.replace(destination);
                     }).catch(err => {
                         console.error("Checkout redirect failed", err);
-                        router.push(searchParams.get("redirect") || getRoute('home'));
+                        router.replace(destination);
                     });
                     return;
                 }
 
-                const returnUrl = searchParams.get("redirect") || getRoute('home');
-                router.push(returnUrl);
+                // replace (not push): the token-bearing URL must not survive in
+                // history, and Back should not re-run the auth consumption.
+                router.replace(destination);
             } catch (e) {
                 console.error("Failed to parse Google auth response", e);
+                clearAuthHandoff();
+                setError("Google login failed. Please try again.");
             }
         }
     }, [searchParams, router, homeRoute]);
@@ -112,8 +139,7 @@ function LoginPageContent() {
                 }
             }
             setIsLoading(false);
-            const returnUrl = searchParams.get("redirect") || getRoute('home');
-            router.push(returnUrl);
+            router.replace(resolvePostAuthDestination(searchParams.get("redirect")));
         } else {
             setIsLoading(false);
             setError(result.error || "Login failed");

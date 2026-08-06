@@ -30,13 +30,17 @@ export default function FundCalculator({
     cagr, volatility, currency, t,
 }: { cagr: number | null; volatility: number | null; currency: string; t: FundLabels }) {
     const ax = t.ax;
-    const [amount, setAmount] = useState<number>(10_000);
-    const [monthly, setMonthly] = useState<number>(1_000);
+    // '' is allowed so the fields can be fully cleared while typing; math treats '' as 0.
+    const [amount, setAmount] = useState<number | ''>(10_000);
+    const [monthly, setMonthly] = useState<number | ''>(1_000);
     const [years, setYears] = useState<number>(5);
 
+    const amountNum = Number(amount) || 0;
+    const monthlyNum = Number(monthly) || 0;
+
     const proj = useMemo(
-        () => projectInvestmentPlan(amount, monthly, years, cagr, volatility),
-        [amount, monthly, years, cagr, volatility],
+        () => projectInvestmentPlan(amountNum, monthlyNum, years, cagr, volatility),
+        [amountNum, monthlyNum, years, cagr, volatility],
     );
 
     return (
@@ -50,8 +54,8 @@ export default function FundCalculator({
                     <div className="calc-input mt-1.5">
                         <input
                             type="number" inputMode="numeric" min={0} step={1000}
-                            value={Number.isFinite(amount) ? amount : ''}
-                            onChange={(e) => setAmount(Math.max(0, Number(e.target.value) || 0))}
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value === '' ? '' : Math.max(0, Number(e.target.value) || 0))}
                             aria-label={ax.calcAmount}
                         />
                         <span className="calc-input-suffix">{currency}</span>
@@ -63,8 +67,8 @@ export default function FundCalculator({
                     <div className="calc-input mt-1.5">
                         <input
                             type="number" inputMode="numeric" min={0} step={100}
-                            value={Number.isFinite(monthly) ? monthly : ''}
-                            onChange={(e) => setMonthly(Math.max(0, Number(e.target.value) || 0))}
+                            value={monthly}
+                            onChange={(e) => setMonthly(e.target.value === '' ? '' : Math.max(0, Number(e.target.value) || 0))}
                             aria-label={ax.calcMonthly}
                         />
                         <span className="calc-input-suffix">{currency}</span>
@@ -114,7 +118,9 @@ export default function FundCalculator({
                     <p className="text-[0.68rem] text-muted">{interp(ax.calcCagrNote, { v: proj.cagrUsed })}</p>
                 </div>
             ) : (
-                <p className="mt-4 text-sm text-muted">{ax.noData}</p>
+                /* proj is null either because the fund has no usable history (cagr null)
+                   or because both amounts are empty/zero — distinct messages. */
+                <p className="mt-4 text-sm text-muted">{cagr === null ? ax.noData : ax.calcEnterAmounts}</p>
             )}
 
             <p className="ax-note mt-4">{ax.calcDisclaimer}</p>

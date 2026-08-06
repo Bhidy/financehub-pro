@@ -112,7 +112,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    // data-theme + class mirror the static pages' SSR default (LIGHT). The boot
+    // script below corrects them from storage before first paint; hydration
+    // warnings are suppressed because that mutation is intentional and happens
+    // before React attaches (the standard theme-script pattern).
+    <html lang="en" data-theme="light" className="light" suppressHydrationWarning>
+      <head>
+        {/* THEME BOOT — must be the first thing that runs, before any paint.
+            Single source of truth for the React side of the theme, mirroring
+            /assets/starta-theme.js used by the static pages: same storage key
+            ("theme"), same LIGHT default, and it stamps BOTH representations —
+            the data-theme attribute (public-chrome --c-* tokens) and the
+            .light/.dark class (Tailwind `dark:` variants + app tokens) — so
+            the two engines can never disagree and no page can flip theme on
+            navigation. */}
+        <script
+          id="starta-theme-boot"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");t=(t==="dark"||t==="light")?t:"light";var d=document.documentElement;d.setAttribute("data-theme",t);d.classList.remove("light","dark");d.classList.add(t);d.style.colorScheme=t;}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body
         className={`${manrope.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} ${cairo.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}
       >
@@ -128,6 +148,30 @@ export default function RootLayout({
                 if (isFinhubDomain) {
                   document.documentElement.classList.add("finhub-pro-domain");
                 }
+              } catch (e) {}
+            })();
+          `}
+        </Script>
+        <Script id="auth-param-scrub" strategy="beforeInteractive">
+          {`
+            // SECURITY: the OAuth callback lands on /login|/register with tokens in
+            // the query string. Stash them into sessionStorage and scrub the URL
+            // BEFORE analytics (GA/Hotjar record page_location) and before the URL
+            // can settle into history. The auth pages read the stash back.
+            (function () {
+              try {
+                if (!/^\\/(login|register)$/.test(window.location.pathname)) return;
+                var params = new URLSearchParams(window.location.search);
+                if (!params.get("google_auth") && !params.get("token")) return;
+                var keys = ["token", "refresh_token", "user", "google_auth", "redirect", "error", "checkout", "plan"];
+                var stash = {};
+                for (var i = 0; i < keys.length; i++) {
+                  var v = params.get(keys[i]);
+                  if (v !== null) { stash[keys[i]] = v; params.delete(keys[i]); }
+                }
+                sessionStorage.setItem("starta-auth-handoff", JSON.stringify(stash));
+                var rest = params.toString();
+                history.replaceState(null, "", window.location.pathname + (rest ? "?" + rest : "") + window.location.hash);
               } catch (e) {}
             })();
           `}

@@ -12,7 +12,7 @@
 import { useMemo, useState } from 'react';
 import type { CalcLabels, Lang } from './calculators-i18n';
 import { tpl } from './calculators-i18n';
-import { formatInt, formatShort } from './calc-shared';
+import { formatInt, formatShort, formatYears } from './calc-shared';
 
 type RiskProfile = 'conservative' | 'moderate' | 'aggressive';
 
@@ -252,7 +252,7 @@ export default function InvestmentCalculator({ L, lang }: { L: CalcLabels; lang:
                             min={10_000} max={1_000_000} step={5_000} onChange={setInitial} rtl={rtl} />
                         <Slider id="inv-monthly" label={I.inputs.monthly} value={monthly} display={money(monthly)}
                             min={0} max={50_000} step={500} onChange={setMonthly} rtl={rtl} />
-                        <Slider id="inv-years" label={I.inputs.years} value={years} display={tpl(L.common.nYears, { n: years })}
+                        <Slider id="inv-years" label={I.inputs.years} value={years} display={formatYears(years, L.common)}
                             min={1} max={30} step={1} onChange={setYears} rtl={rtl} />
                         <Slider id="inv-return" label={I.inputs.expReturn} value={ret} display={`${ret}%`}
                             min={3} max={25} step={0.5} onChange={setRet} rtl={rtl} />
@@ -278,7 +278,7 @@ export default function InvestmentCalculator({ L, lang }: { L: CalcLabels; lang:
                             <div dir="ltr" className="mt-1.5 text-lg font-extrabold tabular-nums tracking-tight text-main ltr:text-left rtl:text-right">
                                 {money(last.invested)}
                             </div>
-                            <div className="mt-0.5 text-[11px] text-muted">{tpl(I.stats.investedSub, { n: years })}</div>
+                            <div className="mt-0.5 text-[11px] text-muted">{tpl(I.stats.investedSub, { years: formatYears(years, L.common) })}</div>
                         </div>
                         <div className="rounded-2xl border border-border bg-surface p-4">
                             <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted">{I.stats.gains}</div>

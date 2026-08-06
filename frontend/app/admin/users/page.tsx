@@ -138,7 +138,7 @@ export default function AdminUsersPage() {
                     <h1 className="text-2xl font-bold text-slate-900 mb-2">Access Denied</h1>
                     <p className="text-slate-500 mb-4">You don't have permission to view this page.</p>
                     <button
-                        onClick={() => router.push('/AiChat')}
+                        onClick={() => router.push('/')}
                         className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
                     >
                         Go Home

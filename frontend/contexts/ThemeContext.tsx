@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 
 type Theme = "light" | "dark";
 
@@ -13,40 +12,65 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+/**
+ * Stamp BOTH theme representations on <html>:
+ *  - data-theme  → the public-site chrome tokens (--c-*), shared with the
+ *                  static pages and /assets/starta-theme.js
+ *  - .light/.dark class → Tailwind `dark:` variants and the app tokens
+ * Keeping them in lockstep is what stops a page from rendering half-dark or
+ * flipping theme when the user crosses between static and React surfaces.
+ */
+function applyThemeToDocument(theme: Theme) {
+    const el = document.documentElement;
+    el.setAttribute("data-theme", theme);
+    el.classList.remove("light", "dark");
+    el.classList.add(theme);
+    el.style.colorScheme = theme;
+}
+
+function readStoredTheme(): Theme {
+    try {
+        const saved = localStorage.getItem("theme");
+        // LIGHT is the product default everywhere. The OS preference is
+        // deliberately NOT consulted — theme changes only when the user asks.
+        return saved === "dark" ? "dark" : "light";
+    } catch {
+        return "light";
+    }
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<Theme>("light"); // Default to light (dark is opt-in via toggle)
     const [mounted, setMounted] = useState(false);
-    const pathname = usePathname();
 
     useEffect(() => {
         setMounted(true);
-        // Check local storage or system preference
-        const savedTheme = localStorage.getItem("theme") as Theme;
-
-        // Light is the global default across the platform; dark is opt-in via toggle.
-        let defaultTheme: Theme = "light";
-        if (pathname?.startsWith("/AiChat")) {
-            defaultTheme = "light";
-        }
-
-        const initialTheme = savedTheme || defaultTheme;
-
+        // The root layout's boot script already applied this before paint;
+        // re-applying keeps React state and the DOM in agreement.
+        const initialTheme = readStoredTheme();
         setTheme(initialTheme);
-        document.documentElement.classList.remove("light", "dark");
-        document.documentElement.classList.add(initialTheme);
+        applyThemeToDocument(initialTheme);
 
-        // World-class color-scheme management
-        document.documentElement.style.colorScheme = initialTheme;
+        // The static-page engine (/assets/starta-theme.js, used by the shared
+        // header toggle on server-rendered pages) announces its changes. Mirror
+        // them so this provider never drifts from the DOM.
+        const onExternalChange = (event: Event) => {
+            const next = (event as CustomEvent<{ theme?: string }>).detail?.theme;
+            if (next === "dark" || next === "light") {
+                setTheme(next);
+                applyThemeToDocument(next);
+            }
+        };
+        document.addEventListener("starta:themechange", onExternalChange);
+        return () => document.removeEventListener("starta:themechange", onExternalChange);
     }, []);
 
     const handleSetTheme = (newTheme: Theme) => {
         setTheme(newTheme);
-        localStorage.setItem("theme", newTheme);
-        document.documentElement.classList.remove("light", "dark");
-        document.documentElement.classList.add(newTheme);
-
-        // Sync with browser color-scheme
-        document.documentElement.style.colorScheme = newTheme;
+        try {
+            localStorage.setItem("theme", newTheme);
+        } catch { /* private mode */ }
+        applyThemeToDocument(newTheme);
     };
 
     const toggleTheme = () => {

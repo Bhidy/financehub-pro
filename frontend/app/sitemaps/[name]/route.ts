@@ -63,7 +63,9 @@ async function coreEntries(): Promise<Entry[]> {
         ['/ar/corrections', 'monthly', '0.3'],
         ['/contact', 'monthly', '0.4'],
         ['/Calculators', 'weekly', '0.6'],
+        ['/ar/Calculators', 'weekly', '0.6'],
         ['/RiskAssessment', 'weekly', '0.6'],
+        ['/ar/RiskAssessment', 'weekly', '0.6'],
         ['/privacy', 'yearly', '0.2'],
         ['/terms', 'yearly', '0.2'],
     ];

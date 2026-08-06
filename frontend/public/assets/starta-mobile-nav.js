@@ -292,7 +292,7 @@
             '<div class="smn-eyebrow smn-stagger" style="--i:0"><span class="smn-eyebrow-text">' + t("menu") + "</span></div>" +
             '<h2 class="smn-explore smn-stagger" style="--i:0"><span class="smn-explore-text">' + t("explore") + "</span></h2>" +
             '<nav class="smn-nav" aria-label="Mobile">' + linksHtml + "</nav>" +
-            '<a class="smn-cta smn-stagger" style="--i:' + ctaIdx + '" href="' + CTA_HREF + '"><span data-key="nav_cta">' + ctaLabel() + "</span>" + svgArrow("") + "</a>" +
+            '<a class="smn-cta smn-stagger" style="--i:' + ctaIdx + '" href="' + (window.startaLocalizedHref || String)(CTA_HREF) + '"><span data-key="nav_cta">' + ctaLabel() + "</span>" + svgArrow("") + "</a>" +
             '<div class="smn-footer smn-stagger" style="--i:' + footIdx + '">' +
                 '<button class="smn-foot-btn smn-theme" type="button"><span class="smn-theme-icon"></span><span class="smn-theme-label"></span></button>' +
                 '<button class="smn-foot-btn smn-lang" type="button">' + svgGlobe() + '<span class="smn-foot-lang-tag"></span></button>' +

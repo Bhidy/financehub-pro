@@ -19,7 +19,10 @@ function isAllowedWebOrigin(candidate: string, requestOrigin: string): boolean {
     try {
         const u = new URL(candidate);
         if (u.origin === requestOrigin) return true;              // same origin as the callback
-        if (u.hostname === "localhost" || u.hostname === "127.0.0.1") return true; // dev
+        // localhost is only trustworthy while developing — in production a
+        // state.returnTo of http://127.0.0.1:PORT must NOT receive tokens.
+        if (process.env.NODE_ENV !== "production" &&
+            (u.hostname === "localhost" || u.hostname === "127.0.0.1")) return true;
         if (u.protocol !== "https:") return false;                // no downgrade / non-web schemes
         return (
             u.hostname === "startamarkets.com" ||
@@ -53,10 +56,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Unified Routing: finish the login on /login (it consumes the token params
-    // and stores them) and then send the user to the home page. The chatbot page
-    // is currently hidden from the website, so we no longer land users on /AiChat.
+    // and stores them) and then send the user onward. /login itself resolves the
+    // final destination (validated ?redirect= → remembered origin page →
+    // default /Funds); the param below is only the server-side default.
     const successRedirect = "/login";
-    const successDestination = "/"; // where /login sends the user after storing tokens
+    const successDestination = "/Funds"; // /login's fallback when nothing better is known
     const loginRedirect = "/login";
 
     // Handle errors from Google
@@ -126,19 +130,30 @@ export async function GET(request: NextRequest) {
         const isNativeAppFlow =
             isMobile && (!returnOrigin || returnOrigin.startsWith(APP_SCHEME));
         if (isNativeAppFlow) {
-            const schemeBase = returnOrigin && returnOrigin.startsWith(APP_SCHEME) ? returnOrigin : "com.mubasher.startamarkets://oauth";
-            const sep = schemeBase.includes("?") ? "&" : "?";
-            const tokenQuery =
-                `token=${encodeURIComponent(data.access_token)}` +
+            // SECURITY: the deep-link base is a FIXED constant. state.returnTo is
+            // attacker-influencable (the OAuth URL is public), and this HTML page
+            // carries fresh tokens — interpolating any attacker-controlled string
+            // into it (even startsWith-checked) is an XSS/token-theft vector. The
+            // native app always uses exactly this scheme+host, so nothing is lost.
+            const schemeBase = "com.mubasher.startamarkets://oauth";
+            // Deep-link query: the NATIVE contract — `user` single-encoded.
+            const deepLink =
+                `${schemeBase}?token=${encodeURIComponent(data.access_token)}` +
                 `&refresh_token=${encodeURIComponent(data.refresh_token || "")}` +
                 `&user=${encodeURIComponent(JSON.stringify(data.user))}&google_auth=success`;
-            const deepLink = `${schemeBase}${sep}${tokenQuery}`;
-            // Web fallback: if the custom scheme has no handler (app not installed,
-            // or an edge case slipped past the guard), finish the login on the web
-            // instead of leaving the user stranded on this page.
+            // Web fallback: the /login contract — `user` DOUBLE-encoded exactly like
+            // the 302 web path below (login does JSON.parse(decodeURIComponent(v))
+            // on the already-URL-decoded param; single encoding breaks on names
+            // containing '%').
             const webFallback =
-                `${request.nextUrl.origin}${successRedirect}?${tokenQuery}` +
-                `&redirect=${encodeURIComponent(successDestination)}`;
+                `${request.nextUrl.origin}${successRedirect}` +
+                `?token=${encodeURIComponent(data.access_token)}` +
+                `&refresh_token=${encodeURIComponent(data.refresh_token || "")}` +
+                `&user=${encodeURIComponent(encodeURIComponent(JSON.stringify(data.user)))}` +
+                `&google_auth=success&redirect=${encodeURIComponent(successDestination)}`;
+            // Both URLs are built exclusively from the fixed constant, this
+            // request's own origin, and encodeURIComponent output — safe to place
+            // in attribute/script contexts. Keep it that way.
             return new NextResponse(
                 `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">` +
                 `<meta http-equiv="refresh" content="0;url=${deepLink}"></head>` +
@@ -147,7 +162,11 @@ export async function GET(request: NextRequest) {
                 `<a href=${JSON.stringify(deepLink)}>Open the app</a> or ` +
                 `<a href=${JSON.stringify(webFallback)}>continue in the browser</a>.</p>` +
                 `<script>location.href=${JSON.stringify(deepLink)};` +
-                `setTimeout(function(){location.href=${JSON.stringify(webFallback)}},2500);</script>` +
+                `var fallbackTimer=setTimeout(function(){location.href=${JSON.stringify(webFallback)}},2500);` +
+                // If the deep link opened the app, this tab is hidden — cancel the
+                // fallback so we don't also mint a web session behind the user's back.
+                `document.addEventListener("visibilitychange",function(){if(document.hidden)clearTimeout(fallbackTimer)});` +
+                `</script>` +
                 `</body></html>`,
                 { headers: { "content-type": "text/html; charset=utf-8", "Cache-Control": "no-store" } }
             );

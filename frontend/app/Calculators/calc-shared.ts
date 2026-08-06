@@ -6,7 +6,7 @@
  * separating space, "$" stays glued like the original tool.
  */
 
-import type { CurrencyCode } from './calculators-i18n';
+import type { CalcLabels, CurrencyCode } from './calculators-i18n';
 
 /** Currency presets ported verbatim from the source retirement tool
  *  (returnBefore/returnAfter/inflation/lifeExpectancy/salaryIncrease and the
@@ -98,6 +98,21 @@ export function formatShort(n: number): string {
     if (r >= 1_000_000) return (r / 1_000_000).toFixed(1) + 'M';
     if (r >= 1_000) return (r / 1_000).toFixed(0) + 'K';
     return r.toLocaleString('en-US');
+}
+
+/**
+ * Arabic-correct year pluralization (1 سنة واحدة / 2 سنتان / 3–10 سنوات /
+ * 11+ سنة); English collapses to "1 year" / "n years" through the same keys.
+ * Mirrors the yearsLabel() implementation in app/Funds/[id]/FundCalculator.tsx.
+ * Fractional counts (e.g. 12.3) render with one decimal and take the singular
+ * form, which is grammatically correct in Arabic for fractions.
+ */
+export function formatYears(n: number, t: CalcLabels['common']): string {
+    if (n === 1) return t.year1;
+    if (n === 2) return t.year2;
+    if (Number.isInteger(n) && n >= 3 && n <= 10) return `${n} ${t.yearsFew}`;
+    const display = Number.isInteger(n) ? String(n) : n.toFixed(1);
+    return `${display} ${t.yearsMany}`;
 }
 
 /**

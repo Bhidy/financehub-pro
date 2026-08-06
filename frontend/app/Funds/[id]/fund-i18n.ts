@@ -14,6 +14,9 @@ export type Lang = 'en' | 'ar';
  *  Strings with `{v}` / `{p}` are interpolated in the client. */
 export type FundAxLabels = {
     higherBetter: string; methodology: string; estimated: string; noData: string;
+    /** Honest limited-history empty states — shown in the section SHELLS when
+     *  hasEnoughData is false (short NAV history or analytics_suppressed). */
+    limitedHistory: string; limitedHistoryShort: string;
     scoreTitle: string; scoreSub: string; startaScore: string; overall: string;
     confidence: string; confHigh: string; confMed: string; confLow: string;
     dims: { performance: string; risk: string; cost: string; stability: string; diversification: string };
@@ -48,8 +51,9 @@ export type FundAxLabels = {
     scenarios: { marketDrop10: string; marketDrop20: string; adverse1y: string; worstDrawdown: string; worstPeriod: string };
     calcTitle: string; calcSub: string; calcAmount: string; calcMonthly: string; calcHorizon: string;
     calcYears1: string; calcYears2: string; calcYearsFew: string; calcYearsMany: string;
-    calcYears3: string; calcYears5: string; calcInvested: string; calcProjected: string;
+    calcInvested: string; calcProjected: string;
     calcGain: string; calcRange: string; calcCagrNote: string; calcDisclaimer: string;
+    calcEnterAmounts: string;
     cagrTitle: string; cagrSinceInception: string; cagrOverYears: string;
     moveTitle: string; moveBest: string; moveWorst: string; moveAvgGain: string; moveAvgLoss: string;
     moveDaily: string; moveWeekly: string; movePeriod: string;
@@ -138,6 +142,11 @@ export type FundLabels = {
     compare: string;
     unit: string;
     units: string;
+    // graceful empty states — sections always render; missing data degrades to these
+    dataPending: string;
+    channelsPlaceholder: string;
+    managerPending: string;
+    similarFundsEmpty: string;
     // analytics layer (namespaced)
     ax: FundAxLabels;
 };
@@ -215,11 +224,18 @@ const EN: FundLabels = {
     compare: 'Compare',
     unit: 'unit',
     units: 'units',
+    dataPending: 'Data for this section is not yet available.',
+    channelsPlaceholder: 'Channels information is being collected for this fund.',
+    managerPending: 'Detailed information about this manager is being collected.',
+    similarFundsEmpty: 'No similar funds identified yet — explore the full universe below.',
     ax: {
         higherBetter: 'Higher is better',
         methodology: 'How we score',
         estimated: 'Estimate',
         noData: 'Not enough history yet',
+        limitedHistory:
+            "This fund's track record is still too short for reliable analytics — metrics unlock as NAV history accumulates.",
+        limitedHistoryShort: 'Unlocks as this fund accumulates NAV history.',
         scoreTitle: 'Fund scorecard',
         scoreSub: 'Five dimensions, each scored 0–100 from our own NAV history. Higher is better on every axis — and we show the real number behind each score.',
         startaScore: 'Starta Score',
@@ -300,10 +316,10 @@ const EN: FundLabels = {
         calcMonthly: 'Monthly contribution',
         calcHorizon: 'Holding period',
         calcYears1: '1 year', calcYears2: '2 years', calcYearsFew: 'years', calcYearsMany: 'years',
-        calcYears3: '3 years', calcYears5: '5 years',
         calcInvested: 'Invested', calcProjected: 'Projected value', calcGain: 'Projected gain', calcRange: 'Likely range',
         calcCagrNote: 'Based on the fund’s realized {v}% annualized return over its full history',
-        calcDisclaimer: 'Illustration only, based on past performance. Not a promise of future returns — funds can lose value.',
+        calcDisclaimer: 'Illustration only, based on past performance. Not a promise of future returns — funds can lose value. Monthly contributions compound monthly.',
+        calcEnterAmounts: 'Enter an amount to project.',
         cagrTitle: 'CAGR since inception',
         cagrSinceInception: 'Total since inception',
         cagrOverYears: 'over {v} years',
@@ -396,11 +412,18 @@ const AR: FundLabels = {
     compare: 'قارن',
     unit: 'وثيقة',
     units: 'وثيقة',
+    dataPending: 'بيانات هذا القسم غير متوفرة بعد.',
+    channelsPlaceholder: 'جاري تجميع قنوات الاكتتاب لهذا الصندوق.',
+    managerPending: 'جاري تجميع بيانات تفصيلية عن مدير الصندوق.',
+    similarFundsEmpty: 'لم نحدد صناديق مشابهة بعد — استكشف جميع الصناديق أدناه.',
     ax: {
         higherBetter: 'كلما ارتفع كان أفضل',
         methodology: 'كيف نحتسب الدرجة',
         estimated: 'تقديري',
         noData: 'لا يوجد سجل كافٍ بعد',
+        limitedHistory:
+            'سجل هذا الصندوق لا يزال قصيراً لتحليلات موثوقة — ستتوفر المؤشرات مع تراكم تاريخ صافي قيمة الأصول.',
+        limitedHistoryShort: 'ستتوفر مع تراكم سجل صافي قيمة الأصول للصندوق.',
         scoreTitle: 'بطاقة تقييم الصندوق',
         scoreSub: 'خمسة أبعاد، كل منها بدرجة من 0 إلى 100 محسوبة من سجل صافي قيمة الأصول لدينا. كلما ارتفعت الدرجة كان أفضل في كل بُعد — ونعرض الرقم الحقيقي خلف كل درجة.',
         startaScore: 'درجة ستارتا',
@@ -481,10 +504,10 @@ const AR: FundLabels = {
         calcMonthly: 'استثمار شهري',
         calcHorizon: 'مدة الاحتفاظ',
         calcYears1: 'سنة واحدة', calcYears2: 'سنتان', calcYearsFew: 'سنوات', calcYearsMany: 'سنة',
-        calcYears3: '3 سنوات', calcYears5: '5 سنوات',
         calcInvested: 'المستثمر', calcProjected: 'القيمة المتوقعة', calcGain: 'الربح المتوقع', calcRange: 'النطاق المرجّح',
         calcCagrNote: 'بناءً على العائد السنوي المحقق {v}% عبر كامل تاريخ الصندوق',
-        calcDisclaimer: 'توضيحي فقط بناءً على الأداء السابق. ليس وعدًا بعوائد مستقبلية — قد تنخفض قيمة الصناديق.',
+        calcDisclaimer: 'توضيحي فقط بناءً على الأداء السابق. ليس وعدًا بعوائد مستقبلية — قد تنخفض قيمة الصناديق. تتراكم المساهمات الشهرية بمعدل شهري مركب.',
+        calcEnterAmounts: 'أدخل مبلغاً لعرض التوقع.',
         cagrTitle: 'معدل النمو المركب منذ التأسيس',
         cagrSinceInception: 'الإجمالي منذ التأسيس',
         cagrOverYears: 'على مدى {v} سنة',

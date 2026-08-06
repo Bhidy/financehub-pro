@@ -28,11 +28,14 @@ export type CalcLabels = {
     common: {
         /** "e.g. {v}" placeholder prefix for example values. */
         eg: string;
-        /** "{n} years" duration. */
-        nYears: string;
+        /** Year pluralization pieces consumed by calc-shared's formatYears():
+         *  1 → year1, 2 → year2, 3–10 → "{n} {yearsFew}", else → "{n} {yearsMany}". */
+        year1: string;
+        year2: string;
+        yearsFew: string;
+        yearsMany: string;
         /** Axis tick "Y{n}". */
         yearTick: string;
-        perMonth: string;
     };
     currency: {
         label: string;
@@ -157,7 +160,7 @@ export type CalcLabels = {
             /** {p} */
             totalReturnPct: string;
             invested: string;
-            /** {n} */
+            /** {years} = pre-pluralized duration phrase from formatYears(). */
             investedSub: string;
             gains: string;
             gainsSub: string;
@@ -199,9 +202,11 @@ const EN: CalcLabels = {
     },
     common: {
         eg: 'e.g. {v}',
-        nYears: '{n} years',
+        year1: '1 year',
+        year2: '2 years',
+        yearsFew: 'years',
+        yearsMany: 'years',
         yearTick: 'Y{n}',
-        perMonth: '/month',
     },
     currency: {
         label: 'Currency',
@@ -375,7 +380,7 @@ const EN: CalcLabels = {
             finalValue: 'Final Value',
             totalReturnPct: '+{p}% total return',
             invested: 'Total Invested',
-            investedSub: 'Over {n} years',
+            investedSub: 'Over {years}',
             gains: 'Gains',
             gainsSub: 'Profit from compound growth',
         },
@@ -392,7 +397,7 @@ const EN: CalcLabels = {
             best: 'Best Case (90th percentile)',
         },
         disclaimer:
-            'Projections assume a constant expected annual return and are for illustration only — not investment advice. Actual market returns vary from year to year.',
+            'Projections assume a constant expected annual return and are for illustration only — not investment advice. Actual market returns vary from year to year. Monthly contributions are credited at each year-end without intra-year compounding.',
     },
 };
 
@@ -411,9 +416,11 @@ const AR: CalcLabels = {
     },
     common: {
         eg: 'مثال: {v}',
-        nYears: '{n} سنة',
+        year1: 'سنة واحدة',
+        year2: 'سنتان',
+        yearsFew: 'سنوات',
+        yearsMany: 'سنة',
         yearTick: 'س{n}',
-        perMonth: '/شهريًا',
     },
     currency: {
         label: 'العملة',
@@ -586,7 +593,7 @@ const AR: CalcLabels = {
             finalValue: 'القيمة النهائية',
             totalReturnPct: '+{p}% عائد إجمالي',
             invested: 'إجمالي المستثمر',
-            investedSub: 'على مدى {n} سنة',
+            investedSub: 'على مدى {years}',
             gains: 'الأرباح',
             gainsSub: 'أرباح النمو التراكمي',
         },
@@ -603,7 +610,7 @@ const AR: CalcLabels = {
             best: 'أفضل الحالات (المئين 90)',
         },
         disclaimer:
-            'التوقعات تفترض عائدًا سنويًا متوقعًا ثابتًا وهي للتوضيح فقط — وليست نصيحة استثمارية. عوائد الأسواق الفعلية تتغير من عام لآخر.',
+            'التوقعات تفترض عائدًا سنويًا متوقعًا ثابتًا وهي للتوضيح فقط — وليست نصيحة استثمارية. عوائد الأسواق الفعلية تتغير من عام لآخر. تُضاف المساهمات الشهرية في نهاية كل سنة دون تركيب خلال السنة.',
     },
 };
 

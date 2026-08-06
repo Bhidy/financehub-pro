@@ -185,73 +185,92 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
             ? fundManager
             : null;
 
+    // Fixed structural skeleton: "core" fact rows ALWAYS render ('—' when unknown)
+    // so a data-poor fund shows the same section shape as a rich one; the extra
+    // facts appear only when data exists.
     const facts = (
         [
-            [t.issuer, str(fund, 'issuer_en')],
-            [t.fundManager, fundManagerFact],
-            [t.fundType, fundTypeValue],
-            [t.classification, classificationValue && classificationValue !== fundTypeValue ? classificationValue : null],
-            [t.riskLevel, riskValue],
-            [t.currency, currency],
-            [t.inceptionYear, inceptionYear],
-            [t.navFrequency, str(fund, 'nav_frequency_en')],
-            [t.market, marketValue],
-            [t.eligibility, eligValue],
-            [t.isin, str(fund, 'isin')],
-            [t.domicile, str(fund, 'domicile')],
-            [t.dividendPolicy, str(fund, 'dividend_policy')],
-            [t.navObservations, navPoints !== null ? fmtInt(navPoints) : null],
+            [t.issuer, str(fund, 'issuer_en'), false],
+            [t.fundManager, fundManagerFact, false],
+            [t.fundType, fundTypeValue, true],
+            [t.classification, classificationValue && classificationValue !== fundTypeValue ? classificationValue : null, false],
+            [t.riskLevel, riskValue, true],
+            [t.currency, currency, true],
+            [t.inceptionYear, inceptionYear, true],
+            [t.navFrequency, str(fund, 'nav_frequency_en'), true],
+            [t.market, marketValue, false],
+            [t.eligibility, eligValue, false],
+            [t.isin, str(fund, 'isin'), false],
+            [t.domicile, str(fund, 'domicile'), false],
+            [t.dividendPolicy, str(fund, 'dividend_policy'), false],
+            [t.navObservations, navPoints !== null ? fmtInt(navPoints) : null, false],
             [
                 t.minSubscription,
                 minSubscription !== null
                     ? `${fmtInt(minSubscription)} ${minSubscription === 1 ? t.unit : t.units}`
                     : null,
+                true,
             ],
-            [t.benchmark, str(fund, 'benchmark_en')],
-        ] as Array<[string, string | null]>
-    ).filter((f): f is [string, string] => f[1] !== null).map(([label, value]) => ({ label, value }));
+            [t.benchmark, str(fund, 'benchmark_en'), false],
+        ] as Array<[string, string | null, boolean]>
+    )
+        .filter(([, value, core]) => value !== null || core)
+        .map(([label, value]) => ({ label, value: value ?? '—' }));
 
+    // Standard fee rows (management/subscription/redemption) ALWAYS render — '—'
+    // when unpublished; the extra fee kinds appear only when disclosed.
     const fees = (
         [
-            [t.managementFee, num(fund, 'fee_management')],
-            [t.subscriptionFee, num(fund, 'fee_subscription')],
-            [t.redemptionFee, num(fund, 'fee_redemption')],
-            [t.performanceFee, num(fund, 'fee_performance')],
-            [t.custodianFee, num(fund, 'fee_custodian')],
-            [t.adminFee, num(fund, 'fee_administration')],
-            [t.expenseRatio, num(fund, 'expense_ratio')],
-        ] as Array<[string, number | null]>
-    ).filter((f): f is [string, number] => f[1] !== null).map(([label, value]) => ({ label, value: fmtPct(value) }));
+            [t.managementFee, num(fund, 'fee_management'), true],
+            [t.subscriptionFee, num(fund, 'fee_subscription'), true],
+            [t.redemptionFee, num(fund, 'fee_redemption'), true],
+            [t.performanceFee, num(fund, 'fee_performance'), false],
+            [t.custodianFee, num(fund, 'fee_custodian'), false],
+            [t.adminFee, num(fund, 'fee_administration'), false],
+            [t.expenseRatio, num(fund, 'expense_ratio'), false],
+        ] as Array<[string, number | null, boolean]>
+    )
+        .filter(([, value, core]) => value !== null || core)
+        .map(([label, value]) => ({ label, value: value !== null ? fmtPct(value) : '—' }));
 
+    // Fixed risk row set — every fund shows the same three rows; null → '—'
+    // (never dropped, never fabricated as 0.00%).
     const riskStats = (
         [
             [t.maxDrawdown, num(fund, 'max_drawdown')],
             [t.volatility, num(fund, 'volatility_annual')],
             [t.downsideDeviation, num(fund, 'downside_deviation')],
         ] as Array<[string, number | null]>
-    )
-        .filter((r): r is [string, number] => r[1] !== null)
-        .map(([label, value]) => ({ label, value: fmtPct(value), negative: value < 0 }));
+    ).map(([label, value]) => ({
+        label,
+        value: value !== null ? fmtPct(value) : null,
+        negative: value !== null && value < 0,
+    }));
 
     const ytd = num(fund, 'return_ytd');
-    const perfCards = (
-        [
-            ['1M', num(fund, 'return_1m')],
-            ['3M', num(fund, 'return_3m')],
-            ['YTD', ytd],
-            ['1Y', num(fund, 'return_1y')],
-            ['3Y', num(fund, 'return_3y')],
-            ['5Y', num(fund, 'return_5y')],
-        ] as Array<[string, number | null]>
-    )
-        .filter((p): p is [string, number] => p[1] !== null)
-        .map(([label, value]) => ({ label, value: fmtPct(value), negative: value < 0 }));
+    // ALWAYS all six period cards — a null return renders as a muted '—'; only a
+    // true 0 from the data shows 0.00%. Never dropped, never fabricated.
+    const perfDefs = [
+        ['1M', num(fund, 'return_1m')],
+        ['3M', num(fund, 'return_3m')],
+        ['YTD', ytd],
+        ['1Y', num(fund, 'return_1y')],
+        ['3Y', num(fund, 'return_3y')],
+        ['5Y', num(fund, 'return_5y')],
+    ] as Array<[string, number | null]>;
+    const perfCards = perfDefs.map(([label, value]) => ({
+        label,
+        value: value !== null ? fmtPct(value) : null,
+        negative: value !== null && value < 0,
+    }));
 
+    // Headline hero return from the RAW values (the cards now include '—' fillers).
+    const firstPerf = perfDefs.find((p): p is [string, number] => p[1] !== null) ?? null;
     const headlineReturn =
         ytd !== null
             ? { label: t.ytdReturn, value: fmtPct(ytd), negative: ytd < 0 }
-            : perfCards.length > 0
-              ? { label: `${perfCards[0].label} ${t.returnLabel}`, value: perfCards[0].value, negative: perfCards[0].negative }
+            : firstPerf
+              ? { label: `${firstPerf[0]} ${t.returnLabel}`, value: fmtPct(firstPerf[1]), negative: firstPerf[1] < 0 }
               : null;
 
     // Risk-level badge removed from hero chips by design — the 0-100 Risk score +
@@ -268,12 +287,13 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
         .filter((p) => p.name);
     const prospectusUrl = str(fund, 'prospectus_url');
 
+    // Fixed two-row trading schedule — '—' when unknown so the block keeps shape.
     const tradingRows = (
         [
             [t.purchaseFrequency, freqLabel(str(fund, 'purchase_frequency'), lang)],
             [t.redemptionFrequency, freqLabel(str(fund, 'redemption_frequency'), lang)],
         ] as Array<[string, string | null]>
-    ).filter((f): f is [string, string] => f[1] !== null).map(([label, value]) => ({ label, value }));
+    ).map(([label, value]) => ({ label, value: value ?? '—' }));
 
     // Content strictly one language per URL.
     const strategy = lang === 'ar' ? str(fund, 'investment_strategy') : str(fund, 'investment_strategy_en');
@@ -281,15 +301,21 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
     const normS = (s: string | null) => (s ? s.replace(/\s+/g, ' ').trim().toLowerCase() : '');
     const objective = normS(objectiveRaw) && normS(objectiveRaw) !== normS(strategy) ? objectiveRaw : null;
 
-    // Asset-manager profile (premium "About the manager" section).
+    // Asset-manager profile (premium "About the manager" section). The section
+    // ALWAYS renders as long as we know a manager NAME (we nearly always do —
+    // manager_name/owner_name/issuer); a missing manager_profile only degrades
+    // the detail rows to a bilingual placeholder, it never hides the section.
     const mpRaw = (fund as Fields).manager_profile as Fields | null | undefined;
-    let managerProfile: FundClientData['managerProfile'] = null;
+    let mpName: string | null = null;
+    let mpLogo: string | null = null;
+    let mpRows: Array<{ label: string; value: string }> = [];
     if (mpRaw && (mpRaw.name_en || mpRaw.name)) {
-        const mName = lang === 'ar' ? (mpRaw.name as string) || (mpRaw.name_en as string) : (mpRaw.name_en as string) || (mpRaw.name as string);
+        mpName = lang === 'ar' ? (mpRaw.name as string) || (mpRaw.name_en as string) : (mpRaw.name_en as string) || (mpRaw.name as string);
+        mpLogo = typeof mpRaw.logo_url === 'string' ? mpRaw.logo_url : null;
         const totalAum = Number(mpRaw.total_aum);
         const fundCount = Number(mpRaw.fund_count);
         const est = mpRaw.establishment_year != null ? String(mpRaw.establishment_year) : null;
-        const rows = (
+        mpRows = (
             [
                 [t.established, est],
                 [t.chairman, typeof mpRaw.chairman === 'string' && mpRaw.chairman.trim() ? mpRaw.chairman.trim() : null],
@@ -297,11 +323,11 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
                 [t.fundsManaged, Number.isFinite(fundCount) && fundCount > 0 ? fmtInt(fundCount) : null],
             ] as Array<[string, string | null]>
         ).filter((r): r is [string, string] => r[1] !== null).map(([label, value]) => ({ label, value }));
-        managerProfile =
-            rows.length > 0
-                ? { name: mName, logo: typeof mpRaw.logo_url === 'string' ? mpRaw.logo_url : null, rows }
-                : null;
     }
+    const managerDisplayName = (mpName ?? manager ?? '').trim();
+    const managerProfile: FundClientData['managerProfile'] = managerDisplayName
+        ? { name: managerDisplayName, logo: mpLogo, rows: mpRows }
+        : null;
 
     // FAQ — localized, single source for visible text + JSON-LD.
     const faqs: Array<{ q: string; a: string }> = [];

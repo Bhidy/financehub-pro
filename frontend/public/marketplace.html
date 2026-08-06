@@ -3,8 +3,8 @@
 
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <script src="/assets/starta-theme.js?v=1.0.1"></script>
-    <script src="/assets/starta-lang-boot.js?v=1.0.0"></script><script src="/assets/starta-mobile-nav.js?v=1.0.5" defer></script>
+    <script src="/assets/starta-theme.js?v=1.1.0"></script>
+    <script src="/assets/starta-lang-boot.js?v=1.1.0"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
     <script src="/assets/fund-logos.js?v=2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -140,9 +140,27 @@
         @media (max-width: 1080px) {
             .funds-layout { grid-template-columns: minmax(0, 1fr); }
         }
-        .funds-sidebar { position: sticky; top: 6.5rem; }
+        /* The rail is taller than the viewport now — it must scroll INTERNALLY.
+           A plain sticky rail pins its top and makes the lower filters
+           unreachable until the whole fund list has been scrolled past. */
+        .funds-sidebar {
+            position: sticky;
+            top: 6.5rem;
+            max-height: calc(100vh - 8rem);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(20, 184, 166, 0.35) transparent;
+            padding-inline-end: 2px;
+        }
+        .funds-sidebar::-webkit-scrollbar { width: 5px; }
+        .funds-sidebar::-webkit-scrollbar-track { background: transparent; }
+        .funds-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(20, 184, 166, 0.35);
+            border-radius: 999px;
+        }
         @media (max-width: 1080px) {
-            .funds-sidebar { position: static; }
+            .funds-sidebar { position: static; max-height: none; overflow-y: visible; }
         }
         .fsb-card {
             background: var(--c-surface);
@@ -599,6 +617,12 @@
         /* NAV range inputs */
         .fsb-range-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
 
+        /* Utility classes referenced by JS templates that are NOT in the
+           precompiled tw-marketplace.css subset (it predates this markup). */
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .mt-0\.5 { margin-top: 0.125rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+
         .mini-chart::before {
             content: "";
             position: absolute;
@@ -813,7 +837,7 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <button onclick="window.location.href='/RiskAssessment'"
+                <button onclick="window.location.href=(window.startaLocalizedHref||String)('/RiskAssessment')"
                     class="hidden md:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
                     data-key="nav_cta">
                     Free Risk Profile
@@ -969,7 +993,7 @@
                             <div data-key="th_type">Type</div>
                             <div data-key="th_risk">Risk</div>
                             <div data-key="th_nav">NAV</div>
-                            <div>YTD</div>
+                            <div data-key="th_ytd">YTD</div>
                             <div data-key="th_1y">1Y</div>
                             <div data-key="th_3y">3Y</div>
                             <div></div>
@@ -1030,7 +1054,7 @@
             <p class="text-muted text-lg mb-12" data-key="close_text">
                 Starta turns the full mutual-funds market into a cleaner workflow, from discovery to fund-level due diligence.
             </p>
-            <button onclick="window.location.href='/RiskAssessment'"
+            <button onclick="window.location.href=(window.startaLocalizedHref||String)('/RiskAssessment')"
                 class="px-12 py-5 text-white font-bold text-lg rounded-full btn-primary" data-key="close_btn">Know Your Risk Profile</button>
             <div class="mt-24 pt-10 text-xs text-muted font-mono border-t border-border">&copy; 2026 Starta Financial Intelligence.</div>
         </div>
@@ -1091,6 +1115,7 @@
                 th_type: "Type",
                 th_risk: "Risk",
                 th_nav: "NAV",
+                th_ytd: "YTD",
                 th_1y: "1Y",
                 th_3y: "3Y",
                 th_period_return: "Return",
@@ -1195,6 +1220,7 @@
                 th_type: "النوع",
                 th_risk: "المخاطر",
                 th_nav: "NAV",
+                th_ytd: "هذا العام",
                 th_1y: "سنة",
                 th_3y: "3 سنوات",
                 th_period_return: "العائد",
@@ -1340,6 +1366,17 @@
             return Number.isFinite(num) ? num : null;
         };
 
+        // A full renderFunds() destroys/recreates cards AND their lightweight-charts
+        // instances — too heavy to run on every keystroke. Text-ish inputs go
+        // through this debounce; discrete controls (segments, selects) stay instant.
+        const debounce = (fn, ms) => {
+            let timer;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn(...args), ms);
+            };
+        };
+
         const getLocale = () => state.lang === 'ar' ? 'ar-EG' : 'en-US';
         const getLabels = () => translations[state.lang];
 
@@ -1350,6 +1387,21 @@
 
         function normalizeText(value) {
             return String(value ?? '').toLowerCase().trim();
+        }
+
+        // Sanitized NAV price range: negatives clamped to 0, min>max swapped,
+        // non-numeric treated as unset. Shared by the filter and the chip label.
+        function getNavRange() {
+            const parse = (raw) => {
+                if (raw === '' || raw === null || raw === undefined) return null;
+                const num = Number(raw);
+                if (!Number.isFinite(num)) return null;
+                return Math.max(0, num);
+            };
+            let min = parse(state.navMin);
+            let max = parse(state.navMax);
+            if (min !== null && max !== null && min > max) { const t = min; min = max; max = t; }
+            return { min, max };
         }
 
         function localizedPair(primary, fallback) {
@@ -1424,6 +1476,17 @@
             const english = localizedPair(fund.owner_name_en, fund.owner);
             const arabic = localizedPair(fund.owner_name, fund.owner_name_en);
             return (lang === 'ar' ? localizedPair(arabic, english) : localizedPair(english, arabic)) || null;
+        }
+
+        // Stable, language-independent keys for the issuer/manager filters so a
+        // selection survives EN<->AR toggles (display names differ per language;
+        // populateSelect with raw names silently dropped the selection on toggle).
+        function getIssuerKey(fund) {
+            return normalizeText(fund.owner_name_en || fund.owner || fund.owner_name) || '';
+        }
+
+        function getManagerKey(fund) {
+            return normalizeText(fund.manager_name_en || fund.manager || fund.manager_name) || '';
         }
 
         function getReturnForPeriod(fund, period = state.period) {
@@ -1530,25 +1593,38 @@
                 .map(([value, label]) => ({ value, label }))
                 .sort((a, b) => a.label.localeCompare(b.label, state.lang === 'ar' ? 'ar' : 'en'));
 
-            const managers = [...new Set(state.funds.map((fund) => getManagerName(fund)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
-            const issuers = [...new Set(state.funds.map((fund) => getIssuerName(fund)).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+            const collator = state.lang === 'ar' ? 'ar' : 'en';
+            const managerMap = new Map();
+            const issuerMap = new Map();
+            state.funds.forEach((fund) => {
+                const mKey = getManagerKey(fund);
+                if (mKey && !managerMap.has(mKey)) managerMap.set(mKey, getManagerName(fund));
+                const iKey = getIssuerKey(fund);
+                if (iKey && !issuerMap.has(iKey)) issuerMap.set(iKey, getIssuerName(fund));
+            });
+            const toOptions = (map) => [...map.entries()]
+                .filter(([, label]) => Boolean(label))
+                .map(([value, label]) => ({ value, label }))
+                .sort((a, b) => a.label.localeCompare(b.label, collator));
 
             populateSelectKeyed(typeFilter, typeOptions, getLabels().all_types, typeFilter.value);
-            populateSelect(managerFilter, managers, getLabels().all_managers, managerFilter.value);
-            populateSelect(issuerFilter, issuers, getLabels().all_issuers, issuerFilter.value);
+            populateSelectKeyed(managerFilter, toOptions(managerMap), getLabels().all_managers, managerFilter.value);
+            populateSelectKeyed(issuerFilter, toOptions(issuerMap), getLabels().all_issuers, issuerFilter.value);
 
             // Default the marketplace to "Latest update" order (and list it first), while
             // preserving any sort the user has actively chosen across re-renders/lang toggles.
+            // NOTE: no "Largest AUM" option — AUM is null for the entire live
+            // universe right now, which made that sort a visible no-op. Restore it
+            // (with a null-safe comparator) once AUM coverage returns.
             const activeSort = sortSelect.value || 'updated-desc';
             sortSelect.innerHTML = [
                 { value: 'updated-desc', label: getLabels().sort_updated_desc },
                 { value: 'period-desc', label: getLabels().sort_period_desc },
                 { value: 'nav-desc', label: getLabels().sort_nav_desc },
                 { value: 'nav-asc', label: getLabels().sort_nav_asc },
-                { value: 'aum-desc', label: getLabels().sort_aum_desc },
                 { value: 'name-asc', label: getLabels().sort_name_asc }
             ].map((option) => `<option value="${option.value}"${activeSort === option.value ? ' selected' : ''}>${escapeHtml(option.label)}</option>`).join('');
-            sortSelect.value = activeSort;
+            sortSelect.value = sortSelect.value || 'updated-desc';
 
             // Min-return filter options (tied to the selected period).
             const L = getLabels();
@@ -1621,7 +1697,7 @@
             const chips = [];
             if (fundSearch.value.trim()) chips.push({ key: 'search', label: `${getLabels().filter_search}: ${fundSearch.value.trim()}` });
             if (typeFilter.value) chips.push({ key: 'type', label: `${getLabels().filter_type}: ${typeFilter.options[typeFilter.selectedIndex]?.text || typeFilter.value}` });
-            if (managerFilter.value) chips.push({ key: 'manager', label: `${getLabels().filter_manager}: ${managerFilter.value}` });
+            if (managerFilter.value) chips.push({ key: 'manager', label: `${getLabels().filter_manager}: ${managerFilter.options[managerFilter.selectedIndex]?.text || managerFilter.value}` });
             const L = getLabels();
             if (state.feeBucket) {
                 const txt = state.feeBucket === 'low' ? '<1%' : state.feeBucket === 'mid' ? '1–2%' : '>2%';
@@ -1640,7 +1716,8 @@
                 chips.push({ key: 'redemption', label: `${L.filter_redemption}: ${freqTxt}` });
             }
             if (state.navMin !== '' || state.navMax !== '') {
-                const range = `${state.navMin !== '' ? state.navMin : '0'}–${state.navMax !== '' ? state.navMax : '∞'}`;
+                const navRange = getNavRange();
+                const range = `${navRange.min !== null ? navRange.min : '0'}–${navRange.max !== null ? navRange.max : '∞'}`;
                 chips.push({ key: 'navrange', label: `${L.filter_nav_range}: ${range}` });
             }
             if (state.noLoad) chips.push({ key: 'noload', label: L.noload_only });
@@ -1709,17 +1786,18 @@
 
                 if (search && !haystack.includes(search)) return false;
                 if (selectedType && getFundTypeSlug(fund) !== selectedType) return false;
-                if (selectedManager && getManagerName(fund) !== selectedManager) return false;
-                if (issuerFilter.value && getIssuerName(fund) !== issuerFilter.value) return false;
+                if (selectedManager && getManagerKey(fund) !== selectedManager) return false;
+                if (issuerFilter.value && getIssuerKey(fund) !== issuerFilter.value) return false;
                 if (state.risk && fund.riskBucket !== state.risk) return false;
                 if (state.shariahOnly && !fund.isShariah) return false;
                 // Redemption frequency.
                 if (state.redemption) {
                     if (String(fund.redemption_frequency || '').toLowerCase() !== state.redemption) return false;
                 }
-                // NAV price range.
-                if (state.navMin !== '' && !(fund.latestNav !== null && fund.latestNav >= Number(state.navMin))) return false;
-                if (state.navMax !== '' && !(fund.latestNav !== null && fund.latestNav <= Number(state.navMax))) return false;
+                // NAV price range (sanitized: negatives clamped, min/max swapped).
+                const navRange = getNavRange();
+                if (navRange.min !== null && !(fund.latestNav !== null && fund.latestNav >= navRange.min)) return false;
+                if (navRange.max !== null && !(fund.latestNav !== null && fund.latestNav <= navRange.max)) return false;
                 // No entry/exit fees: both subscription AND redemption fee must be 0.
                 if (state.noLoad) {
                     const sub = safeNumber(fund.fee_subscription), red = safeNumber(fund.fee_redemption);
@@ -1813,6 +1891,7 @@
         }
 
         async function loadMiniChart(fundId, element, period) {
+            if (!element.isConnected) return;
             const cacheKey = `${fundId}:${period}`;
             if (navHistoryCache.has(cacheKey)) {
                 paintMiniChart(element, navHistoryCache.get(cacheKey));
@@ -1824,6 +1903,10 @@
                 if (!response.ok) throw new Error('nav failed');
                 const history = await response.json();
                 navHistoryCache.set(cacheKey, history);
+                // The card may have been re-rendered while the fetch was in flight;
+                // painting a detached node would tear down the LIVE chart registered
+                // under the same fund id and register an orphan in its place.
+                if (!element.isConnected) return;
                 paintMiniChart(element, history);
             } catch (error) {
                 element.classList.add('empty');
@@ -1832,6 +1915,7 @@
         }
 
         function paintMiniChart(element, history) {
+            if (!element.isConnected) return;
             const points = Array.isArray(history) ? getMiniChartRange(history) : [];
             const sorted = points
                 .map((item) => ({ date: item.date, nav: safeNumber(item.nav) }))
@@ -2045,21 +2129,25 @@
             chartNodes.forEach((node) => chartObserver.observe(node));
         }
 
-        function renderGrid(funds) {
-            miniChartInstances.forEach((instance, key) => {
+        function destroyAllMiniCharts() {
+            miniChartInstances.forEach((instance) => {
                 try {
                     instance.resizeObserver?.disconnect();
                     instance.chart?.remove();
                 } catch (error) { }
             });
             miniChartInstances.clear();
+        }
+
+        function renderGrid(funds) {
+            destroyAllMiniCharts();
             grid.innerHTML = funds.map((fund) => {
                 const name = escapeHtml(getFundName(fund));
                 const manager = escapeHtml(getManagerName(fund));
                 const type = escapeHtml(getFundTypeName(fund));
                 const ret = getReturnForPeriod(fund);
                 const retText = formatPercent(ret);
-                const retClass = ret !== null && ret < 0 ? 'text-red-500' : 'text-emerald-600';
+                const retClass = ret === null ? 'text-muted' : ret < 0 ? 'text-red-500' : 'text-emerald-600';
                 const aum = fund.aumValue ? `${escapeHtml(getLabels().aum)} ${escapeHtml(formatNumber(fund.aumValue))}` : '';
                 const updated = escapeHtml(formatDate(fund.lastUpdated));
                 const isSelected = state.compareIds.includes(String(fund.fund_id));
@@ -2159,7 +2247,7 @@
                         <div class="ftable-cell text-sm text-muted" data-mob-label="${escapeHtml(L.th_type)}">${escapeHtml(getFundTypeName(fund))}</div>
                         <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_risk)}">${riskCell}</div>
                         <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_nav)}"><span class="ftable-num text-main">${escapeHtml(fund.currency)} ${escapeHtml(formatNumber(fund.latestNav))}</span></div>
-                        <div class="ftable-cell" data-mob-label="YTD">${retVal('ytd')}</div>
+                        <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_ytd)}">${retVal('ytd')}</div>
                         <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_1y)}">${retVal('1y')}</div>
                         <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_3y)}">${retVal('3y')}</div>
                         <div class="ftable-cell">
@@ -2194,13 +2282,7 @@
             tableShell.classList.toggle('hidden', !hasResults || state.view !== 'table');
 
             if (!hasResults) {
-                miniChartInstances.forEach((instance) => {
-                    try {
-                        instance.resizeObserver?.disconnect();
-                        instance.chart?.remove();
-                    } catch (error) { }
-                });
-                miniChartInstances.clear();
+                destroyAllMiniCharts();
                 grid.innerHTML = '';
                 tableBody.innerHTML = '';
                 document.getElementById('viewMoreWrap')?.classList.add('hidden');
@@ -2209,7 +2291,12 @@
 
             const visible = state.filtered.slice(0, state.visibleCount);
             if (state.view === 'grid') renderGrid(visible);
-            if (state.view === 'table') renderTable(visible);
+            if (state.view === 'table') {
+                // The hidden grid's chart instances + observers would otherwise stay
+                // alive (and repaint on theme changes) behind the table view.
+                destroyAllMiniCharts();
+                renderTable(visible);
+            }
             renderViewMore();
         }
 
@@ -2305,7 +2392,8 @@
         }
 
         function bindEvents() {
-            fundSearch.addEventListener('input', renderFunds);
+            const debouncedRender = debounce(renderFunds, 250);
+            fundSearch.addEventListener('input', debouncedRender);
             document.getElementById('viewMoreBtn').addEventListener('click', () => {
                 state.visibleCount += PAGE_SIZE;
                 renderFunds();
@@ -2344,11 +2432,11 @@
             issuerFilter.addEventListener('change', renderFunds);
             navMinInput.addEventListener('input', () => {
                 state.navMin = navMinInput.value.trim();
-                renderFunds();
+                debouncedRender();
             });
             navMaxInput.addEventListener('input', () => {
                 state.navMax = navMaxInput.value.trim();
-                renderFunds();
+                debouncedRender();
             });
             document.getElementById('resetFilters').addEventListener('click', resetFilters);
             document.getElementById('gridViewBtn').addEventListener('click', () => setView('grid'));
@@ -2401,7 +2489,23 @@
                 if (event.target.closest?.('a, button, input, select, label')) return;
                 const fundRow = event.target.closest?.('[data-fund-href]');
                 if (fundRow) {
-                    window.location.href = fundRow.getAttribute('data-fund-href');
+                    const href = fundRow.getAttribute('data-fund-href');
+                    // Honour "open in new tab" intent — don't destroy the filtered list.
+                    if (event.metaKey || event.ctrlKey || event.shiftKey) {
+                        window.open(href, '_blank', 'noopener');
+                        return;
+                    }
+                    window.location.href = href;
+                }
+            });
+            // Middle-click on a row opens the fund in a new tab (auxclick).
+            document.addEventListener('auxclick', (event) => {
+                if (event.button !== 1) return;
+                if (event.target.closest?.('a, button, input, select, label')) return;
+                const fundRow = event.target.closest?.('[data-fund-href]');
+                if (fundRow) {
+                    event.preventDefault();
+                    window.open(fundRow.getAttribute('data-fund-href'), '_blank', 'noopener');
                 }
             });
             window.addEventListener('pagehide', () => {

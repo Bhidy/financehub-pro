@@ -3,8 +3,8 @@
 
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <script src="/assets/starta-theme.js?v=1.0.1"></script>
-    <script src="/assets/starta-lang-boot.js?v=1.0.0"></script>
+    <script src="/assets/starta-theme.js?v=1.1.0"></script>
+    <script src="/assets/starta-lang-boot.js?v=1.1.0"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Starta | Master the EGX</title>
@@ -45,7 +45,7 @@
     <link rel="stylesheet" href="/assets/portfolio-showcase.css?v=1.1.14">
 
     <!-- Mobile navigation (shared ultra-premium burger menu) -->
-    <script src="/assets/starta-mobile-nav.js?v=1.0.5" defer></script>
+    <script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
 
     <!-- tailwind compiled at build time: assets/tw-home.css (was: CDN runtime compiler + inline config) -->
 
@@ -1423,7 +1423,7 @@
         }
         .tour-tabs {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 0.3rem;
         }
         .tour-tab {
@@ -2259,7 +2259,7 @@
             </div>
 
             <div class="flex items-center gap-3 ml-3">
-                <button onclick="window.location.href='/RiskAssessment'"
+                <button onclick="window.location.href=(window.startaLocalizedHref||String)('/RiskAssessment')"
                     class="hidden md:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
                     data-key="nav_cta">
                     Free Risk Profile

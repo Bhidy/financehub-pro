@@ -425,32 +425,17 @@
   --shadow-high: 0 26px 68px rgba(44, 66, 91, .1);
 }
 
-/* System Preference Detection */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1A222C;
-    --foreground: #AEB7C0;
-    --card-bg: #24303F;
-    --card-border: #2E3A47;
-    color-scheme: dark;
-
-    /* Starta Theme variables (Dark Mode) */
-    --page: #0b0f19;
-    --surface: #101726;
-    --surface-soft: rgba(16, 23, 38, .76);
-    --ink: #f1f5f9;
-    --muted: #94a3b8;
-    --faint: #64748b;
-    --line: rgba(148, 163, 184, .14);
-    --teal: #14b8a6;
-    --teal-dark: #2dd4bf;
-    --teal-soft: rgba(20, 184, 166, 0.08);
-    --green: #10b981;
-    --red: #f43f5e;
-    --shadow: 0 20px 50px rgba(0, 0, 0, .3);
-    --shadow-high: 0 26px 68px rgba(0, 0, 0, .45);
-  }
-}
+/* NO system-preference detection — DELIBERATE, DO NOT RE-ADD.
+   ---------------------------------------------------------------------------
+   The site's theme contract is: LIGHT is the product default everywhere, DARK
+   is opt-in via the toggle and persisted in localStorage["theme"]. The static
+   pages (home.html, marketplace.html, …) have no OS detection at all, so an
+   `@media (prefers-color-scheme: dark)` override here applied ONLY to the
+   React pages — which meant a visitor whose OS was dark saw light static
+   pages flip to dark the moment they clicked through to /Calculators,
+   /RiskAssessment, a fund profile or /login, without ever choosing dark.
+   Theme must change ONLY when the user asks for it. A build gate in
+   scripts/verify-route-aliases.mjs fails the build if this block returns. */
 
 /* Manual Dark Mode Toggle */
 .dark {

@@ -15,6 +15,9 @@ import './fund-premium.css';
 
 type LabelValue = { label: string; value: string };
 type SignedStat = { label: string; value: string; negative: boolean };
+/** A stat whose value may be unknown — renders as a muted '—', never dropped,
+ *  never fabricated as 0.00%. Keeps every fund on the same section skeleton. */
+type NullableStat = { label: string; value: string | null; negative: boolean };
 
 export type FundClientData = {
     t: FundLabels;
@@ -36,10 +39,10 @@ export type FundClientData = {
     currency: string;
     headlineReturn: SignedStat | null;
     chips: string[];
-    perfCards: SignedStat[];
+    perfCards: NullableStat[];
     facts: LabelValue[];
     fees: LabelValue[];
-    riskStats: SignedStat[];
+    riskStats: NullableStat[];
     platforms: Array<{ name: string; logo: string | null }>;
     prospectusUrl: string | null;
     tradingRows: LabelValue[];
@@ -60,6 +63,36 @@ const MICRO = 'text-[0.68rem] uppercase tracking-[0.22em] text-muted';
 
 function Signed({ value, negative, className = '' }: { value: string; negative: boolean; className?: string }) {
     return <span className={`${negative ? 'text-red-500' : 'text-main'} ${className}`}>{value}</span>;
+}
+
+/** Nullable stat value — real numbers keep the signed styling, unknowns render a
+ *  muted '—' so the tile stays in the grid without inventing a figure. */
+function MaybeSigned({ value, negative }: { value: string | null; negative: boolean }) {
+    return value !== null ? <Signed value={value} negative={negative} /> : <span className="text-muted">—</span>;
+}
+
+/** Section shell for the analytics layer when the fund's history is too short
+ *  (or analytics are suppressed): same card, same title — an honest bilingual
+ *  empty state instead of a vanished section. Never fake numbers. */
+function AnalyticsPending({ title, sub, note, large = false }: { title: string; sub?: string; note: string; large?: boolean }) {
+    return (
+        <section
+            className={`glass-premium ${large ? 'rounded-[2rem] p-6 sm:p-8' : 'rounded-[1.6rem] p-5'}`}
+            aria-label={title}
+        >
+            {large ? (
+                <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main sm:text-2xl">{title}</h2>
+            ) : (
+                <h3 className="text-base font-display font-bold tracking-[-0.02em] text-main">{title}</h3>
+            )}
+            {sub && (
+                <p className={large ? 'mt-2 max-w-2xl text-sm leading-relaxed text-muted' : 'mt-1 text-xs leading-relaxed text-muted'}>
+                    {sub}
+                </p>
+            )}
+            <p className="ax-pending mt-4">{note}</p>
+        </section>
+    );
 }
 
 export default function FundPageClient(props: FundClientData) {
@@ -214,77 +247,71 @@ export default function FundPageClient(props: FundClientData) {
             <div className="fund-layout mt-8">
                 {/* ══ MAIN COLUMN — the analysis, ordered by decision value ══ */}
                 <div className="fund-main">
-                    {/* Performance */}
-                    {perfCards.length > 0 && (
-                        <section aria-label={t.performance}>
-                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                                {perfCards.map((p) => (
-                                    <div key={p.label} className="summary-card perf-card rounded-[1.4rem] p-4">
-                                        <div className={MICRO}>{p.label}</div>
-                                        <div className="mt-3 text-xl font-display font-bold tracking-[-0.03em]">
-                                            <Signed value={p.value} negative={p.negative} />
+                    {/* Performance — ALWAYS all six period cards; unknown periods show '—' */}
+                    <section aria-label={t.performance}>
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                            {perfCards.map((p) => (
+                                <div key={p.label} className="summary-card perf-card rounded-[1.4rem] p-4">
+                                    <div className={MICRO}>{p.label}</div>
+                                    <div className="mt-3 text-xl font-display font-bold tracking-[-0.03em]">
+                                        <MaybeSigned value={p.value} negative={p.negative} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* Investment thesis — section always renders; missing text degrades to a note */}
+                    <section className="glass-premium rounded-[2rem] p-6 sm:p-7" aria-label={t.investmentThesis}>
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="text-base font-semibold text-main">{t.investmentStrategy}</h3>
+                                {strategy ? (
+                                    <p className="mt-2 text-sm leading-relaxed text-muted">{strategy}</p>
+                                ) : (
+                                    <p className="ax-pending mt-2">{t.dataPending}</p>
+                                )}
+                            </div>
+                            {objective && (
+                                <div>
+                                    <h3 className="text-base font-semibold text-main">{t.fundObjective}</h3>
+                                    <p className="mt-2 text-sm leading-relaxed text-muted">{objective}</p>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Fees + Risk — both cards always render with their standard row sets */}
+                    <section className="grid gap-6 lg:grid-cols-2">
+                        <div className="glass-premium rounded-[2rem] p-6 sm:p-7">
+                            <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.fees}</h2>
+                            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                                {fees.map((f) => (
+                                    <div key={f.label} className="summary-card rounded-[1.2rem] p-4">
+                                        <div className={MICRO}>{f.label}</div>
+                                        <div className={`mt-2 text-lg font-display font-bold tabular-nums ${f.value === '—' ? 'text-muted' : 'text-main'}`}>
+                                            {f.value}
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                        </section>
-                    )}
+                        </div>
 
-                    {/* Investment thesis */}
-                    {(strategy || objective) && (
-                        <section className="glass-premium rounded-[2rem] p-6 sm:p-7" aria-label={t.investmentThesis}>
-                            <div className="space-y-6">
-                                {strategy && (
-                                    <div>
-                                        <h3 className="text-base font-semibold text-main">{t.investmentStrategy}</h3>
-                                        <p className="mt-2 text-sm leading-relaxed text-muted">{strategy}</p>
+                        <div className="glass-premium rounded-[2rem] p-6 sm:p-7">
+                            <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.riskVolatility}</h2>
+                            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                                {riskStats.map((r) => (
+                                    <div key={r.label} className="summary-card rounded-[1.2rem] p-4">
+                                        <div className={MICRO}>{r.label}</div>
+                                        <div className="mt-2 text-lg font-display font-bold tabular-nums">
+                                            <MaybeSigned value={r.value} negative={r.negative} />
+                                        </div>
                                     </div>
-                                )}
-                                {objective && (
-                                    <div>
-                                        <h3 className="text-base font-semibold text-main">{t.fundObjective}</h3>
-                                        <p className="mt-2 text-sm leading-relaxed text-muted">{objective}</p>
-                                    </div>
-                                )}
+                                ))}
                             </div>
-                        </section>
-                    )}
-
-                    {/* Fees + Risk */}
-                    {(fees.length > 0 || riskStats.length > 0) && (
-                        <section className="grid gap-6 lg:grid-cols-2">
-                            {fees.length > 0 && (
-                                <div className="glass-premium rounded-[2rem] p-6 sm:p-7">
-                                    <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.fees}</h2>
-                                    <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                                        {fees.map((f) => (
-                                            <div key={f.label} className="summary-card rounded-[1.2rem] p-4">
-                                                <div className={MICRO}>{f.label}</div>
-                                                <div className="mt-2 text-lg font-display font-bold tabular-nums text-main">{f.value}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {riskStats.length > 0 && (
-                                <div className="glass-premium rounded-[2rem] p-6 sm:p-7">
-                                    <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.riskVolatility}</h2>
-                                    <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                                        {riskStats.map((r) => (
-                                            <div key={r.label} className="summary-card rounded-[1.2rem] p-4">
-                                                <div className={MICRO}>{r.label}</div>
-                                                <div className="mt-2 text-lg font-display font-bold tabular-nums">
-                                                    <Signed value={r.value} negative={r.negative} />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <p className="mt-4 border-t border-border/60 pt-3 text-xs text-muted">{t.riskNote}</p>
-                                </div>
-                            )}
-                        </section>
-                    )}
+                            <p className="mt-4 border-t border-border/60 pt-3 text-xs text-muted">{t.riskNote}</p>
+                        </div>
+                    </section>
 
                     {/* About the manager */}
                     {managerProfile && (
@@ -307,103 +334,114 @@ export default function FundPageClient(props: FundClientData) {
                                         {managerProfile.name}
                                     </h2>
                                 </div>
-                                <div className="grid flex-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                                    {managerProfile.rows.map((r) => (
-                                        <div key={r.label} className="summary-card rounded-[1.2rem] p-4">
-                                            <div className={MICRO}>{r.label}</div>
-                                            <div className="mt-2 text-sm font-semibold text-main">{r.value}</div>
-                                        </div>
-                                    ))}
-                                </div>
+                                {managerProfile.rows.length > 0 ? (
+                                    <div className="grid flex-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                        {managerProfile.rows.map((r) => (
+                                            <div key={r.label} className="summary-card rounded-[1.2rem] p-4">
+                                                <div className={MICRO}>{r.label}</div>
+                                                <div className="mt-2 text-sm font-semibold text-main">{r.value}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="ax-pending flex-1">{t.managerPending}</p>
+                                )}
                             </div>
                         </section>
                     )}
 
-                    {/* Scorecard — free account unlocks all (gated) */}
-                    {analytics.hasEnoughData && (
+                    {/* Scorecard — free account unlocks all (gated). Data-poor or suppressed
+                        funds keep the SAME section shell with an honest limited-history
+                        state instead of vanishing (never fake numbers). */}
+                    {analytics.hasEnoughData ? (
                         <FundGate t={t}>
                             <Scorecard scores={analytics.scores} t={t} />
                         </FundGate>
+                    ) : (
+                        <AnalyticsPending title={t.ax.scoreTitle} sub={t.ax.scoreSub} note={t.ax.limitedHistory} large />
                     )}
 
-                    {/* Where to invest */}
-                    {(platforms.length > 0 || prospectusUrl || tradingRows.length > 0) && (
-                        <section className="glass-premium rounded-[2rem] p-6 sm:p-8" aria-label={t.purchaseChannels}>
-                            <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.whereToInvest}</h2>
+                    {/* Where to invest — section always renders; missing channel data
+                        degrades to a bilingual placeholder line */}
+                    <section className="glass-premium rounded-[2rem] p-6 sm:p-8" aria-label={t.purchaseChannels}>
+                        <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.whereToInvest}</h2>
 
-                            <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(240px,0.55fr)]">
-                                <div className="flex flex-col gap-6">
-                                    {platforms.length > 0 && (
-                                        <div>
-                                            <div className={MICRO}>{t.subRedemptionChannels}</div>
-                                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                                {platforms.map((p) => (
-                                                    <div key={p.name} className="summary-card flex items-center gap-3 rounded-[1.1rem] p-3.5">
-                                                        {p.logo ? (
-                                                            // eslint-disable-next-line @next/next/no-img-element
-                                                            <img src={p.logo} alt="" className="h-9 w-9 shrink-0 rounded-lg object-contain" />
-                                                        ) : (
-                                                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-starta-teal/10 text-sm font-bold text-starta-teal">
-                                                                {p.name.trim().charAt(0)}
-                                                            </span>
-                                                        )}
-                                                        <span className="text-sm font-medium text-main">{p.name}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
+                        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(240px,0.55fr)]">
+                            <div className="flex flex-col gap-6">
+                                <div>
+                                    <div className={MICRO}>{t.subRedemptionChannels}</div>
+                                    {platforms.length > 0 ? (
+                                        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                                            {platforms.map((p) => (
+                                                <div key={p.name} className="summary-card flex items-center gap-3 rounded-[1.1rem] p-3.5">
+                                                    {p.logo ? (
+                                                        // eslint-disable-next-line @next/next/no-img-element
+                                                        <img src={p.logo} alt="" className="h-9 w-9 shrink-0 rounded-lg object-contain" />
+                                                    ) : (
+                                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-starta-teal/10 text-sm font-bold text-starta-teal">
+                                                            {p.name.trim().charAt(0)}
+                                                        </span>
+                                                    )}
+                                                    <span className="text-sm font-medium text-main">{p.name}</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                    )}
-
-                                    {tradingRows.length > 0 && (
-                                        <div>
-                                            <div className={MICRO}>{t.tradingSchedule}</div>
-                                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                                {tradingRows.map((tr) => (
-                                                    <div key={tr.label} className="summary-card rounded-[1.1rem] p-3.5">
-                                                        <div className={MICRO}>{tr.label}</div>
-                                                        <div className="mt-1.5 text-sm font-semibold text-main">{tr.value}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                    ) : (
+                                        <p className="ax-pending mt-3">{t.channelsPlaceholder}</p>
                                     )}
                                 </div>
 
-                                {prospectusUrl && (
-                                    <div>
-                                        <div className={MICRO}>{t.documents}</div>
-                                        <a
-                                            href={prospectusUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer nofollow"
-                                            className="doc-link mt-3 flex items-center gap-3 rounded-[1.1rem] p-4"
-                                        >
-                                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-starta-teal/10 text-starta-teal">
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                    />
-                                                </svg>
-                                            </span>
-                                            <span>
-                                                <span className="block text-sm font-semibold text-main">{t.prospectus}</span>
-                                                <span className="block text-xs text-muted">{t.prospectusMeta}</span>
-                                            </span>
-                                        </a>
+                                <div>
+                                    <div className={MICRO}>{t.tradingSchedule}</div>
+                                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                                        {tradingRows.map((tr) => (
+                                            <div key={tr.label} className="summary-card rounded-[1.1rem] p-3.5">
+                                                <div className={MICRO}>{tr.label}</div>
+                                                <div className={`mt-1.5 text-sm font-semibold ${tr.value === '—' ? 'text-muted' : 'text-main'}`}>{tr.value}</div>
+                                            </div>
+                                        ))}
                                     </div>
-                                )}
+                                </div>
                             </div>
 
-                            <p className="mt-6 border-t border-border/60 pt-3 text-xs text-muted">{t.channelsDisclaimer}</p>
-                        </section>
-                    )}
+                            <div>
+                                <div className={MICRO}>{t.documents}</div>
+                                {prospectusUrl ? (
+                                    <a
+                                        href={prospectusUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer nofollow"
+                                        className="doc-link mt-3 flex items-center gap-3 rounded-[1.1rem] p-4"
+                                    >
+                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-starta-teal/10 text-starta-teal">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                />
+                                            </svg>
+                                        </span>
+                                        <span>
+                                            <span className="block text-sm font-semibold text-main">{t.prospectus}</span>
+                                            <span className="block text-xs text-muted">{t.prospectusMeta}</span>
+                                        </span>
+                                    </a>
+                                ) : (
+                                    <p className="ax-pending mt-3">{t.dataPending}</p>
+                                )}
+                            </div>
+                        </div>
 
-                    {/* Similar funds */}
+                        <p className="mt-6 border-t border-border/60 pt-3 text-xs text-muted">{t.channelsDisclaimer}</p>
+                    </section>
+
+                    {/* Similar funds — section always renders; zero peers shows a placeholder
+                        line (peers without an id or a name are dropped server-side, so no
+                        empty compare-only cards can appear) */}
                     <section aria-label={t.exploreMore}>
                         <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.similarFunds}</h2>
-                        {peers.length > 0 && (
+                        {peers.length > 0 ? (
                             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                 {peers.map((p) => (
                                     <div key={p.id} className="summary-card flex flex-col gap-3 rounded-[1.3rem] p-5">
@@ -416,6 +454,8 @@ export default function FundPageClient(props: FundClientData) {
                                     </div>
                                 ))}
                             </div>
+                        ) : (
+                            <p className="ax-pending mt-5">{t.similarFundsEmpty}</p>
                         )}
                         <p className="mt-5 text-sm">
                             <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">
@@ -444,23 +484,34 @@ export default function FundPageClient(props: FundClientData) {
                 <aside className="fund-aside">
                     <FundKeyFacts facts={facts} cagr={cagrStat} t={t} />
 
-                    {/* Decision widgets — one free-account gate for the whole cluster */}
-                    {analytics.hasEnoughData && (
+                    {/* Decision widgets — one free-account gate for the whole cluster.
+                        Data-poor/suppressed funds keep the SAME section shells with an
+                        honest limited-history state (nothing to gate, nothing fabricated);
+                        the calculator always renders and shows its own no-data message
+                        when there is no trustworthy CAGR. */}
+                    {analytics.hasEnoughData ? (
                         <FundGate t={t} compact>
                             <div className="flex flex-col gap-5">
                                 <Suitability suit={analytics.suitability} t={t} />
                                 <Insights insights={analytics.insights} t={t} />
                                 <StressTest stress={analytics.stress} movement={movement} t={t} />
-                                {analytics.calc.cagr !== null && (
-                                    <FundCalculator
-                                        cagr={analytics.calc.cagr}
-                                        volatility={analytics.calc.volatility}
-                                        currency={currency}
-                                        t={t}
-                                    />
-                                )}
+                                <FundCalculator
+                                    cagr={analytics.calc.cagr}
+                                    volatility={analytics.calc.volatility}
+                                    currency={currency}
+                                    t={t}
+                                />
                             </div>
                         </FundGate>
+                    ) : (
+                        <div className="flex flex-col gap-5">
+                            <AnalyticsPending title={t.ax.suitTitle} sub={t.ax.suitSub} note={t.ax.limitedHistoryShort} />
+                            <AnalyticsPending title={t.ax.insightsTitle} sub={t.ax.insightsSub} note={t.ax.limitedHistoryShort} />
+                            <AnalyticsPending title={t.ax.stressTitle} sub={t.ax.stressSub} note={t.ax.limitedHistoryShort} />
+                            {/* No trustworthy CAGR on short-history/suppressed funds — the
+                                calculator renders its own honest no-data state. */}
+                            <FundCalculator cagr={null} volatility={null} currency={currency} t={t} />
+                        </div>
                     )}
 
                     <FundFeedback fundId={fundId} t={t} />

@@ -9,9 +9,11 @@ import { useEffect, useState } from "react";
  * The /mobile-ai-analyst prefix is DEPRECATED and removed.
  */
 
-// Route mappings - All unified to root
+// Route mappings - All unified to root.
+// `home` is the SITE home: the chatbot is hidden from the website (2026-08),
+// so no logo/back/post-auth path may land users on /AiChat anymore.
 export const APP_ROUTES = {
-    home: "/AiChat",
+    home: "/",
     login: "/login",
     register: "/register",
     forgotPassword: "/forgot-password",

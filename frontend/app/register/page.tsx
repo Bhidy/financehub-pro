@@ -29,6 +29,12 @@ import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
 import { useMobileRoutes } from "@/components/chatbot/hooks/useMobileRoutes";
 import { useDeviceDetect } from "@/hooks/useDeviceDetect";
 import { createCheckoutSession } from "@/lib/api";
+import {
+    captureReturnPath,
+    clearAuthHandoff,
+    readAuthHandoff,
+    resolvePostAuthDestination,
+} from "@/lib/post-login";
 
 function MobileRegisterPageContent() {
     const router = useRouter();
@@ -48,15 +54,29 @@ function MobileRegisterPageContent() {
     const [error, setError] = useState<string | null>(null);
     const [focusedField, setFocusedField] = useState<string | null>(null);
 
-    // Handle Google OAuth callback
+    // Remember where the user came from so we can return them there after
+    // signing up (validated ?redirect= or same-origin referrer; default /Funds).
     useEffect(() => {
-        const token = searchParams.get("token");
-        const refreshToken = searchParams.get("refresh_token");
-        const userStr = searchParams.get("user");
-        const googleAuth = searchParams.get("google_auth");
-        const errorParam = searchParams.get("error");
+        captureReturnPath(searchParams.get("redirect"));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Handle Google OAuth callback. Token params are scrubbed from the URL into
+    // sessionStorage by the root layout before analytics see them — read the
+    // hand-off stash first, raw query as fallback.
+    useEffect(() => {
+        const handoff = readAuthHandoff();
+        const param = (key: string): string | null =>
+            searchParams.get(key) ?? (handoff ? handoff[key as keyof typeof handoff] ?? null : null);
+
+        const token = param("token");
+        const refreshToken = param("refresh_token");
+        const userStr = param("user");
+        const googleAuth = param("google_auth");
+        const errorParam = param("error");
 
         if (errorParam) {
+            clearAuthHandoff();
             setError("Google sign-up failed. Please try again.");
             return;
         }
@@ -69,22 +89,25 @@ function MobileRegisterPageContent() {
                     localStorage.setItem("fh_refresh_token", refreshToken);
                 }
                 localStorage.setItem("fh_user", JSON.stringify(user));
+                clearAuthHandoff();
 
-                if (searchParams.get("checkout") === "true" && searchParams.get("plan") === "analyst") {
+                const destination = resolvePostAuthDestination(param("redirect"));
+                if (param("checkout") === "true" && param("plan") === "analyst") {
                     createCheckoutSession("price_1T66bq2UXuH5fA2IQIuSelxJ").then(data => {
                         if (data?.url) window.location.href = data.url;
-                        else router.push(searchParams.get("redirect") || getRoute('home'));
+                        else router.replace(destination);
                     }).catch(err => {
                         console.error("Checkout redirect failed", err);
-                        router.push(searchParams.get("redirect") || getRoute('home'));
+                        router.replace(destination);
                     });
                     return;
                 }
 
-                const returnUrl = searchParams.get("redirect") || getRoute('home');
-                router.push(returnUrl);
+                router.replace(destination);
             } catch (e) {
                 console.error("Failed to parse Google auth response", e);
+                clearAuthHandoff();
+                setError("Google sign-up failed. Please try again.");
             }
         }
     }, [searchParams, router]);
@@ -132,8 +155,7 @@ function MobileRegisterPageContent() {
                 }
             }
             setIsLoading(false);
-            const returnUrl = searchParams.get("redirect") || getRoute('home');
-            router.push(returnUrl);
+            router.replace(resolvePostAuthDestination(searchParams.get("redirect")));
         } else {
             setIsLoading(false);
             setError(result.error || "Registration failed");

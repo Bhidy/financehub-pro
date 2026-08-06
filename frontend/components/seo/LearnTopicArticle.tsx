@@ -98,6 +98,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
         <PublicPageShell
             lang={arabic ? 'ar' : 'en'}
             altHref={encodeURI(learnPath(topic.slug, topic.ar.title, arabic ? 'en' : 'ar'))}
+            persistLang
         >
             <JsonLd data={articleJsonLd} />
             {faqJsonLd && <JsonLd data={faqJsonLd} />}

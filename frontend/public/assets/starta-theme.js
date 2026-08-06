@@ -40,6 +40,13 @@
     function applyTheme(theme, persist) {
         var resolved = normalize(theme);
         document.documentElement.setAttribute("data-theme", resolved);
+        // Also stamp the .light/.dark CLASS: the React surfaces (Tailwind
+        // `dark:` variants + app tokens in globals.css) key off the class,
+        // while the public chrome keys off data-theme. Writing both here means
+        // a toggle on ANY page produces one consistent theme everywhere and a
+        // user can never land on a half-dark page after navigating.
+        document.documentElement.classList.remove("light", "dark");
+        document.documentElement.classList.add(resolved);
         document.documentElement.style.colorScheme = resolved;
         if (persist) {
             try {

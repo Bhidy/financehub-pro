@@ -326,6 +326,19 @@
 .fund-premium .ax-method > summary::before { content: '?'; display: inline-flex; align-items: center; justify-content: center; width: 1.05rem; height: 1.05rem; border-radius: 999px; background: rgba(20, 184, 166, 0.14); font-size: 0.7rem; }
 .fund-premium .ax-note { font-size: 0.72rem; line-height: 1.6; color: var(--c-text-muted); border-top: 1px solid color-mix(in srgb, var(--c-border) 60%, transparent); padding-top: 0.75rem; }
 
+/* graceful empty state — sections ALWAYS render; missing data shows an honest,
+   bilingual placeholder note instead of a vanished section (RTL-safe) */
+.fund-premium .ax-pending {
+    display: block;
+    padding: 0.85rem 1rem;
+    border-radius: 1.05rem;
+    border: 1px dashed var(--c-border);
+    background: color-mix(in srgb, var(--c-surface) 65%, transparent);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--c-text-muted);
+}
+
 /* suitability — horizons */
 .fund-premium .horizon-card { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.95rem 1rem; border-radius: 1.1rem; border: 1px solid var(--c-border); background: var(--c-surface); }
 .fund-premium .horizon-name { font-size: 0.85rem; font-weight: 700; color: var(--c-text-main); }

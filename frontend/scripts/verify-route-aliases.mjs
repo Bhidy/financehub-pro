@@ -26,15 +26,67 @@ function hasCurrentPublicNav(text) {
 
 const checks = [
   {
-    name: "route helper still defines home route",
+    // The chatbot is hidden from the website (2026-08): the app-shell "home"
+    // must be the SITE home, never /AiChat — logos, back buttons and post-auth
+    // fallbacks all flow through this route.
+    name: "route helper home is the site home (not the hidden chatbot)",
     file: "components/chatbot/hooks/useMobileRoutes.ts",
-    assert: (text) => /home:\s*["']\/AiChat["']/.test(text),
+    assert: (text) => /home:\s*["']\/["']/.test(text) && !/home:\s*["']\/AiChat["']/.test(text),
   },
   {
     name: "login success never redirects to dashboard",
     file: "app/login/page.tsx",
     assert: (text) =>
       !/router\.push\(\s*['"]\/dashboard['"]\s*\)/.test(text),
+  },
+  {
+    // Theme contract: LIGHT is the product default; DARK is opt-in via the
+    // toggle only. An OS-preference override here silently flipped React pages
+    // to dark for OS-dark users while the static pages stayed light.
+    name: "globals.css must not auto-switch theme from the OS preference",
+    file: "app/globals.css",
+    // Strip /* … */ comments first: the block's removal is documented in a
+    // comment that names the at-rule, which must not trip the gate.
+    assert: (text) =>
+      !/@media\s*\(prefers-color-scheme:\s*dark\)/.test(text.replace(/\/\*[\s\S]*?\*\//g, "")),
+  },
+  {
+    // Theme contract: every React page must resolve the theme BEFORE paint,
+    // stamping both representations (data-theme attribute + .light/.dark class)
+    // so no surface can render half-dark or flip during navigation.
+    name: "root layout ships the pre-paint theme boot script",
+    file: "app/layout.tsx",
+    assert: (text) =>
+      /id="starta-theme-boot"/.test(text) &&
+      /data-theme="light"/.test(text) &&
+      /localStorage\.getItem\("theme"\)/.test(text),
+  },
+  {
+    // Theme contract: the static-page engine must stamp the class too, so a
+    // toggle on any page is consistent across static and React surfaces.
+    name: "starta-theme.js stamps both data-theme and the light/dark class",
+    file: "public/assets/starta-theme.js",
+    assert: (text) => /classList\.add\(resolved\)/.test(text),
+  },
+  {
+    // Language contract: static pages must be able to localize links into
+    // server-rendered /ar twins. The global helper + anchor rewriter live in
+    // the lang-boot script that every static page loads before paint.
+    name: "lang-boot defines startaLocalizedHref + anchor localizer",
+    file: "public/assets/starta-lang-boot.js",
+    assert: (text) =>
+      /window\.startaLocalizedHref\s*=/.test(text) &&
+      /addEventListener\(["']click["']/.test(text),
+  },
+  {
+    // Language contract: the shell must never hardcode a bare EN link to a
+    // twinned route — an Arabic page would silently flip the user to English.
+    name: "PublicPageShell routes twinned links through localizedHref",
+    file: "components/seo/PublicPageShell.tsx",
+    assert: (text) =>
+      /function localizedHref/.test(text) &&
+      !/href="\/RiskAssessment"/.test(text) &&
+      !/href="\/Calculators"/.test(text),
   },
   {
     name: "register success uses unified home route",

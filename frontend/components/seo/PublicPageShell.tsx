@@ -77,6 +77,24 @@ const SHELL_CSS = `
 [data-theme="light"] .seo-shell .light-icon{opacity:1}
 `;
 
+/** Routes that have real /ar twins (server-rendered, language-in-URL). */
+const AR_TWIN_ROUTES = ['/RiskAssessment', '/Calculators'];
+
+/**
+ * Language-safe internal href — the shell-side single source of truth.
+ * Server pages carry the language IN the URL, so an Arabic page linking a bare
+ * EN path silently flips the user to English (the exact bug this prevents).
+ * Static single-URL pages (/, /Funds, /News, /Learn) keep language via
+ * localStorage/persistLang and must NOT be prefixed.
+ */
+function localizedHref(path: string, lang: Lang): string {
+    if (lang !== 'ar') return path;
+    const twinned = AR_TWIN_ROUTES.some(
+        (route) => path === route || path.startsWith(`${route}/`) || path.startsWith(`${route}?`),
+    );
+    return twinned ? `/ar${path}` : path;
+}
+
 export default function PublicPageShell({
     children,
     lang = 'en',
@@ -126,8 +144,8 @@ export default function PublicPageShell({
                     }}
                 />
             )}
-            <Script src="/assets/starta-theme.js?v=1.0.1" strategy="beforeInteractive" />
-            <Script src="/assets/starta-mobile-nav.js?v=1.0.5" strategy="lazyOnload" />
+            <Script src="/assets/starta-theme.js?v=1.1.0" strategy="beforeInteractive" />
+            <Script src="/assets/starta-mobile-nav.js?v=1.0.6" strategy="lazyOnload" />
 
             {/* ── Header: verbatim structure from the designed pages ─────────── */}
             <nav className="fixed top-0 w-full z-50 border-b border-border bg-page/80 backdrop-blur-xl transition-all duration-300">
@@ -148,7 +166,7 @@ export default function PublicPageShell({
 
                     <div className="flex items-center gap-3 ml-3">
                         <Link
-                            href="/RiskAssessment"
+                            href={localizedHref('/RiskAssessment', lang)}
                             prefetch={false}
                             className="hidden md:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
                             data-key="nav_cta"
@@ -211,8 +229,8 @@ export default function PublicPageShell({
                         <div className="space-y-4">
                             <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col3}</h4>
                             <ul className="space-y-2.5 text-sm">
-                                <li><Link href="/Calculators" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.calculators}</Link></li>
-                                <li><Link href="/RiskAssessment" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.risk}</Link></li>
+                                <li><Link href={localizedHref('/Calculators', lang)} prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.calculators}</Link></li>
+                                <li><Link href={localizedHref('/RiskAssessment', lang)} prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.risk}</Link></li>
                                 <li><Link href="/register" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.account}</Link></li>
                                 <li><Link href="/login" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.login}</Link></li>
                             </ul>

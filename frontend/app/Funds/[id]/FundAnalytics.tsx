@@ -103,10 +103,12 @@ function ScoreExplain({ s, ax }: { s: Score; ax: Ax }) {
                                 <span className="ax-tip-calc-op"><b>{signedPct(p.value)}</b> × {p.weight}%</span>
                             </span>
                         ))}
-                        <span className="ax-tip-calc-row ax-tip-calc-total">
-                            <span className="ax-tip-calc-label">{ax.explainApprox}</span>
-                            <span className="ax-tip-calc-op">≈ <b>{signedPct(s.metric.value ?? 0)}</b></span>
-                        </span>
+                        {s.metric.value != null && (
+                            <span className="ax-tip-calc-row ax-tip-calc-total">
+                                <span className="ax-tip-calc-label">{ax.explainApprox}</span>
+                                <span className="ax-tip-calc-op">≈ <b>{signedPct(s.metric.value)}</b></span>
+                            </span>
+                        )}
                     </span>
                 </>
             )}
@@ -280,23 +282,28 @@ export function Suitability({ suit, t }: { suit: SuitabilityResult; t: FundLabel
 /* ----------------------------------------------------------------- Insights */
 
 export function Insights({ insights, t }: { insights: Insight[]; t: FundLabels }) {
-    if (!insights.length) return null;
     const ax = t.ax;
+    // The section shell always renders — zero insights degrades to an honest
+    // empty note, never a vanished section (fixed page structure for every fund).
     return (
         <section className="glass-premium rounded-[1.6rem] p-5" aria-label={ax.insightsTitle}>
             <h3 className="text-base font-display font-bold tracking-[-0.02em] text-main">{ax.insightsTitle}</h3>
             <p className="mt-1 text-xs leading-relaxed text-muted">{ax.insightsSub}</p>
-            <div className="mt-4 grid gap-3">
-                {insights.map((ins, i) => (
-                    <div key={`${ins.code}-${i}`} className="insight-card" data-kind={ins.kind}>
-                        <div className="insight-top">
-                            <span className="insight-badge">{ins.kind === 'pro' ? ax.pro : ax.con}</span>
-                            <span className="insight-impact" data-impact={ins.impact}>{(ax.impact as Record<string, string>)[ins.impact]}</span>
+            {insights.length > 0 ? (
+                <div className="mt-4 grid gap-3">
+                    {insights.map((ins, i) => (
+                        <div key={`${ins.code}-${i}`} className="insight-card" data-kind={ins.kind}>
+                            <div className="insight-top">
+                                <span className="insight-badge">{ins.kind === 'pro' ? ax.pro : ax.con}</span>
+                                <span className="insight-impact" data-impact={ins.impact}>{(ax.impact as Record<string, string>)[ins.impact]}</span>
+                            </div>
+                            <p className="insight-text">{interp((ax.insightText as Record<string, string>)[ins.code] ?? '', { v: ins.value ?? '' })}</p>
                         </div>
-                        <p className="insight-text">{interp((ax.insightText as Record<string, string>)[ins.code] ?? '', { v: ins.value ?? '' })}</p>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            ) : (
+                <p className="ax-pending mt-4">{ax.noData}</p>
+            )}
         </section>
     );
 }
@@ -317,7 +324,9 @@ export function StressTest({ stress, movement, t }: { stress: StressResult; move
           ] as Array<[string, number | null, boolean]>).filter((r) => r[1] !== null)
         : [];
 
-    if (!stress.scenarios.length && !moveStats.length) return null;
+    // Shell always renders; with neither movement stats nor scenarios it shows an
+    // honest empty note instead of disappearing (fixed page structure).
+    const empty = !stress.scenarios.length && !moveStats.length;
 
     return (
         <section className="glass-premium rounded-[1.6rem] p-5" aria-label={ax.stressTitle}>
@@ -355,7 +364,11 @@ export function StressTest({ stress, movement, t }: { stress: StressResult; move
                 </div>
             )}
 
-            <p className="ax-note mt-4">{ax.stressDisclaimer}</p>
+            {empty ? (
+                <p className="ax-pending mt-4">{ax.noData}</p>
+            ) : (
+                <p className="ax-note mt-4">{ax.stressDisclaimer}</p>
+            )}
         </section>
     );
 }

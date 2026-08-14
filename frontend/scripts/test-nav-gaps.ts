@@ -5,7 +5,7 @@
 import { readFileSync } from 'fs';
 import {
     medianIntervalDays, gapToleranceDays, breakToleranceDays, findGaps, withGapBreaks,
-    anchorWithinTolerance, type NavPoint,
+    splitAtGaps, anchorWithinTolerance, type NavPoint,
 } from '../lib/nav-gaps';
 
 let failures = 0;
@@ -45,6 +45,15 @@ check('whitespace never collides with a real date',
 check('series stays chronologically sorted',
     broken.every((p, i) => i === 0 || p.time >= broken[i - 1].time), true);
 check('the hole is a visible share of the series', ws.length / broken.length > 0.25, true);
+// Segments are what actually guarantees the break: whitespace alone did NOT stop
+// the AreaSeries drawing through the hole (verified by canvas pixel scan on prod).
+const runs = splitAtGaps(real);
+check('splits into two contiguous runs', runs.length, 2);
+check('run 1 ends at the freeze', runs[0][runs[0].length - 1].time, '2025-05-14');
+check('run 2 starts at the resume', runs[1][0].time, '2026-06-30');
+check('every observation survives the split', runs.reduce((n, r) => n + r.length, 0), real.length);
+check('runs stay in order and never overlap',
+    runs[0][runs[0].length - 1].time < runs[1][0].time, true);
 check('real values are untouched, not rescaled',
     broken.filter(p => p.value !== undefined).map(p => p.value).join() === real.map(p => p.value).join(), true);
 
@@ -56,6 +65,7 @@ check('zero gaps flagged', findGaps(weekly).length, 0);
 check('break threshold scales too', breakToleranceDays(weekly), 70);
 check('series passes through untouched', withGapBreaks(weekly).length, weekly.length);
 check('no whitespace added to a clean weekly fund', withGapBreaks(weekly).filter(p => p.value === undefined).length, 0);
+check('a clean fund stays ONE unbroken run', splitAtGaps(weekly).length, 1);
 
 console.log('\n[3] MONTHLY fund — 30-day cadence must not be flagged');
 const monthly: NavPoint[] = Array.from({ length: 30 }, (_, i) => ({ time: day(2024, i, 1), value: 50 + i }));
@@ -68,6 +78,7 @@ const revolution: NavPoint[] = [
 ];
 check('closure is not a defect', findGaps(revolution).length, 0);
 check('series not broken across the closure', withGapBreaks(revolution).length, revolution.length);
+check('closure does NOT split the series', splitAtGaps(revolution).length, 1);
 
 console.log('\n[5] A genuine multi-month hole in a daily fund MUST be flagged');
 const holed: NavPoint[] = [

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { findGaps, withGapBreaks, type NavPoint } from '@/lib/nav-gaps';
+import { findGaps, splitAtGaps, withGapBreaks, type NavPoint } from '@/lib/nav-gaps';
 
 /**
  * Interactive NAV history chart — the premium fund page's centrepiece, rebuilt
@@ -106,6 +106,12 @@ export default function FundNavChart({
     const chartRef = useRef<any>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const seriesRef = useRef<any>(null);
+    // Extra series, one per contiguous run after the primary. A gap is rendered by
+    // there being no series across it — structural, not a library-behaviour bet.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const extraSeriesRef = useRef<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const makeSeriesRef = useRef<(() => any) | null>(null);
     // The currently-drawn (range-filtered) series — read by the hover overlay so
     // cursor→index resolution always matches what's on screen.
     const viewRef = useRef<Point[]>([]);
@@ -180,9 +186,34 @@ export default function FundNavChart({
             if (filtered.length < MIN_POINTS_TO_DRAW) return;
 
             viewRef.current = filtered;
-            // Sever the line across any hole large enough that interpolating it would
-            // invent a price move. Nothing is filled in — the segment simply stops.
-            series.setData(withGapBreaks(filtered) as { time: string; value?: number }[]);
+
+            // Drop any segment series from the previous range before redrawing.
+            for (const s of extraSeriesRef.current) {
+                try { chart.removeSeries(s); } catch { /* already gone */ }
+            }
+            extraSeriesRef.current = [];
+
+            // One series per contiguous run: across a real hole there is simply no
+            // series to draw, so nothing can be interpolated. Whitespace still goes
+            // to the PRIMARY series so the time scale gives the hole its true width.
+            const runs = splitAtGaps(filtered as NavPoint[]);
+            const spaced = withGapBreaks(filtered as NavPoint[]) as { time: string; value?: number }[];
+
+            if (runs.length <= 1) {
+                series.setData(spaced);
+            } else {
+                // Primary carries run 0 plus the whitespace that spans every hole,
+                // so the axis keeps calendar-honest spacing end to end.
+                const holeSlots = spaced.filter((p) => p.value === undefined);
+                const head = [...runs[0], ...holeSlots].sort((a, b) => (a.time < b.time ? -1 : 1));
+                series.setData(head as { time: string; value?: number }[]);
+                for (const run of runs.slice(1)) {
+                    const extra = makeSeriesRef.current?.();
+                    if (!extra) break;
+                    extra.setData(run);
+                    extraSeriesRef.current.push(extra);
+                }
+            }
 
             // Pin the axis to the REQUESTED window, not to the data's own extent.
             // fitContent() rescaled to [first drawn point, last drawn point], which is
@@ -253,7 +284,7 @@ export default function FundNavChart({
                 handleScale: false,
             });
 
-            const series = chart.addSeries(LWC.AreaSeries, {
+            const seriesOptions = {
                 lineColor: '#14B8A6',
                 topColor: 'rgba(20, 184, 166, 0.24)',
                 bottomColor: 'rgba(20, 184, 166, 0.02)',
@@ -265,7 +296,16 @@ export default function FundNavChart({
                 crosshairMarkerVisible: true,
                 crosshairMarkerRadius: 5,
                 priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
-            });
+            } as const;
+            const series = chart.addSeries(LWC.AreaSeries, seriesOptions);
+            // Segment series share the styling but must not each stamp their own
+            // price line / last-value label, or the chart grows duplicate markers.
+            makeSeriesRef.current = () =>
+                chart.addSeries(LWC.AreaSeries, {
+                    ...seriesOptions,
+                    priceLineVisible: false,
+                    lastValueVisible: false,
+                });
 
             chartRef.current = chart;
             seriesRef.current = series;
@@ -425,6 +465,9 @@ export default function FundNavChart({
                 }
             }
             chartRef.current = null;
+            // chart.remove() above disposes every series with it; just drop the refs.
+            extraSeriesRef.current = [];
+            makeSeriesRef.current = null;
             seriesRef.current = null;
         };
         // Rebuild only when the dataset identity changes, not on range flips.

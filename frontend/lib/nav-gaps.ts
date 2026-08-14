@@ -103,6 +103,36 @@ export function breakToleranceDays(points: readonly NavPoint[]): number {
     return Math.max(30, medianIntervalDays(points) * 10);
 }
 
+/**
+ * Split a series into contiguous runs, severed at every misleading gap.
+ *
+ * Why segments rather than whitespace points — established empirically against
+ * production, not from documentation. Whitespace (`{ time }` with no value)
+ * correctly reserves slots on the time scale, so the x-axis spacing becomes
+ * calendar-honest, but the AreaSeries in use here still draws straight THROUGH
+ * it: a pixel scan of the live canvas found zero empty columns across a 412-day
+ * hole. Rendering each run as its own series makes the break structural — there
+ * is no line to draw across, whatever the library decides about whitespace.
+ *
+ * Callers should still feed `withGapBreaks` output to the time scale so the
+ * hole keeps its true width, and draw these segments on top.
+ */
+export function splitAtGaps(points: readonly NavPoint[], toleranceDays?: number): NavPoint[][] {
+    if (points.length < 2) return points.length ? [[...points]] : [];
+    const gaps = findGaps(points, toleranceDays ?? breakToleranceDays(points));
+    if (!gaps.length) return [[...points]];
+    const cutAfter = new Set(gaps.map((g) => g.from));
+    const runs: NavPoint[][] = [];
+    let cur: NavPoint[] = [];
+    for (const p of points) {
+        cur.push(p);
+        if (cutAfter.has(p.time)) { runs.push(cur); cur = []; }
+    }
+    if (cur.length) runs.push(cur);
+    // A lone point cannot be drawn as a line; keep it only if it is the whole run set.
+    return runs.filter((r) => r.length >= 2 || runs.length === 1);
+}
+
 /** Safety valve: a 20-year hole must not generate 7,000 points. */
 const MAX_FILLER_PER_GAP = 400;
 

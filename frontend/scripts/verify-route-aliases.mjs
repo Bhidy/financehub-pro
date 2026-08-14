@@ -289,6 +289,25 @@ const checks = [
       && /navConfig\.items\.map/.test(text),
   },
   {
+    // News rows carry `image_url` scraped from the originating publisher.
+    // Those are third-party editorial photos: off-brand, unpredictable, and not
+    // ours to republish (a street-market photo once illustrated a CPI story).
+    // Every news surface must resolve its image through lib/news-cover.ts.
+    name: "news article renders the branded cover, never the scraped image",
+    file: "app/News/[id]/page.tsx",
+    assert: (text) =>
+      /from '@\/lib\/news-cover'/.test(text) &&
+      !/src=\{article\.image_url\}/.test(text) &&
+      !/images:\s*\[\{\s*url:\s*article\.image_url/.test(text) &&
+      !/image:\s*\[article\.image_url\]/.test(text),
+  },
+  {
+    // The originating publisher must never be credited on-page.
+    name: "news article does not print an original-source attribution",
+    file: "app/News/[id]/page.tsx",
+    assert: (text) => !/المصدر الأصلي|Original source/.test(text),
+  },
+  {
     // DESIGN_SYSTEM.md -> "Bilingual Parity": the en and ar dictionaries are a
     // matched pair. A key added to one language and forgotten in the other
     // renders the stale English markup default to Arabic users (and vice

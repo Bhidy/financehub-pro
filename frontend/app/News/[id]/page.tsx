@@ -6,6 +6,7 @@ import { sanitizeNewsText } from '@/lib/news-display';
 import { SITE_URL, newsPath, idFromParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { newsCoverPath, newsCoverUrl } from '@/lib/news-cover';
 
 /**
  * Server-rendered news article at /News/{id}-{slug}.
@@ -62,7 +63,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             url: canonical,
             publishedTime: new Date(article.published_at).toISOString(),
             locale: arabic ? 'ar_EG' : 'en_US',
-            ...(article.image_url ? { images: [{ url: article.image_url }] } : {}),
+            images: [{ url: newsCoverUrl(SITE_URL, arabic ? 'ar' : 'en') }],
         },
         twitter: {
             card: 'summary_large_image',
@@ -107,7 +108,7 @@ export default async function NewsArticlePage({ params }: Props) {
         dateModified: publishedIso,
         inLanguage: arabic ? 'ar' : 'en',
         mainEntityOfPage: { '@type': 'WebPage', '@id': absUrl(canonicalPath) },
-        ...(article.image_url ? { image: [article.image_url] } : {}),
+        image: [newsCoverUrl(SITE_URL, arabic ? 'ar' : 'en')],
         // Inline node (not an @id reference): Google resolves JSON-LD per page,
         // and the #organization node only exists on the homepage.
         publisher: {
@@ -141,11 +142,21 @@ export default async function NewsArticlePage({ params }: Props) {
             <JsonLd data={newsJsonLd} />
             <JsonLd
                 data={breadcrumbJsonLd(
-                    [{ url: '/', label: 'Home' }, { url: '/News', label: 'Market News' }, { label: headline }],
+                    [
+                        { url: '/', label: arabic ? 'الرئيسية' : 'Home' },
+                        { url: '/News', label: arabic ? 'أخبار السوق' : 'Market News' },
+                        { label: headline },
+                    ],
                     SITE_URL
                 )}
             />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { href: '/News', label: 'Market News' }, { label: headline }]} />
+            <Breadcrumbs
+                items={[
+                    { href: '/', label: arabic ? 'الرئيسية' : 'Home' },
+                    { href: '/News', label: arabic ? 'أخبار السوق' : 'Market News' },
+                    { label: headline },
+                ]}
+            />
 
             <article lang={arabic ? 'ar' : 'en'}>
                 <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">{headline}</h1>
@@ -163,19 +174,16 @@ export default async function NewsArticlePage({ params }: Props) {
                     )}
                 </p>
 
-                {article.image_url && (
-                    // External news images come from many hosts; plain <img> with
-                    // explicit dimensions avoids next/image remotePatterns failures.
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={article.image_url}
-                        alt={headline}
-                        width={1200}
-                        height={675}
-                        className="mt-5 h-auto w-full rounded-xl border border-border object-cover"
-                        referrerPolicy="no-referrer"
-                    />
-                )}
+                {/* Always the Starta branded cover — never article.image_url.
+                    See lib/news-cover.ts for why. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={newsCoverPath(arabic ? 'ar' : 'en')}
+                    alt=""
+                    width={1200}
+                    height={675}
+                    className="mt-5 h-auto w-full rounded-xl border border-border object-cover"
+                />
 
                 <div className="prose mt-6 max-w-none text-[1.05rem] leading-relaxed">
                     {paragraphs.map((p, i) => (
@@ -183,42 +191,62 @@ export default async function NewsArticlePage({ params }: Props) {
                     ))}
                 </div>
 
-                {article.url && (
-                    <p className="mt-6 text-sm text-muted">
-                        {arabic ? 'المصدر الأصلي: ' : 'Original source: '}
-                        <a href={article.url} rel="nofollow noopener" target="_blank" className="text-starta-teal hover:underline">
-                            {(() => {
-                                try {
-                                    return new URL(article.url).hostname;
-                                } catch {
-                                    return 'link';
-                                }
-                            })()}
-                        </a>
-                    </p>
-                )}
             </article>
 
             {latest.length > 0 && (
-                <section className="mt-10 border-t border-border pt-6" dir="ltr">
-                    <h2 className="text-lg font-bold text-main">More Egyptian market news</h2>
-                    <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                /* dir follows the ARTICLE's language: this block was pinned to
+                   ltr, which left Arabic readers with a left-aligned English
+                   heading and a bare list of links. */
+                <section className="mt-14 border-t border-border pt-8" dir={arabic ? 'rtl' : 'ltr'}>
+                    <div className="flex items-end justify-between gap-4">
+                        <h2 className="text-xl font-bold tracking-[-0.02em] text-main sm:text-2xl">
+                            {arabic ? 'المزيد من أخبار السوق' : 'More Egyptian market news'}
+                        </h2>
+                        <Link
+                            href="/News"
+                            className="shrink-0 text-xs font-bold uppercase tracking-[0.18em] text-starta-teal hover:underline"
+                        >
+                            {arabic ? 'كل الأخبار' : 'All news'}
+                        </Link>
+                    </div>
+
+                    <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {latest.map((n) => {
-                            const h = sanitizeNewsText(n.headline) || 'Egypt Market Update';
+                            const h = sanitizeNewsText(n.headline)
+                                || (arabic ? 'تحديث السوق المصري' : 'Egypt Market Update');
+                            const when = n.published_at
+                                ? new Date(n.published_at).toLocaleDateString(arabic ? 'ar-EG' : 'en-GB', {
+                                      day: 'numeric', month: 'short', timeZone: 'Africa/Cairo',
+                                  })
+                                : null;
                             return (
-                                <li key={n.id}>
-                                    <Link href={newsPath(n.id, h)} className="text-sm font-medium text-main hover:text-starta-teal">
-                                        {h}
-                                    </Link>
-                                </li>
+                                <Link
+                                    key={n.id}
+                                    href={newsPath(n.id, h)}
+                                    className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-all duration-300 hover:-translate-y-1 hover:border-starta-teal/40 hover:shadow-[0_18px_40px_rgba(16,24,40,0.10)]"
+                                >
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={newsCoverPath(arabic ? 'ar' : 'en')}
+                                        alt=""
+                                        width={640}
+                                        height={360}
+                                        loading="lazy"
+                                        className="aspect-[16/9] w-full object-cover"
+                                    />
+                                    <div className="flex flex-1 flex-col gap-2 p-4">
+                                        <span className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-starta-teal">
+                                            {arabic ? 'أخبار السوق' : 'Market news'}
+                                        </span>
+                                        <h3 className="line-clamp-3 text-sm font-bold leading-snug text-main transition-colors group-hover:text-starta-teal">
+                                            {h}
+                                        </h3>
+                                        {when && <span className="mt-auto pt-1 text-xs text-muted">{when}</span>}
+                                    </div>
+                                </Link>
                             );
                         })}
-                    </ul>
-                    <p className="mt-4 text-sm">
-                        <Link href="/News" className="font-semibold text-starta-teal hover:underline">
-                            All market news →
-                        </Link>
-                    </p>
+                    </div>
                 </section>
             )}
         </PublicPageShell>

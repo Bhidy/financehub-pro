@@ -1,5 +1,6 @@
 import { constants } from "node:fs";
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
+import { assetHashes } from "./sync-asset-versions.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -599,6 +600,29 @@ async function run() {
     if (!check.assert(text, { navConfig })) {
       console.error(`FAIL: ${check.name} (${check.file})`);
       process.exit(1);
+    }
+  }
+
+  // Shared-asset cache keys must be content hashes. A hand-written ?v= gets
+  // forgotten when the file changes, and every returning visitor keeps running
+  // the stale script — a fixed nav rendering broken because the browser never
+  // fetched the fix.
+  {
+    const hashes = await assetHashes();
+    const pages = (await readdir(path.join(root, "public"))).filter((f) => f.endsWith(".html"));
+    for (const page of pages) {
+      const text = await readFile(path.join(root, "public", page), "utf8");
+      for (const [name, hash] of Object.entries(hashes)) {
+        const escaped = name.replace(/\./g, "\\.");
+        const used = [...text.matchAll(new RegExp(`/assets/${escaped}\\?v=([^"']*)`, "g"))].map((m) => m[1]);
+        if (used.length && used.some((v) => v !== hash)) {
+          console.error(
+            `FAIL: ${page} loads ${name} with a stale cache key (expected ${hash}). ` +
+            "Run: node scripts/sync-asset-versions.mjs"
+          );
+          process.exit(1);
+        }
+      }
     }
   }
 

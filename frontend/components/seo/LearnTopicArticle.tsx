@@ -4,6 +4,7 @@ import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo
 import JsonLd from '@/components/seo/JsonLd';
 import topicsJson from '@/content/learn-topics.generated';
 import { LEARN_FAQS, faqPageJsonLd } from '@/content/learn-faqs';
+import learnImageSizes from '@/lib/learn-image-sizes.json';
 
 /**
  * Shared server-rendered Learn topic article, used by both the EN
@@ -58,6 +59,8 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
     const arabic = lang === 'ar';
     const content = arabic ? topic.ar : topic.en;
     const coverImage = arabic ? topic.coverImageAr : topic.coverImageEn;
+    const imageSizes = learnImageSizes as Record<string, { w: number; h: number }>;
+    const coverSize = imageSizes[coverImage];
     // Canonical per language: AR URLs carry the Arabic-title slug.
     const path = learnPath(topic.slug, topic.ar.title, lang);
     const related = nextTopics(topic.slug);
@@ -100,6 +103,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
             altHref={encodeURI(learnPath(topic.slug, topic.ar.title, arabic ? 'en' : 'ar'))}
             persistLang
         >
+            <link rel="stylesheet" href="/assets/starta-learn.css" />
             <JsonLd data={articleJsonLd} />
             {faqJsonLd && <JsonLd data={faqJsonLd} />}
             <JsonLd
@@ -110,7 +114,28 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
             />
             <Breadcrumbs items={crumbs} />
 
-            <article lang={lang}>
+
+            <div className="learn-cover-wrap">
+
+                {/* Cover. Dimensions come from the file itself (lib/learn-image-sizes.json):
+                    the markup used to claim 1200×675 for every image while the covers are
+                    920×690, so the browser upscaled them 1.21× — that, not the assets, is
+                    why they looked low-resolution. max-width caps at the real pixel width so
+                    the image is never drawn larger than it is, and never cropped. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={coverImage}
+                    alt={content.title}
+                    width={coverSize?.w}
+                    height={coverSize?.h}
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                    className="learn-cover-img block rounded-2xl border border-border"
+                    style={coverSize ? { maxWidth: `min(100%, ${coverSize.w}px)` } : undefined}
+                />
+            </div>
+            <article lang={lang} className="learn-article">
                 <p className="text-sm font-semibold text-starta-teal">
                     {content.category}
                     <span className="font-normal text-muted"> · {content.readTime}</span>
@@ -119,17 +144,6 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     {content.title}
                 </h1>
                 <p className="mt-3 text-lg font-semibold leading-relaxed text-main">{content.summary}</p>
-
-                {/* Local static covers; plain <img> keeps these pages zero-JS like the News article page. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                    src={coverImage}
-                    alt={content.title}
-                    width={1200}
-                    height={675}
-                    loading="eager"
-                    className="mt-5 h-auto w-full rounded-xl border border-border object-cover"
-                />
 
                 <p className="mt-6 text-[1.05rem] leading-relaxed text-main">{content.intro}</p>
 
@@ -145,15 +159,21 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                             </ul>
                         )}
                         {section.image && (
-                            <figure className="mt-4">
+                            <figure className="learn-figure">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={section.image.src}
                                     alt={section.image.alt || section.heading}
-                                    width={1200}
-                                    height={675}
+                                    width={imageSizes[section.image.src]?.w}
+                                    height={imageSizes[section.image.src]?.h}
                                     loading="lazy"
-                                    className="h-auto w-full rounded-xl border border-border"
+                                    decoding="async"
+                                    className="mx-auto block"
+                                    style={
+                                        imageSizes[section.image.src]
+                                            ? { maxWidth: `min(100%, ${imageSizes[section.image.src].w}px)` }
+                                            : undefined
+                                    }
                                 />
                                 {section.image.caption && (
                                     <figcaption className="mt-2 text-sm text-muted">

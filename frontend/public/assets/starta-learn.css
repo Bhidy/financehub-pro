@@ -1,0 +1,112 @@
+/**
+ * LEARN ARTICLE — editorial reading layout.
+ *
+ * MEASURED PROBLEMS THIS FIXES (production, 1920px viewport, before):
+ *   · cover 920×690 intrinsic rendered at 1109×832  → 1.21× upscale (the
+ *     "low resolution" complaint) and an 832px-tall hero that pushed all
+ *     content below the fold (the "too big" complaint)
+ *   · cover declared 1200×675 (16:9) for a 4:3 asset, with object-fit: cover —
+ *     a crop waiting to happen, and the owner explicitly asked for no cropping
+ *   · body copy 14px / 20px line-height across a 1109px measure ≈ 140
+ *     characters per line. The readable range is 60–75.
+ *
+ * PRINCIPLES
+ *   1. Never render a raster above its intrinsic width. Upscaling is the only
+ *      reason these images looked soft — the assets themselves are unchanged.
+ *   2. Never crop editorial artwork: the aspect ratio comes from the file.
+ *   3. Constrain the measure. One column, ~68ch, is what makes long-form read
+ *      like a publication rather than a dashboard.
+ */
+
+/* ── Measure ─────────────────────────────────────────────────────────────
+   The article column caps at ~68 characters. `ch` tracks the actual font, so
+   this stays correct in both Arabic and Latin. */
+.learn-article {
+    max-width: 68ch;
+    margin-inline: auto;
+}
+
+/* Full-bleed elements opt out of the measure deliberately. */
+.learn-article > .learn-wide {
+    max-width: none;
+}
+
+/* ── Body copy ───────────────────────────────────────────────────────────
+   Arabic needs noticeably more leading than Latin at the same size: the script
+   has deep descenders and stacked diacritics that collide at 1.4. */
+.learn-article p,
+.learn-article li {
+    font-size: 1.0625rem;
+    line-height: 1.85;
+}
+
+html[lang="ar"] .learn-article p,
+html[lang="ar"] .learn-article li {
+    font-size: 1.125rem;
+    line-height: 2;
+}
+
+.learn-article h2 {
+    font-size: 1.4rem;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
+html[lang="ar"] .learn-article h2 {
+    letter-spacing: 0;
+    line-height: 1.5;
+}
+
+/* ── Figures ─────────────────────────────────────────────────────────────
+   `width: auto` + `max-width: min(100%, <intrinsic>px)` is the whole fix: the
+   image is free to shrink on narrow screens but can never be drawn larger than
+   the pixels it actually has. aspect-ratio comes from the file's own
+   dimensions, so nothing is cropped or stretched. */
+.learn-figure {
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.learn-figure img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    /* Never upscale: the per-image cap is set inline from the real file size. */
+    border-radius: 1rem;
+    border: 1px solid var(--c-border, rgba(0, 0, 0, 0.08));
+    background: var(--c-surface, #fff);
+    /* object-fit is deliberately NOT `cover` — editorial artwork is never cropped. */
+    object-fit: contain;
+}
+
+.learn-figure figcaption {
+    margin-top: 0.65rem;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--c-text-muted);
+}
+
+/* The hero sits ABOVE the reading column — a measure is for text, not artwork.
+   It breaks out of the 68ch column but is still capped at the file's own pixel
+   width, so it is prominent without ever being upscaled. */
+.learn-cover-wrap {
+    margin: 1.75rem auto 0.25rem;
+    text-align: center;
+}
+
+.learn-cover-img {
+    width: auto;
+    height: auto;
+    margin-inline: auto;
+    object-fit: contain;
+}
+
+@media (max-width: 640px) {
+    .learn-article p,
+    .learn-article li,
+    html[lang="ar"] .learn-article p,
+    html[lang="ar"] .learn-article li {
+        font-size: 1rem;
+        line-height: 1.85;
+    }
+}

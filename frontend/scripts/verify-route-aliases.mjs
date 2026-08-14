@@ -2,6 +2,7 @@ import { constants } from "node:fs";
 import { access, readFile, readdir } from "node:fs/promises";
 import { assetHashes } from "./sync-asset-versions.mjs";
 import { deriveArRoutes } from "./sync-ar-routes.mjs";
+import { buildManifest, referencedImages } from "./sync-learn-image-sizes.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -750,6 +751,43 @@ async function run() {
         console.error(`FAIL: ${file} renders nav links without localizedHref().`);
         process.exit(1);
       }
+    }
+  }
+
+  // Learn images must declare their REAL pixel size. The markup used to hardcode
+  // 1200x675 for every image while seven distinct sizes exist, so most covers
+  // were upscaled (they looked low-resolution) and the wrong aspect box invited
+  // object-fit: cover to crop editorial artwork.
+  {
+    const refs = await referencedImages();
+    const checkedIn = JSON.parse(await readFile(path.join(root, "lib/learn-image-sizes.json"), "utf8"));
+    const missing = refs.filter((r) => !checkedIn[r]);
+    if (missing.length) {
+      console.error(
+        `FAIL: Learn images with no measured size: ${missing.join(", ")}\n` +
+        "       Run: node scripts/sync-learn-image-sizes.mjs"
+      );
+      process.exit(1);
+    }
+    const fresh = await buildManifest();
+    const drifted = Object.keys(fresh).filter(
+      (k) => !checkedIn[k] || checkedIn[k].w !== fresh[k].w || checkedIn[k].h !== fresh[k].h
+    );
+    if (drifted.length) {
+      console.error(
+        `FAIL: lib/learn-image-sizes.json is stale for: ${drifted.join(", ")}\n` +
+        "       Run: node scripts/sync-learn-image-sizes.mjs"
+      );
+      process.exit(1);
+    }
+    // The article must never hardcode dimensions again.
+    const article = await readFile(path.join(root, "components/seo/LearnTopicArticle.tsx"), "utf8");
+    if (/width=\{1200\}/.test(article) || /object-cover/.test(article)) {
+      console.error(
+        "FAIL: LearnTopicArticle hardcodes image dimensions or crops artwork.\n" +
+        "       Use lib/learn-image-sizes.json; editorial images are never cropped."
+      );
+      process.exit(1);
     }
   }
 

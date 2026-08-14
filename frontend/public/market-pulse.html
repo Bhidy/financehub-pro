@@ -3,7 +3,7 @@
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=1.1.0"></script>
-    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
+    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-i18n.js?v=1"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Pulse | Starta Markets</title>
@@ -154,7 +154,7 @@
                     <header class="security-head">
                         <div>
                             <div class="ticker-row"><div class="logo-box" style="width: 2.2rem; height: 2.2rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); overflow: hidden; margin-inline-end: 0.15rem; flex-shrink: 0;"><img id="selectedLogo" src="" alt="" style="width: 100%; height: 100%; object-fit: contain; display: none;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span class="logo-fallback display" style="font-size: 0.85rem; font-weight: 700; color: var(--teal-dark); text-transform: uppercase;">--</span></div><h1 id="selectedSymbol" class="display">COMI</h1><button id="favBtn" class="favorite" type="button" aria-label="Toggle watchlist">+</button></div>
-                            <p id="selectedName" class="security-name">Commercial International Bank Egypt</p>
+                            <p id="selectedName" class="security-name" data-key="loading_security">Loading security…</p>
                         </div>
                         <div class="quote">
                             <strong id="selectedPrice" class="display tabular">--</strong><span class="unit">EGP</span>
@@ -173,7 +173,7 @@
                             <button type="button" data-period="6m" data-days="180">6M</button>
                             <button type="button" data-period="1y" data-days="365">1Y</button>
                             <button type="button" data-period="3y" data-days="1095">3Y</button>
-                            <button type="button" data-period="max" data-days="9999">MAX</button>
+                            <button type="button" data-period="max" data-days="9999" data-key="range_max">MAX</button>
                         </div>
                         <span class="chart-caption-group">
                             <span id="historyCaption" class="subtle" data-key="historical_prices">Historical close prices</span>
@@ -215,7 +215,7 @@
                             <button type="button" data-period="6m" data-days="180">6M</button>
                             <button type="button" data-period="1y" data-days="365">1Y</button>
                             <button type="button" data-period="3y" data-days="1095">3Y</button>
-                            <button type="button" data-period="max" data-days="9999">MAX</button>
+                            <button type="button" data-period="max" data-days="9999" data-key="range_max">MAX</button>
                         </div>
                     </div>
                     <figure class="index-figure">
@@ -330,7 +330,7 @@
                                 <button type="button" data-period="6m" data-days="180">6M</button>
                                 <button type="button" data-period="1y" data-days="365">1Y</button>
                                 <button type="button" data-period="3y" data-days="1095">3Y</button>
-                                <button type="button" data-period="max" data-days="9999">MAX</button>
+                                <button type="button" data-period="max" data-days="9999" data-key="range_max">MAX</button>
                             </div>
                         </div>
                         <div class="drawer-chart-container" style="position: relative; height: 260px; margin-top: 0.5rem;">
@@ -364,5 +364,105 @@
     <script src="/assets/portfolio-store.js?v=1.2.0"></script>
     <script src="/assets/news-covers.js?v=1.2.0"></script>
     <script src="/assets/market-pulse.js?v=1.2.8"></script>
+
+    <script>
+        /* Page dictionary for /Market-Pulse. Site chrome (nav + footer) comes
+           from /assets/starta-i18n.js; only page-specific market labels live
+           here. Both languages must define the same keys — build-gated by
+           scripts/verify-i18n-coverage.mjs. */
+        (function () {
+            const MP_I18N = {
+                en: {
+                    range_max: "MAX",
+                    loading_security: "Loading security…",
+                advancers_decliners: "Advancers / Decliners",
+                breadth: "Advancers / Decliners",
+                change: "Change",
+                company_overview: "Company overview",
+                currency: "EGP",
+                egx30: "EGX 30 Index",
+                exchange: "Egyptian Exchange",
+                financials: "Financials",
+                historical_prices: "Historical close prices",
+                last: "Last",
+                listed: "Listed securities",
+                loading_chart: "Loading chart data...",
+                market_news: "Market News",
+                market_overview: "Market Overview",
+                most_active: "Most Active",
+                my_portfolio: "My Portfolio",
+                my_watchlist: "My Watchlist",
+                news: "News",
+                overview: "Overview",
+                quick_stats: "Market Scope",
+                quick_view: "Quick View",
+                shares: "shares",
+                symbol: "Symbol",
+                top_gainers: "Top Gainers",
+                top_losers: "Top Losers",
+                trading_value: "Trading value",
+                trading_volume: "Trading volume",
+                turnover: "Trading Value",
+                view_all: "View all",
+                view_company: "View company",
+                view_full_profile: "View Full Profile",
+                volume: "Trading Volume",
+                watchlist: "Watchlist",
+                },
+                ar: {
+                    range_max: "الأقصى",
+                    loading_security: "جارٍ تحميل الورقة المالية…",
+                advancers_decliners: "الصاعدة / الهابطة",
+                breadth: "الصاعدة / الهابطة",
+                change: "التغير",
+                company_overview: "نظرة عامة على الشركة",
+                currency: "ج.م",
+                egx30: "مؤشر EGX 30",
+                exchange: "البورصة المصرية",
+                financials: "القوائم المالية",
+                historical_prices: "أسعار الإغلاق التاريخية",
+                last: "آخر سعر",
+                listed: "الأوراق المقيدة",
+                loading_chart: "جارٍ تحميل بيانات الرسم البياني...",
+                market_news: "أخبار السوق",
+                market_overview: "نظرة عامة على السوق",
+                most_active: "الأكثر نشاطًا",
+                my_portfolio: "محفظتي",
+                my_watchlist: "قائمة متابعتي",
+                news: "الأخبار",
+                overview: "نظرة عامة",
+                quick_stats: "نطاق السوق",
+                quick_view: "عرض سريع",
+                shares: "سهم",
+                symbol: "الرمز",
+                top_gainers: "الأكثر ارتفاعًا",
+                top_losers: "الأكثر انخفاضًا",
+                trading_value: "قيمة التداول",
+                trading_volume: "حجم التداول",
+                turnover: "قيمة التداول",
+                view_all: "عرض الكل",
+                view_company: "عرض الشركة",
+                view_full_profile: "عرض الملف الكامل",
+                volume: "حجم التداول",
+                watchlist: "قائمة المتابعة",
+                }
+            };
+            function applyMarketPulseI18n() {
+                const dict = MP_I18N[document.documentElement.lang === 'en' ? 'en' : 'ar'];
+                document.querySelectorAll('[data-key]').forEach((el) => {
+                    const key = el.getAttribute('data-key');
+                    if (Object.prototype.hasOwnProperty.call(dict, key)) el.innerHTML = dict[key];
+                });
+            }
+            window.startaApplyMarketPulseI18n = applyMarketPulseI18n;
+            function start() {
+                applyMarketPulseI18n();
+                new MutationObserver(applyMarketPulseI18n)
+                    .observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+            else start();
+        })();
+    </script>
 </body>
 </html>

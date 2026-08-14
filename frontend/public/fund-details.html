@@ -4,7 +4,7 @@
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=1.1.0"></script>
-    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
+    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-i18n.js?v=1"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fund Details | Starta Markets</title>
@@ -340,8 +340,8 @@
                                 <img id="fundLogo" src="/assets/funds/starta-fund-placeholder.svg" alt="Fund logo" class="h-full w-full rounded-xl object-contain">
                             </div>
                             <div>
-                                <h1 id="fundName" class="text-3xl sm:text-4xl lg:text-[3.25rem] font-display font-bold tracking-[-0.05em] leading-[0.98] text-main">Loading fund</h1>
-                                <p id="fundManagerLine" class="mt-3 text-base text-muted">Loading manager</p>
+                                <h1 id="fundName" class="text-3xl sm:text-4xl lg:text-[3.25rem] font-display font-bold tracking-[-0.05em] leading-[0.98] text-main" data-key="loading_fund">Loading fund</h1>
+                                <p id="fundManagerLine" class="mt-3 text-base text-muted" data-key="loading_manager">Loading manager</p>
                             </div>
                         </div>
 
@@ -386,7 +386,7 @@
                                 <button class="range-btn active rounded-full px-4 py-2 text-sm font-semibold" data-range="YTD">YTD</button>
                                 <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="1Y">1Y</button>
                                 <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="3Y">3Y</button>
-                                <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="ALL">All</button>
+                                <button class="range-btn rounded-full px-4 py-2 text-sm font-semibold" data-range="ALL" data-key="range_all">All</button>
                             </div>
                         </div>
 
@@ -432,7 +432,7 @@
                     <div id="perf3y" class="mt-4 text-2xl font-display font-bold tracking-[-0.04em] text-main">—</div>
                 </button>
                 <button class="summary-card perf-card rounded-[1.7rem] p-5 text-left transition-all" data-perf-range="ALL">
-                    <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted">All</div>
+                    <div class="text-[0.68rem] uppercase tracking-[0.22em] text-muted" data-key="range_all">All</div>
                     <div id="perfAll" class="mt-4 text-2xl font-display font-bold tracking-[-0.04em] text-main">—</div>
                 </button>
             </section>
@@ -537,7 +537,7 @@
         <div class="max-w-3xl mx-auto px-6 text-center">
             <h2 class="text-3xl font-display font-bold text-main mb-8" data-key="close_title">One fund page, built for deeper due diligence.</h2>
             <p class="text-muted text-lg mb-12" data-key="close_text">Starta keeps the market, the profile details, and the historical chart in one light, research-grade workflow.</p>
-            <div class="mt-24 pt-10 text-xs text-muted font-mono border-t border-border">&copy; 2026 Starta Financial Intelligence.</div>
+            <div class="mt-24 pt-10 text-xs text-muted font-mono border-t border-border" data-key="footer_copy_short">&copy; 2026 Starta Financial Intelligence.</div>
         </div>
     </footer>
 
@@ -546,11 +546,10 @@
 
         const translations = {
             en: {
-                nav_home: "HOME",
-                nav_learn: "LEARN",
-                nav_mobile: "MUTUAL FUNDS",
+                loading_fund: "Loading fund",
+                loading_manager: "Loading manager",
+                range_all: "All",
                 nav_pulse: "MARKET PULSE",
-                nav_news: "MARKET NEWS",
                 nav_portfolio: "MY PORTFOLIO",
                 nav_about: "ABOUT US",
                 back_to_funds: "Back to funds",
@@ -626,11 +625,10 @@
                 risks_title: "Fund Risk Disclosures"
             },
             ar: {
-                nav_home: "الرئيسية",
-                nav_learn: "تعلّم",
-                nav_mobile: "الصناديق الاستثمارية",
+                loading_fund: "جارٍ تحميل الصندوق",
+                loading_manager: "جارٍ تحميل مدير الصندوق",
+                range_all: "الكل",
                 nav_pulse: "نبض السوق",
-                nav_news: "أخبار السوق",
                 nav_portfolio: "محفظتي",
                 nav_about: "معلومات عنا",
                 back_to_funds: "العودة إلى الصناديق",

@@ -4,7 +4,7 @@
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=1.1.0"></script>
-    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
+    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-i18n.js?v=1"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
     <script src="/assets/fund-logos.js?v=2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1050,7 +1050,7 @@
             </p>
             <button onclick="window.location.href=(window.startaLocalizedHref||String)('/RiskAssessment')"
                 class="px-12 py-5 text-white font-bold text-lg rounded-full btn-primary" data-key="close_btn">Know Your Risk Profile</button>
-            <div class="mt-24 pt-10 text-xs text-muted font-mono border-t border-border">&copy; 2026 Starta Financial Intelligence.</div>
+            <div class="mt-24 pt-10 text-xs text-muted font-mono border-t border-border" data-key="footer_copy_short">&copy; 2026 Starta Financial Intelligence.</div>
         </div>
     </footer>
 
@@ -1059,14 +1059,9 @@
 
         const translations = {
             en: {
-                nav_home: "HOME",
-                nav_learn: "LEARN",
-                nav_mobile: "MUTUAL FUNDS",
                 nav_pulse: "MARKET PULSE",
-                nav_news: "MARKET NEWS",
                 nav_portfolio: "MY PORTFOLIO",
                 nav_about: "ABOUT US",
-                nav_cta: "FREE RISK PROFILE",
                 marketplace_title: "Mutual Funds",
                 marketplace_subline: "Accurate, up-to-date data to help you compare funds and make better decisions.",
                 grid_view: "Grid",
@@ -1163,14 +1158,9 @@
                 compare_count: "selected"
             },
             ar: {
-                nav_home: "الرئيسية",
-                nav_learn: "تعلّم",
-                nav_mobile: "الصناديق الاستثمارية",
                 nav_pulse: "نبض السوق",
-                nav_news: "أخبار السوق",
                 nav_portfolio: "محفظتي",
                 nav_about: "معلومات عنا",
-                nav_cta: "اعرف ملف مخاطرك",
                 marketplace_title: "الصناديق الاستثمارية",
                 marketplace_subline: "بيانات دقيقة ومحدثة تساعدك على مقارنة الصناديق واتخاذ قرارات أفضل.",
                 grid_view: "بطاقات",

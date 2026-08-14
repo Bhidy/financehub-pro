@@ -112,6 +112,29 @@ const checks = [
       ),
   },
   {
+    // The homepage is one large inline <script>. A syntax error anywhere in it
+    // kills EVERY script on the page (translations, funds, marquee) while the
+    // HTML still renders and every other check here still passes — exactly how
+    // a broken build slipped through once. Parse the inline scripts for real.
+    name: "home page inline scripts parse as valid JavaScript",
+    file: "public/home.html",
+    assert: (text) => {
+      const blocks = [...text.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)]
+        .map((m) => m[1])
+        .filter((code) => code.trim() && !/^\s*\{[\s\S]*\}\s*$/.test(code)); // skip JSON-LD
+      if (!blocks.length) return false;
+      for (const code of blocks) {
+        try {
+          new Function(code);
+        } catch (error) {
+          console.error(`       ${error.message}`);
+          return false;
+        }
+      }
+      return true;
+    },
+  },
+  {
     // DESIGN_SYSTEM.md -> "Bilingual Parity": the en and ar dictionaries are a
     // matched pair. A key added to one language and forgotten in the other
     // renders the stale English markup default to Arabic users (and vice
@@ -177,6 +200,36 @@ const checks = [
     name: "no banned section eyebrow/kicker in the static Fund detail page",
     file: "public/fund-details.html",
     assert: (text) => !/section-tag/.test(text),
+  },
+  {
+    name: "no hand-styled eyebrow above a heading in home.html",
+    file: "public/home.html",
+    assert: (text) => !/tracking-\[0\.2[0-9]em\][^"]*text-starta-darkTeal/.test(text),
+  },
+  {
+    name: "no hand-styled eyebrow above a heading in marketplace.html",
+    file: "public/marketplace.html",
+    assert: (text) => !/tracking-\[0\.2[0-9]em\][^"]*text-starta-darkTeal/.test(text),
+  },
+  {
+    name: "no hand-styled eyebrow above a heading in learn.html",
+    file: "public/learn.html",
+    assert: (text) => !/tracking-\[0\.2[0-9]em\][^"]*text-starta-darkTeal/.test(text),
+  },
+  {
+    name: "no hand-styled eyebrow above a heading in fund-compare.html",
+    file: "public/fund-compare.html",
+    assert: (text) => !/tracking-\[0\.2[0-9]em\][^"]*text-starta-darkTeal/.test(text),
+  },
+  {
+    name: "no hand-styled eyebrow above a heading in fund-details.html",
+    file: "public/fund-details.html",
+    assert: (text) => !/tracking-\[0\.2[0-9]em\][^"]*text-starta-darkTeal/.test(text),
+  },
+  {
+    name: "no hand-styled eyebrow above a heading in news.html",
+    file: "public/news.html",
+    assert: (text) => !/tracking-\[0\.2[0-9]em\][^"]*text-starta-darkTeal/.test(text),
   },
   {
     name: "static Home page asset exists with expected title",

@@ -4,7 +4,7 @@
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=1.1.0"></script>
-    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
+    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-i18n.js?v=1"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learn | Starta Markets</title>
@@ -227,9 +227,8 @@
         <div class="max-w-screen-2xl mx-auto px-6 lg:px-8">
             <section class="glass-premium rounded-[2.8rem] p-7 sm:p-10 lg:p-14 reveal-block">
                 <div class="max-w-[62rem]">
-                    <div class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-starta-darkTeal" data-key="hero_tag">Starta Learn</div>
-                    <h1 class="hero-copy mt-4 text-[2.25rem] leading-[1.12] sm:text-[2.8rem] lg:text-[3.35rem] font-display font-bold tracking-[-0.05em] text-main" data-key="hero_title"><span class="block">Starta Academy: Build Your</span><span class="block">Investing Confidence</span></h1>
-                    <p class="hero-copy mt-6 max-w-3xl text-base leading-relaxed sm:text-lg lg:text-xl text-muted" data-key="hero_text">Clear beginner lessons covering markets, mutual funds, risk, and how to choose a fund.</p>
+                    <h1 class="hero-copy text-[2.25rem] leading-[1.12] sm:text-[2.8rem] lg:text-[3.35rem] font-display font-bold tracking-[-0.05em] text-main" data-key="hero_title">Starta Academy</h1>
+                    <p class="hero-copy mt-6 max-w-3xl text-base leading-relaxed sm:text-lg lg:text-xl text-muted" data-key="hero_text">Learn investing with confidence, step by step.</p>
                 </div>
             </section>
 
@@ -242,13 +241,11 @@
     <script>
         gsap.registerPlugin(ScrollTrigger);
         const translations = {
-            en: {
-                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US",
-                hero_tag: "Starta Learn", hero_title: '<span class="block">Starta Academy: Build Your</span><span class="block">Investing Confidence</span>', hero_text: "Clear beginner lessons covering markets, mutual funds, risk, and how to choose a fund.", open_topic: "Open topic"
+            en: { nav_pulse: "MARKET PULSE", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US",
+                hero_title: "Starta Academy", hero_text: "Learn investing with confidence, step by step.", open_topic: "Open topic"
             },
-            ar: {
-                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا",
-                hero_tag: "أكاديمية ستارتا", hero_title: '<span class="block">تعلّم الاستثمار بثقة</span><span class="block">خطوة بخطوة</span>', hero_text: "دروس مبسطة تساعدك على فهم الأسواق، وصناديق الاستثمار، والمخاطر، وكيفية اختيار الصندوق المناسب.", open_topic: "افتح الموضوع"
+            ar: { nav_pulse: "نبض السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا",
+                hero_title: "أكاديمية ستارتا", hero_text: "تعلّم الاستثمار بثقة خطوة بخطوة", open_topic: "افتح الموضوع"
             }
         };
         const state = { lang: 'en' };
@@ -410,9 +407,9 @@
     <div class="sfx-bottom">
       <div data-key="footer_copy">&copy; 2026 Starta Markets. All Rights Reserved.</div>
       <div class="sfx-bottom-links">
-        <a href="/companies">EGX Companies</a>
-        <a href="/about">About</a>
-        <a href="/contact">Contact</a>
+        <a href="/companies" data-key="footer_lnk_companies">EGX Companies</a>
+        <a href="/about" data-key="footer_lnk_about">About</a>
+        <a href="/contact" data-key="footer_lnk_contact">Contact</a>
         <a href="/privacy" data-key="footer_lnk_privacy">Privacy Policy</a>
         <a href="/terms" data-key="footer_lnk_terms">Terms of Service</a>
       </div>

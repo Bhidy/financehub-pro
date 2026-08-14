@@ -4,7 +4,7 @@
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=1.1.0"></script>
-    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
+    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-i18n.js?v=1"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learn Topic | Starta Markets</title>
@@ -144,12 +144,10 @@
         gsap.registerPlugin(ScrollTrigger);
         const topics = window.STARTA_LEARN_TOPICS || [];
         const translations = {
-            en: {
-                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US",
+            en: { nav_pulse: "MARKET PULSE", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US",
                 back_learn: "Back to Learn", catalog_title: "Catalog", breadcrumb_home: "Home", breadcrumb_learn: "Learn", open_topic: "Open topic"
             },
-            ar: {
-                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا",
+            ar: { nav_pulse: "نبض السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا",
                 back_learn: "العودة إلى تعلم", catalog_title: "الفهرس", breadcrumb_home: "الرئيسية", breadcrumb_learn: "تعلّم", open_topic: "افتح الموضوع"
             }
         };
@@ -353,9 +351,9 @@
     <div class="sfx-bottom">
       <div data-key="footer_copy">&copy; 2026 Starta Markets. All Rights Reserved.</div>
       <div class="sfx-bottom-links">
-        <a href="/companies">EGX Companies</a>
-        <a href="/about">About</a>
-        <a href="/contact">Contact</a>
+        <a href="/companies" data-key="footer_lnk_companies">EGX Companies</a>
+        <a href="/about" data-key="footer_lnk_about">About</a>
+        <a href="/contact" data-key="footer_lnk_contact">Contact</a>
         <a href="/privacy" data-key="footer_lnk_privacy">Privacy Policy</a>
         <a href="/terms" data-key="footer_lnk_terms">Terms of Service</a>
       </div>

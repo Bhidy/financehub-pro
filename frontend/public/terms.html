@@ -4,7 +4,7 @@
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=1.1.0"></script>
-    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
+    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-i18n.js?v=1"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Service | Starta Markets</title>
@@ -213,32 +213,13 @@
         gsap.registerPlugin(ScrollTrigger);
 
         const translations = {
-            en: {
-                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "MY PORTFOLIO",
+            en: { nav_pulse: "MARKET PULSE", nav_portfolio: "MY PORTFOLIO",
                 sub_title: "PLATFORM COMPLIANCE & RULES",
                 main_title: "Terms of Service",
                 main_desc: "Clear agreements for a professional partnership. Review the guidelines and compliance structures governing our financial technology terminal.",
                 last_updated: "Last Updated: May 29, 2026",
-                footer_desc: "The bilingual mutual-fund platform for the Egyptian market: verified NAV data, fund comparison and scorecards, market news, an investing academy, and wealth calculators — in Arabic and English.",
-                footer_cta_btn: "Explore Funds",
-                footer_col1_title: "PLATFORM",
-                footer_col2_title: "RESEARCH",
-                footer_col3_title: "RESOURCES",
-                footer_lnk_home: "Home",
-                footer_lnk_funds: "Mutual Funds",
                 footer_lnk_pulse: "Market Pulse",
-                footer_lnk_news: "Market News",
-                footer_lnk_learn: "Learn Catalog",
                 footer_lnk_portfolio: "Smart Portfolio",
-                footer_lnk_calc: "Wealth Calculators",
-                footer_lnk_risk: "Risk Assessment",
-                footer_lnk_account: "Create Account",
-                footer_lnk_login: "Sign In",
-                footer_disc_title: "Regulatory Disclaimer",
-                footer_disclaimer: "Starta Markets is a financial data and technology platform. All content, tools, and analytics provided are for informational and educational purposes only, and should not be construed as investment advice, recommendations, or endorsements to buy or sell any security or mutual fund. Financial markets carry high volatility and risks; every investor is fully responsible for their own investment due diligence.",
-                footer_copy: "&copy; 2026 Starta Markets. All Rights Reserved.",
-                footer_lnk_privacy: "Privacy Policy",
-                footer_lnk_terms: "Terms of Service",
                 terms: [
                     {
                         title: "1. Acceptance of Terms",
@@ -270,32 +251,13 @@
                     }
                 ]
             },
-            ar: {
-                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "محفظتي",
+            ar: { nav_pulse: "نبض السوق", nav_portfolio: "محفظتي",
                 sub_title: "تنظيم المنصة والامتثال",
                 main_title: "شروط الخدمة",
                 main_desc: "اتفاقيات واضحة لشراكة احترافية ممتازة. راجع الإرشادات والأطر التنظيمية الحاكمة لتجربة استخدام منصتنا المالية الذكية.",
                 last_updated: "آخر تحديث: 29 مايو 2026",
-                footer_desc: "منصة الصناديق الاستثمارية في السوق المصري بالعربية والإنجليزية: أسعار موثّقة لصافي قيمة الوحدة، ومقارنة وبطاقات تقييم للصناديق، وأخبار السوق، وأكاديمية تعليمية، وحاسبات استثمارية.",
-                footer_cta_btn: "استكشف الصناديق",
-                footer_col1_title: "المنصة",
-                footer_col2_title: "الأبحاث",
-                footer_col3_title: "المصادر",
-                footer_lnk_home: "الرئيسية",
-                footer_lnk_funds: "الصناديق الاستثمارية",
                 footer_lnk_pulse: "نبض السوق",
-                footer_lnk_news: "أخبار السوق",
-                footer_lnk_learn: "أكاديمية ستارتا",
                 footer_lnk_portfolio: "المحفظة الذكية",
-                footer_lnk_calc: "حاسبات الثروة",
-                footer_lnk_risk: "تقييم المخاطر",
-                footer_lnk_account: "إنشاء حساب",
-                footer_lnk_login: "تسجيل الدخول",
-                footer_disc_title: "إخلاء المسؤولية القانونية",
-                footer_disclaimer: "منصة ستارتا ماركتس هي منصة للبيانات والتقنيات المالية. جميع المحتويات والأدوات والتحليلات المقدَّمة هي لأغراض معلوماتية وتعليمية فقط، ولا ينبغي تفسيرها كاستشارات استثمارية أو توصيات بالشراء أو البيع لأي ورقة مالية أو صندوق استثماري. أسواق المال تنطوي على مخاطر وتذبذبات عالية؛ ويتحمل كل مستثمر المسؤولية الكاملة عن قراراته بعد الدراسة والدقة.",
-                footer_copy: "&copy; ٢٠٢٦ ستارتا ماركتس. جميع الحقوق محفوظة.",
-                footer_lnk_privacy: "سياسة الخصوصية",
-                footer_lnk_terms: "شروط الخدمة",
                 terms: [
                     {
                         title: "١. قبول الشروط",

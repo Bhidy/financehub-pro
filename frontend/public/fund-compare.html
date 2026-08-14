@@ -4,7 +4,7 @@
 <head>
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=1.1.0"></script>
-    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
+    <script src="/assets/starta-lang-boot.js?v=1.2.0"></script><script src="/assets/starta-i18n.js?v=1"></script><script src="/assets/starta-mobile-nav.js?v=1.0.6" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fund Comparison | Starta Markets</title>
@@ -222,8 +222,7 @@
             <section class="surface-card rounded-[2.6rem] p-6 sm:p-8 lg:p-10 reveal-block">
                 <div class="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
                     <div class="max-w-3xl">
-                        <div class="text-[0.72rem] font-semibold uppercase tracking-[0.24em] text-starta-darkTeal" data-key="hero_tag">Fund comparison</div>
-                        <h1 class="mt-4 text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-[-0.05em] text-main" data-key="hero_title">Compare funds with real pricing, real history, and clearer decisions.</h1>
+                        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-[-0.05em] text-main" data-key="hero_title">Compare funds with real pricing, real history, and clearer decisions.</h1>
                         <p class="mt-4 text-base sm:text-lg text-muted" data-key="hero_text">Compare funds through normalized performance, updated returns, manager context, and clean multi-fund analytics.</p>
                     </div>
                     <div class="flex flex-wrap gap-2" id="rangeSelector">
@@ -279,15 +278,10 @@
         const COLORS = ['#14B8A6', '#0F766E', '#0EA5E9', '#F59E0B'];
         const translations = {
             en: {
-                nav_home: "HOME",
-                nav_learn: "LEARN",
-                nav_mobile: "MUTUAL FUNDS",
                 nav_pulse: "MARKET PULSE",
-                nav_news: "MARKET NEWS",
                 nav_portfolio: "MY PORTFOLIO",
                 nav_about: "ABOUT US",
                 back_to_funds: "Back to funds",
-                hero_tag: "Fund comparison",
                 hero_title: "Compare funds with real pricing, real history, and clearer decisions.",
                 hero_text: "Compare funds through normalized performance, updated returns, manager context, and clean multi-fund analytics.",
                 metric_label: "Metric",
@@ -321,15 +315,10 @@
                 fee_free: "Free"
             },
             ar: {
-                nav_home: "الرئيسية",
-                nav_learn: "تعلّم",
-                nav_mobile: "الصناديق الاستثمارية",
                 nav_pulse: "نبض السوق",
-                nav_news: "أخبار السوق",
                 nav_portfolio: "محفظتي",
                 nav_about: "معلومات عنا",
                 back_to_funds: "العودة إلى الصناديق",
-                hero_tag: "مقارنة الصناديق",
                 hero_title: "قارن الصناديق بثقة",
                 hero_text: "حلّل الأداء والعوائد التاريخية في لوحة واحدة واضحة تساعدك على اختيار الصندوق الأنسب.",
                 metric_label: "المعيار",
@@ -896,9 +885,9 @@
     <div class="sfx-bottom">
       <div data-key="footer_copy">&copy; 2026 Starta Markets. All Rights Reserved.</div>
       <div class="sfx-bottom-links">
-        <a href="/companies">EGX Companies</a>
-        <a href="/about">About</a>
-        <a href="/contact">Contact</a>
+        <a href="/companies" data-key="footer_lnk_companies">EGX Companies</a>
+        <a href="/about" data-key="footer_lnk_about">About</a>
+        <a href="/contact" data-key="footer_lnk_contact">Contact</a>
         <a href="/privacy" data-key="footer_lnk_privacy">Privacy Policy</a>
         <a href="/terms" data-key="footer_lnk_terms">Terms of Service</a>
       </div>

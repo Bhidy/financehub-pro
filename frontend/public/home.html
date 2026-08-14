@@ -5,6 +5,7 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=1.1.0"></script>
     <script src="/assets/starta-lang-boot.js?v=1.2.0"></script>
+    <script src="/assets/starta-i18n.js?v=1"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Starta | Master the EGX</title>
@@ -891,29 +892,108 @@
         }
 
         .marquee-container {
+            direction: ltr;
             overflow: hidden;
             white-space: nowrap;
             position: relative;
             mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         }
 
+        /* The track must size to its CONTENT, never to the container — a
+           container-width track has nothing to scroll and leaves a gap. It is
+           built by JS with enough repeats to always overflow, then shifted by
+           exactly one set width so the loop is seamless at any viewport. */
         .marquee-content {
             display: inline-flex;
-            animation: marquee 60s linear infinite;
-            gap: 6rem;
+            align-items: center;
+            gap: 3.25rem;
+            width: max-content;
+            flex-wrap: nowrap;
+            will-change: transform;
+            animation: marquee var(--marquee-duration, 60s) linear infinite;
         }
 
-        .marquee-content:hover {
+        .marquee-content > * {
+            flex: 0 0 auto;
+        }
+
+        .mq-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.5rem 0.2rem;
+            opacity: 0.88;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        .mq-item:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+
+        /* Manager brand marks are not in our data, so this is an explicit
+           monogram of the manager's own name — never a fabricated logo. If a
+           real mark is added later the renderer uses it instead. */
+        .mq-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.6rem;
+            height: 2.6rem;
+            border-radius: 0.9rem;
+            background: linear-gradient(145deg, rgba(45, 212, 191, 0.16), rgba(20, 184, 166, 0.06));
+            border: 1px solid rgba(45, 212, 191, 0.26);
+            color: #0F766E;
+            font-family: 'Sora', 'IBM Plex Sans Arabic', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            flex: 0 0 auto;
+        }
+
+        [data-theme="dark"] .mq-mark {
+            color: #2DD4BF;
+            background: linear-gradient(145deg, rgba(45, 212, 191, 0.14), rgba(8, 17, 24, 0.5));
+        }
+
+        .mq-mark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: inherit;
+        }
+
+        .mq-name {
+            font-family: 'Sora', 'IBM Plex Sans Arabic', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--c-text-main);
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .mq-name { font-size: 0.92rem; }
+            .mq-mark { width: 2.2rem; height: 2.2rem; font-size: 0.72rem; }
+            .marquee-content { gap: 2.25rem; }
+        }
+
+        .marquee-container:hover .marquee-content {
             animation-play-state: paused;
         }
 
         @keyframes marquee {
-            0% {
+            from {
                 transform: translateX(0);
             }
 
-            100% {
-                transform: translateX(-50%);
+            to {
+                transform: translateX(calc(-1 * var(--marquee-shift, 50%)));
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .marquee-content {
+                animation: none;
             }
         }
 
@@ -2358,6 +2438,7 @@
                     <a href="/Funds" class="hover:text-starta-teal transition-colors" data-key="nav_mobile">MUTUAL FUNDS</a>
                     <a href="/News" class="hover:text-starta-teal transition-colors" data-key="nav_news">MARKET NEWS</a>
                     <a href="/Learn" class="hover:text-starta-teal transition-colors" data-key="nav_learn">LEARN</a>
+                    <a href="/Calculators" class="hover:text-starta-teal transition-colors" data-key="nav_calculators">WEALTH CALCULATORS</a>
                 </div>
             </div>
 
@@ -2483,7 +2564,7 @@
                                                     <path d="M1 72 C24 68 37 67 54 56 C73 43 88 48 105 39 C124 27 143 30 158 24 C178 17 203 18 239 8" class="tour-line" stroke="#14B8A6" stroke-width="2"></path>
                                                     <circle cx="158" cy="24" r="3.2" fill="#14B8A6"></circle>
                                                 </svg>
-                                                <div class="tour-axis"><span>JAN</span><span data-key="tour_dividend_event">DIVIDEND</span><span>YTD</span></div>
+                                                <div class="tour-axis"><span data-key="tour_axis_start">JAN</span><span data-key="tour_dividend_event">DIVIDEND</span><span>YTD</span></div>
                                             </div>
                                         </div>
                                         <div class="tour-duo tour-animate" style="--order: 2;">
@@ -2580,7 +2661,7 @@
                                             </div>
                                         </div>
                                         <div class="tour-surface tour-animate" style="--order: 2;">
-                                            <div class="tour-kpi"><span class="tour-meta" data-key="tour_news_digest">MARKET DIGEST</span><span class="tour-chip">NEW</span></div>
+                                            <div class="tour-kpi"><span class="tour-meta" data-key="tour_news_digest">MARKET DIGEST</span><span class="tour-chip" data-key="tour_chip_new">NEW</span></div>
                                             <div class="tour-row"><span class="tour-dot"></span><span class="tour-title" style="font-size: 0.7rem;" data-key="tour_news_secondary">EGX closes higher as institutional buying rises</span></div>
                                             <div class="tour-row"><span class="tour-dot"></span><span class="tour-sub" data-key="tour_news_third">Banks lead turnover while consumer names consolidate</span></div>
                                         </div>
@@ -2691,40 +2772,12 @@
                 Cover</h4>
         </div>
 
-        <!-- Fund houses whose funds are covered on /Funds. The whole strip is one
-             translated block (data-key="marquee_houses") so the Arabic names swap
-             with the language toggle. Keep BOTH sets: the marquee animation ends at
-             translateX(-50%) and needs the duplicate to loop seamlessly. -->
-        <div class="marquee-container opacity-60 hover:opacity-100 transition-opacity duration-500">
-            <div class="marquee-content flex items-center" data-key="marquee_houses">
-                <!-- Original Set -->
-                <span class="text-3xl font-display font-bold text-main mx-12">CI CAPITAL</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">BELTONE</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">HERMES</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">AZIMUT</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">ARAB AFRICAN</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">AL AHLY</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">NI CAPITAL</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">HC</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">PRIME</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">CFH</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">PHAROS</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">NAEEM</span>
-
-                <!-- Duplicate Set -->
-                <span class="text-3xl font-display font-bold text-main mx-12">CI CAPITAL</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">BELTONE</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">HERMES</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">AZIMUT</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">ARAB AFRICAN</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">AL AHLY</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">NI CAPITAL</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">HC</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">PRIME</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">CFH</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">PHAROS</span>
-                <span class="text-3xl font-display font-bold text-main mx-12">NAEEM</span>
-            </div>
+        <!-- Every fund manager we actually cover, built at runtime from the
+             funds API (see renderManagerMarquee) rather than a hardcoded list,
+             so the wall can never drift from what /Funds really contains.
+             No data-key here: applyTranslations would overwrite the strip. -->
+        <div class="marquee-container">
+            <div id="mq-track" class="marquee-content"></div>
         </div>
     </section>
 
@@ -3520,7 +3573,7 @@
                         <span class="text-xl font-display font-bold text-main tracking-widest">STARTA</span>
                     </div>
                     <p class="text-sm text-muted leading-relaxed" data-key="footer_desc">
-                        The bilingual mutual-fund platform for the Egyptian market: verified NAV data, fund comparison and scorecards, market news, an investing academy, and wealth calculators — in Arabic and English.
+                        Everything you need on mutual funds: prices, comparison, scorecards, news and investing tools.
                     </p>
                 </div>
                 <!-- Premium Status & Newsletter/CTA -->
@@ -3581,9 +3634,9 @@
                     &copy; 2026 Starta Markets. All Rights Reserved.
                 </div>
                 <div class="flex gap-6">
-                    <a href="/companies" class="hover:text-starta-teal transition-colors">EGX Companies</a>
-                    <a href="/about" class="hover:text-starta-teal transition-colors">About</a>
-                    <a href="/contact" class="hover:text-starta-teal transition-colors">Contact</a>
+                    <a href="/companies" class="hover:text-starta-teal transition-colors" data-key="footer_lnk_companies">EGX Companies</a>
+                    <a href="/about" class="hover:text-starta-teal transition-colors" data-key="footer_lnk_about">About</a>
+                    <a href="/contact" class="hover:text-starta-teal transition-colors" data-key="footer_lnk_contact">Contact</a>
                     <a href="/privacy" class="hover:text-starta-teal transition-colors" data-key="footer_lnk_privacy">Privacy Policy</a>
                     <a href="/terms" class="hover:text-starta-teal transition-colors" data-key="footer_lnk_terms">Terms of Service</a>
                 </div>
@@ -3634,8 +3687,7 @@
 
         // --- TRANSLATION ENGINE ---
         const translations = {
-            en: {
-                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US", nav_cta: "ASSESS YOUR PROFILE",
+            en: { nav_pulse: "MARKET PULSE", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US",
                 about_tag: "OUR MISSION", about_title: "Empowering Investors with Clearer Market Vision.", about_text: "At Starta, we build intelligent financial tools that help investors understand the market, track stocks, analyze news, and manage investment decisions from one unified platform. Our mission is to turn complex financial data into clear, actionable insights that support smarter and more confident investing.", about_val1_title: "Innovation", about_val1_text: "Smart technology that helps investors understand the market faster and act with more confidence.", about_val2_title: "Transparency", about_val2_text: "Clear data and insights that give investors a stronger view before making decisions.", about_vision: "Redefining the Investment Experience", about_vision_text: "We combine market data, AI-powered analysis, and simple design to deliver a clearer, faster, and more professional way to monitor the market and manage investments.",
                 hero_kicker: "Egypt's Mutual Fund Platform",
                 hero_title: `A Smarter Vision<br>for <span class="text-gradient">Funds.</span>`,
@@ -3651,10 +3703,12 @@
                 tour_learn_title: "LEARN", tour_learn_course: "VALUATION BASICS", tour_learn_module: "Master Fair Value", tour_learn_progress: "DONE", tour_today_concept: "TODAY'S CONCEPT", tour_dcf_formula: "FAIR VALUE = DISCOUNTED FUTURE CASH FLOWS", tour_lesson_done: "Reading Statements", tour_lesson_now: "Understanding Fair Value", tour_lesson_next: "Risk and Return", tour_done: "DONE", tour_now: "NOW", tour_next: "NEXT", tour_estimated_time: "NEXT SESSION · 12 MIN", tour_knowledge_score: "KNOWLEDGE SCORE", tour_quick_check: "QUICK CHECK", tour_quiz_question: "What does DCF convert into today's value?", tour_quiz_answer: "Future cash flows", tour_minutes: "12 MIN", tour_learn_footer: "CONTINUE LEARNING",
                 tour_tools_title: "CALCULATORS", tour_tools_status: "PLANNING", tour_tools_projection: "PROJECTED VALUE", tour_tools_years: "10 YEARS", tour_tools_rate: "12% / YR", tour_tools_mix: "FUND MIX", tour_tools_mm: "Money market", tour_tools_fi: "Fixed income", tour_tools_eq: "Equity funds", tour_risk_score: "RISK SCORE", tour_moderate: "MODERATE", tour_tools_monthly: "MONTHLY", tour_tools_egp: "EGP", tour_tools_footer: "RISK PROFILE + CALCULATORS",
                 trusted_by: "Fund Managers We Cover",
-                marquee_houses: ["CI CAPITAL", "BELTONE", "HERMES", "AZIMUT", "ARAB AFRICAN", "AL AHLY", "NI CAPITAL", "HC", "PRIME", "CFH", "PHAROS", "NAEEM"]
-                    .concat(["CI CAPITAL", "BELTONE", "HERMES", "AZIMUT", "ARAB AFRICAN", "AL AHLY", "NI CAPITAL", "HC", "PRIME", "CFH", "PHAROS", "NAEEM"])
-                    .map(function (house) { return '<span class="text-3xl font-display font-bold text-main mx-12">' + house + '</span>'; }).join(''),
                 mf_title: "Mutual Funds.<br>Inside Starta.",
+                tour_axis_start: "JAN",
+                tour_chip_new: "NEW",
+                sim_total_return: "total return",
+                sim_over_years: "Over {n} years",
+                sim_gains_sub: "Profit from compound growth",
                 mf_stat_coverage: "Covered Funds", mf_stat_houses: "Fund Houses", mf_cta: "Explore Mutual Funds",
                 mf_view_all: "View All Funds",
                 mf_price_label: "Price", mf_liquidity_label: "Liquidity", mf_open_label: "Open Fund",
@@ -3716,26 +3770,8 @@
                 hp_news_fallback_title: "EGX market closes higher on banking sector gains", hp_news_fallback_src: "Starta Markets",
                 hp_learn_title: "Starta Academy", hp_learn_sub: "From market basics to advanced valuation — structured modules built for Egyptian market investors.",
                 hp_learn_cta: "Explore All Topics", hp_learn_read: "Read topic",
-                footer_desc: "The bilingual mutual-fund platform for the Egyptian market: verified NAV data, fund comparison and scorecards, market news, an investing academy, and wealth calculators — in Arabic and English.",
-                footer_cta_btn: "Explore Funds",
-                footer_col1_title: "PLATFORM",
-                footer_col2_title: "RESEARCH",
-                footer_col3_title: "RESOURCES",
-                footer_lnk_home: "Home",
-                footer_lnk_funds: "Mutual Funds",
                 footer_lnk_pulse: "Market Pulse",
-                footer_lnk_news: "Market News",
-                footer_lnk_learn: "Learn Catalog",
                 footer_lnk_portfolio: "Smart Portfolio",
-                footer_lnk_calc: "Wealth Calculators",
-                footer_lnk_risk: "Risk Assessment",
-                footer_lnk_account: "Create Account",
-                footer_lnk_login: "Sign In",
-                footer_disc_title: "Regulatory Disclaimer",
-                footer_disclaimer: "Starta Markets is a financial data and technology platform. All content, tools, and analytics provided are for informational and educational purposes only, and should not be construed as investment advice, recommendations, or endorsements to buy or sell any security or mutual fund. Financial markets carry high volatility and risks; every investor is fully responsible for their own investment due diligence.",
-                footer_copy: "&copy; 2026 Starta Markets. All Rights Reserved.",
-                footer_lnk_privacy: "Privacy Policy",
-                footer_lnk_terms: "Terms of Service",
                 sim_sub: "Model your investment growth with different risk profiles, time horizons, and market scenarios.",
                 sim_params: "Parameters",
                 sim_risk_profile: "Risk Profile",
@@ -3760,8 +3796,7 @@
                 sim_cta: "Open the Wealth Calculators",
                 sim_disclaimer: "For illustrative purposes only. Not investment advice."
             },
-            ar: {
-                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا", nav_cta: "قيّم ملفك الاستثماري",
+            ar: { nav_pulse: "نبض السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا",
                 about_tag: "مهمتنا", about_title: "تمكين المستثمر من رؤية السوق بوضوح.", about_text: "في ستارتا، نبني أدوات مالية ذكية تساعد المستثمر على فهم السوق، متابعة الأسهم، تحليل الأخبار، وإدارة قراراته الاستثمارية من منصة واحدة. مهمتنا هي تحويل البيانات المالية المعقدة إلى رؤى واضحة وقابلة للتنفيذ تساعد على اتخاذ قرارات استثمارية أكثر وعيًا وثقة.", about_val1_title: "الابتكار", about_val1_text: "تقنيات ذكية تساعد المستثمر على فهم السوق بشكل أسرع واتخاذ قرارات بثقة أكبر.", about_val2_title: "الشفافية", about_val2_text: "بيانات ورؤى واضحة تمنح المستثمر رؤية أقوى قبل اتخاذ القرار.", about_vision: "إعادة تعريف تجربة الاستثمار", about_vision_text: "نجمع بين بيانات السوق، والتحليل المدعوم بالذكاء الاصطناعي، وتجربة استخدام بسيطة لنقدم طريقة أوضح وأسرع وأكثر احترافية لمتابعة السوق وإدارة الاستثمارات.",
                 hero_kicker: "منصة صناديق الاستثمار في مصر",
                 hero_title: `رؤية أذكى<br><span class="text-gradient">للاستثمار في الصناديق</span>`,
@@ -3777,10 +3812,12 @@
                 tour_learn_title: "تعلّم", tour_learn_course: "أساسيات التقييم", tour_learn_module: "أتقن القيمة العادلة", tour_learn_progress: "مكتمل", tour_today_concept: "مفهوم اليوم", tour_dcf_formula: "القيمة العادلة = التدفقات المستقبلية المخصومة", tour_lesson_done: "قراءة القوائم", tour_lesson_now: "فهم القيمة العادلة", tour_lesson_next: "المخاطرة والعائد", tour_done: "مكتمل", tour_now: "الآن", tour_next: "التالي", tour_estimated_time: "الجلسة التالية · 12 دقيقة", tour_knowledge_score: "مستوى المعرفة", tour_quick_check: "اختبر فهمك", tour_quiz_question: "ماذا يحوّل نموذج DCF إلى قيمة اليوم؟", tour_quiz_answer: "التدفقات النقدية المستقبلية", tour_minutes: "12 دقيقة", tour_learn_footer: "تابع التعلّم",
                 tour_tools_title: "الحاسبات", tour_tools_status: "تخطيط", tour_tools_projection: "القيمة المتوقعة", tour_tools_years: "١٠ سنوات", tour_tools_rate: "12% سنويًا", tour_tools_mix: "توزيع الصناديق", tour_tools_mm: "نقدي", tour_tools_fi: "دخل ثابت", tour_tools_eq: "صناديق أسهم", tour_risk_score: "درجة المخاطر", tour_moderate: "متوسط", tour_tools_monthly: "شهريًا", tour_tools_egp: "ج.م", tour_tools_footer: "ملف المخاطر + الحاسبات",
                 trusted_by: "مديرو الصناديق الذين نغطيهم",
-                marquee_houses: ["سي آي كابيتال", "بلتون", "هيرميس", "أزيموت", "العربي الأفريقي", "الأهلي", "إن آي كابيتال", "إتش سي", "برايم", "سي إف إتش", "فاروس", "النعيم"]
-                    .concat(["سي آي كابيتال", "بلتون", "هيرميس", "أزيموت", "العربي الأفريقي", "الأهلي", "إن آي كابيتال", "إتش سي", "برايم", "سي إف إتش", "فاروس", "النعيم"])
-                    .map(function (house) { return '<span class="text-3xl font-display font-bold text-main mx-12">' + house + '</span>'; }).join(''),
                 mf_title: "الصناديق الاستثمارية.<br>داخل ستارتا.",
+                tour_axis_start: "يناير",
+                tour_chip_new: "جديد",
+                sim_total_return: "إجمالي العائد",
+                sim_over_years: "على مدى {n} سنوات",
+                sim_gains_sub: "أرباح النمو التراكمي",
                 mf_stat_coverage: "الصناديق المغطاة", mf_stat_houses: "مديرو الصناديق", mf_cta: "استكشف الصناديق",
                 mf_view_all: "عرض كل الصناديق",
                 mf_price_label: "السعر", mf_liquidity_label: "السيولة", mf_open_label: "افتح الصندوق",
@@ -3843,26 +3880,8 @@
                 hp_news_fallback_title: "البورصة المصرية تغلق على ارتفاع بدعم القطاع المصرفي", hp_news_fallback_src: "ستارتا ماركتس",
                 hp_learn_title: "أكاديمية ستارتا", hp_learn_sub: "من أساسيات السوق إلى نماذج التقييم المتقدمة — وحدات تعليمية مبنية لمستثمر السوق المصري.",
                 hp_learn_cta: "استعرض جميع المواضيع", hp_learn_read: "اقرأ الموضوع",
-                footer_desc: "منصة الصناديق الاستثمارية في السوق المصري بالعربية والإنجليزية: أسعار موثّقة لصافي قيمة الوحدة، ومقارنة وبطاقات تقييم للصناديق، وأخبار السوق، وأكاديمية تعليمية، وحاسبات استثمارية.",
-                footer_cta_btn: "استكشف الصناديق",
-                footer_col1_title: "المنصة",
-                footer_col2_title: "الأبحاث",
-                footer_col3_title: "المصادر",
-                footer_lnk_home: "الرئيسية",
-                footer_lnk_funds: "الصناديق الاستثمارية",
                 footer_lnk_pulse: "نبض السوق",
-                footer_lnk_news: "أخبار السوق",
-                footer_lnk_learn: "أكاديمية ستارتا",
                 footer_lnk_portfolio: "المحفظة الذكية",
-                footer_lnk_calc: "حاسبات الثروة",
-                footer_lnk_risk: "تقييم المخاطر",
-                footer_lnk_account: "إنشاء حساب",
-                footer_lnk_login: "تسجيل الدخول",
-                footer_disc_title: "إخلاء المسؤولية القانونية",
-                footer_disclaimer: "منصة ستارتا ماركتس هي منصة للبيانات والتقنيات المالية. جميع المحتويات والأدوات والتحليلات المقدَّمة هي لأغراض معلوماتية وتعليمية فقط، ولا ينبغي تفسيرها كاستشارات استثمارية أو توصيات بالشراء أو البيع لأي ورقة مالية أو صندوق استثماري. أسواق المال تنطوي على مخاطر وتذبذبات عالية؛ ويتحمل كل مستثمر المسؤولية الكاملة عن قراراته بعد الدراسة والدقة.",
-                footer_copy: "&copy; ٢٠٢٦ ستارتا ماركتس. جميع الحقوق محفوظة.",
-                footer_lnk_privacy: "سياسة الخصوصية",
-                footer_lnk_terms: "شروط الخدمة",
                 sim_sub: "محاكاة نمو استثماراتك بأنماط مخاطرة مختلفة وآفاق زمنية متنوعة وسيناريوهات السوق.",
                 sim_params: "المعطيات",
                 sim_risk_profile: "مستوى المخاطرة",
@@ -3921,7 +3940,8 @@
                     applyTranslations(newLang);
                     // Data is already loaded in the normal case, so re-render in
                     // place; only refetch if the switch beat the initial load.
-                    if (mfFunds.length) renderMfPeriod(false); else renderTopFunds();
+                    if (mfFunds.length) renderMfPeriod(false); else { mfApplyPeriodLabels(); renderTopFunds(); }
+                    renderManagerMarquee();
                     if (window.mfMovePeriodThumb) window.mfMovePeriodThumb();
                     setMarketTimestamp();
                     _hpNewsData = null; // force re-fetch in new language
@@ -4202,6 +4222,7 @@
         ];
         const MF_DEFAULT_PERIOD = 'YTD';
         let mfFunds = [];
+        let mfManagers = [];
         let mfPeriod = MF_DEFAULT_PERIOD;
 
         function mfPeriodDef(key) {
@@ -4274,6 +4295,62 @@
             return (lang === 'ar' ? fund.fundHouseAr : fund.fundHouseEn) || fund.fundHouseEn || fund.fundHouseAr || 'Fund Manager';
         }
 
+
+        // ── FUND MANAGER WALL ────────────────────────────────────────────────
+        // Built from the same /funds payload the section below uses, so the wall
+        // lists exactly the managers we really cover instead of a hardcoded set.
+        //
+        // Seamless loop: one set of chips is measured, then repeated until the
+        // track is wider than the container plus one full set. The animation
+        // shifts by exactly ONE set width, so the frame after the last is
+        // identical to the first — no gap, no jump, at any viewport or count.
+        const MQ_SPEED_PX_PER_SEC = 55;
+
+        function mqMonogram(name) {
+            const words = String(name)
+                .replace(/[()،,.]/g, ' ')
+                .split(/\s+/)
+                .filter((w) => w && !/^(for|and|the|of|s\.?a\.?e|sae|inc|co|ltd|company|ش\.?م\.?م|ش|في|و)$/i.test(w));
+            const letters = words.slice(0, 2).map((w) => [...w][0]).join('');
+            return letters || [...String(name).trim()][0] || '•';
+        }
+
+        function mqBuildSet(managers, lang) {
+            return managers.map((m) => {
+                const name = (lang === 'ar' ? m.ar : m.en) || m.en || m.ar;
+                const mark = m.logo
+                    ? `<span class="mq-mark"><img src="${m.logo}" alt="" loading="lazy" decoding="async"></span>`
+                    : `<span class="mq-mark" aria-hidden="true">${mqMonogram(name)}</span>`;
+                return `<span class="mq-item"><span dir="auto">${mark}</span><span class="mq-name" dir="auto">${name}</span></span>`;
+            }).join('');
+        }
+
+        function renderManagerMarquee() {
+            const track = document.getElementById('mq-track');
+            if (!track || !mfManagers.length) return;
+            const container = track.parentElement;
+            const lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+
+            const setHtml = mqBuildSet(mfManagers, lang);
+            track.style.setProperty('--marquee-duration', '0s');
+            track.innerHTML = setHtml;
+
+            // Measure ONE set, then repeat until the track always overflows.
+            const setWidth = track.scrollWidth;
+            if (!setWidth) return;
+            const needed = Math.max(2, Math.ceil(container.clientWidth / setWidth) + 1);
+            track.innerHTML = setHtml.repeat(needed);
+
+            track.style.setProperty('--marquee-shift', `${setWidth}px`);
+            track.style.setProperty('--marquee-duration', `${(setWidth / MQ_SPEED_PX_PER_SEC).toFixed(2)}s`);
+        }
+
+        let mqResizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(mqResizeTimer);
+            mqResizeTimer = setTimeout(renderManagerMarquee, 180);
+        });
+
         async function renderTopFunds() {
             try {
                 const response = await fetch('/api/v1/funds?market=EGX');
@@ -4282,14 +4359,44 @@
                 mfFunds = rawData
                     .map(normalizeFundFromApi)
                     .filter((fund) => fund.id && (fund.nameAr || fund.nameEn));
+
+                // One entry per manager, first appearance wins, ordered by how
+                // many funds they run so the largest houses lead the wall.
+                const byManager = new Map();
+                rawData.forEach((row) => {
+                    const en = String(row.manager_name_en || row.manager || row.manager_name || '').trim();
+                    const ar = String(row.manager_name || row.manager_name_en || '').trim();
+                    const key = (en || ar).toLowerCase();
+                    if (!key) return;
+                    const entry = byManager.get(key) || { en, ar, logo: null, count: 0 };
+                    entry.count += 1;
+                    if (!entry.logo && row.manager_logo_url) entry.logo = row.manager_logo_url;
+                    byManager.set(key, entry);
+                });
+                mfManagers = [...byManager.values()].sort((a, b) => b.count - a.count);
+
                 renderMfPeriod();
+                renderManagerMarquee();
             } catch (error) { console.error(error); }
         }
 
         // Re-ranks and re-renders the featured funds for the selected period.
         // Funds with no published figure for that period are excluded from the
         // ranking outright — they are never rendered as 0.
+        // Language-driven labels for the period selector. Deliberately
+        // independent of the funds payload: if the API fails, the section must
+        // still be in the visitor's language, never the English markup default.
+        function mfApplyPeriodLabels() {
+            const t = translations[document.documentElement.lang === 'ar' ? 'ar' : 'en'];
+            const def = mfPeriodDef(mfPeriod);
+            const label = document.getElementById('mf-stat-best-label');
+            const lead = document.getElementById('mf-cards-text');
+            if (label) label.innerText = t['mf_best_' + def.key];
+            if (lead) lead.innerText = t['mf_lead_' + def.key];
+        }
+
         function renderMfPeriod(animate) {
+            mfApplyPeriodLabels();
             const container = document.getElementById('mf-featured-grid');
             if (!container || !mfFunds.length) return;
 
@@ -4446,6 +4553,7 @@
             if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveThumb);
             requestAnimationFrame(moveThumb);
             window.mfMovePeriodThumb = moveThumb;
+            mfApplyPeriodLabels();
         })();
 
         // ===== MARKET PULSE TERMINAL =====
@@ -4917,11 +5025,12 @@
                 var retPct = ((last.pv - last.invested) / last.invested * 100).toFixed(1);
                 // Summary
                 document.getElementById('sim-stat-final').textContent       = fmtFull(last.pv);
-                document.getElementById('sim-stat-return-pct').textContent  = '+' + retPct + '% total return';
+                var simT = translations[document.documentElement.lang === 'ar' ? 'ar' : 'en'];
+                document.getElementById('sim-stat-return-pct').textContent  = '+' + retPct + '% ' + simT.sim_total_return;
                 document.getElementById('sim-stat-invested').textContent    = fmtFull(last.invested);
-                document.getElementById('sim-stat-invested-sub').textContent = 'Over ' + SIM.years + ' years';
+                document.getElementById('sim-stat-invested-sub').textContent = simT.sim_over_years.replace('{n}', SIM.years);
                 document.getElementById('sim-stat-gains').textContent       = fmtFull(last.gains);
-                document.getElementById('sim-stat-gains-sub').textContent   = 'Profit from compound growth';
+                document.getElementById('sim-stat-gains-sub').textContent   = simT.sim_gains_sub;
                 // Charts
                 drawAreaChart(data);
                 var mc = monteCarlo(SIM.initial, SIM.monthly, SIM.years, SIM.ret, SIM.vol, 400);

@@ -135,6 +135,17 @@ const checks = [
     },
   },
   {
+    // Sora has no Arabic glyphs. A stack that names Sora without an explicit
+    // Arabic face drops Arabic text to the browser's generic sans-serif, which
+    // renders visibly different from the rest of the page (this shipped once,
+    // in the academy section). Every Sora stack must name the Arabic face.
+    name: "no Sora font stack without an Arabic fallback",
+    file: "public/home.html",
+    // \s* must live INSIDE the lookahead: outside it, backtracking lets it
+    // match zero characters and the lookahead passes on the space.
+    assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
+  },
+  {
     // DESIGN_SYSTEM.md -> "Bilingual Parity": the en and ar dictionaries are a
     // matched pair. A key added to one language and forgotten in the other
     // renders the stale English markup default to Arabic users (and vice

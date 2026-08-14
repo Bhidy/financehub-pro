@@ -235,7 +235,12 @@
         .text-gradient {
             background: linear-gradient(135deg, var(--c-text-main) 30%, #14B8A6 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
+            /* Descenders sit outside the inline background box and would be
+               clipped flat. Inline padding extends the paint area without
+               affecting layout. */
+            padding-bottom: 0.22em;
         }
 
         .grid-bg {
@@ -3005,7 +3010,7 @@
         <div class="max-w-7xl mx-auto px-6 relative z-10">
             <!-- Header -->
             <div class="mb-14 reveal-text">
-                <h2 class="section-title section-title--solo text-main mb-4 max-w-2xl" data-key="calc_title">Wealth Projection</h2>
+                <h2 class="section-title section-title--solo text-main mb-4 max-w-2xl" data-key="calc_title">Project Your Growth</h2>
                 <p class="text-muted copy-premium max-w-xl" data-key="sim_sub">Model your investment growth with different risk profiles, time horizons, and market scenarios.</p>
             </div>
 
@@ -3700,7 +3705,7 @@
                 fund1_name: "Bank Misr Fund", fund1_desc: "Money Market - Daily Liquidity",
                 fund2_name: "QNB Alahli Fund", fund2_desc: "Fixed Income - Weekly",
                 fund_return_label: "YTD Return", fund_price_label: "Price", fund_invest_btn: "Invest Now",
-                calc_title: "Wealth Projection",
+                calc_title: "Project Your Growth",
                 calc_goal_title: "Reach Your Goal", calc_goal_desc: "How much to invest monthly to reach a specific amount.",
                 calc_save_title: "Build Your Future", calc_save_desc: "See how much your monthly savings will grow over time.",
                 hp_pulse_tag: "MARKET PULSE", hp_pulse_live_badge: "LIVE DATA", hp_pulse_title: "Real-Time EGX Snapshot.", hp_pulse_text: "Direct market data, listed equities, index direction, and market breadth — brought together in one premium live terminal view.",
@@ -3826,7 +3831,7 @@
                 fund1_name: "صندوق استثمار بنك مصر", fund1_desc: "نقدي - سيولة يومية",
                 fund2_name: "صندوق استثمار QNB الأهلي", fund2_desc: "دخل ثابت - أسبوعي",
                 fund_return_label: "العائد منذ بداية العام", fund_price_label: "السعر", fund_invest_btn: "استثمر الآن",
-                calc_title: "توقع الثروة",
+                calc_title: "توقع نمو استثمارك",
                 calc_goal_title: "حقق هدفك", calc_goal_desc: "احسب المبلغ المطلوب استثماره شهرياً للوصول لهدفك.",
                 calc_save_title: "ابنِ مستقبلك", calc_save_desc: "شاهد كيف ستنمو مدخراتك الشهرية مع مرور الوقت.",
                 app_store: "متجر التطبيقات", google_play: "جوجل بلاي",

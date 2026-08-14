@@ -103,28 +103,56 @@ export function breakToleranceDays(points: readonly NavPoint[]): number {
     return Math.max(30, medianIntervalDays(points) * 10);
 }
 
+/** Safety valve: a 20-year hole must not generate 7,000 points. */
+const MAX_FILLER_PER_GAP = 400;
+
 /**
- * Insert a whitespace point inside every gap large enough to mislead, so the
- * renderer BREAKS the line instead of interpolating across it. The whitespace
- * point carries no value, so nothing is invented — it only says "no data here".
+ * Fill every misleading gap with WHITESPACE points at the fund's own cadence,
+ * so the renderer both breaks the line and gives the hole its true width.
+ *
+ * Why not a single break point — learned the hard way, in the browser:
+ * lightweight-charts spaces points by INDEX. One whitespace point therefore
+ * buys exactly one bar of gap, which on a 431-point series is under two pixels.
+ * The line was severed and still looked like a vertical cliff, because the
+ * severing was sub-pixel. The unit tests passed and the chart was still lying.
+ *
+ * Emitting one whitespace point per cadence-step across the hole makes the
+ * index axis approximate a CALENDAR axis over that span: 412 missing days of a
+ * daily fund become ~412 empty slots, so the hole reads as the long silence it
+ * actually was, and the two islands of data sit where they belong in time.
+ *
+ * These points carry no value. Nothing is estimated, interpolated or invented —
+ * they are the absence, made visible.
  */
 export function withGapBreaks(points: readonly NavPoint[], toleranceDays?: number): SeriesPoint[] {
     if (points.length < 2) return [...points];
     const gaps = findGaps(points, toleranceDays ?? breakToleranceDays(points));
     if (!gaps.length) return [...points];
-    const breakAfter = new Set(gaps.map((g) => g.from));
+
+    const step = Math.max(1, Math.round(medianIntervalDays(points)));
+    const gapFrom = new Map(gaps.map((g) => [g.from, g]));
     const out: SeriesPoint[] = [];
+
     for (let i = 0; i < points.length; i++) {
         out.push(points[i]);
-        if (!breakAfter.has(points[i].time)) continue;
-        // A single dateless midpoint is enough to sever the segment.
-        const mid = new Date((iso(points[i].time) + iso(points[i + 1].time)) / 2);
-        const midIso = mid.toISOString().slice(0, 10);
-        if (midIso !== points[i].time && midIso !== points[i + 1].time) {
-            out.push({ time: midIso });
+        const gap = gapFrom.get(points[i].time);
+        if (!gap) continue;
+
+        const startMs = iso(gap.from);
+        const endMs = iso(gap.to);
+        const slots = Math.floor((endMs - startMs) / (step * DAY)) - 1;
+        const emit = Math.min(slots, MAX_FILLER_PER_GAP);
+        if (emit <= 0) continue;
+        // Spread evenly so a capped gap still spans its full width.
+        const stride = (endMs - startMs) / (emit + 1);
+        for (let k = 1; k <= emit; k++) {
+            const t = new Date(startMs + stride * k).toISOString().slice(0, 10);
+            if (t !== gap.from && t !== gap.to) out.push({ time: t });
         }
     }
-    return out;
+    // Whitespace must never collide with, or reorder against, a real observation.
+    const seen = new Set(points.map((p) => p.time));
+    return out.filter((p) => ('value' in p && p.value !== undefined) || !seen.has(p.time));
 }
 
 /** Total days of missing data — used for the completeness badge. */

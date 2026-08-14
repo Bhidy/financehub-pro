@@ -34,9 +34,17 @@ check('exactly one gap is severe enough to break', severed.length, 1);
 check('break starts at the frozen-CSV date', severed[0]?.from, '2025-05-14');
 check('break ends where the list-API resumed', severed[0]?.to, '2026-06-30');
 const broken = withGapBreaks(real);
-check('adds exactly one whitespace break', broken.length - real.length, 1);
-check('whitespace point carries no value', broken.filter(p => p.value === undefined).length, 1);
+const ws = broken.filter(p => p.value === undefined);
+// The hole must occupy real horizontal space, not one sub-pixel bar. A single
+// break point looked severed in a unit test and still rendered as a cliff.
+check('gap is filled with proportional whitespace', ws.length > 300, true);
+check('whitespace is capped', ws.length <= 400, true);
 check('no real value was altered', broken.filter(p => p.value !== undefined).length, real.length);
+check('whitespace never collides with a real date',
+    ws.some(w => real.some(r => r.time === w.time)), false);
+check('series stays chronologically sorted',
+    broken.every((p, i) => i === 0 || p.time >= broken[i - 1].time), true);
+check('the hole is a visible share of the series', ws.length / broken.length > 0.25, true);
 check('real values are untouched, not rescaled',
     broken.filter(p => p.value !== undefined).map(p => p.value).join() === real.map(p => p.value).join(), true);
 
@@ -47,6 +55,7 @@ check('tolerance scales to cadence', gapToleranceDays(weekly), 21);
 check('zero gaps flagged', findGaps(weekly).length, 0);
 check('break threshold scales too', breakToleranceDays(weekly), 70);
 check('series passes through untouched', withGapBreaks(weekly).length, weekly.length);
+check('no whitespace added to a clean weekly fund', withGapBreaks(weekly).filter(p => p.value === undefined).length, 0);
 
 console.log('\n[3] MONTHLY fund — 30-day cadence must not be flagged');
 const monthly: NavPoint[] = Array.from({ length: 30 }, (_, i) => ({ time: day(2024, i, 1), value: 50 + i }));

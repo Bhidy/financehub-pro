@@ -598,15 +598,74 @@
             return filtered.length >= 2 ? filtered : sorted;
         }
 
-        function buildPerformanceSeries(history) {
+        // Gap policy mirrors lib/nav-gaps.ts: tolerance comes from the fund's OWN
+        // cadence (54 of 195 Egyptian funds publish weekly, so a fixed day-count
+        // would flag every one of them), and the 2011 EGX closure is real history.
+        const EGX_CLOSURES = [['2011-01-27', '2011-03-23']];
+        const DAY_MS = 86400000;
+        const isoMs = (s) => Date.parse(s + 'T00:00:00Z');
+
+        function medianGapDays(points) {
+            if (points.length < 3) return 1;
+            const g = [];
+            for (let i = 1; i < points.length; i++) g.push((isoMs(points[i].time) - isoMs(points[i - 1].time)) / DAY_MS);
+            g.sort((a, b) => a - b);
+            const m = Math.floor(g.length / 2);
+            return g.length % 2 ? g[m] : (g[m - 1] + g[m]) / 2;
+        }
+
+        function severGaps(points) {
+            if (points.length < 2) return points;
+            // Break only where interpolating would MISLEAD: 10x the fund's own cadence,
+            // floored at 30 days. Ordinary 12-day holes stay connected.
+            const tol = Math.max(30, medianGapDays(points) * 10);
+            const out = [];
+            for (let i = 0; i < points.length; i++) {
+                out.push(points[i]);
+                if (i + 1 >= points.length) break;
+                const a = points[i].time, b = points[i + 1].time;
+                const days = (isoMs(b) - isoMs(a)) / DAY_MS;
+                if (days <= tol) continue;
+                if (EGX_CLOSURES.some(([cs, ce]) => !(isoMs(b) <= isoMs(cs) || isoMs(a) >= isoMs(ce)))) continue;
+                const mid = new Date((isoMs(a) + isoMs(b)) / 2).toISOString().slice(0, 10);
+                if (mid !== a && mid !== b) out.push({ time: mid });   // whitespace = line break
+            }
+            return out;
+        }
+
+        // Rebase every fund to the SAME calendar date, not to whatever point each one
+        // happens to start with. The old code used filtered[0] per fund, so two funds
+        // with different coverage were plotted as if they had started together — which
+        // is exactly the comparison the user is making. `baselineTime` is the latest
+        // first-point across the selected funds, so every line starts from real data.
+        function buildPerformanceSeries(history, baselineTime) {
             const filtered = filterHistory(history);
             if (filtered.length < 2) return [];
-            const base = filtered[0]?.value;
+            let anchor = null;
+            if (baselineTime) {
+                for (const item of filtered) {
+                    if (isoMs(item.time) <= isoMs(baselineTime)) anchor = item; else break;
+                }
+                if (!anchor) anchor = filtered.find((i) => isoMs(i.time) >= isoMs(baselineTime)) || null;
+            }
+            const base = (anchor || filtered[0])?.value;
             if (!Number.isFinite(base) || base <= 0) return [];
-            return filtered.map((item) => ({
-                time: item.time,
-                value: ((item.value - base) / base) * 100
-            }));
+            return severGaps(filtered).map((item) => (
+                Number.isFinite(item.value)
+                    ? { time: item.time, value: ((item.value - base) / base) * 100 }
+                    : { time: item.time }   // preserve the whitespace break
+            ));
+        }
+
+        // The common start date: the LATEST first-point among the funds on screen.
+        function commonBaseline(histories) {
+            let latest = null;
+            for (const h of histories) {
+                const f = filterHistory(h);
+                if (f.length < 2) continue;
+                if (latest === null || isoMs(f[0].time) > isoMs(latest)) latest = f[0].time;
+            }
+            return latest;
         }
 
         function timeToEpoch(value) {
@@ -685,6 +744,11 @@
                 },
             });
 
+            // One shared start date for every line on the chart — see commonBaseline().
+            const sharedBaseline = commonBaseline(
+                state.funds.map((f) => state.histories.get(String(f.fund_id)) || [])
+            );
+
             state.funds.forEach((fund, index) => {
                 const series = chart.addLineSeries({
                     color: COLORS[index % COLORS.length],
@@ -696,14 +760,18 @@
                     crosshairMarkerBorderWidth: 2,
                     crosshairMarkerBackgroundColor: colors.marker,
                     title: getFundName(fund),
-                    lineType: LightweightCharts.LineType.Curved,
+                    // LineType.Curved fitted a SPLINE between consecutive points. Where two
+                    // points sit 412 days apart that synthesised a smooth NAV curve nobody
+                    // published (2026-08-15 audit). Straight segments only, and the series is
+                    // severed across real holes below so nothing is drawn through them at all.
+                    lineType: LightweightCharts.LineType.Simple,
                     priceFormat: {
                         type: 'custom',
                         formatter: (price) => formatPercentCompact(price),
                         minMove: 0.01,
                     },
                 });
-                const performanceData = buildPerformanceSeries(state.histories.get(String(fund.fund_id)) || []);
+                const performanceData = buildPerformanceSeries(state.histories.get(String(fund.fund_id)) || [], sharedBaseline);
                 series.setData(performanceData);
                 state.chartSeries.push({ fund, series, color: COLORS[index % COLORS.length], data: performanceData });
             });

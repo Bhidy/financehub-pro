@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { findGaps, withGapBreaks, type NavPoint } from '@/lib/nav-gaps';
 
 /**
  * Interactive NAV history chart — the premium fund page's centrepiece, rebuilt
@@ -32,6 +33,41 @@ type Point = { time: string; value: number };
 const RANGES = ['1M', '3M', 'YTD', '1Y', '3Y', 'ALL'] as const;
 type Range = (typeof RANGES)[number];
 
+/** Below this, a window is not a chart — it is two dots joined by a line. */
+const MIN_POINTS_TO_DRAW = 2;
+
+const EN = {
+    all: 'All',
+    noData: 'Not enough published NAV history for this period',
+    loading: 'Loading NAV history…',
+    loadingSub: 'Fetching the full saved NAV series for this fund.',
+    error: 'Chart unavailable right now.',
+    errorSub: 'The NAV history could not be loaded. Please try again shortly.',
+    empty: 'Not enough chart history yet.',
+    emptySub: 'This chart appears automatically once enough NAV history is saved.',
+    gapNotice: (n: number, longest: number) =>
+        n === 1
+            ? `The line breaks where no NAV was published — a gap of ${longest} days. Nothing has been estimated across it.`
+            : `The line breaks in ${n} places where no NAV was published, the longest ${longest} days. Nothing has been estimated across them.`,
+};
+
+// Typed against EN so a key added to one language and forgotten in the other is a
+// build error, not a silent English string on an Arabic page (bilingual parity).
+const AR: typeof EN = {
+    all: 'الكل',
+    noData: 'لا يوجد سجل معلن كافٍ لصافي قيمة الأصول لهذه الفترة',
+    loading: 'جارٍ تحميل سجل صافي قيمة الأصول…',
+    loadingSub: 'يتم جلب السلسلة الكاملة المحفوظة لهذا الصندوق.',
+    error: 'الرسم البياني غير متاح حاليًا.',
+    errorSub: 'تعذّر تحميل سجل صافي قيمة الأصول. يُرجى المحاولة بعد قليل.',
+    empty: 'لا يوجد سجل كافٍ لعرض الرسم البياني بعد.',
+    emptySub: 'يظهر هذا الرسم تلقائيًا بمجرد حفظ سجل كافٍ لصافي قيمة الأصول.',
+    gapNotice: (n: number, longest: number) =>
+        n === 1
+            ? `ينقطع الخط حيث لم يُعلن عن صافي قيمة الأصول — فجوة مدتها ${longest} يومًا. لم يُقدَّر أي رقم عبرها.`
+            : `ينقطع الخط في ${n} مواضع لم يُعلن فيها عن صافي قيمة الأصول، أطولها ${longest} يومًا. لم يُقدَّر أي رقم عبرها.`,
+};
+
 function rangeCutoff(range: Range): number | null {
     const day = 86_400_000;
     const now = Date.now();
@@ -61,6 +97,8 @@ export default function FundNavChart({
     lang?: 'en' | 'ar';
 }) {
     const dateLocale = lang === 'ar' ? 'ar-EG' : 'en-GB';
+    // Chart chrome was hardcoded English even on /ar pages despite receiving `lang`.
+    const L = lang === 'ar' ? AR : EN;
     const wrapRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
     const tipRef = useRef<HTMLDivElement>(null);
@@ -75,6 +113,35 @@ export default function FundNavChart({
     const [all, setAll] = useState<Point[] | null>(null);
     const [range, setRange] = useState<Range>('YTD');
     const [status, setStatus] = useState<'loading' | 'ready' | 'empty' | 'error'>('loading');
+
+    // Which ranges this fund's history can actually support. A button for a window
+    // holding fewer than two observations is disabled rather than lying.
+    const supported = useMemo(() => {
+        const ok = new Set<Range>();
+        if (!all) return ok;
+        for (const r of RANGES) {
+            const c = rangeCutoff(r);
+            const n = c === null ? all.length : all.filter((p) => Date.parse(`${p.time}T00:00:00Z`) >= c).length;
+            if (n >= MIN_POINTS_TO_DRAW) ok.add(r);
+        }
+        return ok;
+    }, [all]);
+
+    // Holes worth telling the reader about, within the window on screen.
+    const visibleGaps = useMemo(() => {
+        if (!all) return [];
+        const c = rangeCutoff(range);
+        const win = c === null ? all : all.filter((p) => Date.parse(`${p.time}T00:00:00Z`) >= c);
+        return win.length >= MIN_POINTS_TO_DRAW ? findGaps(win as NavPoint[]) : [];
+    }, [all, range]);
+
+    // If the remembered range is not supported by this fund, fall back to the
+    // widest one that is — and reflect that in the buttons, not just the canvas.
+    useEffect(() => {
+        if (!all || supported.size === 0 || supported.has(range)) return;
+        const fallback = ([...RANGES].reverse().find((r) => supported.has(r)) ?? 'ALL') as Range;
+        setRange(fallback);
+    }, [all, supported, range]);
 
     // Fetch NAV history once.
     useEffect(() => {
@@ -105,11 +172,34 @@ export default function FundNavChart({
             if (!series || !chart || !all) return;
             const cutoff = rangeCutoff(r);
             const filtered = cutoff === null ? all : all.filter((p) => Date.parse(`${p.time}T00:00:00Z`) >= cutoff);
-            // Fall back to the full series if the window is too sparse to draw.
-            const view = filtered.length >= 2 ? filtered : all;
-            viewRef.current = view;
-            series.setData(view);
-            chart.timeScale().fitContent();
+
+            // A range the data cannot support is DISABLED in the UI, never silently
+            // swapped for a different window. The old code fell back to the entire
+            // series here while leaving the button visually active — so "1M" could
+            // render twenty years of history under a one-month label.
+            if (filtered.length < MIN_POINTS_TO_DRAW) return;
+
+            viewRef.current = filtered;
+            // Sever the line across any hole large enough that interpolating it would
+            // invent a price move. Nothing is filled in — the segment simply stops.
+            series.setData(withGapBreaks(filtered) as { time: string; value?: number }[]);
+
+            // Pin the axis to the REQUESTED window, not to the data's own extent.
+            // fitContent() rescaled to [first drawn point, last drawn point], which is
+            // why six weeks of history filled a chart labelled "3Y" and looked normal.
+            const lastIso = filtered[filtered.length - 1].time;
+            if (cutoff === null) {
+                chart.timeScale().fitContent();
+            } else {
+                try {
+                    chart.timeScale().setVisibleRange({
+                        from: new Date(cutoff).toISOString().slice(0, 10),
+                        to: lastIso,
+                    } as never);
+                } catch {
+                    chart.timeScale().fitContent();
+                }
+            }
         },
         [all]
     );
@@ -349,18 +439,33 @@ export default function FundNavChart({
     return (
         <div className="glass-premium rounded-[2rem] p-4 sm:p-5 lg:p-6">
             <div className="flex flex-wrap items-center gap-2">
-                {RANGES.map((r) => (
-                    <button
-                        key={r}
-                        type="button"
-                        onClick={() => setRange(r)}
-                        className={`range-btn rounded-full px-3.5 py-2 text-sm font-semibold ${range === r ? 'active' : ''}`}
-                        aria-pressed={range === r}
-                    >
-                        {r === 'ALL' ? 'All' : r}
-                    </button>
-                ))}
+                {RANGES.map((r) => {
+                    const usable = supported.has(r);
+                    return (
+                        <button
+                            key={r}
+                            type="button"
+                            onClick={() => usable && setRange(r)}
+                            disabled={!usable}
+                            title={usable ? undefined : L.noData}
+                            className={`range-btn rounded-full px-3.5 py-2 text-sm font-semibold ${range === r ? 'active' : ''} ${usable ? '' : 'cursor-not-allowed opacity-40'}`}
+                            aria-pressed={range === r}
+                            aria-disabled={!usable}
+                        >
+                            {r === 'ALL' ? L.all : r}
+                        </button>
+                    );
+                })}
             </div>
+            {visibleGaps.length > 0 && (
+                <p className="mt-3 text-[0.78rem] leading-relaxed text-muted">
+                    <span
+                        aria-hidden="true"
+                        className="mr-2 inline-block h-[2px] w-4 translate-y-[-3px] border-t-2 border-dashed border-current align-middle"
+                    />
+                    {L.gapNotice(visibleGaps.length, visibleGaps.reduce((n, g) => (g.days > n ? g.days : n), 0))}
+                </p>
+            )}
 
             <div className="relative mt-4">
                 <div
@@ -381,14 +486,10 @@ export default function FundNavChart({
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[1.4rem] border border-dashed border-border bg-surface text-center">
                         <div className="px-6">
                             <div className="text-base font-display font-bold text-main">
-                                {status === 'loading' ? 'Loading NAV history…' : status === 'error' ? 'Chart unavailable right now.' : 'Not enough chart history yet.'}
+                                {status === 'loading' ? L.loading : status === 'error' ? L.error : L.empty}
                             </div>
                             <p className="mt-2 text-sm text-muted">
-                                {status === 'loading'
-                                    ? 'Fetching the full saved NAV series for this fund.'
-                                    : status === 'error'
-                                      ? 'The NAV history could not be loaded. Please try again shortly.'
-                                      : 'This chart appears automatically once enough NAV history is saved.'}
+                                {status === 'loading' ? L.loadingSub : status === 'error' ? L.errorSub : L.emptySub}
                             </p>
                         </div>
                     </div>

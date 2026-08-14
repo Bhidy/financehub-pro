@@ -3,7 +3,7 @@
   "version": "1.2.0",
   "private": true,
   "scripts": {
-    "prebuild": "npm run verify:routes",
+    "prebuild": "npm run verify:all",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -15,10 +15,11 @@
     "verify:routes": "node scripts/verify-route-aliases.mjs",
     "verify:i18n": "node scripts/verify-i18n-coverage.mjs",
     "verify:inputs": "node scripts/verify-build-inputs.mjs",
-    "verify:all": "npm run verify:inputs && npm run verify:routes && npm run verify:i18n",
+    "verify:all": "npm run verify:inputs && npm run verify:routes && npm run verify:i18n && npm run verify:nav",
     "verify:deploy": "node scripts/verify-deploy.mjs",
     "sync:mobile-public": "node scripts/sync-mobile-public.mjs",
-    "build:mobile": "node scripts/sync-mobile-public.mjs && vite build --config vite.mobile.config.ts"
+    "build:mobile": "node scripts/sync-mobile-public.mjs && vite build --config vite.mobile.config.ts",
+    "verify:nav": "npx tsx scripts/test-nav-gaps.ts && npx tsx scripts/test-range-integrity.ts scripts/fixtures/nav-dates-all.json"
   },
   "dependencies": {
     "@capacitor/app": "8.1.0",

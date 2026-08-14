@@ -146,6 +146,56 @@ const checks = [
     assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
   },
   {
+    name: "no Sora font stack without an Arabic fallback (learn.html)",
+    file: "public/learn.html",
+    assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
+  },
+  {
+    name: "no Sora font stack without an Arabic fallback (learn-topic.html)",
+    file: "public/learn-topic.html",
+    assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
+  },
+  {
+    name: "no Sora font stack without an Arabic fallback (news.html)",
+    file: "public/news.html",
+    assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
+  },
+  {
+    name: "no Sora font stack without an Arabic fallback (news-article.html)",
+    file: "public/news-article.html",
+    assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
+  },
+  {
+    name: "no Sora font stack without an Arabic fallback (marketplace.html)",
+    file: "public/marketplace.html",
+    assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
+  },
+  {
+    name: "no Sora font stack without an Arabic fallback (fund-details.html)",
+    file: "public/fund-details.html",
+    assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
+  },
+  {
+    name: "no Sora font stack without an Arabic fallback (fund-compare.html)",
+    file: "public/fund-compare.html",
+    assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
+  },
+  {
+    name: "no Sora font stack without an Arabic fallback (market-pulse.html)",
+    file: "public/market-pulse.html",
+    assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
+  },
+  {
+    name: "no Sora font stack without an Arabic fallback (privacy.html)",
+    file: "public/privacy.html",
+    assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
+  },
+  {
+    name: "no Sora font stack without an Arabic fallback (terms.html)",
+    file: "public/terms.html",
+    assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
+  },
+  {
     // DESIGN_SYSTEM.md -> "Bilingual Parity": the en and ar dictionaries are a
     // matched pair. A key added to one language and forgotten in the other
     // renders the stale English markup default to Arabic users (and vice

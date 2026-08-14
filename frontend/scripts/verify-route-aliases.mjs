@@ -344,6 +344,16 @@ const checks = [
       !/Cairo\(/.test(text),
   },
   {
+    // Inline onclick handlers run in GLOBAL scope at click time. A render-time
+    // variable concatenated into one (…'/Learn/' + topic.slug) is undefined
+    // there and the click throws instead of navigating — this shipped once.
+    // Interpolate the value into the string, call the helper at click time.
+    name: "no render-time variable concatenated into an inline onclick",
+    file: "public/home.html",
+    assert: (text) =>
+      !/onclick="[^"]*\)\s*\(\s*'[^']*'\s*\+\s*[A-Za-z_$][\w.$]*\s*\)/.test(text),
+  },
+  {
     // DESIGN_SYSTEM.md -> "Bilingual Parity": the en and ar dictionaries are a
     // matched pair. A key added to one language and forgotten in the other
     // renders the stale English markup default to Arabic users (and vice

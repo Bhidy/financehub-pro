@@ -4834,7 +4834,7 @@
                 const wideClass = topic.wide ? ' hac-card--wide' : '';
                 return `<article
                     class="hac-card${wideClass}"
-                    onclick="window.location.href=(window.startaLocalizedHref||String)('/Learn/' + topic.slug)"
+                    onclick="window.location.href=(window.startaLocalizedHref||String)('/Learn/${topic.slug}')"
                     onmouseenter="this.style.borderColor='${topic.accent}44'"
                     onmouseleave="this.style.borderColor=''">
                     <div class="hac-card-accent" style="background:${topic.accent};"></div>

@@ -6,10 +6,22 @@ name: CI Guard
 # RUNNER REALITY (verified 2026-06-11): GitHub-hosted runners are blocked on
 # this account — jobs die in 2s with "recent account payments have failed or
 # your spending limit needs to be increased". So CI runs on the self-hosted
-# Hetzner runner. Residual risk accepted & documented: pull_request code
-# executes on the prod box, which is tolerable ONLY while the repo is private
-# with a single trusted collaborator. If billing is fixed or collaborators are
-# added, flip every runs-on back to ubuntu-latest (that is the whole change).
+# Hetzner runner.
+#
+# SECURITY (2026-08-15 audit): the premise this file previously relied on —
+# "tolerable ONLY while the repo is private with a single trusted collaborator"
+# — was FALSE. The repo was public (`gh repo view --json isPrivate` -> false),
+# so any stranger could open a PR and execute code on the production box. A
+# self-hosted runner is NOT ephemeral: it is the same machine that runs the
+# backend and the scheduled NAV jobs that receive the DATABASE_URL secret.
+# Note the risk was never "secrets leak into the fork's job" (they don't) — it
+# was arbitrary code execution on a persistent host holding those secrets.
+#
+# Every job below is therefore gated on the PR originating from THIS repo.
+# Fork PRs are skipped, not run — review them and re-run manually if needed.
+# Do not remove that `if:` while any job here targets [self-hosted].
+# If GitHub-hosted billing is ever restored, move runs-on back to
+# ubuntu-latest and the guard becomes redundant (harmless to keep).
 #
 # Gates (every one verified locally-green before being added here):
 #   1. actionlint     — every workflow file (caught the morning_brief.yml bug
@@ -43,6 +55,11 @@ concurrency:
 jobs:
   validate-workflows:
     name: Validate workflows (actionlint)
+    # SECURITY GATE (2026-08-15): this job runs on the self-hosted prod box.
+    # Never let code from a FORK execute here. Same-repo PRs and pushes only.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 5
     steps:
@@ -60,6 +77,11 @@ jobs:
 
   python-gates:
     name: Python gates (syntax · lint · write-registry · tests)
+    # SECURITY GATE (2026-08-15): this job runs on the self-hosted prod box.
+    # Never let code from a FORK execute here. Same-repo PRs and pushes only.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 10
     steps:
@@ -101,8 +123,13 @@ jobs:
     # rolled-back transaction (qa/egx_audit.py suite_write_contract). This is
     # the gate that caught PR #86's 17-vs-19-argument drift — but only AFTER
     # merge, inside the harvester run. Running it per-PR means contract drift
-    # can never reach main. Same-repo PRs only (private repo, single
-    # collaborator) — the DATABASE_URL secret is not exposed to forks.
+    # can never reach main. Same-repo PRs only — enforced by the `if:` guard
+    # below, not by an assumption about repo visibility.
+    # SECURITY GATE (2026-08-15): this job runs on the self-hosted prod box.
+    # Never let code from a FORK execute here. Same-repo PRs and pushes only.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 10
     steps:
@@ -118,6 +145,11 @@ jobs:
 
   frontend-build:
     name: Frontend production build (mirrors Vercel exactly)
+    # SECURITY GATE (2026-08-15): this job runs on the self-hosted prod box.
+    # Never let code from a FORK execute here. Same-repo PRs and pushes only.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, linux, x64, hetzner]
     timeout-minutes: 20
     steps:

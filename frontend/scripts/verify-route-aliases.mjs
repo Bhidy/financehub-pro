@@ -196,6 +196,99 @@ const checks = [
     assert: (text) => !/font-family:\s*'Sora',(?!\s*'IBM Plex Sans Arabic')/.test(text),
   },
   {
+    name: "home.html loads the canonical nav renderer",
+    file: "public/home.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "learn.html loads the canonical nav renderer",
+    file: "public/learn.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "learn-topic.html loads the canonical nav renderer",
+    file: "public/learn-topic.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "news.html loads the canonical nav renderer",
+    file: "public/news.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "news-article.html loads the canonical nav renderer",
+    file: "public/news-article.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "marketplace.html loads the canonical nav renderer",
+    file: "public/marketplace.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "fund-details.html loads the canonical nav renderer",
+    file: "public/fund-details.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "fund-compare.html loads the canonical nav renderer",
+    file: "public/fund-compare.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "market-pulse.html loads the canonical nav renderer",
+    file: "public/market-pulse.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "privacy.html loads the canonical nav renderer",
+    file: "public/privacy.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "terms.html loads the canonical nav renderer",
+    file: "public/terms.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "portfolio.html loads the canonical nav renderer",
+    file: "public/portfolio.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    name: "portfolio-detail.html loads the canonical nav renderer",
+    file: "public/portfolio-detail.html",
+    assert: (text) => /assets\/starta-nav\.js/.test(text),
+  },
+  {
+    // The nav is defined once in lib/nav.json. React imports it directly; the
+    // static pages read the mirrored public/assets/starta-nav.js. A stale
+    // mirror silently reintroduces the drift this replaced, so compare them.
+    name: "static nav mirror matches lib/nav.json (run: node scripts/sync-nav.mjs)",
+    file: "public/assets/starta-nav.js",
+    assert: (text, ctx) => {
+      const items = JSON.parse(ctx.navConfig).items;
+      const cta = JSON.parse(ctx.navConfig).cta;
+      return items.every((i) => text.includes(`"key": "${i.key}"`) && text.includes(`"href": "${i.href}"`))
+        && text.includes(`"key":"${cta.key}"`)
+        && (text.match(/"key":\s*"nav_/g) || []).length === items.length + 1;
+    },
+  },
+  {
+    // Both React navs must render from the canonical list, never a local copy.
+    name: "SiteNav renders from lib/nav.json",
+    file: "components/SiteNav.tsx",
+    assert: (text) => /import navConfig from "@\/lib\/nav\.json"/.test(text)
+      && /const NAV_LINKS = navConfig\.items/.test(text)
+      && !/href: "\/Market-Pulse"/.test(text),
+  },
+  {
+    name: "PublicPageShell renders from lib/nav.json",
+    file: "components/seo/PublicPageShell.tsx",
+    assert: (text) => /import navConfig from '@\/lib\/nav\.json'/.test(text)
+      && /navConfig\.items\.map/.test(text),
+  },
+  {
     // DESIGN_SYSTEM.md -> "Bilingual Parity": the en and ar dictionaries are a
     // matched pair. A key added to one language and forgotten in the other
     // renders the stale English markup default to Arabic users (and vice
@@ -478,10 +571,13 @@ async function run() {
     }
   }
 
+  // Canonical nav config, passed to checks that compare a surface against it.
+  const navConfig = await readFile(path.join(root, "lib/nav.json"), "utf8");
+
   for (const check of checks) {
     const fullPath = path.join(root, check.file);
     const text = await readFile(fullPath, "utf8");
-    if (!check.assert(text)) {
+    if (!check.assert(text, { navConfig })) {
       console.error(`FAIL: ${check.name} (${check.file})`);
       process.exit(1);
     }

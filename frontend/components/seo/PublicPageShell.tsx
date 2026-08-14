@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Script from 'next/script';
 import ThemeToggle from '@/components/seo/ThemeToggle';
+import navConfig from '@/lib/nav.json';
 
 /**
  * Server-rendered chrome for the SEO/public pages — a FAITHFUL replication of
@@ -177,10 +178,19 @@ export default function PublicPageShell({
 
                     <div className="hidden lg:flex items-center gap-10">
                         <div className="flex gap-10 text-xs font-mono text-muted tracking-widest">
-                            <Link href="/" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_home">{t.home}</Link>
-                            <Link href="/Funds" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_mobile">{t.funds}</Link>
-                            <Link href="/News" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_news">{t.news}</Link>
-                            <Link href="/Learn" prefetch={false} className="hover:text-starta-teal transition-colors" data-key="nav_learn">{t.learn}</Link>
+                            {/* One canonical list (lib/nav.json) for every surface:
+                                this shell, SiteNav, and the static pages. */}
+                            {navConfig.items.map((item) => (
+                                <Link
+                                    key={item.key}
+                                    href={item.href}
+                                    prefetch={false}
+                                    className="hover:text-starta-teal transition-colors"
+                                    data-key={item.key}
+                                >
+                                    {lang === 'en' ? item.en : item.ar}
+                                </Link>
+                            ))}
                         </div>
                     </div>
 
@@ -205,12 +215,15 @@ export default function PublicPageShell({
                             {t.register}
                         </Link>
                         <Link
-                            href={localizedHref('/RiskAssessment', lang)}
+                            href={localizedHref(navConfig.cta.href, lang)}
                             prefetch={false}
                             className="hidden lg:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
                             data-key="nav_cta"
                         >
-                            {t.cta}
+                            {/* CTA label comes from the canonical nav config, not a
+                                local string: this shell still read 'اعرف ملف مخاطرك'
+                                after the site-wide CTA rename. */}
+                            {lang === 'en' ? navConfig.cta.en : navConfig.cta.ar}
                         </Link>
                         <div className="nav-controls">
                             <ThemeToggle />

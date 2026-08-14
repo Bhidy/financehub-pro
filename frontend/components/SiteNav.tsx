@@ -6,6 +6,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { AUTH_LABELS } from "@/lib/auth-i18n";
+import navConfig from "@/lib/nav.json";
 
 interface MobileChatActions {
     onNewChat?: () => void;
@@ -19,14 +20,15 @@ interface SiteNavProps {
     mobileChatActions?: MobileChatActions;
 }
 
-const NAV_LINKS = [
-    { href: "/", en: "HOME", ar: "الرئيسية" },
-    { href: "/Funds", en: "MUTUAL FUNDS", ar: "الصناديق الاستثمارية" },
-    { href: "/Market-Pulse", en: "MARKET PULSE", ar: "نبض السوق" },
-    { href: "/News", en: "MARKET NEWS", ar: "أخبار السوق" },
-    { href: "/Portfolio/demo", en: "MY PORTFOLIO", ar: "محفظتي" },
-    { href: "/Learn", en: "LEARN", ar: "تعلّم" },
-];
+/**
+ * The primary nav is defined ONCE in lib/nav.json and shared with
+ * components/seo/PublicPageShell.tsx and the static pages (via
+ * public/assets/starta-nav.js). This component previously carried its own list,
+ * which drifted: it still advertised Market-Pulse and My Portfolio after the
+ * funds-only repositioning, and lacked Wealth Calculators. Do not re-add a
+ * local list — edit lib/nav.json.
+ */
+const NAV_LINKS = navConfig.items;
 
 /**
  * Auth pill styles — Sign In is the secondary (outlined) action, Create Account

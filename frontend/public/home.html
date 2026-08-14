@@ -202,6 +202,17 @@
             text-wrap: balance;
         }
 
+        /* The Arabic hero line ("للاستثمار في الصناديق") is a longer phrase than
+           its English counterpart and broke mid-phrase at the Latin size,
+           orphaning the preposition. Arabic also carries more visual mass per
+           em, so it reads at the same weight a step down. Tracking is reset —
+           negative tracking breaks Arabic joins. */
+        html[lang="ar"] .heading-hero {
+            font-size: clamp(2.5rem, 4.9vw, 4.5rem);
+            line-height: 1.18;
+            letter-spacing: 0;
+        }
+
         .section-title {
             font-size: clamp(2.35rem, 4.6vw, 4rem);
             line-height: 1.08;
@@ -2380,7 +2391,7 @@
         <div class="max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center z-10">
             <div class="space-y-8">
                 <h1 class="heading-hero font-display font-bold text-main tracking-tight" data-key="hero_title">
-                    A Smarter Vision<br>for <span class="text-gradient">Investing.</span>
+                    A Smarter Vision<br>for <span class="text-gradient">Funds.</span>
                 </h1>
                 <p class="text-muted font-light max-w-xl copy-premium border-l-2 border-starta-teal/30 pl-6"
                     data-key="hero_sub">
@@ -3622,7 +3633,7 @@
                 nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US", nav_cta: "FREE RISK PROFILE",
                 about_tag: "OUR MISSION", about_title: "Empowering Investors with Clearer Market Vision.", about_text: "At Starta, we build intelligent financial tools that help investors understand the market, track stocks, analyze news, and manage investment decisions from one unified platform. Our mission is to turn complex financial data into clear, actionable insights that support smarter and more confident investing.", about_val1_title: "Innovation", about_val1_text: "Smart technology that helps investors understand the market faster and act with more confidence.", about_val2_title: "Transparency", about_val2_text: "Clear data and insights that give investors a stronger view before making decisions.", about_vision: "Redefining the Investment Experience", about_vision_text: "We combine market data, AI-powered analysis, and simple design to deliver a clearer, faster, and more professional way to monitor the market and manage investments.",
                 hero_kicker: "Egypt's Mutual Fund Platform",
-                hero_title: `A Smarter Vision<br>for <span class="text-gradient">Investing.</span>`,
+                hero_title: `A Smarter Vision<br>for <span class="text-gradient">Funds.</span>`,
                 hero_sub: `Egypt's mutual funds in one place — performance, clear fees and risk, and easy comparison to help you pick the right one.`,
                 hero_point1: "Verified NAV History", hero_point2: "Fees and Risk in the Open", hero_point3: "Arabic + English Fluency",
                 hero_btn: "Explore Mutual Funds", hero_btn_funds: "See Top Performers",
@@ -3748,7 +3759,7 @@
                 nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا", nav_cta: "اعرف ملف مخاطرك",
                 about_tag: "مهمتنا", about_title: "تمكين المستثمر من رؤية السوق بوضوح.", about_text: "في ستارتا، نبني أدوات مالية ذكية تساعد المستثمر على فهم السوق، متابعة الأسهم، تحليل الأخبار، وإدارة قراراته الاستثمارية من منصة واحدة. مهمتنا هي تحويل البيانات المالية المعقدة إلى رؤى واضحة وقابلة للتنفيذ تساعد على اتخاذ قرارات استثمارية أكثر وعيًا وثقة.", about_val1_title: "الابتكار", about_val1_text: "تقنيات ذكية تساعد المستثمر على فهم السوق بشكل أسرع واتخاذ قرارات بثقة أكبر.", about_val2_title: "الشفافية", about_val2_text: "بيانات ورؤى واضحة تمنح المستثمر رؤية أقوى قبل اتخاذ القرار.", about_vision: "إعادة تعريف تجربة الاستثمار", about_vision_text: "نجمع بين بيانات السوق، والتحليل المدعوم بالذكاء الاصطناعي، وتجربة استخدام بسيطة لنقدم طريقة أوضح وأسرع وأكثر احترافية لمتابعة السوق وإدارة الاستثمارات.",
                 hero_kicker: "منصة صناديق الاستثمار في مصر",
-                hero_title: `رؤية أذكى<br><span class="text-gradient">للاستثمار</span>`,
+                hero_title: `رؤية أذكى<br><span class="text-gradient">للاستثمار في الصناديق</span>`,
                 hero_sub: `صناديق الاستثمار في مصر كلها في مكان واحد — أداء، رسوم ومخاطر واضحة، ومقارنة سهلة تساعدك تختار الأنسب.`,
                 hero_point1: "سجل موثّق لصافي قيمة الوحدة", hero_point2: "رسوم ومخاطر واضحة", hero_point3: "محتوى كامل بالعربية والإنجليزية",
                 hero_btn: "استكشف صناديق الاستثمار", hero_btn_funds: "أفضل الصناديق أداءً",

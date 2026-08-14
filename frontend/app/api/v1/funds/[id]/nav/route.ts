@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError, clampLimit } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
 
@@ -22,6 +23,6 @@ export async function GET(
         // Return array of { date, nav }
         return NextResponse.json(result.rows);
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError('/funds/[id]/nav', error);
     }
 }

@@ -1,0 +1,41 @@
+{
+  "_comment": "Fund manager logos, fetched from each company's own website and approved by the owner on 2026-08-15. Keys are matched case-insensitively against manager_name_en from /api/v1/funds (substring match, longest key wins). A manager with no entry renders a name monogram — never a wrong or invented mark. Mirrored to public/assets/manager-logos.js by scripts/sync-manager-logos.mjs and gated: raster logos must be >= 104px wide (52px mark at 2x). Source domains are recorded so each can be re-verified when a company rebrands.",
+  "logos": {
+    "ci capital": {
+      "file": "/assets/manager-logos/ci-capital.png",
+      "source": "cicapital.com"
+    },
+    "hermes": {
+      "file": "/assets/manager-logos/efg-hermes.svg",
+      "source": "efghermes.com"
+    },
+    "beltone": {
+      "file": "/assets/manager-logos/beltone.svg",
+      "source": "beltoneholding.com"
+    },
+    "azimut": {
+      "file": "/assets/manager-logos/azimut.png",
+      "source": "azimut.eg"
+    },
+    "hc asset management": {
+      "file": "/assets/manager-logos/hc.png",
+      "source": "hc-si.com"
+    },
+    "ni capital": {
+      "file": "/assets/manager-logos/ni-capital.webp",
+      "source": "nicapital.com.eg"
+    },
+    "prime investments": {
+      "file": "/assets/manager-logos/prime.svg",
+      "source": "primeholdingco.com"
+    },
+    "misr capital": {
+      "file": "/assets/manager-logos/misr-capital.svg",
+      "source": "misrcapital.com"
+    },
+    "pharos": {
+      "file": "/assets/manager-logos/pharos.webp",
+      "source": "pharosholding.com"
+    }
+  }
+}

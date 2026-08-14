@@ -13,8 +13,12 @@ import ssl
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 # Credentials
-MUBASHER_USER = "m.mostafa@mubasher.net"
-MUBASHER_PASS = "bhidy1234"
+MUBASHER_USER = os.environ.get("MUBASHER_USER", "")
+MUBASHER_PASS = os.environ.get("MUBASHER_PASS", "")
+if not (MUBASHER_USER and MUBASHER_PASS):
+    raise SystemExit(
+        "FATAL: MUBASHER_USER / MUBASHER_PASS must be set in the environment. "
+        "Credentials are never hardcoded (2026-08-15 security audit).")
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'

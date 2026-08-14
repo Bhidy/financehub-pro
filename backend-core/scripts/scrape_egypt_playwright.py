@@ -18,8 +18,12 @@ load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 # Decypha login credentials
-DECYPHA_EMAIL = "m.mostafa@mubasher.net"
-DECYPHA_PASSWORD = "bhidy1234"
+DECYPHA_EMAIL = os.environ.get("DECYPHA_EMAIL", "")
+DECYPHA_PASSWORD = os.environ.get("DECYPHA_PASSWORD", "")
+if not (DECYPHA_EMAIL and DECYPHA_PASSWORD):
+    raise SystemExit(
+        "FATAL: DECYPHA_EMAIL / DECYPHA_PASSWORD must be set in the environment. "
+        "Credentials are never hardcoded (2026-08-15 security audit).")
 
 # URL patterns
 BASE_URL = "https://www.decypha.com"

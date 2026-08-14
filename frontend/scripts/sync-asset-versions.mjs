@@ -24,6 +24,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Shared assets whose cache key must track their content. */
 export const MANAGED_ASSETS = [
+  "manager-logos.js",
   "starta-nav.css",
   "starta-nav.js",
   "starta-i18n.js",

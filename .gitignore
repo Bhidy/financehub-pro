@@ -37,6 +37,8 @@ debug_*.png
 !frontend/lib/ar-twin-routes.json
 # Learn image dimensions, measured from the files — the build reads it.
 !frontend/lib/learn-image-sizes.json
+# Approved manager logo map — the build reads it.
+!frontend/lib/manager-logos.json
 system_backup_*
 
 # --- repo hygiene (2026-06 cleanup) ---

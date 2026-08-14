@@ -5,7 +5,7 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=2ac18a0a"></script>
     <script src="/assets/starta-lang-boot.js?v=778685a6"></script>
-    <script src="/assets/starta-i18n.js?v=baca99b7"></script><link rel="stylesheet" href="/assets/starta-nav.css?v=1255ed3c"><script src="/assets/starta-nav.js?v=88a97584"></script>
+    <script src="/assets/starta-i18n.js?v=baca99b7"></script><link rel="stylesheet" href="/assets/starta-nav.css?v=1255ed3c"><script src="/assets/manager-logos.js?v=58702e60"></script><script src="/assets/starta-nav.js?v=88a97584"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Starta | Master the EGX</title>
@@ -959,6 +959,16 @@
         [data-theme="dark"] .mq-mark {
             color: #2DD4BF;
             background: linear-gradient(145deg, rgba(45, 212, 191, 0.14), rgba(8, 17, 24, 0.5));
+        }
+
+        .mq-mark--logo {
+            background: #fff;
+            border-color: rgba(15, 23, 42, 0.08);
+            padding: 0.45rem;
+        }
+
+        [data-theme="dark"] .mq-mark--logo {
+            background: rgba(255, 255, 255, 0.94);
         }
 
         .mq-mark img {
@@ -4325,11 +4335,26 @@
             return letters || [...String(name).trim()][0] || '•';
         }
 
+        // Longest matching key wins, so a specific house never inherits another's
+        // mark. No match -> monogram: showing the WRONG institution's logo on a
+        // financial site is far worse than showing initials.
+        function mqResolveLogo(nameEn) {
+            const map = window.STARTA_MANAGER_LOGOS;
+            if (!map || !nameEn) return null;
+            const hay = String(nameEn).toLowerCase();
+            let best = null;
+            Object.keys(map).forEach((key) => {
+                if (hay.indexOf(key) !== -1 && (!best || key.length > best.length)) best = key;
+            });
+            return best ? map[best] : null;
+        }
+
         function mqBuildSet(managers, lang) {
             return managers.map((m) => {
                 const name = (lang === 'ar' ? m.ar : m.en) || m.en || m.ar;
-                const mark = m.logo
-                    ? `<span class="mq-mark"><img src="${m.logo}" alt="" loading="lazy" decoding="async"></span>`
+                const logo = m.logo || mqResolveLogo(m.en);
+                const mark = logo
+                    ? `<span class="mq-mark mq-mark--logo"><img src="${logo}" alt="" loading="lazy" decoding="async"></span>`
                     : `<span class="mq-mark" aria-hidden="true">${mqMonogram(name)}</span>`;
                 return `<span class="mq-item"><span dir="auto">${mark}</span><span class="mq-name" dir="auto">${name}</span></span>`;
             }).join('');

@@ -3,6 +3,7 @@ import { access, readFile, readdir } from "node:fs/promises";
 import { assetHashes } from "./sync-asset-versions.mjs";
 import { deriveArRoutes } from "./sync-ar-routes.mjs";
 import { buildManifest, referencedImages } from "./sync-learn-image-sizes.mjs";
+import { validate as validateManagerLogos, MIN_RASTER_WIDTH } from "./sync-manager-logos.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -787,6 +788,27 @@ async function run() {
         "FAIL: LearnTopicArticle hardcodes image dimensions or crops artwork.\n" +
         "       Use lib/learn-image-sizes.json; editorial images are never cropped."
       );
+      process.exit(1);
+    }
+  }
+
+  // Manager logos are third-party marks fetched from each company's own site.
+  // A missing file would render a broken image on the homepage, and a small
+  // raster looks soft at the 52px mark (Naeem, 79px, was rejected for this).
+  {
+    const { logos, problems } = await validateManagerLogos();
+    if (problems.length) {
+      console.error(
+        `FAIL: manager logos (min raster width ${MIN_RASTER_WIDTH}px):\n` +
+        problems.map((p) => `       · ${p}`).join("\n") +
+        "\n       Run: node scripts/sync-manager-logos.mjs"
+      );
+      process.exit(1);
+    }
+    const mirror = await readFile(path.join(root, "public/assets/manager-logos.js"), "utf8");
+    const stale = Object.values(logos).filter((l) => !mirror.includes(l.file));
+    if (stale.length) {
+      console.error("FAIL: public/assets/manager-logos.js is stale. Run: node scripts/sync-manager-logos.mjs");
       process.exit(1);
     }
   }

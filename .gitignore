@@ -33,6 +33,8 @@ debug_*.png
 !frontend/lib/nav.json
 # Generated asset hash manifest — React imports it, so the build needs it.
 !frontend/lib/asset-versions.json
+# Arabic twin routes, derived from app/ar/** — the build reads it.
+!frontend/lib/ar-twin-routes.json
 system_backup_*
 
 # --- repo hygiene (2026-06 cleanup) ---

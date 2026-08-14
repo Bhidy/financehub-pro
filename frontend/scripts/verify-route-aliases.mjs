@@ -1,6 +1,7 @@
 import { constants } from "node:fs";
 import { access, readFile, readdir } from "node:fs/promises";
 import { assetHashes } from "./sync-asset-versions.mjs";
+import { deriveArRoutes } from "./sync-ar-routes.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -633,6 +634,29 @@ async function run() {
     const text = await readFile(fullPath, "utf8");
     if (!check.assert(text, { navConfig })) {
       console.error(`FAIL: ${check.name} (${check.file})`);
+      process.exit(1);
+    }
+  }
+
+  // Arabic twin routes must match what app/ar/** actually contains. The list
+  // was hand-maintained in three places and listed 2 routes while 15 existed,
+  // so every link to /Learn/{slug}, /Funds/{id}, /companies, /sectors,
+  // /markets/* and /symbol/{id} flipped an Arabic reader to English.
+  {
+    const derived = await deriveArRoutes();
+    const checked = JSON.parse(await readFile(path.join(root, "lib/ar-twin-routes.json"), "utf8")).routes;
+    if (JSON.stringify(derived) !== JSON.stringify(checked)) {
+      console.error(
+        "FAIL: lib/ar-twin-routes.json is stale.\n" +
+        `       on disk: ${derived.join(", ")}\n` +
+        `       checked in: ${checked.join(", ")}\n` +
+        "       Run: node scripts/sync-ar-routes.mjs"
+      );
+      process.exit(1);
+    }
+    const boot = await readFile(path.join(root, "public/assets/starta-lang-boot.js"), "utf8");
+    if (!derived.every((r) => boot.includes(`"${r}"`))) {
+      console.error("FAIL: starta-lang-boot.js twin-route mirror is stale. Run: node scripts/sync-ar-routes.mjs");
       process.exit(1);
     }
   }

@@ -51,7 +51,7 @@
                     "ar": "حاسبات الثروة"
             }
     ];
-    var CTA = {"key":"nav_cta","href":"/RiskAssessment","en":"ASSESS YOUR PROFILE","ar":"قيّم ملفك الاستثماري"};
+    var CTA = {"key":"nav_cta","href":"/RiskAssessment","en":"ASSESS YOUR PROFILE","ar":"قيم استثمارك"};
 
     window.STARTA_NAV = { items: ITEMS, cta: CTA };
 

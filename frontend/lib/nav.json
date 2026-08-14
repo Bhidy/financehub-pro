@@ -1,11 +1,41 @@
 {
   "_comment": "CANONICAL PRIMARY NAV — the single source of truth for the site chrome. Consumed by React (components/SiteNav.tsx, components/seo/PublicPageShell.tsx) and mirrored into public/assets/starta-nav.js, which renders it on every static HTML page. The mirror is build-gated: scripts/verify-route-aliases.mjs fails if the two drift. Add or reorder items HERE ONLY.",
   "items": [
-    { "key": "nav_home", "href": "/", "en": "HOME", "ar": "الرئيسية" },
-    { "key": "nav_mobile", "href": "/Funds", "en": "MUTUAL FUNDS", "ar": "الصناديق الاستثمارية" },
-    { "key": "nav_news", "href": "/News", "en": "MARKET NEWS", "ar": "أخبار السوق" },
-    { "key": "nav_learn", "href": "/Learn", "en": "LEARN", "ar": "تعلّم" },
-    { "key": "nav_calculators", "href": "/Calculators", "en": "WEALTH CALCULATORS", "ar": "حاسبات الثروة" }
+    {
+      "key": "nav_home",
+      "href": "/",
+      "en": "HOME",
+      "ar": "الرئيسية"
+    },
+    {
+      "key": "nav_mobile",
+      "href": "/Funds",
+      "en": "MUTUAL FUNDS",
+      "ar": "الصناديق الاستثمارية"
+    },
+    {
+      "key": "nav_news",
+      "href": "/News",
+      "en": "MARKET NEWS",
+      "ar": "أخبار السوق"
+    },
+    {
+      "key": "nav_learn",
+      "href": "/Learn",
+      "en": "LEARN",
+      "ar": "تعلّم"
+    },
+    {
+      "key": "nav_calculators",
+      "href": "/Calculators",
+      "en": "WEALTH CALCULATORS",
+      "ar": "حاسبات الثروة"
+    }
   ],
-  "cta": { "key": "nav_cta", "href": "/RiskAssessment", "en": "ASSESS YOUR PROFILE", "ar": "قيّم ملفك الاستثماري" }
+  "cta": {
+    "key": "nav_cta",
+    "href": "/RiskAssessment",
+    "en": "ASSESS YOUR PROFILE",
+    "ar": "قيم استثمارك"
+  }
 }

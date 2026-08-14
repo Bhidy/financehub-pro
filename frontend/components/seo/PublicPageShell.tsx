@@ -3,6 +3,7 @@ import Script from 'next/script';
 import ThemeToggle from '@/components/seo/ThemeToggle';
 import navConfig from '@/lib/nav.json';
 import assetVersions from '@/lib/asset-versions.json';
+import arTwinRoutes from '@/lib/ar-twin-routes.json';
 
 /**
  * Server-rendered chrome for the SEO/public pages — a FAITHFUL replication of
@@ -82,7 +83,13 @@ const SHELL_CSS = `
 `;
 
 /** Routes that have real /ar twins (server-rendered, language-in-URL). */
-const AR_TWIN_ROUTES = ['/RiskAssessment', '/Calculators'];
+/**
+ * Derived from app/ar/** by scripts/sync-ar-routes.mjs — never hand-written.
+ * The hand-written version listed 2 routes while 15 existed, so every link to
+ * /Learn/{slug}, /Funds/{id}, /companies, /sectors, /markets/* and /symbol/{id}
+ * dropped an Arabic reader onto the English page.
+ */
+const AR_TWIN_ROUTES = arTwinRoutes.routes;
 
 /**
  * Language-safe internal href — the shell-side single source of truth.
@@ -161,7 +168,7 @@ export default function PublicPageShell({
             <script
                 dangerouslySetInnerHTML={{
                     __html:
-                        `(function(){var L=${JSON.stringify(lang)},R=["/RiskAssessment","/Calculators"];` +
+                        `(function(){var L=${JSON.stringify(lang)},R=${JSON.stringify(arTwinRoutes.routes)};` +
                         `window.startaLocalizedHref=function(p){if(L!=="ar")return p;` +
                         `for(var i=0;i<R.length;i++){var r=R[i];` +
                         `if(p===r||p.indexOf(r+"/")===0||p.indexOf(r+"?")===0)return "/ar"+p;}return p;};})();`,

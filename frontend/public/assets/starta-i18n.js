@@ -82,7 +82,7 @@
             footer_lnk_risk: "تقييم المخاطر",
             footer_lnk_terms: "شروط الخدمة",
             nav_calculators: "حاسبات الثروة",
-            nav_cta: "قيّم ملفك الاستثماري",
+            nav_cta: "قيم استثمارك",
             nav_funds: "الصناديق الاستثمارية",
             nav_home: "الرئيسية",
             nav_learn: "تعلّم",

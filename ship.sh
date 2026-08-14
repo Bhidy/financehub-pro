@@ -115,9 +115,23 @@ fi
 # only then the page contents.
 verify_deployment_state() {
   command -v npx >/dev/null 2>&1 || { warn "npx not found — cannot confirm deployment state"; return 0; }
-  local line status
+  local line status age
   line="$(npx --yes vercel ls --prod 2>/dev/null | grep -m1 'Production' || true)"
   status="$(printf '%s' "$line" | grep -o 'Error\|Ready\|Building\|Queued' | head -1)"
+
+  # The Git integration sometimes silently does NOT fire: the commit reaches
+  # origin/main and no build is ever created, so the newest deployment is the
+  # PREVIOUS one and every health check still passes. If the newest production
+  # deployment predates this push, the change is not live.
+  age="$(printf '%s' "$line" | awk '{print $1}')"
+  case "$age" in
+    *m) [ "${age%m}" -gt 6 ] 2>/dev/null && {
+          warn "newest production deployment is ${age} old — the Git integration may not have fired for $SHA."
+          warn "  Re-trigger with:  git commit --allow-empty -m 'chore: re-trigger build' && git push origin main"
+          warn "  (never 'vercel --prod' — a CLI deploy races the Git build)"
+        } ;;
+    *h|*d) warn "newest production deployment is ${age} old — this push almost certainly did not build." ;;
+  esac
   case "$status" in
     Ready)    ok "Vercel production deployment is Ready." ;;
     Error)    die "Vercel production build FAILED — your change is NOT live (prod is serving the previous deploy).

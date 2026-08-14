@@ -94,8 +94,10 @@ const checks = [
     // twinned route — an Arabic page would silently flip the user to English.
     name: "PublicPageShell routes twinned links through localizedHref",
     file: "components/seo/PublicPageShell.tsx",
+    // The helper now lives in lib/localized-href.ts and is shared with SiteNav,
+    // so accept the import as well as a local definition.
     assert: (text) =>
-      /function localizedHref/.test(text) &&
+      (/function localizedHref/.test(text) || /from '@\/lib\/localized-href'/.test(text)) &&
       !/href="\/RiskAssessment"/.test(text) &&
       !/href="\/Calculators"/.test(text),
   },
@@ -696,6 +698,58 @@ async function run() {
         `       canonical slugs: ${[...canonical].join(", ")}`
       );
       process.exit(1);
+    }
+  }
+
+  // LANGUAGE INTEGRITY, part 1: an Arabic page must not link to an English
+  // route. The only exception is the deliberate "view in English" affordance,
+  // which carries hrefLang="en".
+  {
+    const arFiles = [];
+    const collect = async (dir) => {
+      let entries;
+      try { entries = await readdir(dir, { withFileTypes: true }); } catch { return; }
+      for (const e of entries) {
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) await collect(full);
+        else if (e.name.endsWith(".tsx")) arFiles.push(full);
+      }
+    };
+    await collect(path.join(root, "app/ar"));
+    const ROUTES = "(?:Learn|Funds|Calculators|RiskAssessment|companies|sectors|markets|symbol)";
+    const offenders = [];
+    for (const file of arFiles) {
+      const text = await readFile(file, "utf8");
+      text.split("\n").forEach((line, i) => {
+        if (line.includes('hrefLang="en"')) return;
+        const m = line.match(new RegExp(`href="(/${ROUTES}[^"]*)"`));
+        if (m) offenders.push(`${path.relative(root, file)}:${i + 1} -> ${m[1]}`);
+      });
+    }
+    if (offenders.length) {
+      console.error(
+        "FAIL: Arabic pages link to English routes (add the /ar prefix, or " +
+        'hrefLang="en" if the English link is intentional):\n' +
+        offenders.map((o) => `       ${o}`).join("\n")
+      );
+      process.exit(1);
+    }
+  }
+
+  // LANGUAGE INTEGRITY, part 2: the bilingual nav renderers must localize every
+  // href. Rendering the canonical list with a raw item.href made every nav link
+  // on /ar/Calculators point at the English route.
+  {
+    const checks = [
+      ["components/seo/PublicPageShell.tsx", /href=\{localizedHref\(item\.href, lang\)\}/],
+      ["components/SiteNav.tsx", /href=\{localizedHref\(link\.href, lang\)\}/],
+    ];
+    for (const [file, re] of checks) {
+      const text = await readFile(path.join(root, file), "utf8");
+      if (!re.test(text)) {
+        console.error(`FAIL: ${file} renders nav links without localizedHref().`);
+        process.exit(1);
+      }
     }
   }
 

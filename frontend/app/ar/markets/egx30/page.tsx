@@ -163,8 +163,8 @@ export default async function Egx30ArPage() {
             </section>
 
             <nav aria-label="استكشف" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/companies" className="text-muted hover:text-starta-teal">جميع شركات البورصة المصرية</Link>
-                <Link href="/markets/movers" className="text-muted hover:text-starta-teal">الأكثر ارتفاعًا وانخفاضًا</Link>
+                <Link href="/ar/companies" className="text-muted hover:text-starta-teal">جميع شركات البورصة المصرية</Link>
+                <Link href="/ar/markets/movers" className="text-muted hover:text-starta-teal">الأكثر ارتفاعًا وانخفاضًا</Link>
                 <a href="/markets/egx30" hrefLang="en" className="text-muted hover:text-starta-teal">EGX 30 in English</a>
             </nav>
         </PublicPageShell>

@@ -102,11 +102,11 @@ export default function GlossaryIndexArabicPage() {
 
                 <p className="mt-10 rounded-xl border border-teal-100 bg-teal-50 p-4 text-[1.05rem] leading-relaxed text-main">
                     تريد الدروس الكاملة وراء هذه المصطلحات؟{' '}
-                    <Link href="/Learn" prefetch={false} className="font-semibold text-starta-teal hover:underline">
+                    <Link href="/ar/Learn" prefetch={false} className="font-semibold text-starta-teal hover:underline">
                         زر أكاديمية التعلّم
                     </Link>{' '}
                     أو{' '}
-                    <Link href="/Funds" prefetch={false} className="font-semibold text-starta-teal hover:underline">
+                    <Link href="/ar/Funds" prefetch={false} className="font-semibold text-starta-teal hover:underline">
                         استكشف صناديق الاستثمار
                     </Link>
                     .

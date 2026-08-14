@@ -4,6 +4,7 @@ import ThemeToggle from '@/components/seo/ThemeToggle';
 import navConfig from '@/lib/nav.json';
 import assetVersions from '@/lib/asset-versions.json';
 import arTwinRoutes from '@/lib/ar-twin-routes.json';
+import { localizedHref } from '@/lib/localized-href';
 
 /**
  * Server-rendered chrome for the SEO/public pages — a FAITHFUL replication of
@@ -98,13 +99,8 @@ const AR_TWIN_ROUTES = arTwinRoutes.routes;
  * Static single-URL pages (/, /Funds, /News, /Learn) keep language via
  * localStorage/persistLang and must NOT be prefixed.
  */
-function localizedHref(path: string, lang: Lang): string {
-    if (lang !== 'ar') return path;
-    const twinned = AR_TWIN_ROUTES.some(
-        (route) => path === route || path.startsWith(`${route}/`) || path.startsWith(`${route}?`),
-    );
-    return twinned ? `/ar${path}` : path;
-}
+// Re-exported from lib/localized-href so this shell and SiteNav share ONE
+// implementation. A second copy is how the lists drifted in the first place.
 
 export default function PublicPageShell({
     children,
@@ -195,7 +191,7 @@ export default function PublicPageShell({
                             {navConfig.items.map((item) => (
                                 <Link
                                     key={item.key}
-                                    href={item.href}
+                                    href={localizedHref(item.href, lang)}
                                     prefetch={false}
                                     className="hover:text-starta-teal transition-colors"
                                     data-key={item.key}

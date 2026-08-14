@@ -234,7 +234,7 @@ export default async function BestFundsArPage() {
             </section>
 
             <nav aria-label="استكشف" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/Funds" className="text-muted hover:text-starta-teal">كل صناديق الاستثمار</Link>
+                <Link href="/ar/Funds" className="text-muted hover:text-starta-teal">كل صناديق الاستثمار</Link>
                 <Link href="/ar/companies" className="text-muted hover:text-starta-teal">أسهم البورصة المصرية</Link>
                 <a href="/Funds/best-mutual-funds-egypt-2026" hrefLang="en" className="text-muted hover:text-starta-teal">Best funds in English</a>
             </nav>

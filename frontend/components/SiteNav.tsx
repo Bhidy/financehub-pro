@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AUTH_LABELS } from "@/lib/auth-i18n";
 import navConfig from "@/lib/nav.json";
 import assetVersions from '@/lib/asset-versions.json';
+import { localizedHref } from "@/lib/localized-href";
 
 interface MobileChatActions {
     onNewChat?: () => void;
@@ -80,7 +81,7 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                             {NAV_LINKS.map((link) => (
                                 <a
                                     key={link.href}
-                                    href={link.href}
+                                    href={localizedHref(link.href, lang)}
                                     className="hover:text-[#14B8A6] transition-colors"
                                 >
                                     {lang === "ar" ? link.ar : link.en}
@@ -199,7 +200,7 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                         {NAV_LINKS.map((link) => (
                             <a
                                 key={link.href}
-                                href={link.href}
+                                href={localizedHref(link.href, lang)}
                                 onClick={() => setMobileOpen(false)}
                                 className="block text-sm font-mono tracking-widest text-slate-500 dark:text-[#9ca6b5] hover:text-[#14B8A6] transition-colors py-3 border-b border-slate-100 dark:border-white/[0.05]"
                             >

@@ -107,9 +107,30 @@ if [ "$DO_BACKEND" = 1 ]; then
 fi
 
 # ── optional verify ───────────────────────────────────────────────────────────
+#
+# A 200 from startamarkets.com proves the SITE is up, not that THIS commit
+# shipped: when a Vercel build fails, production keeps serving the last good
+# deploy and every health check still passes. Three builds failed that way while
+# this script printed "Live and healthy". So verify the DEPLOYMENT first, and
+# only then the page contents.
+verify_deployment_state() {
+  command -v npx >/dev/null 2>&1 || { warn "npx not found — cannot confirm deployment state"; return 0; }
+  local line status
+  line="$(npx --yes vercel ls --prod 2>/dev/null | grep -m1 'Production' || true)"
+  status="$(printf '%s' "$line" | grep -o 'Error\|Ready\|Building\|Queued' | head -1)"
+  case "$status" in
+    Ready)    ok "Vercel production deployment is Ready." ;;
+    Error)    die "Vercel production build FAILED — your change is NOT live (prod is serving the previous deploy).
+     Inspect it:  npx vercel inspect --logs \$(npx vercel ls --prod | grep -m1 -o 'https://[^ ]*')" ;;
+    Building|Queued) warn "Vercel build still $status — re-run './ship.sh --verify' shortly to confirm." ;;
+    *)        warn "could not read the Vercel deployment state; check the dashboard (finhub)." ;;
+  esac
+}
+
 if [ "$VERIFY" = 1 ]; then
   say "  → Waiting ~90s for the Vercel build, then verifying…"
   sleep 90
+  verify_deployment_state
   ./scripts/deploy-web.sh || warn "web health check reported an issue — check the Vercel dashboard (finhub)"
   if [ "$DO_BACKEND" = 1 ] && command -v gh >/dev/null 2>&1; then
     RID="$(gh run list --workflow=backend-deploy.yml -L1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || true)"

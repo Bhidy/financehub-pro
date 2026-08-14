@@ -160,6 +160,8 @@ const manrope = Manrope({
 - Reserve green/red strictly for market data
 - Use `#111827` for dark mode cards
 - Apply subtle teal glows for premium feel
+- Give every section exactly ONE dark heading (see "One Title Per Section")
+- Change EN and AR copy together, in the same edit (see "Bilingual Parity")
 
 ### DON'T ❌
 - Use purple, violet, or indigo colors
@@ -167,6 +169,78 @@ const manrope = Manrope({
 - Use gradients with blue-to-indigo
 - Use `#1A1F2E` for dark cards (legacy)
 - Mix color systems from other brands
+- Add a small accent-coloured eyebrow/kicker above a section heading — BANNED site-wide
+- Edit copy in one language and leave the other stale — BANNED
+
+---
+
+## Bilingual Parity — Every Change Lands in BOTH Languages (PERMANENT RULE)
+
+> ⛔ **Never change copy in one language only.** Arabic and English are a matched
+> pair. Editing one and leaving the other is a defect, not a follow-up task.
+
+Every user-facing string change — new copy, reworded copy, deleted copy, a new
+label, a removed section — must be applied to **both** the `en` and `ar`
+translation dictionaries in the same edit. The two must always say the same
+thing; not a literal word-for-word translation, but the same meaning, scope and
+promise. If the Arabic is shortened, the English is shortened to match.
+
+Three places must stay in sync for any static-HTML string:
+
+1. the `en` dictionary entry,
+2. the `ar` dictionary entry,
+3. the **markup default** inside the element (it renders before
+   `applyTranslations()` runs, so a stale default flashes to real users).
+
+Deleting a string means deleting its key from both dictionaries *and* removing
+the element — a `data-key` with no dictionary entry silently renders the stale
+markup default forever.
+
+**Enforcement:** `frontend/scripts/verify-route-aliases.mjs` compares the two
+dictionaries key-for-key and fails the build on any key present in one language
+but not the other. Do not weaken that check.
+
+---
+
+## Section Headings — One Title Per Section (PERMANENT RULE)
+
+> ⛔ **BANNED: the small green eyebrow/kicker above a section heading.**
+> Never reintroduce it anywhere on the site, in any surface, under any class name.
+
+A section gets **exactly one title**: a single dark heading in `--c-text-main`,
+optionally followed by one muted deck paragraph. There is no small accent-coloured
+label above it — no "THE PROBLEM", no "MARKET NEWS", no "WEALTH PROJECTION".
+
+**The banned pattern** (removed 2026-08-14 from the homepage, `/Funds`, and `/Fund`):
+
+```html
+<!-- ❌ NEVER -->
+<span class="section-tag">MARKET NEWS</span>
+<h2 class="section-title">Stories That Move Markets.</h2>
+
+<!-- ❌ ALSO BANNED — same thing hand-styled without the class -->
+<div class="text-[0.72rem] uppercase tracking-[0.24em] text-starta-darkTeal">Mutual Funds</div>
+<h1>Comprehensive coverage</h1>
+```
+
+```html
+<!-- ✅ ALWAYS — the label IS the title, rendered dark -->
+<h2 class="section-title section-title--solo text-main">Market News</h2>
+<p class="text-muted copy-premium">Curated financial coverage, company developments…</p>
+```
+
+**How to convert an existing eyebrow + headline pair:** the eyebrow's text becomes
+the heading, and the old marketing headline is deleted — not the other way round.
+The heading is plain and declarative ("Market News", "Starta Academy", "Wealth
+Projection"), and `.section-title--solo` gives it the extra optical size it needs
+to hold the section alone.
+
+**Arabic:** `.section-title--solo` resets `letter-spacing` to `0` and opens the
+leading under `html[lang="ar"]`. Arabic is a connected script — negative tracking
+breaks the joins. Never ship negative tracking on Arabic display type.
+
+**Enforcement:** `frontend/scripts/verify-route-aliases.mjs` fails the build if
+`section-tag` reappears in any served HTML. Do not weaken that check.
 
 ---
 

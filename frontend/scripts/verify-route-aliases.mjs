@@ -112,6 +112,73 @@ const checks = [
       ),
   },
   {
+    // DESIGN_SYSTEM.md -> "Bilingual Parity": the en and ar dictionaries are a
+    // matched pair. A key added to one language and forgotten in the other
+    // renders the stale English markup default to Arabic users (and vice
+    // versa), so any divergence fails the build.
+    name: "home page en/ar translation dictionaries have identical keys",
+    file: "public/home.html",
+    assert: (text) => {
+      const dictKeys = (label) => {
+        const start = text.indexOf(`${label}: {`);
+        if (start === -1) return null;
+        // Walk braces from the dictionary's opening brace to its match.
+        let depth = 0;
+        let end = -1;
+        for (let i = text.indexOf("{", start); i < text.length; i += 1) {
+          if (text[i] === "{") depth += 1;
+          else if (text[i] === "}") {
+            depth -= 1;
+            if (depth === 0) { end = i; break; }
+          }
+        }
+        if (end === -1) return null;
+        // Strip string literals first: several keys share a line, and values
+        // themselves contain colons (URLs, Arabic punctuation), so a naive
+        // key regex both misses and invents entries.
+        const body = text
+          .slice(start, end)
+          .replace(/`(?:[^`\\]|\\.)*`/g, '""')
+          .replace(/"(?:[^"\\]|\\.)*"/g, '""')
+          .replace(/'(?:[^'\\]|\\.)*'/g, '""');
+        const keys = new Set([...body.matchAll(/([A-Za-z_][A-Za-z0-9_]*)\s*:/g)].map((m) => m[1]));
+        keys.delete(label); // the slice starts at the dictionary's own label
+        return keys;
+      };
+      const en = dictKeys("en");
+      const ar = dictKeys("ar");
+      if (!en || !ar || en.size < 50 || ar.size < 50) return false;
+      const missingAr = [...en].filter((k) => !ar.has(k));
+      const missingEn = [...ar].filter((k) => !en.has(k));
+      if (missingAr.length || missingEn.length) {
+        console.error(
+          `       missing in ar: ${missingAr.join(", ") || "(none)"}\n` +
+          `       missing in en: ${missingEn.join(", ") || "(none)"}`
+        );
+        return false;
+      }
+      return true;
+    },
+  },
+  {
+    // DESIGN_SYSTEM.md -> "One Title Per Section": the small accent-coloured
+    // eyebrow above a section heading is banned site-wide. It was stripped from
+    // the homepage, /Funds and /Fund on 2026-08-14; this gate keeps it gone.
+    name: "no banned section eyebrow/kicker in the static Home page",
+    file: "public/home.html",
+    assert: (text) => !/section-tag/.test(text),
+  },
+  {
+    name: "no banned section eyebrow/kicker in the static Funds page",
+    file: "public/marketplace.html",
+    assert: (text) => !/section-tag/.test(text),
+  },
+  {
+    name: "no banned section eyebrow/kicker in the static Fund detail page",
+    file: "public/fund-details.html",
+    assert: (text) => !/section-tag/.test(text),
+  },
+  {
     name: "static Home page asset exists with expected title",
     file: "public/home.html",
     assert: (text) => /<title>\s*Starta\s*\|\s*Master the EGX\s*<\/title>/i.test(text),

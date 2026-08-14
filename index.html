@@ -67,9 +67,6 @@
             --glass-border: rgba(255, 255, 255, 0.05);
             --glass-blur: 40px;
             --c-metal: #2DD4BF;
-            --cursor-fill: #14B8A6;
-            --cursor-border: rgba(20, 184, 166, 0.4);
-            --cursor-blend: difference;
         }
 
         [data-theme="light"] {
@@ -88,9 +85,6 @@
             --glass-border: rgba(148, 163, 184, 0.2);
             --glass-blur: 24px;
             --c-metal: #0F766E;
-            --cursor-fill: #0F172A;
-            --cursor-border: rgba(15, 23, 42, 0.2);
-            --cursor-blend: normal;
         }
 
         html.finhub-pro-domain-static[dir="ltr"] body,
@@ -165,36 +159,6 @@
         }
 
         /* UI Components */
-        .cursor-dot {
-            width: 6px;
-            height: 6px;
-            background-color: var(--cursor-fill);
-            position: fixed;
-            top: 0;
-            left: 0;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            z-index: 9999;
-            pointer-events: none;
-            mix-blend-mode: var(--cursor-blend);
-            transition: background-color 0.3s;
-        }
-
-        .cursor-ring {
-            width: 40px;
-            height: 40px;
-            border: 1px solid var(--cursor-border);
-            position: fixed;
-            top: 0;
-            left: 0;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            z-index: 9998;
-            pointer-events: none;
-            transition: all 0.15s ease-out, border-color 0.3s;
-            mix-blend-mode: var(--cursor-blend);
-        }
-
         .glass-premium {
             background: var(--glass-bg);
             backdrop-filter: blur(var(--glass-blur));
@@ -351,18 +315,6 @@
             }
         }
 
-        .section-tag {
-            font-family: 'Sora', 'IBM Plex Sans Arabic', sans-serif;
-            font-size: 0.72rem;
-            letter-spacing: 0.26em;
-            color: var(--c-metal);
-            opacity: 1;
-            margin-bottom: 1.5rem;
-            display: block;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
         .section-premium {
             padding-top: clamp(5.5rem, 10vw, 8.25rem) !important;
             padding-bottom: clamp(5.5rem, 10vw, 8.25rem) !important;
@@ -501,6 +453,7 @@
         }
 
         .mf-stat-card {
+            min-width: 0;
             border: 1px solid rgba(45, 212, 191, 0.18);
             background: linear-gradient(180deg, rgba(45, 212, 191, 0.08), rgba(45, 212, 191, 0.02));
             border-radius: 1.25rem;
@@ -508,6 +461,149 @@
 
         [data-theme="dark"] .mf-stat-card {
             background: linear-gradient(180deg, rgba(10, 26, 29, 0.88), rgba(8, 17, 24, 0.68));
+        }
+
+        /* 3Y/5Y are cumulative and run to four digits ("+703.64%"), which
+           overflows the tile at the display size. A fixed smaller size would
+           shrink "195" and "26" for no reason, so the size is held here and
+           mfFitStatValue() steps down only the value that actually overflows. */
+        .mf-stat-value {
+            font-size: 1.875rem;
+            line-height: 1.15;
+            white-space: nowrap;
+        }
+
+        /* ── Performance-period segmented control ──────────────────────────
+           One thumb element is translated between segments from measured
+           geometry, so it lands correctly in RTL with no mirrored stylesheet. */
+        .mf-period {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.12rem;
+            padding: 0.3rem;
+            border-radius: 999px;
+            border: 1px solid rgba(45, 212, 191, 0.22);
+            background: linear-gradient(180deg, rgba(45, 212, 191, 0.09), rgba(45, 212, 191, 0.02));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+            width: max-content;
+            max-width: 100%;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .mf-period::-webkit-scrollbar {
+            display: none;
+        }
+
+        [data-theme="dark"] .mf-period {
+            border-color: rgba(45, 212, 191, 0.2);
+            background: linear-gradient(180deg, rgba(10, 26, 29, 0.9), rgba(8, 17, 24, 0.7));
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .mf-period-thumb {
+            position: absolute;
+            top: 0.3rem;
+            left: 0;
+            height: calc(100% - 0.6rem);
+            width: 0;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #14B8A6, #2DD4BF);
+            box-shadow: 0 6px 18px rgba(20, 184, 166, 0.34);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Transitions switch on only after the first measurement, so the thumb
+           does not slide in from zero width on load. */
+        .mf-period-thumb.is-ready {
+            transition: transform 0.44s cubic-bezier(0.22, 1, 0.36, 1),
+                        width 0.44s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .mf-period-btn {
+            position: relative;
+            z-index: 1;
+            padding: 0.52rem 1.05rem;
+            border-radius: 999px;
+            border: 0;
+            background: transparent;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            color: var(--c-text-muted);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .mf-period-btn:hover {
+            color: var(--c-text-main);
+        }
+
+        .mf-period-btn[aria-selected="true"] {
+            color: #fff;
+        }
+
+        .mf-period-btn:focus-visible {
+            outline: 2px solid #14B8A6;
+            outline-offset: 3px;
+        }
+
+        /* Market data only: green/red are reserved for real returns.
+           text-red-500 is absent from the frozen Tailwind build, so both
+           directions are defined here to keep a negative return legible. */
+        .mf-return {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .mf-return-pos {
+            color: rgb(34, 197, 94);
+        }
+
+        .mf-return-neg {
+            color: #EF4444;
+        }
+
+        .mf-return-sub {
+            font-size: 0.55rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            /* overridden for Arabic below */
+            color: var(--c-text-muted);
+            opacity: 0.85;
+            font-variant-numeric: tabular-nums;
+            margin-top: 0.15rem;
+        }
+
+        /* The bar encodes MAGNITUDE, the colour encodes DIRECTION. Without the
+           loss colour the biggest loser would draw the longest teal bar and read
+           as the best performer. */
+        .mf-bar {
+            height: 100%;
+            border-radius: 999px;
+        }
+
+        .mf-bar-pos {
+            background: linear-gradient(90deg, #14B8A6, #2DD4BF);
+        }
+
+        .mf-bar-neg {
+            background: linear-gradient(90deg, #EF4444, #F87171);
+        }
+
+        html[lang="ar"] .mf-return-sub,
+        html[lang="ar"] .mf-return-label {
+            letter-spacing: 0;
+            text-transform: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .mf-period-thumb.is-ready {
+                transition: none;
+            }
         }
 
         .mf-clamp-2 {
@@ -606,13 +702,23 @@
         }
 
         @media (max-width: 768px) {
-            .section-tag {
-                letter-spacing: 0.18em;
-            }
-
             .section-title {
                 letter-spacing: -0.02em;
             }
+        }
+
+        /* A section carries ONE dark heading and no eyebrow/kicker above it, so
+           the heading is sized to hold the section on its own.
+           See frontend/DESIGN_SYSTEM.md → "One title per section". */
+        .section-title--solo {
+            font-size: clamp(2.6rem, 5vw, 4.4rem);
+            line-height: 1.03;
+            letter-spacing: -0.035em;
+        }
+
+        html[lang="ar"] .section-title--solo {
+            letter-spacing: 0;
+            line-height: 1.16;
         }
 
         /* ── INVESTMENT SIMULATOR ─────────────────────────────────────────── */
@@ -660,11 +766,6 @@
                 animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
                 scroll-behavior: auto !important;
-            }
-
-            .cursor-dot,
-            .cursor-ring {
-                display: none !important;
             }
         }
 
@@ -1275,7 +1376,7 @@
             font-family: 'Sora', sans-serif;
             line-height: 1.1;
             color: var(--c-text-main);
-            margin: 0.65rem 0 1.25rem;
+            margin: 0 0 1.25rem;
         }
         .hac-sub {
             font-size: 1rem;
@@ -1283,24 +1384,6 @@
             color: var(--c-text-muted);
             max-width: 38ch;
             margin-bottom: 2rem;
-        }
-        .hac-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        .hac-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.66rem;
-            font-weight: 600;
-            color: var(--c-text-muted);
-            background: var(--c-panel);
-            border: 1px solid var(--c-border);
-            border-radius: 2rem;
-            padding: 0.28rem 0.78rem;
-            font-family: monospace;
         }
         .hac-grid {
             position: relative;
@@ -2235,8 +2318,6 @@
 
 <body class="antialiased selection:bg-starta-teal selection:text-white">
 
-    <div class="cursor-dot"></div>
-    <div class="cursor-ring"></div>
 
     <div class="fixed inset-0 z-[-3]" style="background: var(--c-page); transition: background 0.5s;"></div>
     <div class="fixed inset-0 z-[-2] pointer-events-none"
@@ -2303,7 +2384,7 @@
                 </h1>
                 <p class="text-muted font-light max-w-xl copy-premium border-l-2 border-starta-teal/30 pl-6"
                     data-key="hero_sub">
-                    Egypt's mutual funds in one place — verified NAV history, transparent fees, performance and risk scorecards, and side-by-side comparison of up to four funds.
+                    Egypt's mutual funds in one place — performance, clear fees and risk, and easy comparison to help you pick the right one.
                 </p>
                 <div class="flex flex-wrap gap-4 pt-4">
                     <button onclick="window.location.href='/Funds'"
@@ -2631,21 +2712,6 @@
         </div>
     </section>
 
-    <!-- 3. THE GAP -->
-    <section class="py-40 bg-page relative flex items-center justify-center section-premium-xl">
-        <div class="max-w-5xl mx-auto px-6 text-center reveal-text">
-            <span class="section-tag" data-key="gap_tag">THE PROBLEM</span>
-            <h2 class="section-title text-main mb-10 leading-tight" data-key="gap_title">
-                Too Many Funds. <br>
-                Not Enough <span class="text-muted line-through decoration-starta-teal decoration-4">Clarity</span>.
-            </h2>
-            <p class="text-2xl text-muted font-light leading-relaxed max-w-3xl mx-auto" data-key="gap_text">
-                Every Egyptian mutual fund has its own fees, risk level and track record — published in scattered PDFs. <br>
-                Starta puts them on one comparable scale, in Arabic and English.
-            </p>
-        </div>
-    </section>
-
     <!-- 4.1 MUTUAL FUNDS -->
     <section id="funds-section" class="py-32 bg-page border-t border-border relative overflow-hidden section-premium">
         <div class="absolute inset-0 pointer-events-none opacity-70"
@@ -2655,26 +2721,21 @@
             <div class="grid grid-cols-1 xl:grid-cols-[0.92fr_1.08fr] gap-8 xl:items-center">
                 <div class="glass-premium rounded-[2.5rem] p-8 md:p-10 border border-starta-teal/20 premium-hover">
                     <h2 class="section-title text-main mb-6" data-key="mf_title">Mutual Funds.<br>Inside Starta.</h2>
-                    <p class="text-muted copy-premium mb-8" data-key="mf_text">
-                        Browse every fund we cover with verified NAV pricing, current performance, fees and risk — then
-                        compare up to four of them side by side.
-                    </p>
-
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
                         <div class="mf-stat-card p-5">
                             <div class="text-[10px] text-muted font-mono tracking-[0.22em] uppercase mb-2"
                                 data-key="mf_stat_coverage">Covered Funds</div>
-                            <div id="mf-covered-count" class="text-3xl font-display font-bold text-main">20</div>
+                            <div id="mf-covered-count" class="mf-stat-value font-display font-bold text-main">20</div>
                         </div>
                         <div class="mf-stat-card p-5">
-                            <div class="text-[10px] text-muted font-mono tracking-[0.22em] uppercase mb-2"
-                                data-key="mf_stat_best">Best YTD</div>
-                            <div id="mf-best-ytd" class="text-3xl font-display font-bold text-starta-teal">+0.00%</div>
+                            <div id="mf-stat-best-label"
+                                class="text-[10px] text-muted font-mono tracking-[0.22em] uppercase mb-2">Best YTD</div>
+                            <div id="mf-best-ytd" class="mf-stat-value font-display font-bold text-starta-teal mf-return">+0.00%</div>
                         </div>
                         <div class="mf-stat-card p-5">
                             <div class="text-[10px] text-muted font-mono tracking-[0.22em] uppercase mb-2"
                                 data-key="mf_stat_houses">Fund Houses</div>
-                            <div id="mf-fund-houses" class="text-3xl font-display font-bold text-main">0</div>
+                            <div id="mf-fund-houses" class="mf-stat-value font-display font-bold text-main">0</div>
                         </div>
                     </div>
 
@@ -2687,17 +2748,27 @@
                 </div>
 
                 <div class="min-w-0">
-                    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6 px-1 reveal-text">
-                        <div>
-                            <p class="text-sm text-muted copy-soft max-w-xl" data-key="mf_cards_text">
-                                Selected from funds already tracked inside Starta and ranked by current performance.
-                            </p>
+                    <div class="flex flex-col gap-4 mb-6 px-1 reveal-text">
+                        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                            <div class="min-w-0">
+                                <p id="mf-cards-text" class="text-sm text-muted copy-soft max-w-xl">
+                                    Top performers year to date.
+                                </p>
+                            </div>
+                            <button onclick="window.location.href='/Funds'"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-starta-teal/30 bg-starta-teal/5 text-starta-teal text-[10px] font-bold uppercase tracking-[0.22em] hover:bg-starta-teal/15 transition-colors"
+                                data-key="mf_view_all">
+                                View All Funds
+                            </button>
                         </div>
-                        <button onclick="window.location.href='/Funds'"
-                            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-starta-teal/30 bg-starta-teal/5 text-starta-teal text-[10px] font-bold uppercase tracking-[0.22em] hover:bg-starta-teal/15 transition-colors"
-                            data-key="mf_view_all">
-                            View All Funds
-                        </button>
+                        <div id="mf-period" class="mf-period" role="tablist" dir="ltr">
+                            <span id="mf-period-thumb" class="mf-period-thumb" aria-hidden="true"></span>
+                            <button type="button" class="mf-period-btn" role="tab" data-period="3M" aria-selected="false" tabindex="-1">3M</button>
+                            <button type="button" class="mf-period-btn" role="tab" data-period="YTD" aria-selected="true" tabindex="0">YTD</button>
+                            <button type="button" class="mf-period-btn" role="tab" data-period="1Y" aria-selected="false" tabindex="-1">1Y</button>
+                            <button type="button" class="mf-period-btn" role="tab" data-period="3Y" aria-selected="false" tabindex="-1">3Y</button>
+                            <button type="button" class="mf-period-btn" role="tab" data-period="5Y" aria-selected="false" tabindex="-1">5Y</button>
+                        </div>
                     </div>
 
                     <div id="mf-featured-grid" class="grid grid-cols-1 gap-4">
@@ -2732,8 +2803,7 @@
             <!-- Header -->
             <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 mb-9 reveal-text">
                 <div>
-                    <span class="section-tag" data-key="hp_news_tag">MARKET NEWS</span>
-                    <h2 class="section-title text-main mb-2" data-key="hp_news_title">Stories That Move Markets.</h2>
+                    <h2 class="section-title section-title--solo text-main mb-3" data-key="hp_news_title">Market News</h2>
                     <p class="text-muted copy-premium max-w-lg" data-key="hp_news_text">Curated financial coverage, company developments, and sector analysis.</p>
                 </div>
                 <a href="/News" class="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm self-start lg:self-auto shrink-0">
@@ -2843,22 +2913,7 @@
         <div class="max-w-7xl mx-auto px-6">
             <div class="hac-header reveal-text">
                 <div>
-                    <span class="section-tag" data-key="hp_learn_tag">STARTA ACADEMY</span>
-                    <h2 class="hac-headline" data-key="hp_learn_title">Build Investor Intelligence.</h2>
-                    <div class="hac-chips">
-                        <span class="hac-chip">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
-                            <span data-key="hp_learn_stat1">10 Topics</span>
-                        </span>
-                        <span class="hac-chip">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                            <span data-key="hp_learn_stat2">Arabic & English</span>
-                        </span>
-                        <span class="hac-chip">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-                            <span data-key="hp_learn_stat3">All Levels</span>
-                        </span>
-                    </div>
+                    <h2 class="hac-headline" data-key="hp_learn_title">Starta Academy</h2>
                 </div>
                 <div>
                     <p class="hac-sub" data-key="hp_learn_sub">From market basics to advanced valuation — structured modules built for Egyptian market investors.</p>
@@ -2889,7 +2944,6 @@
                 </div>
             </div>
             <div class="space-y-8 reveal-text">
-                <span class="section-tag" data-key="tech_tag">THE TIMER</span>
                 <h2 class="section-title text-main" data-key="tech_title">Strategic Timing.</h2>
                 <p class="text-muted copy-premium" data-key="tech_text">
                     Fundamental analysis reveals <em>Value</em>. Technical analysis identifies <em>Opportunity</em>.
@@ -2903,8 +2957,7 @@
 
     <!-- 17. MOBILE ECOSYSTEM -->
     <section id="mobile" class="py-32 bg-page border-t border-border text-center section-premium">
-        <span class="section-tag" data-key="mob_tag">EVERYWHERE</span>
-        <h2 class="section-title text-main mb-6" data-key="mob_title">Every Fund<br>In Your Pocket.</h2>
+        <h2 class="section-title section-title--solo text-main mb-6" data-key="mob_title">Everywhere</h2>
         <p class="text-muted mb-10 text-lg max-w-lg mx-auto" data-key="mob_text">Native iOS and Android apps with the full fund
             universe, side-by-side comparison, calculators and market news.</p>
         <div class="flex justify-center mb-10">
@@ -2941,8 +2994,7 @@
         <div class="max-w-7xl mx-auto px-6 relative z-10">
             <!-- Header -->
             <div class="mb-14 reveal-text">
-                <span class="section-tag" data-key="calc_tag">WEALTH PROJECTION</span>
-                <h2 class="section-title text-main mb-4 max-w-2xl" data-key="calc_title">The Power of Compound Returns.</h2>
+                <h2 class="section-title section-title--solo text-main mb-4 max-w-2xl" data-key="calc_title">Wealth Projection</h2>
                 <p class="text-muted copy-premium max-w-xl" data-key="sim_sub">Model your investment growth with different risk profiles, time horizons, and market scenarios.</p>
             </div>
 
@@ -3213,7 +3265,6 @@
     <!-- 20. PRICING & CLOSE (Updated to match image) -->
     <section id="pricing" class="hidden py-40 bg-page border-t border-border relative section-premium-xl">
         <div class="max-w-7xl mx-auto px-6 text-center mb-20">
-            <span class="section-tag" data-key="price_tag">CAPITAL ALLOCATION</span>
             <h2 class="section-title text-main" data-key="price_title">Invest in Intelligence.</h2>
         </div>
 
@@ -3543,8 +3594,6 @@
                     var type = el.dataset.smReveal;
                     if (type === 'text')
                         gsap.to(el, { y: 0, opacity: 1, duration: 0.65, ease: 'power3.out', overwrite: true });
-                    else if (type === 'tag')
-                        gsap.to(el, { y: 0, opacity: 1, duration: 0.42, ease: 'power2.out', overwrite: true });
                     else if (type === 'card')
                         gsap.to(el, { y: 0, opacity: 1, scale: 1, duration: 0.55, ease: 'power3.out', overwrite: true });
                 });
@@ -3558,11 +3607,6 @@
             document.querySelectorAll('.reveal-text').forEach(function(el) {
                 gsap.set(el, { y: 16, opacity: 0 });
                 el.dataset.smReveal = 'text';
-                io.observe(el);
-            });
-            document.querySelectorAll('.section-tag').forEach(function(el) {
-                gsap.set(el, { y: 10, opacity: 0 });
-                el.dataset.smReveal = 'tag';
                 io.observe(el);
             });
             document.querySelectorAll('.premium-hover').forEach(function(el) {
@@ -3579,7 +3623,7 @@
                 about_tag: "OUR MISSION", about_title: "Empowering Investors with Clearer Market Vision.", about_text: "At Starta, we build intelligent financial tools that help investors understand the market, track stocks, analyze news, and manage investment decisions from one unified platform. Our mission is to turn complex financial data into clear, actionable insights that support smarter and more confident investing.", about_val1_title: "Innovation", about_val1_text: "Smart technology that helps investors understand the market faster and act with more confidence.", about_val2_title: "Transparency", about_val2_text: "Clear data and insights that give investors a stronger view before making decisions.", about_vision: "Redefining the Investment Experience", about_vision_text: "We combine market data, AI-powered analysis, and simple design to deliver a clearer, faster, and more professional way to monitor the market and manage investments.",
                 hero_kicker: "Egypt's Mutual Fund Platform",
                 hero_title: `A Smarter Vision<br>for <span class="text-gradient">Investing.</span>`,
-                hero_sub: `Egypt's mutual funds in one place — verified NAV history, transparent fees, performance and risk scorecards, and side-by-side comparison of up to four funds.`,
+                hero_sub: `Egypt's mutual funds in one place — performance, clear fees and risk, and easy comparison to help you pick the right one.`,
                 hero_point1: "Verified NAV History", hero_point2: "Fees and Risk in the Open", hero_point3: "Arabic + English Fluency",
                 hero_btn: "Explore Mutual Funds", hero_btn_funds: "See Top Performers",
                 mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> STARTA Platform`,
@@ -3594,13 +3638,19 @@
                 marquee_houses: ["CI CAPITAL", "BELTONE", "HERMES", "AZIMUT", "ARAB AFRICAN", "AL AHLY", "NI CAPITAL", "HC", "PRIME", "CFH", "PHAROS", "NAEEM"]
                     .concat(["CI CAPITAL", "BELTONE", "HERMES", "AZIMUT", "ARAB AFRICAN", "AL AHLY", "NI CAPITAL", "HC", "PRIME", "CFH", "PHAROS", "NAEEM"])
                     .map(function (house) { return '<span class="text-3xl font-display font-bold text-main mx-12">' + house + '</span>'; }).join(''),
-                gap_tag: "THE PROBLEM",
-                gap_title: `Too Many Funds. <br>Not Enough <span class="text-muted line-through decoration-starta-teal decoration-4">Clarity</span>.`,
-                gap_text: "Every Egyptian mutual fund has its own fees, risk level and track record — published in scattered PDFs. Starta puts them on one comparable scale, in Arabic and English.",
-                mf_title: "Mutual Funds.<br>Inside Starta.", mf_text: "Browse every fund we cover with verified NAV pricing, current performance, fees and risk — then compare up to four of them side by side.",
-                mf_stat_coverage: "Covered Funds", mf_stat_best: "Best YTD", mf_stat_houses: "Fund Houses", mf_cta: "Explore Mutual Funds",
-                mf_cards_text: "Best yearly performers.", mf_view_all: "View All Funds",
-                mf_return_label: "YTD Return", mf_price_label: "Price", mf_liquidity_label: "Liquidity", mf_open_label: "Open Fund",
+                mf_title: "Mutual Funds.<br>Inside Starta.",
+                mf_stat_coverage: "Covered Funds", mf_stat_houses: "Fund Houses", mf_cta: "Explore Mutual Funds",
+                mf_view_all: "View All Funds",
+                mf_price_label: "Price", mf_liquidity_label: "Liquidity", mf_open_label: "Open Fund",
+                mf_return_3M: "3-Month Return", mf_return_YTD: "YTD Return", mf_return_1Y: "1-Year Return",
+                mf_return_3Y: "3-Year Cumulative", mf_return_5Y: "5-Year Cumulative",
+                mf_best_3M: "Best 3M", mf_best_YTD: "Best YTD", mf_best_1Y: "Best 1Y", mf_best_3Y: "Best 3Y", mf_best_5Y: "Best 5Y",
+                mf_lead_3M: "Top performers over the last 3 months.",
+                mf_lead_YTD: "Top performers year to date.",
+                mf_lead_1Y: "Top performers over the last 12 months.",
+                mf_lead_3Y: "Top performers over 3 years — cumulative, not annual.",
+                mf_lead_5Y: "Top performers over 5 years — cumulative, not annual.",
+                mf_annualized: "a year", mf_no_data: "No fund reports a figure for this period yet.",
                 trust_tag: "TRUST ENGINE", trust_title: "Trust, Not Guesswork.", trust_text: "Accuracy is non-negotiable. Starta runs on a <strong>hybrid deterministic engine</strong>: language is generated by AI, while every number is locked to verified financial datasets.",
                 lang_tag: "NATIVE FLUENCY", lang_title: "Fluent in Market<br>Arabic.", lang_text: `Starta understands <span class="text-main font-semibold">real investor Arabic</span>, from formal language to Egyptian dialect, and maps it instantly to EGX tickers, sectors, and valuation context.`,
                 live_tag: "LIVE DATA", live_title: "Live Market Pulse.", live_feed_header: "LIVE FEED", live_source: "SOURCE: EGX DIRECT",
@@ -3608,7 +3658,7 @@
                 lens_c1_title: "Profitability Core", lens_c1_text: "Deep dive into Margins, ROE, and ROA. Identify companies that efficiently generate cash.",
                 lens_c2_title: "Quality Score", lens_c2_text: "9-point <strong>Piotroski F-Score</strong> scan. Filter out weak balance sheets.",
                 lens_c3_title: "Intrinsic Value", lens_c3_text: "Real-time <strong>Fair Value</strong> models (DCF, PEG). Know exactly what a stock is worth.",
-                tech_tag: "THE TIMER", tech_title: "Time Entries With Precision.", tech_text: "Fundamentals define value. Technical structure defines timing. Starta tracks momentum, trend strength, and critical levels to surface high-probability entries and exits.",
+                tech_title: "Time Entries With Precision.", tech_text: "Fundamentals define value. Technical structure defines timing. Starta tracks momentum, trend strength, and critical levels to surface high-probability entries and exits.",
                 tech_signal_label: "SIGNAL DETECTED", tech_signal_desc: "Oversold Condition",
                 macro_tag: "THE MACROSCOPE", macro_title: "Macro Intelligence.", macro_text: "Macro drives multiples. Starta monitors FX, rates, and inflation so you can see how policy shocks and currency shifts reprice each sector.",
                 macro_cbe: "CBE RATES", macro_hold: "HOLD",
@@ -3617,7 +3667,7 @@
                 owner_tag: "INSIDER TRACKING", owner_title: "Track Smart Capital.", owner_text: "See who truly owns the stock: institutions, insiders, and concentration shifts that often signal conviction before price reacts.", owner_inst: "Institutional", owner_free: "Free Float",
                 news_tag: "NLP ENGINE", news_title: "News With Context.", news_pos: "POSITIVE SENTIMENT", news_ex1: "\"Board approves record dividend distribution of 2.5 EGP.\"", news_neg: "NEGATIVE SENTIMENT", news_ex2: "\"Supply chain disruptions impact Q3 gross margins.\"",
                 port_tag: "PORTFOLIO INTELLIGENCE", port_title: "A Smarter View<br>of Your Portfolio", port_text: "Track every EGX position with institutional analytics — real-time P/L, risk metrics, benchmark comparison, and AI-driven insights, all in one workspace.", port_cta: "Open Portfolio", port_outperform: "Outperforming", port_risk_adj: "Risk-adjusted", port_k1_label: "Total Value", port_k2_label: "vs EGX30", port_k3_label: "Sharpe Ratio", port_k4_label: "Dividends YTD", port_f1: "Performance Charts", port_f2: "Risk Analytics", port_f3: "AI Insights", port_f4: "EGX30 Benchmark", port_f5: "Dividend Tracker", port_f6: "Multi-Portfolio",
-                mob_tag: "EVERYWHERE", mob_title: "Every Fund<br>In Your Pocket.", mob_text: "Native iOS and Android apps with the full fund universe, side-by-side comparison, calculators and market news.",
+                mob_title: "Everywhere", mob_text: "Native iOS and Android apps with the full fund universe, side-by-side comparison, calculators and market news.",
                 coming_soon_label: "COMING SOON",
                 app_store: "App Store", google_play: "Google Play",
                 road_title: "What we're working on.", road_c1_title: "Smart Portfolio", road_c1_text: "Automated rebalancing and risk analysis tailored to your holdings.", road_c2_title: "Market Expansion", road_c2_text: "Deep dive coverage for Tadawul (TASI) and Gulf markets.", road_c3_title: "News 2.0", road_c3_text: "Sentiment analysis on local news sources and social signals.", road_c4_title: "Mobile App", road_c4_text: "Native iOS and Android experience with push notifications.",
@@ -3625,7 +3675,7 @@
                 proof_c1_label: "METHODOLOGY", proof_c1_title: "Valuation Notes", proof_c1_text: "DCF assumptions, discount rates, and sensitivity ranges are visible inside every premium report.",
                 proof_c2_label: "COMPLIANCE", proof_c2_title: "Data Integrity", proof_c2_text: "Numbers are sourced from signed feeds and immutable snapshots with timestamped revision history.",
                 proof_c3_label: "DELIVERY", proof_c3_title: "Institutional Exports", proof_c3_text: "Board-ready PDF and Excel packs include assumptions, scenario tables, and executive summaries.",
-                price_tag: "CAPITAL ALLOCATION", price_title: "Choose Your Edge.",
+                price_title: "Choose Your Edge.",
                 p1_name: "The Starter", p1_sub: "Essential market data for the casual investor", p1_price: "Free", p1_btn: "Get Started", p1_f1: "5 chats per day with Starta AI Analyst", p1_f2: "3 Institutional Downloads", p1_f3: "3 Full Balance Sheets", p1_f4: "3 5-Year Cash Flows", p1_f5: "Financial Statements (TTM)", p1_f6: "All Financial Ratios", p1_f7: "Comprehensive Info", p1_f8: "3 PDF Exports",
                 p2_name: "The Analyst", p2_sub: "Real-time intelligence for active traders", curr: "EGP", p2_bill: "Monthly or 662 EGP Annually (20% off)", p2_btn: "Get Started", p2_f1: "Unlimited AI Chat", p2_f2: "Unlimited Income Statements", p2_f3: "Unlimited Balance Sheets", p2_f4: "Unlimited Cash Flows", p2_f5: "Full Financial History", p2_f6: "Complete Ratios & KPIs", p2_f7: "Advanced Excel Exports", p2_f8: "Unlimited PDF Reports", p2_f9: "Daily Market Briefing",
                 p3_name: "Institutional", p3_sub: "API access and raw data for funds", p3_price: "Custom", p3_btn: "Contact Sales", p3_f1: "Direct API Access", p3_f2: "Custom Risk Models", p3_f3: "Dedicated Account Mgr", p3_f4: "White-label Reports", p3_f5: "Custom Data Integration", p3_f6: "Historical Tick Data", p3_f7: "Model Fine-Tuning", p3_f8: "99.9% Uptime SLA", p3_f9: "Priority Support",
@@ -3639,24 +3689,22 @@
                 fund1_name: "Bank Misr Fund", fund1_desc: "Money Market - Daily Liquidity",
                 fund2_name: "QNB Alahli Fund", fund2_desc: "Fixed Income - Weekly",
                 fund_return_label: "YTD Return", fund_price_label: "Price", fund_invest_btn: "Invest Now",
-                calc_tag: "WEALTH PROJECTION", calc_title: "The Power of Compound Returns.",
+                calc_title: "Wealth Projection",
                 calc_goal_title: "Reach Your Goal", calc_goal_desc: "How much to invest monthly to reach a specific amount.",
                 calc_save_title: "Build Your Future", calc_save_desc: "See how much your monthly savings will grow over time.",
                 hp_pulse_tag: "MARKET PULSE", hp_pulse_live_badge: "LIVE DATA", hp_pulse_title: "Real-Time EGX Snapshot.", hp_pulse_text: "Direct market data, listed equities, index direction, and market breadth — brought together in one premium live terminal view.",
                 hp_pulse_cta: "Open Market Pulse", hp_pulse_stat1: "EGX 30 Index", hp_pulse_stat2: "Advancers / Decliners", hp_pulse_stat3: "Trading Value", hp_pulse_stat4: "Market Status",
                 hp_pulse_col1: "Symbol", hp_pulse_col2: "Last Price", hp_pulse_col3: "Chg%", hp_pulse_footer: "Simulated data for illustration",
-                hp_news_tag: "MARKET NEWS", hp_news_title: "Stories That Move Markets.", hp_news_text: "Curated financial coverage, company developments, and sector analysis.",
+                hp_news_title: "Market News", hp_news_text: "Curated financial coverage, company developments, and sector analysis.",
                 hp_news_cta: "Read All News", hp_news_live: "LIVE", hp_news_top_story: "TOP STORY", hp_news_latest: "LATEST HEADLINES", hp_news_updates: "04 UPDATES", hp_news_view_all: "VIEW ALL MARKET NEWS",
                 hp_news_fallback_title: "EGX market closes higher on banking sector gains", hp_news_fallback_src: "Starta Markets",
-                hp_learn_tag: "STARTA ACADEMY", hp_learn_title: "Build Investor Intelligence.", hp_learn_sub: "From market basics to advanced valuation — structured modules built for Egyptian market investors.", hp_learn_stat1: "10 Topics", hp_learn_stat2: "Arabic & English", hp_learn_stat3: "All Levels",
+                hp_learn_title: "Starta Academy", hp_learn_sub: "From market basics to advanced valuation — structured modules built for Egyptian market investors.",
                 hp_learn_cta: "Explore All Topics", hp_learn_read: "Read topic",
                 footer_desc: "The bilingual mutual-fund platform for the Egyptian market: verified NAV data, fund comparison and scorecards, market news, an investing academy, and wealth calculators — in Arabic and English.",
-                footer_status: "System Status: Fully Operational",
                 footer_cta_btn: "Explore Funds",
                 footer_col1_title: "PLATFORM",
                 footer_col2_title: "RESEARCH",
                 footer_col3_title: "RESOURCES",
-                footer_col4_title: "COMPANY",
                 footer_lnk_home: "Home",
                 footer_lnk_funds: "Mutual Funds",
                 footer_lnk_pulse: "Market Pulse",
@@ -3701,7 +3749,7 @@
                 about_tag: "مهمتنا", about_title: "تمكين المستثمر من رؤية السوق بوضوح.", about_text: "في ستارتا، نبني أدوات مالية ذكية تساعد المستثمر على فهم السوق، متابعة الأسهم، تحليل الأخبار، وإدارة قراراته الاستثمارية من منصة واحدة. مهمتنا هي تحويل البيانات المالية المعقدة إلى رؤى واضحة وقابلة للتنفيذ تساعد على اتخاذ قرارات استثمارية أكثر وعيًا وثقة.", about_val1_title: "الابتكار", about_val1_text: "تقنيات ذكية تساعد المستثمر على فهم السوق بشكل أسرع واتخاذ قرارات بثقة أكبر.", about_val2_title: "الشفافية", about_val2_text: "بيانات ورؤى واضحة تمنح المستثمر رؤية أقوى قبل اتخاذ القرار.", about_vision: "إعادة تعريف تجربة الاستثمار", about_vision_text: "نجمع بين بيانات السوق، والتحليل المدعوم بالذكاء الاصطناعي، وتجربة استخدام بسيطة لنقدم طريقة أوضح وأسرع وأكثر احترافية لمتابعة السوق وإدارة الاستثمارات.",
                 hero_kicker: "منصة صناديق الاستثمار في مصر",
                 hero_title: `رؤية أذكى<br><span class="text-gradient">للاستثمار</span>`,
-                hero_sub: `صناديق الاستثمار في مصر كلها في مكان واحد — سجل موثّق لصافي قيمة الوحدة، ورسوم واضحة، وبطاقات تقييم للأداء والمخاطر، ومقارنة مباشرة بين أربعة صناديق.`,
+                hero_sub: `صناديق الاستثمار في مصر كلها في مكان واحد — أداء، رسوم ومخاطر واضحة، ومقارنة سهلة تساعدك تختار الأنسب.`,
                 hero_point1: "سجل موثّق لصافي قيمة الوحدة", hero_point2: "رسوم ومخاطر واضحة", hero_point3: "محتوى كامل بالعربية والإنجليزية",
                 hero_btn: "استكشف صناديق الاستثمار", hero_btn_funds: "أفضل الصناديق أداءً",
                 mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> منصة ستارتا`,
@@ -3716,13 +3764,20 @@
                 marquee_houses: ["سي آي كابيتال", "بلتون", "هيرميس", "أزيموت", "العربي الأفريقي", "الأهلي", "إن آي كابيتال", "إتش سي", "برايم", "سي إف إتش", "فاروس", "النعيم"]
                     .concat(["سي آي كابيتال", "بلتون", "هيرميس", "أزيموت", "العربي الأفريقي", "الأهلي", "إن آي كابيتال", "إتش سي", "برايم", "سي إف إتش", "فاروس", "النعيم"])
                     .map(function (house) { return '<span class="text-3xl font-display font-bold text-main mx-12">' + house + '</span>'; }).join(''),
-                gap_tag: "المشكلة",
-                gap_title: `صناديق كثيرة.<br>ووضوح <span class="text-muted line-through decoration-starta-teal decoration-4">غائب</span>.`,
-                gap_text: "كل صندوق استثمار في مصر له رسومه ومستوى مخاطره وسجل أدائه، منشورة في ملفات متفرقة. ستارتا تضعها جميعًا على مقياس واحد قابل للمقارنة، بالعربية والإنجليزية.",
-                mf_title: "الصناديق الاستثمارية.<br>داخل ستارتا.", mf_text: "تصفّح كل صندوق نغطيه بأسعار موثّقة لصافي قيمة الوحدة، وأداء محدّث، ورسوم ومخاطر واضحة — ثم قارن حتى أربعة صناديق جنبًا إلى جنب.",
-                mf_stat_coverage: "الصناديق المغطاة", mf_stat_best: "أفضل عائد سنوي", mf_stat_houses: "مديرو الصناديق", mf_cta: "استكشف الصناديق",
-                mf_cards_text: "أفضل الصناديق أداءً سنويًا", mf_view_all: "عرض كل الصناديق",
-                mf_return_label: "العائد السنوي", mf_price_label: "السعر", mf_liquidity_label: "السيولة", mf_open_label: "افتح الصندوق",
+                mf_title: "الصناديق الاستثمارية.<br>داخل ستارتا.",
+                mf_stat_coverage: "الصناديق المغطاة", mf_stat_houses: "مديرو الصناديق", mf_cta: "استكشف الصناديق",
+                mf_view_all: "عرض كل الصناديق",
+                mf_price_label: "السعر", mf_liquidity_label: "السيولة", mf_open_label: "افتح الصندوق",
+                mf_return_3M: "عائد 3 شهور", mf_return_YTD: "العائد منذ بداية العام", mf_return_1Y: "عائد 12 شهرًا",
+                mf_return_3Y: "عائد تراكمي 3 سنوات", mf_return_5Y: "عائد تراكمي 5 سنوات",
+                mf_best_3M: "أفضل عائد 3 شهور", mf_best_YTD: "أفضل عائد منذ بداية العام", mf_best_1Y: "أفضل عائد 12 شهرًا",
+                mf_best_3Y: "أفضل عائد 3 سنوات", mf_best_5Y: "أفضل عائد 5 سنوات",
+                mf_lead_3M: "الأفضل أداءً خلال آخر 3 شهور.",
+                mf_lead_YTD: "الأفضل أداءً منذ بداية العام.",
+                mf_lead_1Y: "الأفضل أداءً خلال آخر 12 شهرًا.",
+                mf_lead_3Y: "الأفضل أداءً خلال 3 سنوات — عائد تراكمي وليس سنويًا.",
+                mf_lead_5Y: "الأفضل أداءً خلال 5 سنوات — عائد تراكمي وليس سنويًا.",
+                mf_annualized: "سنويًا", mf_no_data: "لا يوجد صندوق يعلن بيانات لهذه الفترة حتى الآن.",
                 trust_tag: "محرك الثقة", trust_title: "ثقة بلا تخمين.", trust_text: "في الاستثمار لا مجال للتخمين. تعمل ستارتا عبر <strong>محرك تحليلي موثوق</strong>: الذكاء الاصطناعي يشرح الصورة، بينما كل رقم مرتبط مباشرةً بمصادر مالية موثوقة.",
                 lang_tag: "اللغة والسياق", lang_title: "تفهم لغة<br>المستثمر المصري.", lang_text: `تفهم ستارتا <span class="text-main font-semibold">لغة المستثمر الفعلية</span> بالفصحى وباللهجة المصرية، وتربط سؤالك فورًا بالرموز والقطاعات وسياق التقييم داخل EGX.`,
                 live_tag: "بيانات مباشرة", live_title: "نبض السوق لحظةً بلحظة.", live_feed_header: "البث المباشر", live_source: "المصدر: EGX مباشر",
@@ -3730,7 +3785,7 @@
                 lens_c1_title: "جوهر الربحية", lens_c1_text: "تحليل عميق للهوامش والعوائد على رأس المال لتحديد الشركات القادرة على توليد النقد بكفاءة.",
                 lens_c2_title: "درجة الجودة", lens_c2_text: "فحص <strong>Piotroski F-Score</strong> لتصفية المراكز الضعيفة قبل اتخاذ أي قرار سعري.",
                 lens_c3_title: "القيمة العادلة", lens_c3_text: "نماذج <strong>القيمة العادلة</strong> اللحظية (DCF وPEG) لتعرف بدقة ما إذا كان السهم أقل أو أعلى من قيمته.",
-                tech_tag: "التوقيت", tech_title: "توقيت أدق للتنفيذ.", tech_text: "التحليل الأساسي يحدد القيمة، والتحليل الفني يحدد التوقيت. تراقب ستارتا الزخم والاتجاه والمستويات الحرجة لإبراز نقاط الدخول والخروج الأعلى احتمالًا.",
+                tech_title: "توقيت أدق للتنفيذ.", tech_text: "التحليل الأساسي يحدد القيمة، والتحليل الفني يحدد التوقيت. تراقب ستارتا الزخم والاتجاه والمستويات الحرجة لإبراز نقاط الدخول والخروج الأعلى احتمالًا.",
                 tech_signal_label: "تم رصد إشارة", tech_signal_desc: "منطقة تشبع بيعي",
                 macro_tag: "الاقتصاد الكلي", macro_title: "رؤية الاقتصاد الكلي.", macro_text: "العوامل الكلية تعيد تسعير القطاعات. تراقب ستارتا سعر الصرف والفائدة والتضخم لتوضّح أثر الصدمات الاقتصادية على محفظتك.",
                 macro_cbe: "سعر فائدة المركزي", macro_hold: "تثبيت",
@@ -3739,14 +3794,14 @@
                 owner_tag: "ملكية السهم", owner_title: "تتبّع رأس المال الذكي.", owner_text: "اعرف من يملك السهم فعليًا: المؤسسات، المطلعون، وتغيرات التركز التي غالبًا ما تسبق حركة السعر.", owner_inst: "المؤسسات", owner_free: "التداول الحر",
                 news_tag: "محرك الأخبار", news_title: "خبر مالي ضمن سياقه.", news_pos: "إشارات إيجابية", news_ex1: "\"مجلس الإدارة يعتمد توزيع أرباح نقدية استثنائية بقيمة 2.5 جنيه.\"", news_neg: "إشارات سلبية", news_ex2: "\"اضطرابات سلسلة الإمداد تضغط على هوامش الربع الثالث.\"",
                 port_tag: "المحفظة الذكية", port_title: "رؤية أذكى<br>لمحفظتك الاستثمارية", port_text: "تتبع كل مركز في البورصة المصرية بتحليلات مؤسسية — ربح وخسارة فوري، مقاييس مخاطر، مقارنة بالمؤشر، ورؤى مدعومة بالذكاء الاصطناعي.", port_cta: "فتح المحفظة", port_outperform: "يتفوق على المؤشر", port_risk_adj: "معدّل بالمخاطر", port_k1_label: "إجمالي القيمة", port_k2_label: "مقابل EGX30", port_k3_label: "نسبة شارب", port_k4_label: "التوزيعات (هذا العام)", port_f1: "مخططات الأداء", port_f2: "تحليل المخاطر", port_f3: "رؤى الذكاء الاصطناعي", port_f4: "مؤشر EGX30", port_f5: "متابعة التوزيعات", port_f6: "محافظ متعددة",
-                mob_tag: "في كل مكان", mob_title: "كل الصناديق<br>في جيبك.", mob_text: "تطبيقات أصلية على iOS وAndroid تضم كل الصناديق، والمقارنة بينها، والحاسبات، وأخبار السوق.",
+                mob_title: "في كل مكان", mob_text: "تطبيقات أصلية على iOS وAndroid تضم كل الصناديق، والمقارنة بينها، والحاسبات، وأخبار السوق.",
                 coming_soon_label: "قريباً",
                 road_title: "ما نعمل عليه الآن.", road_c1_title: "محفظة ذكية", road_c1_text: "إعادة توازن آلية وتحليل مخاطر مخصص لبنية محفظتك.", road_c2_title: "توسّع الأسواق", road_c2_text: "تغطية تحليلية أعمق للسوق السعودي (تاسي) وأسواق الخليج.", road_c3_title: "الأخبار 2.0", road_c3_text: "تحليل مشاعر متقدم لمصادر الأخبار المحلية والإشارات الاجتماعية.", road_c4_title: "تطبيق الجوال", road_c4_text: "تجربة أصلية كاملة مع تنبيهات لحظية مخصصة.",
                 proof_tag: "طبقة الثقة", proof_title: "مصمم للمستثمر المحترف.", proof_sub: "كل استنتاج في ستارتا مرتبط بنموذج واضح وأرقام قابلة للتدقيق ومعايير تقارير مؤسسية.",
                 proof_c1_label: "المنهجية", proof_c1_title: "ملاحظات التقييم", proof_c1_text: "افتراضات DCF ومعدلات الخصم وتحليل الحساسية متاحة داخل كل تقرير احترافي.",
                 proof_c2_label: "الامتثال", proof_c2_title: "سلامة البيانات", proof_c2_text: "الأرقام تأتي من تغذيات موثقة ولقطات غير قابلة للتعديل مع سجل مراجعات زمني.",
                 proof_c3_label: "التسليم", proof_c3_title: "مخرجات مؤسسية", proof_c3_text: "حزم PDF وExcel جاهزة للإدارة تتضمن الافتراضات والجداول والملخص التنفيذي.",
-                price_tag: "تخصيص رأس المال", price_title: "اختر ميزتك التنافسية.",
+                price_title: "اختر ميزتك التنافسية.",
                 p1_name: "المبتدئ", p1_sub: "بيانات سوق أساسية للمستثمر الفردي", p1_price: "مجاني", p1_btn: "ابدأ الآن", p1_f1: "5 محادثات يومية مع محلل ستارتا", p1_f2: "3 تنزيلات مؤسسية", p1_f3: "3 ميزانيات عمومية كاملة", p1_f4: "3 قوائم تدفقات نقدية لخمس سنوات", p1_f5: "قوائم مالية (TTM)", p1_f6: "جميع النسب المالية", p1_f7: "بيانات شاملة عن الشركات", p1_f8: "3 تقارير PDF",
                 p2_name: "المحلل", p2_sub: "ذكاء لحظي للمتداول النشط", curr: "ج.م", p2_bill: "شهريًا أو 662 ج.م سنويًا (خصم 20%)", p2_btn: "ابدأ الآن", p2_f1: "محادثات غير محدودة مع المحلل", p2_f2: "قوائم دخل غير محدودة", p2_f3: "ميزانيات عمومية غير محدودة", p2_f4: "تدفقات نقدية غير محدودة", p2_f5: "سجل مالي تاريخي كامل", p2_f6: "نسب ومؤشرات أداء كاملة", p2_f7: "تصدير Excel متقدم", p2_f8: "تقارير PDF غير محدودة", p2_f9: "إحاطة سوق يومية",
                 p3_name: "المؤسسات", p3_sub: "وصول API وبيانات خام للصناديق", p3_price: "مخصص", p3_btn: "تواصل مع المبيعات", p3_f1: "وصول مباشر إلى API", p3_f2: "نماذج مخاطر مخصصة", p3_f3: "مدير حساب مخصص", p3_f4: "تقارير بعلامتك التجارية", p3_f5: "تكامل بيانات مخصص", p3_f6: "بيانات تاريخية دقيقة", p3_f7: "تخصيص نموذج الذكاء الاصطناعي", p3_f8: "اتفاقية إتاحة 99.9%", p3_f9: "دعم هندسي أولوية 24/7",
@@ -3760,19 +3815,17 @@
                 fund1_name: "صندوق استثمار بنك مصر", fund1_desc: "نقدي - سيولة يومية",
                 fund2_name: "صندوق استثمار QNB الأهلي", fund2_desc: "دخل ثابت - أسبوعي",
                 fund_return_label: "العائد منذ بداية العام", fund_price_label: "السعر", fund_invest_btn: "استثمر الآن",
-                calc_tag: "توقع الثروة", calc_title: "جرب قوة العائد التراكمي",
+                calc_title: "توقع الثروة",
                 calc_goal_title: "حقق هدفك", calc_goal_desc: "احسب المبلغ المطلوب استثماره شهرياً للوصول لهدفك.",
                 calc_save_title: "ابنِ مستقبلك", calc_save_desc: "شاهد كيف ستنمو مدخراتك الشهرية مع مرور الوقت.",
                 app_store: "متجر التطبيقات", google_play: "جوجل بلاي",
-                comp_title: "لماذا نتفوق.", comp_feat: "الميزة", comp_others: "منصات التداول", comp_logic: "منهجية مؤسسية", comp_arabic: "لغة السوق", comp_data: "دقة بيانات موثقة",
-                sec_tag: "البنية التحتية", sec_title: "أمان بمستوى مصرفي",
                 hp_pulse_tag: "نبض السوق", hp_pulse_live_badge: "بيانات مباشرة", hp_pulse_title: "لقطة حية من البورصة المصرية.", hp_pulse_text: "بيانات مباشرة للأسهم المقيدة واتجاه المؤشر وعرض السوق — كلها مجتمعة في واجهة واحدة فاخرة وواضحة.",
                 hp_pulse_cta: "افتح نبض السوق", hp_pulse_stat1: "مؤشر EGX 30", hp_pulse_stat2: "صاعدة / هابطة", hp_pulse_stat3: "قيمة التداول", hp_pulse_stat4: "حالة السوق",
                 hp_pulse_col1: "الرمز", hp_pulse_col2: "آخر سعر", hp_pulse_col3: "التغيير%", hp_pulse_footer: "بيانات توضيحية للسوق",
-                hp_news_tag: "أخبار السوق", hp_news_title: "الأخبار التي تحرّك الأسواق.", hp_news_text: "تغطية مالية منتقاة وأخبار الشركات وتحليلات القطاعات.",
+                hp_news_title: "أخبار السوق", hp_news_text: "تغطية مالية منتقاة وأخبار الشركات وتحليلات القطاعات.",
                 hp_news_cta: "قراءة كل الأخبار", hp_news_live: "مباشر", hp_news_top_story: "الخبر الأبرز", hp_news_latest: "أحدث الأخبار", hp_news_updates: "04 تحديثات", hp_news_view_all: "عرض كل أخبار السوق",
                 hp_news_fallback_title: "البورصة المصرية تغلق على ارتفاع بدعم القطاع المصرفي", hp_news_fallback_src: "ستارتا ماركتس",
-                hp_learn_tag: "أكاديمية ستارتا", hp_learn_title: "ابنِ ذكاءك الاستثماري.", hp_learn_sub: "من أساسيات السوق إلى نماذج التقييم المتقدمة — وحدات تعليمية مبنية لمستثمر السوق المصري.", hp_learn_stat1: "١٠ موضوعات", hp_learn_stat2: "عربي وإنجليزي", hp_learn_stat3: "لجميع المستويات",
+                hp_learn_title: "أكاديمية ستارتا", hp_learn_sub: "من أساسيات السوق إلى نماذج التقييم المتقدمة — وحدات تعليمية مبنية لمستثمر السوق المصري.",
                 hp_learn_cta: "استعرض جميع المواضيع", hp_learn_read: "اقرأ الموضوع",
                 footer_desc: "منصة الصناديق الاستثمارية في السوق المصري بالعربية والإنجليزية: أسعار موثّقة لصافي قيمة الوحدة، ومقارنة وبطاقات تقييم للصناديق، وأخبار السوق، وأكاديمية تعليمية، وحاسبات استثمارية.",
                 footer_cta_btn: "استكشف الصناديق",
@@ -3850,7 +3903,10 @@
             gsap.to("body", {
                 opacity: 0, duration: 0.2, onComplete: () => {
                     applyTranslations(newLang);
-                    renderTopFunds();
+                    // Data is already loaded in the normal case, so re-render in
+                    // place; only refetch if the switch beat the initial load.
+                    if (mfFunds.length) renderMfPeriod(false); else renderTopFunds();
+                    if (window.mfMovePeriodThumb) window.mfMovePeriodThumb();
                     setMarketTimestamp();
                     _hpNewsData = null; // force re-fetch in new language
                     renderHpNews(newLang);
@@ -3949,40 +4005,6 @@
             const isScrolled = window.scrollY > 30;
             gsap.to(navEl, { backgroundColor: navTone(isScrolled), duration: 0.35, overwrite: true });
         });
-
-        const cursorDot = document.querySelector('.cursor-dot');
-        const cursorRing = document.querySelector('.cursor-ring');
-        const useCustomCursor = window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (useCustomCursor && cursorDot && cursorRing) {
-            // Relocate cursor elements directly to documentElement (html element)
-            // This bypasses the body { zoom: 0.9 } coordinate scaling, preventing coordinate capping, lag, and double cursors at the screen boundaries!
-            document.documentElement.appendChild(cursorDot);
-            document.documentElement.appendChild(cursorRing);
-
-            // Hide native cursor everywhere, even on hoverable links/buttons, to solve double-cursor issues
-            const cursorStyle = document.createElement('style');
-            cursorStyle.textContent = `
-                * {
-                    cursor: none !important;
-                }
-                a, button, [role="button"], input, select, textarea, .cursor-pointer {
-                    cursor: none !important;
-                }
-            `;
-            document.head.appendChild(cursorStyle);
-
-            window.addEventListener('mousemove', (e) => {
-                // Since cursor elements are now children of <html>, they are not scaled by zoom: 0.9!
-                // Map coordinates 1:1 with screen/viewport physical pixels.
-                const x = e.clientX;
-                const y = e.clientY;
-                cursorDot.style.left = `${x}px`; cursorDot.style.top = `${y}px`;
-                cursorRing.animate({ left: `${x}px`, top: `${y}px` }, { duration: 250, fill: "forwards" });
-            });
-        } else {
-            if (cursorDot) cursorDot.style.display = 'none';
-            if (cursorRing) cursorRing.style.display = 'none';
-        }
 
         const canvas = document.getElementById('stars');
         const ctx = canvas.getContext('2d');
@@ -4150,10 +4172,70 @@
             return liquidityMap[lang]?.[liquidity] || liquidity;
         }
 
+        // Every period below is a REAL published figure carried on the fund row.
+        // 3M / YTD / 1Y are returns over that window; 3Y and 5Y are CUMULATIVE
+        // over the whole window (verified against source: a 269% 5Y == 29.9%/yr),
+        // so they are labelled as cumulative and shown with an annualised
+        // companion figure. `years` is set only for the cumulative periods.
+        const MF_PERIODS = [
+            { key: '3M',  fields: ['returns_3m',  'profit_3month',     'return_3m'],  years: null },
+            { key: 'YTD', fields: ['returns_ytd', 'ytd_return',        'return_ytd'], years: null },
+            { key: '1Y',  fields: ['returns_1y',  'one_year_return',   'return_1y'],  years: null },
+            { key: '3Y',  fields: ['returns_3y',  'three_year_return', 'return_3y'],  years: 3 },
+            { key: '5Y',  fields: ['returns_5y',  'five_year_return',  'return_5y'],  years: 5 }
+        ];
+        const MF_DEFAULT_PERIOD = 'YTD';
+        let mfFunds = [];
+        let mfPeriod = MF_DEFAULT_PERIOD;
+
+        function mfPeriodDef(key) {
+            return MF_PERIODS.find(period => period.key === key) || MF_PERIODS[1];
+        }
+
+        // A missing figure must stay missing: Number(null) and Number('') are both
+        // 0, which would rank an unreported fund as flat instead of excluding it.
+        function mfReadReturn(row, fields) {
+            for (const field of fields) {
+                const raw = row[field];
+                if (raw === null || raw === undefined || raw === '') continue;
+                const value = Number(raw);
+                if (Number.isFinite(value)) return value;
+            }
+            return null;
+        }
+
+        function mfAnnualized(value, years) {
+            if (!years || value === null) return null;
+            const growth = 1 + value / 100;
+            if (growth <= 0) return null;
+            return (Math.pow(growth, 1 / years) - 1) * 100;
+        }
+
+        // Shrinks a stat value only when it would overflow its tile, so short
+        // values keep the full display size and long ones never collide with
+        // the neighbouring tile.
+        function mfFitStatValue(el) {
+            if (!el) return;
+            el.style.fontSize = '';
+            const available = el.clientWidth;
+            if (!available || el.scrollWidth <= available) return;
+            const base = parseFloat(getComputedStyle(el).fontSize);
+            el.style.fontSize = `${Math.max(14, Math.floor(base * available / el.scrollWidth))}px`;
+        }
+
+        function mfFormatPct(value) {
+            return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+        }
+
         function normalizeFundFromApi(fund) {
-            const ytd = Number(fund.returns_ytd ?? fund.ytd_return ?? 0) || 0;
             const latestNav = Number(fund.latest_nav ?? 0) || 0;
+            const returns = {};
+            MF_PERIODS.forEach((period) => {
+                returns[period.key] = mfReadReturn(fund, period.fields);
+            });
             return {
+                returns,
+                asOf: fund.as_of_date || fund.last_nav_date || null,
                 id: fund.fund_id,
                 nameAr: fund.fund_name || fund.fund_name_en || 'Egypt Fund',
                 nameEn: fund.fund_name_en || fund.fund_name || 'Egypt Fund',
@@ -4162,7 +4244,6 @@
                 type: fund.fund_type || fund.classification || 'Investment Fund',
                 liquidity: fund.nav_frequency || 'Daily',
                 price: latestNav,
-                return: ytd,
                 currency: fund.currency || 'EGP',
                 logo: fund.logo_url || '/assets/funds/starta-fund-placeholder.svg',
                 logoScale: Number(fund.logo_scale || 1) || 1
@@ -4182,70 +4263,108 @@
                 const response = await fetch('/api/v1/funds?market=EGX');
                 if (!response.ok) return;
                 const rawData = await response.json();
-                const lang = document.documentElement.lang;
-                const data = rawData
+                mfFunds = rawData
                     .map(normalizeFundFromApi)
-                    .filter((fund) => fund.id && (fund.nameAr || fund.nameEn))
-                    .sort((a, b) => b.return - a.return || b.price - a.price || getLocalizedFeaturedFundName(a, lang).localeCompare(getLocalizedFeaturedFundName(b, lang), lang === 'ar' ? 'ar' : 'en'));
-                const container = document.getElementById('mf-featured-grid');
-                if (!container) return;
-                const featured = data.slice(0, 3);
+                    .filter((fund) => fund.id && (fund.nameAr || fund.nameEn));
+                renderMfPeriod();
+            } catch (error) { console.error(error); }
+        }
 
-                const coveredCount = document.getElementById('mf-covered-count');
-                const bestYtd = document.getElementById('mf-best-ytd');
-                const fundHouses = document.getElementById('mf-fund-houses');
+        // Re-ranks and re-renders the featured funds for the selected period.
+        // Funds with no published figure for that period are excluded from the
+        // ranking outright — they are never rendered as 0.
+        function renderMfPeriod(animate) {
+            const container = document.getElementById('mf-featured-grid');
+            if (!container || !mfFunds.length) return;
 
-                if (coveredCount) coveredCount.innerText = String(data.length);
-                if (bestYtd) bestYtd.innerText = `+${(featured[0]?.return || 0).toFixed(2)}%`;
-                if (fundHouses) fundHouses.innerText = String(new Set(data.map(fund => getLocalizedFeaturedFundHouse(fund, lang))).size);
+            const lang = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+            const t = translations[lang];
+            const def = mfPeriodDef(mfPeriod);
+            const ranked = mfFunds
+                .filter((fund) => fund.returns[mfPeriod] !== null)
+                .sort((a, b) =>
+                    b.returns[mfPeriod] - a.returns[mfPeriod] ||
+                    b.price - a.price ||
+                    getLocalizedFeaturedFundName(a, lang).localeCompare(getLocalizedFeaturedFundName(b, lang), lang));
+            const featured = ranked.slice(0, 3);
 
-                container.innerHTML = featured.map((fund, index) => {
-                    const barWidth = Math.max(18, Math.min(100, fund.return * 3.1));
-                    const localizedName = getLocalizedFeaturedFundName(fund, lang);
-                    const localizedFundHouse = getLocalizedFeaturedFundHouse(fund, lang);
-                    return `
-                    <article class="glass-premium ultra-card p-6 rounded-[2rem] border border-border premium-hover cursor-pointer" onclick="window.location.href='/Funds/${encodeURIComponent(fund.id)}'">
-                        <div class="flex items-start justify-between gap-4 mb-5">
-                            <div class="flex items-start gap-4 min-w-0">
-                                <div class="w-12 h-12 overflow-hidden rounded-2xl bg-surface flex items-center justify-center p-2 border border-border shrink-0">
-                                    <img src="${fund.logo || '/assets/funds/starta-fund-placeholder.svg'}" class="h-full w-full object-contain opacity-90" style="transform:scale(${Number(fund.logoScale || 1)}); transform-origin:center center;" alt="${localizedFundHouse}">
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="text-[10px] text-starta-teal font-mono tracking-[0.22em] uppercase mb-2">
-                                        ${String(index + 1).padStart(2, '0')} • ${translateFundType(fund.type, lang)}
-                                    </div>
-                                    <h3 class="text-main font-bold text-lg leading-snug mf-clamp-2"><a href="/Funds/${encodeURIComponent(fund.id)}" onclick="event.stopPropagation();">${localizedName}</a></h3>
-                                </div>
+            const coveredCount = document.getElementById('mf-covered-count');
+            const bestValue = document.getElementById('mf-best-ytd');
+            const bestLabel = document.getElementById('mf-stat-best-label');
+            const fundHouses = document.getElementById('mf-fund-houses');
+            const leadText = document.getElementById('mf-cards-text');
+
+            if (coveredCount) coveredCount.innerText = String(mfFunds.length);
+            if (bestLabel) bestLabel.innerText = t['mf_best_' + def.key];
+            if (bestValue) {
+                const best = ranked.length ? ranked[0].returns[mfPeriod] : null;
+                bestValue.innerText = best === null ? '—' : mfFormatPct(best);
+            }
+            if (fundHouses) fundHouses.innerText = String(new Set(mfFunds.map(fund => getLocalizedFeaturedFundHouse(fund, lang))).size);
+            [coveredCount, bestValue, fundHouses].forEach(mfFitStatValue);
+            if (leadText) leadText.innerText = t['mf_lead_' + def.key];
+
+            if (!featured.length) {
+                container.innerHTML = `<div class="glass-premium rounded-[2rem] p-6 border border-border text-sm text-muted">${t.mf_no_data}</div>`;
+                return;
+            }
+
+            // Bars are scaled against the leader of THIS period, so a 5Y
+            // cumulative figure is not squashed by a 3M scale and vice versa.
+            const peak = Math.max(...featured.map((fund) => Math.abs(fund.returns[mfPeriod]))) || 1;
+
+            container.innerHTML = featured.map((fund, index) => {
+                const value = fund.returns[mfPeriod];
+                const positive = value >= 0;
+                const barWidth = Math.max(18, Math.min(100, Math.abs(value) / peak * 100));
+                const annualized = mfAnnualized(value, def.years);
+                const localizedName = getLocalizedFeaturedFundName(fund, lang);
+                const localizedFundHouse = getLocalizedFeaturedFundHouse(fund, lang);
+                return `
+                <article class="glass-premium ultra-card p-6 rounded-[2rem] border border-border premium-hover cursor-pointer" onclick="window.location.href='/Funds/${encodeURIComponent(fund.id)}'">
+                    <div class="flex items-start justify-between gap-4 mb-5">
+                        <div class="flex items-start gap-4 min-w-0">
+                            <div class="w-12 h-12 overflow-hidden rounded-2xl bg-surface flex items-center justify-center p-2 border border-border shrink-0">
+                                <img src="${fund.logo || '/assets/funds/starta-fund-placeholder.svg'}" class="h-full w-full object-contain opacity-90" style="transform:scale(${Number(fund.logoScale || 1)}); transform-origin:center center;" alt="${localizedFundHouse}">
                             </div>
-                            <div class="text-right shrink-0">
-                                <div class="text-green-500 font-bold font-mono text-2xl">+${fund.return.toFixed(2)}%</div>
-                                <div class="text-[9px] text-muted font-mono uppercase tracking-widest">${translations[lang].mf_return_label}</div>
-                            </div>
-                        </div>
-                        <p class="text-xs text-muted mb-4 mf-clamp-1">${localizedFundHouse}</p>
-                        <div class="h-2 w-full bg-border rounded-full overflow-hidden mb-6">
-                            <div class="h-full rounded-full bg-gradient-to-r from-starta-teal to-starta-accent" style="width:${barWidth}%"></div>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3 items-end">
                             <div class="min-w-0">
-                                <div class="text-[9px] text-muted font-mono uppercase tracking-widest mb-1">${translations[lang].mf_price_label}</div>
-                                <div class="text-main font-bold">${fund.price.toFixed(2)} ${fund.currency}</div>
-                            </div>
-                            <div class="min-w-0">
-                                <div class="text-[9px] text-muted font-mono uppercase tracking-widest mb-1">${translations[lang].mf_liquidity_label}</div>
-                                <div class="text-main font-bold">${translateLiquidity(fund.liquidity, lang)}</div>
-                            </div>
-                            <div class="text-right">
-                                <span class="inline-flex items-center gap-2 text-starta-teal text-[10px] font-bold uppercase tracking-[0.18em]">
-                                    ${translations[lang].mf_open_label}
-                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                                </span>
+                                <div class="text-[10px] text-starta-teal font-mono tracking-[0.22em] uppercase mb-2">
+                                    ${String(index + 1).padStart(2, '0')} • ${translateFundType(fund.type, lang)}
+                                </div>
+                                <h3 class="text-main font-bold text-lg leading-snug mf-clamp-2"><a href="/Funds/${encodeURIComponent(fund.id)}" onclick="event.stopPropagation();">${localizedName}</a></h3>
                             </div>
                         </div>
-                    </article>
-                `;
-                }).join('');
+                        <div class="text-right shrink-0">
+                            <div class="font-bold font-mono text-2xl mf-return ${positive ? 'mf-return-pos' : 'mf-return-neg'}"><bdi>${mfFormatPct(value)}</bdi></div>
+                            <div class="text-[9px] text-muted font-mono uppercase tracking-widest mf-return-label">${t['mf_return_' + def.key]}</div>
+                            ${annualized === null ? '' : `<div class="mf-return-sub"><bdi>${mfFormatPct(annualized)}</bdi> ${t.mf_annualized}</div>`}
+                        </div>
+                    </div>
+                    <p class="text-xs text-muted mb-4 mf-clamp-1">${localizedFundHouse}</p>
+                    <div class="h-2 w-full bg-border rounded-full overflow-hidden mb-6">
+                        <div class="mf-bar ${positive ? 'mf-bar-pos' : 'mf-bar-neg'}" style="width:${barWidth}%"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 items-end">
+                        <div class="min-w-0">
+                            <div class="text-[9px] text-muted font-mono uppercase tracking-widest mb-1">${t.mf_price_label}</div>
+                            <div class="text-main font-bold mf-return"><bdi>${fund.price.toFixed(2)} ${fund.currency}</bdi></div>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[9px] text-muted font-mono uppercase tracking-widest mb-1">${t.mf_liquidity_label}</div>
+                            <div class="text-main font-bold">${translateLiquidity(fund.liquidity, lang)}</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-flex items-center gap-2 text-starta-teal text-[10px] font-bold uppercase tracking-[0.18em]">
+                                ${t.mf_open_label}
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                            </span>
+                        </div>
+                    </div>
+                </article>
+            `;
+            }).join('');
 
+            if (animate !== false && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 gsap.from("#mf-featured-grid > article", {
                     y: 24,
                     opacity: 0,
@@ -4253,8 +4372,66 @@
                     stagger: 0.1,
                     ease: "power2.out"
                 });
-            } catch (error) { console.error(error); }
+            }
         }
+
+        // Segmented control. The thumb is measured in LAYOUT space (offsetLeft /
+        // offsetWidth), never from getBoundingClientRect: rects are post-transform
+        // screen values, so under any ancestor scale or browser zoom a rect-derived
+        // translate lands short by exactly that factor and the thumb drifts off its
+        // segment. offsetLeft shares its origin with the thumb's `left: 0` (both
+        // resolve against the track's padding box), so no border/padding correction
+        // is needed and it stays correct in RTL.
+        (function initMfPeriodPicker() {
+            const track = document.getElementById('mf-period');
+            const thumb = document.getElementById('mf-period-thumb');
+            if (!track || !thumb) return;
+            const tabs = Array.from(track.querySelectorAll('.mf-period-btn'));
+
+            function moveThumb() {
+                const active = track.querySelector('.mf-period-btn[aria-selected="true"]');
+                if (!active || !active.offsetWidth) return;
+                thumb.style.width = `${active.offsetWidth}px`;
+                thumb.style.transform = `translateX(${active.offsetLeft}px)`;
+                if (!thumb.classList.contains('is-ready')) {
+                    // Commit the first placement before transitions are armed.
+                    void thumb.offsetWidth;
+                    thumb.classList.add('is-ready');
+                }
+            }
+
+            function select(period, focus) {
+                mfPeriod = period;
+                tabs.forEach((tab) => {
+                    const selected = tab.dataset.period === period;
+                    tab.setAttribute('aria-selected', selected ? 'true' : 'false');
+                    tab.tabIndex = selected ? 0 : -1;
+                    if (selected && focus) tab.focus();
+                });
+                moveThumb();
+                renderMfPeriod();
+            }
+
+            tabs.forEach((tab) => {
+                tab.addEventListener('click', () => select(tab.dataset.period, false));
+                tab.addEventListener('keydown', (event) => {
+                    const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
+                    if (!step) return;
+                    event.preventDefault();
+                    const next = (tabs.indexOf(tab) + step + tabs.length) % tabs.length;
+                    select(tabs[next].dataset.period, true);
+                });
+            });
+
+            window.addEventListener('resize', () => {
+                moveThumb();
+                document.querySelectorAll('.mf-stat-value').forEach(mfFitStatValue);
+            });
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveThumb);
+            requestAnimationFrame(moveThumb);
+            window.mfMovePeriodThumb = moveThumb;
+        })();
+
         // ===== MARKET PULSE TERMINAL =====
         (function initHpPulse() {
             const stocks = [

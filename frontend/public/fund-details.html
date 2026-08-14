@@ -207,15 +207,6 @@
             color: var(--c-text-main);
         }
 
-        .section-tag {
-            font-family: 'Sora', 'IBM Plex Sans Arabic', sans-serif;
-            font-size: 0.72rem;
-            letter-spacing: 0.24em;
-            color: var(--teal-dark);
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-
         .text-gradient {
             background: linear-gradient(135deg, var(--c-text-main) 30%, var(--teal-dark) 100%);
             -webkit-background-clip: text;
@@ -450,8 +441,7 @@
                 <div class="glass-premium rounded-[2.2rem] p-6 sm:p-7">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                         <div>
-                            <span class="section-tag" data-key="details_tag">Fund details</span>
-                            <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="details_title">Fund details that stay readable.</h3>
+                            <h3 class="text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="details_title">Fund details that stay readable.</h3>
                         </div>
                         <p class="max-w-xl text-sm text-muted" data-key="details_desc">Manager, benchmark, identifiers, fees, and the core profile metrics are organized into a cleaner research layout.</p>
                     </div>
@@ -460,8 +450,7 @@
 
                 <div class="flex flex-col gap-8">
                     <div class="glass-premium rounded-[2.2rem] p-6 sm:p-7">
-                        <span class="section-tag" data-key="strategy_tag">Investment thesis</span>
-                        <div class="mt-4 space-y-6">
+                        <div class="space-y-6">
                             <div>
                                 <h4 class="text-lg font-semibold text-main" data-key="strategy_title">Investment strategy</h4>
                                 <p id="fundStrategy" class="mt-3 text-sm leading-relaxed text-muted"></p>
@@ -474,8 +463,7 @@
                     </div>
                     
                     <div id="faqSection" class="glass-premium rounded-[2.2rem] p-6 sm:p-7" style="display: none;">
-                        <span class="section-tag" data-key="faq_tag">Fund FAQ & Insights</span>
-                        <h4 class="text-lg font-semibold text-main mt-4" data-key="faq_title">Frequently Asked Questions</h4>
+                        <h4 class="text-lg font-semibold text-main" data-key="faq_title">Frequently Asked Questions</h4>
                         <div id="faqContent" class="mt-4 space-y-4"></div>
                     </div>
                 </div>
@@ -485,8 +473,7 @@
             <section id="azimutSection" class="mt-8 space-y-8" style="display: none;">
                 <!-- 1. Asset Allocation -->
                 <div id="allocationBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-8 lg:p-10 reveal-block">
-                    <span class="section-tag" data-key="allocation_tag">Asset holdings</span>
-                    <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="allocation_title">Portfolio Asset Allocation</h3>
+                    <h3 class="text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="allocation_title">Portfolio Asset Allocation</h3>
                     <div class="mt-6 grid gap-8 lg:grid-cols-2">
                         <!-- Allocations visual bars -->
                         <div id="allocationBars" class="space-y-4 flex flex-col justify-center"></div>
@@ -498,23 +485,20 @@
                 <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.72fr)]">
                     <!-- 2. Portfolio Managers -->
                     <div id="managersBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-7 reveal-block">
-                        <span class="section-tag" data-key="managers_tag">Leadership</span>
-                        <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="managers_title">Meet the Portfolio Managers</h3>
+                        <h3 class="text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="managers_title">Meet the Portfolio Managers</h3>
                         <div id="managersGrid" class="mt-6 grid gap-4 sm:grid-cols-2"></div>
                     </div>
 
                     <!-- 4. Prospectus & Downloads -->
                     <div id="docsBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-7 reveal-block">
-                        <span class="section-tag" data-key="docs_tag">Downloads</span>
-                        <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="docs_title">Factsheets & Prospectus Documents</h3>
+                        <h3 class="text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="docs_title">Factsheets & Prospectus Documents</h3>
                         <div id="docsGrid" class="mt-6 flex flex-col gap-3"></div>
                     </div>
                 </div>
 
                 <!-- 3. Distributors -->
                 <div id="distributorsBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-8 lg:p-10 reveal-block">
-                    <span class="section-tag" data-key="distributors_tag">Purchase channels</span>
-                    <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="distributors_title">Official Distributors & Partners</h3>
+                    <h3 class="text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="distributors_title">Official Distributors & Partners</h3>
                     <div id="distributorsGrid" class="mt-6 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4"></div>
                 </div>
             </section>
@@ -524,30 +508,26 @@
                 <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.72fr)]">
                     <!-- 1. Investment Guidelines -->
                     <div id="thndrGuidelinesBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-7 reveal-block">
-                        <span class="section-tag" data-key="guidelines_tag">Limits & Policy</span>
-                        <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="guidelines_title">Investment Guidelines</h3>
+                        <h3 class="text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="guidelines_title">Investment Guidelines</h3>
                         <div id="thndrGuidelinesList" class="mt-6 space-y-3.5 flex flex-col justify-center"></div>
                     </div>
 
                     <!-- 2. Trading Rules / Subscription schedule -->
                     <div id="thndrTradingBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-7 reveal-block">
-                        <span class="section-tag" data-key="trading_tag">Trading Schedule</span>
-                        <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="trading_title">Buying & Selling Rules</h3>
+                        <h3 class="text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="trading_title">Buying & Selling Rules</h3>
                         <div id="thndrTradingContent" class="mt-6 bg-surface/30 rounded-3xl p-5 border border-border space-y-4 flex flex-col justify-center"></div>
                     </div>
                 </div>
 
                 <!-- 3. Risk Disclosures -->
                 <div id="thndrRisksBlock" class="glass-premium rounded-[2.2rem] p-6 sm:p-8 lg:p-10 reveal-block">
-                    <span class="section-tag" data-key="risks_tag">Risk factors</span>
-                    <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="risks_title">Fund Risk Disclosures</h3>
+                    <h3 class="text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="risks_title">Fund Risk Disclosures</h3>
                     <div id="thndrRisksGrid" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"></div>
                 </div>
             </section>
 
             <section class="mt-8 reveal-block">
-                <span class="section-tag" data-key="similar_tag">Explore more</span>
-                <h3 class="mt-3 text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="similar_title">Similar funds in the same universe.</h3>
+                <h3 class="text-2xl font-display font-bold tracking-[-0.04em] text-main" data-key="similar_title">Similar funds in the same universe.</h3>
                 <div id="similarFunds" class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"></div>
             </section>
         </div>
@@ -574,7 +554,6 @@
                 nav_portfolio: "MY PORTFOLIO",
                 nav_about: "ABOUT US",
                 back_to_funds: "Back to funds",
-                profile_tag: "Fund profile",
                 latest_nav_label: "Latest NAV",
                 selected_return_label: "Selected period return",
                 summary_aum: "AUM",
@@ -587,13 +566,10 @@
                 metric_window: "Window",
                 chart_empty_title: "Not enough chart history yet.",
                 chart_empty_desc: "This fund profile will show the full NAV chart automatically once enough history is available in the saved dataset.",
-                details_tag: "Fund details",
                 details_title: "Fund details that stay readable.",
                 details_desc: "Manager, benchmark, identifiers, fees, and the core profile metrics are organized into a cleaner research layout.",
-                strategy_tag: "Investment thesis",
                 strategy_title: "Investment strategy",
                 objective_title: "Fund objective",
-                similar_tag: "Explore more",
                 similar_title: "Similar funds in the same universe.",
                 close_title: "One fund page, built for deeper due diligence.",
                 close_text: "Starta keeps the market, the profile details, and the historical chart in one light, research-grade workflow.",
@@ -635,26 +611,18 @@
                 returns_3y: "3Y return",
                 returns_5y: "5Y return",
                 manager_unavailable: "Manager unavailable",
-                faq_tag: "Fund FAQ & Insights",
                 faq_title: "Frequently Asked Questions",
-                allocation_tag: "Asset holdings",
                 allocation_title: "Portfolio Asset Allocation",
-                managers_tag: "Leadership",
                 managers_title: "Meet the Portfolio Managers",
-                distributors_tag: "Purchase channels",
                 distributors_title: "Official Distributors & Partners",
-                docs_tag: "Downloads",
                 docs_title: "Factsheets & Prospectus Documents",
                 download: "Download",
                 view_pdf: "View PDF",
                 joined_year: "Joined",
                 origin: "Origin",
                 par_value: "Nominal value",
-                guidelines_tag: "Limits & Policy",
                 guidelines_title: "Investment Guidelines",
-                trading_tag: "Trading Schedule",
                 trading_title: "Buying & Selling Rules",
-                risks_tag: "Risk factors",
                 risks_title: "Fund Risk Disclosures"
             },
             ar: {
@@ -666,7 +634,6 @@
                 nav_portfolio: "محفظتي",
                 nav_about: "معلومات عنا",
                 back_to_funds: "العودة إلى الصناديق",
-                profile_tag: "ملف الصندوق",
                 latest_nav_label: "أحدث NAV",
                 selected_return_label: "عائد الفترة المختارة",
                 summary_aum: "حجم الأصول",
@@ -679,13 +646,10 @@
                 metric_window: "النافذة",
                 chart_empty_title: "لا يوجد تاريخ كافٍ للرسم بعد.",
                 chart_empty_desc: "ستظهر هذه الصفحة كامل الرسم البياني تلقائياً بمجرد توفر تاريخ كافٍ داخل البيانات المحفوظة.",
-                details_tag: "تفاصيل الصندوق",
                 details_title: "تفاصيل الصندوق بشكل أسهل للقراءة.",
                 details_desc: "تم تنظيم المدير، والمؤشر، والمعرفات، والرسوم، وأهم بيانات الملف داخل تخطيط أوضح للبحث.",
-                strategy_tag: "أطروحة الاستثمار",
                 strategy_title: "استراتيجية الاستثمار",
                 objective_title: "هدف الصندوق",
-                similar_tag: "استكشف المزيد",
                 similar_title: "صناديق مشابهة داخل نفس السوق.",
                 close_title: "صفحة صندوق واحدة، مصممة لدراسة أعمق.",
                 close_text: "تجمع ستارتا السوق، والتفاصيل، والرسم التاريخي في تجربة بحث واحدة مضيئة وواضحة.",
@@ -727,26 +691,18 @@
                 returns_3y: "عائد 3 سنوات",
                 returns_5y: "عائد 5 سنوات",
                 manager_unavailable: "المدير غير متاح",
-                faq_tag: "الأسئلة الشائعة والمعلومات",
                 faq_title: "الأسئلة الأكثر شيوعاً",
-                allocation_tag: "أصول المحفظة",
                 allocation_title: "توزيع أصول المحفظة الاستثمارية",
-                managers_tag: "القيادة الإدارية",
                 managers_title: "تعرف على مديري المحفظة",
-                distributors_tag: "قنوات الشراء",
                 distributors_title: "الموزعون والشركاء الرسميون",
-                docs_tag: "التحميلات",
                 docs_title: "نشرات الاكتتاب والتقارير الدورية",
                 download: "تحميل",
                 view_pdf: "عرض PDF",
                 joined_year: "انضم عام",
                 origin: "الجنسية",
                 par_value: "القيمة الاسمية",
-                guidelines_tag: "الحدود والسياسات",
                 guidelines_title: "الحدود الاستثمارية للصندوق",
-                trading_tag: "مواعيد التداول",
                 trading_title: "قواعد وشروط الشراء والاسترداد",
-                risks_tag: "عوامل الخطورة",
                 risks_title: "إفصاحات ومخاطر الصندوق"
             }
         };

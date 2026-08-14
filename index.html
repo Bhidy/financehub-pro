@@ -2401,8 +2401,8 @@
                     <button onclick="window.location.href='/Funds'"
                         class="px-10 py-4 font-bold text-lg rounded-lg btn-primary" data-key="hero_btn">Explore Mutual
                         Funds</button>
-                    <button onclick="document.getElementById('funds-section').scrollIntoView({behavior: 'smooth'})"
-                        class="px-10 py-4 font-bold text-lg rounded-lg btn-secondary" data-key="hero_btn_funds">See Top Performers</button>
+                    <button onclick="window.location.href=(window.startaLocalizedHref||String)('/RiskAssessment')"
+                        class="px-10 py-4 font-bold text-lg rounded-lg btn-secondary" data-key="hero_btn_profile">Assess Your Profile</button>
                 </div>
             </div>
 
@@ -3630,13 +3630,13 @@
         // --- TRANSLATION ENGINE ---
         const translations = {
             en: {
-                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US", nav_cta: "FREE RISK PROFILE",
+                nav_home: "HOME", nav_learn: "LEARN", nav_mobile: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_news: "MARKET NEWS", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US", nav_cta: "ASSESS YOUR PROFILE",
                 about_tag: "OUR MISSION", about_title: "Empowering Investors with Clearer Market Vision.", about_text: "At Starta, we build intelligent financial tools that help investors understand the market, track stocks, analyze news, and manage investment decisions from one unified platform. Our mission is to turn complex financial data into clear, actionable insights that support smarter and more confident investing.", about_val1_title: "Innovation", about_val1_text: "Smart technology that helps investors understand the market faster and act with more confidence.", about_val2_title: "Transparency", about_val2_text: "Clear data and insights that give investors a stronger view before making decisions.", about_vision: "Redefining the Investment Experience", about_vision_text: "We combine market data, AI-powered analysis, and simple design to deliver a clearer, faster, and more professional way to monitor the market and manage investments.",
                 hero_kicker: "Egypt's Mutual Fund Platform",
                 hero_title: `A Smarter Vision<br>for <span class="text-gradient">Funds.</span>`,
                 hero_sub: `Egypt's mutual funds in one place — performance, clear fees and risk, and easy comparison to help you pick the right one.`,
                 hero_point1: "Verified NAV History", hero_point2: "Fees and Risk in the Open", hero_point3: "Arabic + English Fluency",
-                hero_btn: "Explore Mutual Funds", hero_btn_funds: "See Top Performers",
+                hero_btn: "Explore Mutual Funds", hero_btn_profile: "Assess Your Profile",
                 mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> STARTA Platform`,
                 tour_preview: "PREVIEW", tour_illustrative: "ILLUSTRATIVE", tour_curated: "CURATED", tour_academy: "ACADEMY",
                 tour_ytd: "YTD",
@@ -3756,13 +3756,13 @@
                 sim_disclaimer: "For illustrative purposes only. Not investment advice."
             },
             ar: {
-                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا", nav_cta: "اعرف ملف مخاطرك",
+                nav_home: "الرئيسية", nav_learn: "تعلّم", nav_mobile: "الصناديق الاستثمارية", nav_pulse: "نبض السوق", nav_news: "أخبار السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا", nav_cta: "قيّم ملفك الاستثماري",
                 about_tag: "مهمتنا", about_title: "تمكين المستثمر من رؤية السوق بوضوح.", about_text: "في ستارتا، نبني أدوات مالية ذكية تساعد المستثمر على فهم السوق، متابعة الأسهم، تحليل الأخبار، وإدارة قراراته الاستثمارية من منصة واحدة. مهمتنا هي تحويل البيانات المالية المعقدة إلى رؤى واضحة وقابلة للتنفيذ تساعد على اتخاذ قرارات استثمارية أكثر وعيًا وثقة.", about_val1_title: "الابتكار", about_val1_text: "تقنيات ذكية تساعد المستثمر على فهم السوق بشكل أسرع واتخاذ قرارات بثقة أكبر.", about_val2_title: "الشفافية", about_val2_text: "بيانات ورؤى واضحة تمنح المستثمر رؤية أقوى قبل اتخاذ القرار.", about_vision: "إعادة تعريف تجربة الاستثمار", about_vision_text: "نجمع بين بيانات السوق، والتحليل المدعوم بالذكاء الاصطناعي، وتجربة استخدام بسيطة لنقدم طريقة أوضح وأسرع وأكثر احترافية لمتابعة السوق وإدارة الاستثمارات.",
                 hero_kicker: "منصة صناديق الاستثمار في مصر",
                 hero_title: `رؤية أذكى<br><span class="text-gradient">للاستثمار في الصناديق</span>`,
                 hero_sub: `صناديق الاستثمار في مصر كلها في مكان واحد — أداء، رسوم ومخاطر واضحة، ومقارنة سهلة تساعدك تختار الأنسب.`,
                 hero_point1: "سجل موثّق لصافي قيمة الوحدة", hero_point2: "رسوم ومخاطر واضحة", hero_point3: "محتوى كامل بالعربية والإنجليزية",
-                hero_btn: "استكشف صناديق الاستثمار", hero_btn_funds: "أفضل الصناديق أداءً",
+                hero_btn: "استكشف صناديق الاستثمار", hero_btn_profile: "قيّم ملفك الاستثماري",
                 mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> منصة ستارتا`,
                 tour_preview: "عرض تجريبي", tour_illustrative: "عرض توضيحي", tour_curated: "مختارة", tour_academy: "الأكاديمية",
                 tour_ytd: "هذا العام",

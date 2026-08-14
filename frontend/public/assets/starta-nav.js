@@ -49,9 +49,15 @@
                     "href": "/Calculators",
                     "en": "WEALTH CALCULATORS",
                     "ar": "حاسبات الثروة"
+            },
+            {
+                    "key": "nav_risk",
+                    "href": "/RiskAssessment",
+                    "en": "ASSESS YOUR INVESTMENT",
+                    "ar": "قيم استثمارك"
             }
     ];
-    var CTA = {"key":"nav_cta","href":"/RiskAssessment","en":"ASSESS YOUR PROFILE","ar":"قيم استثمارك"};
+    var CTA = null;
 
     window.STARTA_NAV = { items: ITEMS, cta: CTA };
 
@@ -108,12 +114,19 @@
     }
 
     /**
-     * The CTA was absent from the desktop bar on eleven pages. Scope the
-     * existence check to the NAV: starta-mobile-nav.js also renders a
-     * `data-key="nav_cta"` inside its drawer, and matching that made the first
-     * version bail out and add nothing.
+     * The profile CTA is a normal nav item now (nav_risk), so the bar carries no
+     * button. Pages still ship a `data-key="nav_cta"` in their markup, so remove
+     * it rather than leaving a stale duplicate of a link that already exists.
      */
     function ensureCta() {
+        if (!CTA) {
+            var stale = document.querySelectorAll('nav [data-key="nav_cta"]');
+            for (var i = 0; i < stale.length; i++) stale[i].remove();
+            var bar0 = document.querySelector("nav");
+            var host0 = bar0 && bar0.querySelector("#themeToggle");
+            if (host0 && host0.parentElement) host0.parentElement.classList.add("starta-nav-controls");
+            return;
+        }
         var bar = document.querySelector("nav");
         if (!bar) return;
         var host = bar.querySelector("#themeToggle");

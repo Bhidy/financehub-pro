@@ -5,7 +5,7 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <script src="/assets/starta-theme.js?v=2ac18a0a"></script>
     <script src="/assets/starta-lang-boot.js?v=778685a6"></script>
-    <script src="/assets/starta-i18n.js?v=baca99b7"></script><link rel="stylesheet" href="/assets/starta-nav.css?v=1255ed3c"><script src="/assets/starta-nav.js?v=5acfa957"></script>
+    <script src="/assets/starta-i18n.js?v=baca99b7"></script><link rel="stylesheet" href="/assets/starta-nav.css?v=1255ed3c"><script src="/assets/starta-nav.js?v=88a97584"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Starta | Master the EGX</title>
@@ -919,6 +919,7 @@
 
         .mq-item {
             display: inline-flex;
+            flex-direction: row-reverse;
             align-items: center;
             gap: 0.85rem;
             padding: 0.5rem 0.2rem;
@@ -934,18 +935,22 @@
         /* Manager brand marks are not in our data, so this is an explicit
            monogram of the manager's own name — never a fabricated logo. If a
            real mark is added later the renderer uses it instead. */
+        .mq-heading {
+            font-size: 14px;
+        }
+
         .mq-mark {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 2.6rem;
-            height: 2.6rem;
-            border-radius: 0.9rem;
+            width: 3.6rem;
+            height: 3.6rem;
+            border-radius: 1.05rem;
             background: linear-gradient(145deg, rgba(45, 212, 191, 0.16), rgba(20, 184, 166, 0.06));
             border: 1px solid rgba(45, 212, 191, 0.26);
             color: #0F766E;
             font-family: 'Sora', 'IBM Plex Sans Arabic', sans-serif;
-            font-size: 0.82rem;
+            font-size: 1.02rem;
             font-weight: 700;
             letter-spacing: 0.02em;
             flex: 0 0 auto;
@@ -973,7 +978,7 @@
 
         @media (max-width: 768px) {
             .mq-name { font-size: 0.92rem; }
-            .mq-mark { width: 2.2rem; height: 2.2rem; font-size: 0.72rem; }
+            .mq-mark { width: 2.9rem; height: 2.9rem; font-size: 0.86rem; }
             .marquee-content { gap: 2.25rem; }
         }
 
@@ -2494,8 +2499,6 @@
                     <button onclick="window.location.href=(window.startaLocalizedHref||String)('/Funds')"
                         class="px-10 py-4 font-bold text-lg rounded-lg btn-primary" data-key="hero_btn">Explore Mutual
                         Funds</button>
-                    <button onclick="window.location.href=(window.startaLocalizedHref||String)('/RiskAssessment')"
-                        class="px-10 py-4 font-bold text-lg rounded-lg btn-secondary" data-key="hero_btn_profile">Assess Your Profile</button>
                 </div>
             </div>
 
@@ -2775,7 +2778,7 @@
     <!-- 2. SOCIAL PROOF (Ticker) -->
     <section class="py-16 border-y border-border bg-surface overflow-hidden relative">
         <div class="max-w-7xl mx-auto px-6 text-center mb-10">
-            <h4 class="text-xs font-mono text-muted tracking-[0.4em] uppercase" data-key="trusted_by">Fund Managers We
+            <h4 class="mq-heading font-mono text-muted tracking-[0.4em] uppercase" data-key="trusted_by">Fund Managers We
                 Cover</h4>
         </div>
 
@@ -3700,7 +3703,7 @@
                 hero_title: `A Smarter Vision<br>for <span class="text-gradient">Funds.</span>`,
                 hero_sub: `Egypt's mutual funds in one place — performance, clear fees and risk, and easy comparison to help you pick the right one.`,
                 hero_point1: "Verified NAV History", hero_point2: "Fees and Risk in the Open", hero_point3: "Arabic + English Fluency",
-                hero_btn: "Explore Mutual Funds", hero_btn_profile: "Assess Your Profile",
+                hero_btn: "Explore Mutual Funds",
                 mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> STARTA Platform`,
                 tour_preview: "PREVIEW", tour_illustrative: "ILLUSTRATIVE", tour_curated: "CURATED", tour_academy: "ACADEMY",
                 tour_ytd: "YTD",
@@ -3809,7 +3812,7 @@
                 hero_title: `رؤية أذكى<br><span class="text-gradient">للاستثمار في الصناديق</span>`,
                 hero_sub: `صناديق الاستثمار في مصر كلها في مكان واحد — أداء، رسوم ومخاطر واضحة، ومقارنة سهلة تساعدك تختار الأنسب.`,
                 hero_point1: "سجل موثّق لصافي قيمة الوحدة", hero_point2: "رسوم ومخاطر واضحة", hero_point3: "محتوى كامل بالعربية والإنجليزية",
-                hero_btn: "استكشف صناديق الاستثمار", hero_btn_profile: "قيّم ملفك الاستثماري",
+                hero_btn: "استكشف صناديق الاستثمار",
                 mockup_header: `<span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> منصة ستارتا`,
                 tour_preview: "عرض تجريبي", tour_illustrative: "عرض توضيحي", tour_curated: "مختارة", tour_academy: "الأكاديمية",
                 tour_ytd: "هذا العام",
@@ -4804,7 +4807,7 @@
                 ar: { tag: 'الأساسيات', title: 'المخاطرة والعائد', desc: 'افهم المعادلة الأساسية لكل مستثمر: العوائد الأعلى تأتي دائماً مع مخاطر أعلى.' }
             },
             {
-                slug: 'diversification-explained',
+                slug: 'diversification-made-simple',
                 accent: '#22C55E', num: '06', wide: false,
                 icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="2.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="5" r="1.8" fill="currentColor" stroke="none"/><circle cx="19.5" cy="5" r="1.8" fill="currentColor" stroke="none"/><circle cx="4.5" cy="19" r="1.8" fill="currentColor" stroke="none"/><circle cx="19.5" cy="19" r="1.8" fill="currentColor" stroke="none"/><line x1="12" y1="12" x2="4.5" y2="5"/><line x1="12" y1="12" x2="19.5" y2="5"/><line x1="12" y1="12" x2="4.5" y2="19"/><line x1="12" y1="12" x2="19.5" y2="19"/></svg>`,
                 en: { tag: 'PORTFOLIO', title: 'Diversification Explained', desc: 'Why spreading capital across assets reduces risk without sacrificing expected returns.' },

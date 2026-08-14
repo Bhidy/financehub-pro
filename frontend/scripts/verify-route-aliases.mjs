@@ -271,9 +271,11 @@ const checks = [
     assert: (text, ctx) => {
       const items = JSON.parse(ctx.navConfig).items;
       const cta = JSON.parse(ctx.navConfig).cta;
-      return items.every((i) => text.includes(`"key": "${i.key}"`) && text.includes(`"href": "${i.href}"`))
-        && text.includes(`"key":"${cta.key}"`)
-        && (text.match(/"key":\s*"nav_/g) || []).length === items.length + 1;
+      const itemsOk = items.every((i) => text.includes(`"key": "${i.key}"`) && text.includes(`"href": "${i.href}"`));
+      // cta is null when the profile link is a normal nav item rather than a button.
+      const ctaOk = cta ? text.includes(`"key":"${cta.key}"`) : /var CTA = null;/.test(text);
+      const expected = items.length + (cta ? 1 : 0);
+      return itemsOk && ctaOk && (text.match(/"key":\s*"nav_/g) || []).length === expected;
     },
   },
   {
@@ -667,6 +669,32 @@ async function run() {
     const boot = await readFile(path.join(root, "public/assets/starta-lang-boot.js"), "utf8");
     if (!derived.every((r) => boot.includes(`"${r}"`))) {
       console.error("FAIL: starta-lang-boot.js twin-route mirror is stale. Run: node scripts/sync-ar-routes.mjs");
+      process.exit(1);
+    }
+  }
+
+  // The homepage academy cards carry their own copy of the Learn topic list.
+  // It drifted: 'diversification-explained' had been renamed to
+  // 'diversification-made-simple', so one of six cards linked to a 404 in BOTH
+  // languages. Every slug the homepage links to must exist in the canonical
+  // topic list (content/learn-topics.generated.ts).
+  {
+    const canonical = new Set(
+      [...(await readFile(path.join(root, "content/learn-topics.generated.ts"), "utf8"))
+        .matchAll(/"slug"\s*:\s*"([^"]+)"/g)].map((m) => m[1])
+    );
+    if (canonical.size === 0) {
+      console.error("FAIL: could not read canonical Learn topic slugs.");
+      process.exit(1);
+    }
+    const home = await readFile(path.join(root, "public/home.html"), "utf8");
+    const used = [...home.matchAll(/slug:\s*'([a-z0-9-]+)'/g)].map((m) => m[1]);
+    const missing = [...new Set(used)].filter((slug) => !canonical.has(slug));
+    if (missing.length) {
+      console.error(
+        `FAIL: home.html links to Learn topics that do not exist: ${missing.join(", ")}\n` +
+        `       canonical slugs: ${[...canonical].join(", ")}`
+      );
       process.exit(1);
     }
   }

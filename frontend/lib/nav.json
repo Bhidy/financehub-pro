@@ -1,5 +1,5 @@
 {
-  "_comment": "CANONICAL PRIMARY NAV — the single source of truth for the site chrome. Consumed by React (components/SiteNav.tsx, components/seo/PublicPageShell.tsx) and mirrored into public/assets/starta-nav.js, which renders it on every static HTML page. The mirror is build-gated: scripts/verify-route-aliases.mjs fails if the two drift. Add or reorder items HERE ONLY.",
+  "_comment": "CANONICAL PRIMARY NAV — the single source of truth for the site chrome. Consumed by React (components/SiteNav.tsx, components/seo/PublicPageShell.tsx) and mirrored into public/assets/starta-nav.js, which renders it on every static HTML page. The mirror is build-gated: scripts/verify-route-aliases.mjs fails if the two drift. Add or reorder items HERE ONLY. `cta` is null: the profile CTA is a normal nav item (nav_risk), not a button.",
   "items": [
     {
       "key": "nav_home",
@@ -30,12 +30,13 @@
       "href": "/Calculators",
       "en": "WEALTH CALCULATORS",
       "ar": "حاسبات الثروة"
+    },
+    {
+      "key": "nav_risk",
+      "href": "/RiskAssessment",
+      "en": "ASSESS YOUR INVESTMENT",
+      "ar": "قيم استثمارك"
     }
   ],
-  "cta": {
-    "key": "nav_cta",
-    "href": "/RiskAssessment",
-    "en": "ASSESS YOUR PROFILE",
-    "ar": "قيم استثمارك"
-  }
+  "cta": null
 }

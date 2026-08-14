@@ -226,17 +226,6 @@ export default function PublicPageShell({
                         >
                             {t.register}
                         </Link>
-                        <Link
-                            href={localizedHref(navConfig.cta.href, lang)}
-                            prefetch={false}
-                            className="starta-nav-cta"
-                            data-key="nav_cta"
-                        >
-                            {/* CTA label comes from the canonical nav config, not a
-                                local string: this shell still read 'اعرف ملف مخاطرك'
-                                after the site-wide CTA rename. */}
-                            {lang === 'en' ? navConfig.cta.en : navConfig.cta.ar}
-                        </Link>
                         <div className="nav-controls">
                             <ThemeToggle />
                             {altHref && (

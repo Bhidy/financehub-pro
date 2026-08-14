@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { AUTH_LABELS } from "@/lib/auth-i18n";
 import navConfig from "@/lib/nav.json";
+import assetVersions from '@/lib/asset-versions.json';
 
 interface MobileChatActions {
     onNewChat?: () => void;
@@ -69,9 +70,13 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                         </span>
                     </a>
 
+                    {/* Canonical nav appearance — the SAME stylesheet the static
+                        pages and PublicPageShell load, so all three renderers can
+                        only ever produce one nav. */}
+                    <link rel="stylesheet" href={`/assets/starta-nav.css?v=${assetVersions["starta-nav.css"]}`} />
                     {/* Desktop nav links */}
                     <div className="hidden lg:flex items-center gap-10">
-                        <div className="flex gap-10 text-xs font-mono text-slate-500 dark:text-[#9ca6b5] tracking-widest">
+                        <div className="starta-nav-links">
                             {NAV_LINKS.map((link) => (
                                 <a
                                     key={link.href}

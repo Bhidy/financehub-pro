@@ -181,8 +181,9 @@ export default async function NewsArticlePage({ params }: Props) {
                     src={newsCoverPath(arabic ? 'ar' : 'en')}
                     alt=""
                     width={1200}
-                    height={675}
-                    className="mt-5 h-auto w-full rounded-xl border border-border object-cover"
+                    height={338}
+                    /* Half the previous height: 16/9 -> 32/9, cropped not squashed. */
+                    className="mt-5 aspect-[32/9] w-full rounded-xl border border-border object-cover"
                 />
 
                 <div className="prose mt-6 max-w-none text-[1.05rem] leading-relaxed">

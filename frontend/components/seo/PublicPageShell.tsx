@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Script from 'next/script';
 import ThemeToggle from '@/components/seo/ThemeToggle';
 import navConfig from '@/lib/nav.json';
+import assetVersions from '@/lib/asset-versions.json';
 
 /**
  * Server-rendered chrome for the SEO/public pages — a FAITHFUL replication of
@@ -166,6 +167,10 @@ export default function PublicPageShell({
                         `if(p===r||p.indexOf(r+"/")===0||p.indexOf(r+"?")===0)return "/ar"+p;}return p;};})();`,
                 }}
             />
+            {/* Canonical nav appearance, the SAME file the static pages load.
+                While this shell styled its own links they rendered 12px mono at
+                40px gaps against 13px IBM Plex at 36px everywhere else. */}
+            <link rel="stylesheet" href={`/assets/starta-nav.css?v=${assetVersions["starta-nav.css"]}`} />
             <Script src="/assets/starta-mobile-nav.js?v=1.0.6" strategy="lazyOnload" />
 
             {/* ── Header: verbatim structure from the designed pages ─────────── */}
@@ -177,7 +182,7 @@ export default function PublicPageShell({
                     </a>
 
                     <div className="hidden lg:flex items-center gap-10">
-                        <div className="flex gap-10 text-xs font-mono text-muted tracking-widest">
+                        <div className="starta-nav-links">
                             {/* One canonical list (lib/nav.json) for every surface:
                                 this shell, SiteNav, and the static pages. */}
                             {navConfig.items.map((item) => (
@@ -194,7 +199,7 @@ export default function PublicPageShell({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 ml-3">
+                    <div className="flex items-center gap-3 ml-3 starta-nav-controls">
                         {/* Auth entry points. /login and /register are single-URL pages
                             that follow the STORED language (no /ar twin), so they stay
                             in the visitor's language without a prefix. */}
@@ -217,7 +222,7 @@ export default function PublicPageShell({
                         <Link
                             href={localizedHref(navConfig.cta.href, lang)}
                             prefetch={false}
-                            className="hidden lg:inline-flex px-6 py-2 rounded-full text-xs font-bold tracking-widest btn-secondary"
+                            className="starta-nav-cta"
                             data-key="nav_cta"
                         >
                             {/* CTA label comes from the canonical nav config, not a

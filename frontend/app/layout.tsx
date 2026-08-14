@@ -24,7 +24,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 // Brainwave Fonts
-import { Sora, Source_Code_Pro, Space_Grotesk, Cairo } from "next/font/google";
+import { Sora, Source_Code_Pro, Space_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
 
 const sora = Sora({
   subsets: ["latin"],
@@ -33,9 +33,14 @@ const sora = Sora({
   display: "swap",
 });
 
-const cairo = Cairo({
+const arabic = IBM_Plex_Sans_Arabic({
   subsets: ["arabic"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  // ONE Arabic typeface site-wide. The static pages (home, /Funds, /Learn,
+  // /News) load IBM Plex Sans Arabic while this app loaded Cairo, so the same
+  // nav — and every heading — rendered in a different face depending on which
+  // renderer served the route. IBM Plex is canonical because the static
+  // marketing surfaces are.
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-arabic",
   display: "swap",
 });
@@ -134,7 +139,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${manrope.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} ${cairo.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}
+        className={`${manrope.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} ${arabic.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}
       >
         <Script id="finhub-domain-scale" strategy="beforeInteractive">
           {`

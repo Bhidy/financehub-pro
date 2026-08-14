@@ -93,40 +93,18 @@
      * exist in most of them — the first version of this CTA inherited `hidden`
      * with no matching `md:` rule and was invisible on eleven pages.
      */
+    /**
+     * Load the canonical stylesheet. The look lives in starta-nav.css so the
+     * React renderers can load the exact same file — while it was inlined here,
+     * only static pages got it and /Calculators rendered a different nav.
+     */
     function ensureStyles() {
-        if (document.getElementById("starta-nav-style")) return;
-        var css =
-            ".starta-nav-cta{display:none;align-items:center;padding:.5rem 1.5rem;border-radius:999px;" +
-            "font-size:.75rem;font-weight:700;letter-spacing:.1em;white-space:nowrap;cursor:pointer;" +
-            "border:1px solid rgba(45,212,191,.45);background:rgba(45,212,191,.08);color:#0F766E;" +
-            "transition:background-color .25s ease,border-color .25s ease}" +
-            ".starta-nav-cta:hover{background:rgba(45,212,191,.16)}" +
-            'html[data-theme="dark"] .starta-nav-cta{color:#2DD4BF}' +
-            "@media(min-width:768px){.starta-nav-cta{display:inline-flex}}" +
-            /* One canonical order for the controls cluster on every page. */
-            /* Nav typography is owned here too. Each page styled its own links,
-               so the same menu rendered 400 weight on /Learn and 600 on /News. */
-            "nav .starta-nav-links{display:flex;align-items:center;gap:2.25rem}" +
-            "nav .starta-nav-links a{font-family:'IBM Plex Sans Arabic','Sora',sans-serif;" +
-            "font-size:13px;font-weight:600;letter-spacing:0;line-height:1;white-space:nowrap;" +
-            "color:var(--c-text-muted);text-decoration:none;transition:color .22s ease}" +
-            "nav .starta-nav-links a:hover{color:#14B8A6}" +
-            "nav .starta-nav-links a.text-starta-darkTeal{color:#0F766E}" +
-            'html[data-theme="dark"] nav .starta-nav-links a.text-starta-darkTeal{color:#2DD4BF}' +
-            ".starta-nav-controls{display:flex;align-items:center;gap:.75rem}" +
-            ".starta-nav-controls .starta-nav-cta{order:1}" +
-            ".starta-nav-controls .starta-auth-links{order:2}" +
-            ".starta-nav-controls #themeToggle{order:3}" +
-            ".starta-nav-controls #langToggle{order:4}" +
-            ".starta-nav-controls .smn-burger{order:5}" +
-            /* starta-mobile-nav marks its burger `is-visible` and dropped it into
-               whatever container it found first, so it showed on desktop and in a
-               different place on every page. It is a mobile affordance only. */
-            "@media(min-width:1024px){nav .smn-burger{display:none !important}}";
-        var el = document.createElement("style");
-        el.id = "starta-nav-style";
-        el.textContent = css;
-        document.head.appendChild(el);
+        if (document.getElementById("starta-nav-css")) return;
+        var link = document.createElement("link");
+        link.id = "starta-nav-css";
+        link.rel = "stylesheet";
+        link.href = "/assets/starta-nav.css";
+        document.head.appendChild(link);
     }
 
     /**
@@ -143,10 +121,14 @@
         if (!host) return;
         host.classList.add("starta-nav-controls");
 
-        var existing = host.querySelector('[data-key="nav_cta"]');
+        // Search the whole bar, not just the control cluster: on home.html the
+        // existing CTA is a SIBLING of .nav-controls, so a host-scoped lookup
+        // missed it and appended a duplicate.
+        var existing = bar.querySelector('[data-key="nav_cta"]');
         if (existing) {
-            existing.classList.add("starta-nav-cta");
+            existing.className = "starta-nav-cta";
             existing.textContent = CTA[lang()];
+            if (existing.parentElement !== host) host.insertBefore(existing, host.firstChild);
             return;
         }
 

@@ -1,0 +1,116 @@
+/**
+ * CANONICAL NAV APPEARANCE — the single stylesheet for the primary nav bar.
+ *
+ * WHY A FILE AND NOT INLINE CSS
+ * The nav is rendered by three different things: public/assets/starta-nav.js
+ * (static HTML pages), components/seo/PublicPageShell.tsx and
+ * components/SiteNav.tsx (React routes). While the look lived inside the JS
+ * renderer, only the static pages got it: /Calculators kept rendering its links
+ * as 12px monospace with 40px gaps while every static page rendered 13px
+ * IBM Plex at 36px — the same menu, two different navs.
+ *
+ * Every renderer loads THIS file and applies these class names, so the bar can
+ * only ever look one way. Structure (which links, which CTA) is lib/nav.json.
+ *
+ * Contract:
+ *   .starta-nav-links     the row of primary links
+ *   .starta-nav-controls  the right-hand cluster (CTA, auth, theme, lang, burger)
+ *   .starta-nav-cta       the profile CTA
+ */
+
+/* ── Primary links ──────────────────────────────────────────────────────── */
+nav .starta-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2.25rem;
+}
+
+/* Size/weight/spacing are authoritative (page styles varied them: 12px mono on
+   the React shell vs 13px elsewhere). font-family deliberately is NOT forced —
+   the app enforces one Arabic face site-wide via
+   `[dir="rtl"] :not(.font-mono)… { font-family: var(--font-arabic) !important }`
+   and the nav should follow that policy, not fight it. The real defect was that
+   the two surfaces defined --font-arabic differently (Cairo vs IBM Plex); that
+   is fixed at the source in app/layout.tsx. */
+nav .starta-nav-links a {
+    font-family: 'IBM Plex Sans Arabic', 'Sora', sans-serif;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--c-text-muted);
+    text-decoration: none;
+    transition: color 0.22s ease;
+}
+
+nav .starta-nav-links a:hover {
+    color: #14B8A6;
+}
+
+/* Active route. Both the utility class (static pages) and the data attribute
+   (React, which cannot rely on a page's frozen Tailwind build) mark it. */
+nav .starta-nav-links a.text-starta-darkTeal,
+nav .starta-nav-links a[aria-current="page"] {
+    color: #0F766E;
+}
+
+html[data-theme="dark"] nav .starta-nav-links a.text-starta-darkTeal,
+html[data-theme="dark"] nav .starta-nav-links a[aria-current="page"] {
+    color: #2DD4BF;
+}
+
+/* ── Control cluster ────────────────────────────────────────────────────── */
+.starta-nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* One canonical order regardless of the order each renderer emits. */
+.starta-nav-controls .starta-nav-cta { order: 1; }
+.starta-nav-controls .starta-auth-links { order: 2; }
+.starta-nav-controls .nav-controls { order: 3; }
+.starta-nav-controls #themeToggle { order: 3; }
+.starta-nav-controls #langToggle { order: 4; }
+.starta-nav-controls .smn-burger { order: 5; }
+
+/* ── CTA ────────────────────────────────────────────────────────────────
+   Plain CSS on purpose: each static page ships its own frozen Tailwind build
+   and `md:inline-flex` is absent from most of them, so a utility-styled CTA
+   inherited `hidden` and was invisible on eleven pages. */
+.starta-nav-cta {
+    display: none;
+    align-items: center;
+    padding: 0.5rem 1.5rem;
+    border-radius: 999px;
+    font-family: 'IBM Plex Sans Arabic', 'Sora', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid rgba(45, 212, 191, 0.45);
+    background: rgba(45, 212, 191, 0.08);
+    color: #0F766E;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.starta-nav-cta:hover {
+    background: rgba(45, 212, 191, 0.16);
+    border-color: rgba(45, 212, 191, 0.65);
+}
+
+html[data-theme="dark"] .starta-nav-cta {
+    color: #2DD4BF;
+}
+
+@media (min-width: 768px) {
+    .starta-nav-cta { display: inline-flex; }
+}
+
+/* ── Burger: a mobile affordance only ───────────────────────────────────── */
+@media (min-width: 1024px) {
+    nav .smn-burger { display: none !important; }
+}

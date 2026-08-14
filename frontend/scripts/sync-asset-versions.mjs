@@ -24,6 +24,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Shared assets whose cache key must track their content. */
 export const MANAGED_ASSETS = [
+  "starta-nav.css",
   "starta-nav.js",
   "starta-i18n.js",
   "starta-lang-boot.js",
@@ -72,6 +73,13 @@ async function run() {
       changed += 1;
     }
   }
+
+  // React cannot read the HTML, so publish the hashes it needs as a module.
+  await writeFile(
+    path.join(root, "lib/asset-versions.json"),
+    JSON.stringify(hashes, null, 2) + "\n",
+    "utf8"
+  );
 
   console.log(
     changed

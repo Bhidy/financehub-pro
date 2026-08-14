@@ -309,6 +309,40 @@ const checks = [
     assert: (text) => !/المصدر الأصلي|Original source/.test(text),
   },
   {
+    // One nav APPEARANCE, one stylesheet. While the look lived inside the JS
+    // renderer only static pages got it, and /Calculators rendered its links as
+    // 12px monospace against 13px IBM Plex everywhere else.
+    name: "PublicPageShell loads the canonical nav stylesheet",
+    file: "components/seo/PublicPageShell.tsx",
+    assert: (text) =>
+      /assets\/starta-nav\.css/.test(text) &&
+      /className="starta-nav-links"/.test(text) &&
+      !/flex gap-10 text-xs font-mono/.test(text),
+  },
+  {
+    name: "SiteNav loads the canonical nav stylesheet",
+    file: "components/SiteNav.tsx",
+    assert: (text) =>
+      /assets\/starta-nav\.css/.test(text) &&
+      /className="starta-nav-links"/.test(text),
+  },
+  {
+    name: "static nav renderer links the canonical stylesheet (not inline CSS)",
+    file: "public/assets/starta-nav.js",
+    assert: (text) => /assets\/starta-nav\.css/.test(text),
+  },
+  {
+    // ONE Arabic typeface site-wide. The static pages load IBM Plex Sans Arabic
+    // while this app loaded Cairo, so the same nav — and every heading —
+    // rendered in a different face depending on which renderer served the route.
+    name: "React app uses the canonical Arabic font (IBM Plex Sans Arabic)",
+    file: "app/layout.tsx",
+    assert: (text) =>
+      /IBM_Plex_Sans_Arabic\(/.test(text) &&
+      /variable:\s*"--font-arabic"/.test(text) &&
+      !/Cairo\(/.test(text),
+  },
+  {
     // DESIGN_SYSTEM.md -> "Bilingual Parity": the en and ar dictionaries are a
     // matched pair. A key added to one language and forgotten in the other
     // renders the stale English markup default to Arabic users (and vice

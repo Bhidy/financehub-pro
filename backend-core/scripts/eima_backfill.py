@@ -317,6 +317,11 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
         stats = {"mapped": 0, "validated": 0, "rejected": 0, "skipped_no_match": 0,
                  "inserted": 0, "reports": parsed}
         rejects: list[str] = []
+        # What the run would actually change, so a dry-run answers "which gap,
+        # for which funds, over what period" instead of just a total.
+        by_year: dict[int, int] = defaultdict(int)
+        gap_window = 0          # points landing in the 2025-05..2026-06 hole
+        per_fund: list[tuple] = []
 
         assignment = assign_one_to_one(sorted(series), catalogue)
         print(f"[eima] one-to-one assignment: {len(assignment)} of {len(series)} names", flush=True)
@@ -355,6 +360,13 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                    if p["date"] not in existing and p.get("column") in good]
             if not new:
                 continue
+            for q in new:
+                by_year[q["date"].year] += 1
+                if date(2025, 5, 14) <= q["date"] <= date(2026, 6, 30):
+                    gap_window += 1
+            per_fund.append((fid, name[:34], len(new),
+                             min(q["date"] for q in new), max(q["date"] for q in new),
+                             sorted(good)))
             if dry_run:
                 stats["inserted"] += len(new)
                 continue
@@ -375,6 +387,12 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                 rejects.append(f"{fid}: write failed {type(e).__name__}")
 
         print("[eima] RESULT " + json.dumps(stats), flush=True)
+        print("[eima] NEW POINTS BY YEAR: " + json.dumps(dict(sorted(by_year.items()))), flush=True)
+        print(f"[eima] landing inside the 2025-05..2026-06 hole: {gap_window}", flush=True)
+        print(f"[eima] funds gaining history: {len(per_fund)}", flush=True)
+        for fid, nm, n, lo, hi, good in sorted(per_fund, key=lambda x: -x[2])[:40]:
+            print(f"[eima]   {fid:>9} {nm:36s} +{n:>4}  {lo}..{hi}  cols={','.join(good)}",
+                  flush=True)
         if rejects:
             print(f"[eima] rejected {len(rejects)} candidate mappings:", flush=True)
             for r in rejects[:25]:

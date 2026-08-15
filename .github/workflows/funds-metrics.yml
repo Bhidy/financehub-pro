@@ -1,0 +1,45 @@
+name: Funds Metrics Recompute
+
+# ============================================================
+# Recomputes fund_risk_metrics from nav_history — returns windows, volatility,
+# drawdown, 52w — using the audited math: window returns REFUSE a reference
+# older than 10% of the window (a "3M return" measured from a 15-month-old
+# anchor is a false figure, not a stale one), and volatility EXCLUDES period
+# returns spanning more than 3x the fund's own median interval, so holes and
+# mixed daily/weekly cadence cannot manufacture risk.
+#
+# Exists because the only other scheduler for this compute lives inside the
+# backend process (tier 4D), so a data repair — like the EIMA backfill — left
+# page metrics stale until the next backend boot. Dispatch after any backfill;
+# the daily run keeps drift bounded regardless.
+#
+# Requires repo secret DATABASE_URL.
+# ============================================================
+
+on:
+  schedule:
+    - cron: '30 17 * * 0-4'   # 20:30 Cairo, Sun-Thu — after the evening NAV window
+  workflow_dispatch:
+
+concurrency:
+  group: funds-metrics
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  metrics:
+    name: Recompute fund risk metrics
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: pip install --quiet asyncpg
+      - name: Compute metrics from nav_history
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python backend-core/scripts/compute_fund_metrics.py --min-updated 50

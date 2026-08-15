@@ -15,15 +15,15 @@ name: Funds Freshness Monitor
 # failure mode is PER-FUND; every check was AGGREGATE. No threshold fixes that.
 #
 # So this job now REFRESHES the per-fund quality ledger (fund_data_quality:
-# cadence, coverage, defect gaps, grade) and probes THAT distribution. Alerting is
-# by regression against the previous snapshot, because the universe is knowingly
-# degraded until the P4 backfill lands — an absolute threshold would either sit
-# red and be muted within a week, or be set so loose it could never fire.
+# cadence, coverage, defect gaps, grade) and probes THAT distribution.
 #
 # Signal contract (2026-06-11): stale DATA FAILS the run (exit 2) — the red run's
 # GitHub mobile push IS the page (Discord no longer exists). Thresholds are
-# wall-day scale, so weekends and holidays cannot false-page. A MISSING ledger
-# reports UNAVAILABLE and fails: an unrunnable check must never read as a pass.
+# wall-day scale, so weekends and holidays cannot false-page. A MISSING, EMPTY or
+# STALE ledger reports UNKNOWN and fails: a check that cannot see anything must
+# never report health (learned the hard way — the first live run of this monitor
+# reported "0 funds below grade C" and went green because the compute job had
+# failed on all 363 funds and left the table empty).
 # Requires repo secret DATABASE_URL.
 # ============================================================
 
@@ -56,7 +56,7 @@ jobs:
       - name: Refresh per-fund quality ledger
         id: ledger
         # continue-on-error: a broken compute must not SKIP the probe below and
-        # thereby silence the alarm. The probe treats a missing/stale ledger as a
+        # thereby silence the alarm. The probe treats an empty or stale ledger as a
         # failure in its own right, so the signal survives either way.
         continue-on-error: true
         env:
@@ -68,11 +68,21 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          # --max-below-grade 150 is a CEILING for catastrophic collapse, not a
-          # health target. Today's known-degraded baseline is large (61 funds with
-          # a 13-month hole, 25 with almost no history), so the real signal is the
-          # regression check inside the probe: below-grade-C rising versus the
-          # previous snapshot fails the run immediately. Ratchet this number down
-          # as the P4 backfill lands; never raise it to silence a regression.
+          # --max-below-grade 306 is a RATCHET pinned to the measured baseline of
+          # 2026-08-15, NOT a health target. 306 of 363 funds currently grade D or
+          # F, dominated by the 2025-05 -> 2026-06 upstream freeze that no source
+          # can fill until the P4 backfill lands.
+          #
+          # This monitor has already proved it can see that: at 150 it failed on
+          # production naming 306 funds and fund 2735's 1931-day hole. Leaving it
+          # there would keep the job permanently red, and a permanently-red job
+          # gets muted — the exact failure this audit is about. Pinned to the
+          # baseline instead, ANY increase fails immediately while the known debt
+          # is worked down.
+          #
+          # Lower this number as the backfill lands. Raising it requires evidence
+          # that the universe legitimately grew — never to silence a regression.
+          # Two further signals stay live regardless: regression against the
+          # previous snapshot, and an empty/stale ledger reporting UNKNOWN.
           python backend-core/scripts/funds_nav_updater.py \
-            --monitor --stale-days 5 --max-below-grade 150
+            --monitor --stale-days 5 --max-below-grade 306

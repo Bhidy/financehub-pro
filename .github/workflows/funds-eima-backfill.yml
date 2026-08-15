@@ -1,0 +1,77 @@
+name: Funds EIMA Backfill
+
+# ============================================================
+# Recovers the 2025 NAV hole from EIMA's weekly performance reports.
+#
+# WHY THIS EXISTS
+# 61 funds carry a ~13-month gap because Mubasher's per-fund CSV froze around
+# 2025-05. Ruled out first, by measurement: Mubasher's entire
+# /api/1/funds/{id}/* subtree returns 500, only one CSV path exists, no fund was
+# migrated to a new id, the FRA portal has no history, and Wayback never
+# captured any of it.
+#
+# EIMA also went dark — five archive captures of their Reports page across 2025
+# all show February-2024 content, so the 2025 PDFs were never published. The
+# recovery is that each 2026 report carries time-weighted RETURN columns beside
+# the NAV, and inverting them reconstructs NAV at each anchor date. A 2026
+# report therefore yields 2025 points without a 2025 report existing.
+#
+# SELF-COMPLETING: each new weekly report's 12-month column is anchored 52 weeks
+# back, so every week that passes fills one more week of Aug-Dec 2025 — the part
+# of the hole nothing can reach today.
+#
+# SAFETY: a fuzzy English-name match is only a hypothesis. It is accepted solely
+# when the reconstructed series agrees with NAV we already hold at overlapping
+# dates; too little overlap means SKIP. Writes are ON CONFLICT DO NOTHING, so a
+# published NAV always beats a derived one and re-runs are idempotent.
+#
+# BE KIND: EIMA is a small industry association on a modest WordPress host, not
+# a data vendor. Weekly, self-identifying, 2s between requests, with backoff.
+#
+# Requires repo secret DATABASE_URL.
+# ============================================================
+
+on:
+  schedule:
+    # Fridays ~09:00 Cairo — after EIMA's Thursday publication, outside the
+    # Sun-Thu windows the NAV updater and quality ledger already occupy.
+    - cron: '0 6 * * 5'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'dry-run reports what would be written; write commits it'
+        required: true
+        default: 'dry-run'
+        type: choice
+        options: [dry-run, write]
+
+concurrency:
+  group: funds-eima-backfill
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backfill:
+    name: Backfill NAV history from EIMA reports
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: pip install --quiet httpx asyncpg pypdf
+
+      - name: Run EIMA backfill
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          # Scheduled runs stay in dry-run: this writes into fund NAV history,
+          # so the reconciliation report should be read by a human before the
+          # first real write. Dispatch with mode=write to commit.
+          MODE="${{ github.event.inputs.mode }}"
+          EXTRA="--dry-run"
+          if [ "$MODE" = "write" ]; then EXTRA=""; fi
+          python backend-core/scripts/eima_backfill.py --delay 2.0 $EXTRA

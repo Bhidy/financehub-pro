@@ -17,8 +17,9 @@ name: Funds NAV Update
 # --min-updated only proves TRANSPORT worked. A source that keeps returning
 # HTTP 200 with an unchanged body passes it forever while publishing nothing —
 # run 31722793365 reported 197,959 "points saved" when the universe was missing
-# exactly two rows the source had, and exited 0. The run is now judged on
-# INFORMATION GAIN as well: see the gate comments in the run step below.
+# exactly two rows the source had, and exited 0. Under information-gain counting
+# the very next run reported new_dates=2, which matches an independent sweep of
+# the source exactly. See the gate comments in the run step below.
 #
 # Funds with no CSV (newer 64xx ids) are covered by the Playwright scraper
 # (backend scheduler 06:00 Cairo) — a separate, redundant layer.
@@ -66,7 +67,7 @@ jobs:
           SCOPE="${{ github.event.inputs.scope }}"
           EXTRA=""
           if [ "$SCOPE" = "all" ]; then EXTRA="--all"; fi
-          # THREE independent gates, because they answer different questions.
+          # THREE gates, because they answer different questions.
           #
           # --min-updated 100 is TRANSPORT: did fetching and writing work at all.
           #   With ~176 CSV-backed funds a healthy run clears 100 easily.
@@ -78,11 +79,14 @@ jobs:
           #   a holiday, or a source that publishes late cannot page anyone, but a
           #   genuine freeze is caught within 72 hours instead of 13 months.
           #
-          # --max-stale 60 is PER-FUND: how many funds have no NAV newer than 7d.
-          #   Set just above today's known-degraded 46 so it catches the count
-          #   GROWING rather than screaming about the backlog P4 will clear. Ratchet
-          #   it down as the backfill lands; it must never be raised to silence a
-          #   real regression.
+          # --max-stale 190 is a CATASTROPHIC-COLLAPSE ceiling, deliberately NOT a
+          #   health target. It counts funds whose newest NAV is over 7 CALENDAR
+          #   days old, and 67 of these funds publish WEEKLY — measured live, the
+          #   count is 31 on a Thursday and 113 two days later with no change in
+          #   the data. A gate that flips red every weekend gets muted, and then it
+          #   protects nothing. The cadence-aware per-fund signal lives in the
+          #   fund_data_quality ledger, where a weekly fund's 7-day interval is its
+          #   normal rhythm; the freshness monitor alerts on regression there.
           python backend-core/scripts/funds_nav_updater.py \
             --concurrency 10 --min-updated 100 \
-            --zero-gain-streak 6 --max-stale 60 $EXTRA
+            --zero-gain-streak 6 --max-stale 190 $EXTRA

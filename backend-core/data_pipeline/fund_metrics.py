@@ -129,13 +129,22 @@ def window_return_pct(series, days: int) -> Optional[float]:
         return None
     latest_date, latest_nav = pts[-1]
     cutoff = latest_date - timedelta(days=days)
-    ref = None
+    ref = ref_date = None
     for d, v in pts:
         if d <= cutoff:
-            ref = v
+            ref, ref_date = v, d
         else:
             break
     if ref is None or ref <= 0:
+        return None
+    # ANCHOR TOLERANCE (2026-08-15 audit). The reference used to be the last
+    # point on/before the cutoff with NO bound on how far before — across the
+    # 13-month source freeze a "3-month return" was computed from a reference
+    # 15 months old and published under the 3M label. A figure whose window is
+    # wrong is worse than no figure. Tolerance mirrors frontend/lib/nav-gaps.ts
+    # anchorWithinTolerance exactly: 10% of the window, floored at 10 days —
+    # the chart and the metrics must never disagree about what a period means.
+    if (cutoff - ref_date).days > max(10, days * 0.1):
         return None
     return round((latest_nav / ref - 1.0) * 100.0, 4)
 
@@ -191,20 +200,33 @@ def annualized_volatility_pct(series) -> Optional[float]:
     pts = _clean(series)
     if len(pts) < 3:
         return None
+    # GAP FILTER (2026-08-15 audit). Period returns used to be formed across
+    # ANY interval, so the 13-month source freeze entered as one giant "period
+    # return" and a money-market fund that physically cannot move reported
+    # double-digit volatility. A period is only a period if its span is within
+    # the fund's own cadence tolerance: 3x the MEDIAN interval, floored at 10
+    # days (median, not mean — one hole must not drag the estimate; same rule
+    # as fund_data_quality/nav-gaps). Annualization uses the median interval of
+    # the KEPT periods, so backfilled weekly points inside a daily fund's hole
+    # cannot skew the scale either.
+    all_gaps = sorted((d1 - d0).days for (d0, _), (d1, _) in zip(pts, pts[1:])
+                      if (d1 - d0).days > 0)
+    if not all_gaps:
+        return None
+    med_gap = all_gaps[len(all_gaps) // 2]
+    tol = max(10, med_gap * 3)
     rets: list[float] = []
-    gaps: list[int] = []
+    kept_gaps: list[int] = []
     for (d0, v0), (d1, v1) in zip(pts, pts[1:]):
-        if v0 <= 0:
+        span = (d1 - d0).days
+        if v0 <= 0 or span <= 0 or span > tol:
             continue
         rets.append(v1 / v0 - 1.0)
-        gaps.append((d1 - d0).days)
-    if len(rets) < 2:
-        return None
-    gaps = [g for g in gaps if g > 0]
-    if not gaps:
-        return None
-    avg_gap = sum(gaps) / len(gaps)
-    periods_per_year = _YEAR_DAYS / avg_gap
+        kept_gaps.append(span)
+    if len(rets) < 6:
+        return None                     # too few clean periods to publish
+    kept_gaps.sort()
+    periods_per_year = _YEAR_DAYS / kept_gaps[len(kept_gaps) // 2]
     vol = pstdev(rets) * math.sqrt(periods_per_year)
     return round(vol * 100.0, 4)
 

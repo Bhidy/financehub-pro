@@ -65,13 +65,38 @@ def test_return_none_when_no_old_enough_ref():
 
 # --- volatility (annualized by ACTUAL frequency) --------------------------- #
 def test_weekly_volatility_scales_by_52_not_252():
-    # returns [+10%, -10%] -> pstdev = 0.10 ; weekly -> *sqrt(365.25/7)=7.2235
-    # -> 72.23% . A blind sqrt(252) would wrongly give ~158%.
-    vol = annualized_volatility_pct(_weekly([100, 110, 99]))
-    assert vol is not None and abs(vol - 72.23) < 0.05
+    # Alternating +/-10% weekly -> pstdev = 0.10; weekly cadence ->
+    # * sqrt(365.25/7) = 7.2235 -> 72.23%. A blind sqrt(252) would give ~158%.
+    series = _weekly([100, 110, 99, 108.9, 98.01, 107.8, 97.0, 106.7])
+    vol = annualized_volatility_pct(series)
+    assert vol is not None and abs(vol - 72.23) < 1.5, vol
 
-def test_volatility_needs_two_returns():
-    assert annualized_volatility_pct(_weekly([100, 110])) is None  # only 1 return
+def test_volatility_needs_six_clean_periods():
+    # 2026-08 audit: volatility from a handful of observations is noise dressed
+    # as a statistic. Below six clean periods, publish nothing.
+    assert annualized_volatility_pct(_weekly([100, 110])) is None
+    assert annualized_volatility_pct(_weekly([100, 101, 102, 103, 104])) is None
+
+def test_window_return_refuses_a_drifted_anchor():
+    # The 13-month freeze made "3M returns" compute from 15-month-old references.
+    # A reference older than the tolerance (10% of window, floor 10d) -> None.
+    calm = _daily([100 + 0.05 * i for i in range(10)])
+    d0 = calm[-1][0]
+    resumed = [(d0 + timedelta(days=412 + i), 120.0 + 0.05 * i) for i in range(10)]
+    series = calm + resumed
+    assert window_return_pct(series, 90) is None      # anchor ~330d adrift
+    assert window_return_pct(series, 30) is not None  # inside the resumed island
+
+
+def test_volatility_ignores_returns_spanning_a_hole():
+    # A daily fund with a 400-day hole: the cross-hole "period return" must be
+    # EXCLUDED, not annualized. Before the fix this made a money-market fund
+    # that cannot move report double-digit volatility.
+    calm = _daily([100 + 0.01 * i for i in range(30)])          # ~0 vol
+    d0 = calm[-1][0]
+    resumed = [(d0 + timedelta(days=400 + i), 130.0 + 0.01 * i) for i in range(30)]
+    vol = annualized_volatility_pct(calm + resumed)
+    assert vol is not None and vol < 5.0, vol
 
 
 # --- 52w high/low + bundle ------------------------------------------------- #

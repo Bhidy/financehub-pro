@@ -82,10 +82,10 @@ def test_window_return_refuses_a_drifted_anchor():
     # A reference older than the tolerance (10% of window, floor 10d) -> None.
     calm = _daily([100 + 0.05 * i for i in range(10)])
     d0 = calm[-1][0]
-    resumed = [(d0 + timedelta(days=412 + i), 120.0 + 0.05 * i) for i in range(10)]
+    resumed = [(d0 + timedelta(days=412 + i), 120.0 + 0.05 * i) for i in range(40)]
     series = calm + resumed
-    assert window_return_pct(series, 90) is None      # anchor ~330d adrift
-    assert window_return_pct(series, 30) is not None  # inside the resumed island
+    assert window_return_pct(series, 300) is None     # anchor lands in the hole, ~150d adrift
+    assert window_return_pct(series, 30) is not None  # anchor inside the resumed island
 
 
 def test_volatility_ignores_returns_spanning_a_hole():

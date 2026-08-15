@@ -160,46 +160,109 @@ def best_match(eima_name: str, catalogue: list[tuple[str, str]]) -> tuple[str, f
 
 # ------------------------------------------------------- reconciliation ----
 
-def reconcile(points: list[dict], existing: dict) -> dict:
-    """
-    Test a candidate mapping against NAV we already hold.
-
-    `existing` maps date -> nav. Returns the verdict plus the errors, so a
-    rejection can always be explained rather than just counted.
-    """
-    errs = []
+def _errors_by_column(points: list[dict], existing: dict) -> dict:
+    """Per-anchor-column signed errors against NAV we already hold."""
+    out: dict[str, list[float]] = defaultdict(list)
     for p in points:
+        got = None
         for off in range(0, MATCH_WINDOW_DAYS + 1):
             for d in ({p["date"] - timedelta(days=off), p["date"] + timedelta(days=off)}
                       if off else {p["date"]}):
-                got = existing.get(d)
-                if got:
-                    errs.append((p["date"], (p["nav"] - got) / got * 100.0))
+                if d in existing:
+                    got = existing[d]
                     break
-            else:
-                continue
-            break
-    if len(errs) < MIN_OVERLAP_POINTS:
-        return {"ok": False, "reason": f"only {len(errs)} overlapping points "
-                                       f"(need {MIN_OVERLAP_POINTS})", "errors": errs}
-    vals = sorted(abs(e) for _, e in errs)
-    median = vals[len(vals) // 2]
-    worst = vals[-1]
-    signed = sorted(e for _, e in errs)
-    # A redenomination shows as a tight cluster near -50% or -99%, which is a
-    # corporate action rather than a wrong fund. Say so instead of "mismatch".
-    for level, label in ((-50.0, "2:1"), (-99.0, "100:1")):
-        near = [e for e in signed if abs(e - level) < 3.0]
-        if len(near) >= max(2, len(signed) // 2):
-            return {"ok": False, "reason": f"looks like a {label} redenomination "
-                                           f"({len(near)}/{len(signed)} points near {level}%)",
-                    "errors": errs}
-    if median > MAX_MEDIAN_ERR_PCT or worst > MAX_SINGLE_ERR_PCT:
-        return {"ok": False, "reason": f"median err {median:.2f}% / worst {worst:.2f}% "
-                                       f"exceeds {MAX_MEDIAN_ERR_PCT}/{MAX_SINGLE_ERR_PCT}",
-                "errors": errs}
-    return {"ok": True, "reason": f"{len(errs)} points, median {median:.2f}%, "
-                                  f"worst {worst:.2f}%", "errors": errs}
+            if got is not None:
+                break
+        if got:
+            out[p.get("column", "?")].append((p["nav"] - got) / got * 100.0)
+    return out
+
+
+def _median(xs: list[float]) -> float:
+    xs = sorted(xs)
+    return xs[len(xs) // 2] if xs else 0.0
+
+
+def reconcile(points: list[dict], existing: dict) -> dict:
+    """
+    Test a candidate mapping against NAV we already hold, PER ANCHOR COLUMN.
+
+    Why per column, learned from the first live run: a fund whose overall median
+    error was 0.00% was rejected because one point sat 4.35% out, and another at
+    0.09% median was rejected on a 37% outlier. Those are correct mappings — the
+    outliers were single bad anchors, not evidence of the wrong fund.
+
+    And the reason they are single bad anchors is structural. A redenomination
+    (Egyptian funds do 2:1 and 100:1) breaks every anchor OLDER than the event
+    and leaves newer ones intact. So the 3-year column can be worthless while the
+    1-year column is exact. Judging the fund as a whole throws away good data to
+    punish bad; judging each column keeps what is right.
+
+    Returns the mapping verdict plus the set of columns whose data is usable.
+    """
+    by_col = _errors_by_column(points, existing)
+    total = sum(len(v) for v in by_col.values())
+    if total < MIN_OVERLAP_POINTS:
+        return {"ok": False, "reason": f"only {total} overlapping points "
+                                       f"(need {MIN_OVERLAP_POINTS})",
+                "good_columns": set(), "by_col": by_col}
+
+    # The mapping is judged on the BEST-evidenced columns: if any column agrees
+    # tightly across several points, this is the right fund.
+    proven = [c for c, e in by_col.items()
+              if len(e) >= 2 and abs(_median(e)) <= MAX_MEDIAN_ERR_PCT]
+    if not proven:
+        overall = _median([abs(x) for v in by_col.values() for x in v])
+        for level, label in ((-50.0, "2:1"), (-99.0, "100:1")):
+            near = [x for v in by_col.values() for x in v if abs(x - level) < 3.0]
+            if len(near) >= max(2, total // 2):
+                return {"ok": False,
+                        "reason": f"looks like a {label} redenomination "
+                                  f"({len(near)}/{total} points near {level}%)",
+                        "good_columns": set(), "by_col": by_col}
+        return {"ok": False, "reason": f"no column agrees; median |err| {overall:.2f}%",
+                "good_columns": set(), "by_col": by_col}
+
+    # Mapping accepted. Now keep only the columns that are individually sound —
+    # a column with a wide spread is a broken anchor, not usable history.
+    good = set()
+    for c, e in by_col.items():
+        if len(e) >= 2 and abs(_median(e)) <= MAX_MEDIAN_ERR_PCT and max(abs(x) for x in e) <= MAX_SINGLE_ERR_PCT:
+            good.add(c)
+    dropped = sorted(set(by_col) - good)
+    return {"ok": True,
+            "reason": f"{total} points; columns kept={sorted(good)}"
+                      + (f", dropped={dropped}" if dropped else ""),
+            "good_columns": good, "by_col": by_col}
+
+
+def assign_one_to_one(names: list[str], catalogue: list[tuple[str, str]]) -> dict[str, tuple[str, float]]:
+    """
+    Match EIMA names to fund ids ONE-TO-ONE.
+
+    Scoring each name independently let three different EIMA funds all claim
+    fund 2703 in the first live run — at most one of them could be right, and the
+    wrong ones then had to be caught downstream by value checks. A fund id is a
+    unique thing; the assignment should say so. Greedy by descending score, which
+    is enough here and stays explainable.
+    """
+    pairs = []
+    for n in names:
+        for fid, en in catalogue:
+            sc = difflib.SequenceMatcher(None, _norm(n), _norm(en)).ratio()
+            if sc >= NAME_MATCH_FLOOR:
+                pairs.append((sc, n, fid))
+    pairs.sort(reverse=True)
+    taken_name: set[str] = set()
+    taken_fid: set[str] = set()
+    out: dict[str, tuple[str, float]] = {}
+    for sc, n, fid in pairs:
+        if n in taken_name or fid in taken_fid:
+            continue
+        out[n] = (fid, sc)
+        taken_name.add(n)
+        taken_fid.add(fid)
+    return out
 
 
 # ------------------------------------------------------------------ main ----
@@ -255,11 +318,15 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                  "inserted": 0, "reports": parsed}
         rejects: list[str] = []
 
+        assignment = assign_one_to_one(sorted(series), catalogue)
+        print(f"[eima] one-to-one assignment: {len(assignment)} of {len(series)} names", flush=True)
+
         for name, pts in sorted(series.items()):
-            fid, score = best_match(name, catalogue)
-            if not fid or score < NAME_MATCH_FLOOR:
+            hit = assignment.get(name)
+            if not hit:
                 stats["skipped_no_match"] += 1
                 continue
+            fid, score = hit
             if only_ids and fid not in only_ids:
                 continue
             stats["mapped"] += 1
@@ -283,7 +350,9 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                 continue
             stats["validated"] += 1
 
-            new = [p for p in pts if p["date"] not in existing]
+            good = verdict["good_columns"]
+            new = [p for p in pts
+                   if p["date"] not in existing and p.get("column") in good]
             if not new:
                 continue
             if dry_run:

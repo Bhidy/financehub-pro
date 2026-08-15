@@ -3,18 +3,28 @@ name: Funds Freshness Monitor
 # ============================================================
 # The alarm that was MISSING during the funds freeze: data-freshness-monitor.yml
 # watches PRICES only, so mutual-fund NAVs rotted for weeks (most funds 2026-05-20
-# or older; a cohort frozen at 2026-01-07) while every check stayed green.
+# or older; a large cohort frozen at 2026-01-07) while every check stayed green.
 #
-# This watches FUND DATA freshness directly in Supabase (no backend dependency):
-#   * newest fund NAV across numeric ids must be recent (daily money-market funds
-#     publish every business day) — alert if older than 5 days
-#   * a healthy baseline keeps ~80-110 funds fresh within 10 days — alert if it
-#     collapses below 30
+# 2026-08-15 audit — the harder lesson. The two checks THIS file ran were also
+# incapable of catching the real failure:
+#   * newest fund NAV across all ids  -> satisfied by ANY ONE healthy fund
+#   * >= 30 funds fresh within 10 days -> satisfied by the list-API trickle,
+#     which writes one point per day for ~183 funds
+# Both passed with six-fold headroom for fourteen months while 61 funds carried a
+# 13-month hole in the middle of their history and 26 had no history at all. The
+# failure mode is PER-FUND; every check was AGGREGATE. No threshold fixes that.
+#
+# So this job now REFRESHES the per-fund quality ledger (fund_data_quality:
+# cadence, coverage, defect gaps, grade) and probes THAT distribution. Alerting is
+# by regression against the previous snapshot, because the universe is knowingly
+# degraded until the P4 backfill lands — an absolute threshold would either sit
+# red and be muted within a week, or be set so loose it could never fire.
 #
 # Signal contract (2026-06-11): stale DATA FAILS the run (exit 2) — the red run's
 # GitHub mobile push IS the page (Discord no longer exists). Thresholds are
-# wall-day scale (5d NAV age / fresh-cohort collapse), so weekends and holidays
-# cannot false-page. Requires repo secret DATABASE_URL.
+# wall-day scale, so weekends and holidays cannot false-page. A MISSING ledger
+# reports UNAVAILABLE and fails: an unrunnable check must never read as a pass.
+# Requires repo secret DATABASE_URL.
 # ============================================================
 
 on:
@@ -35,7 +45,7 @@ jobs:
   freshness:
     name: Check fund NAV freshness
     runs-on: [self-hosted, linux, x64, hetzner]
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -43,8 +53,26 @@ jobs:
           python-version: '3.11'
       - run: pip install asyncpg
 
-      - name: Probe fund freshness
+      - name: Refresh per-fund quality ledger
+        id: ledger
+        # continue-on-error: a broken compute must not SKIP the probe below and
+        # thereby silence the alarm. The probe treats a missing/stale ledger as a
+        # failure in its own right, so the signal survives either way.
+        continue-on-error: true
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python backend-core/scripts/compute_fund_data_quality.py --min-scored 50
+
+      - name: Probe fund freshness and per-fund quality
         id: check
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python backend-core/scripts/funds_nav_updater.py --monitor --stale-days 5
+        run: |
+          # --max-below-grade 150 is a CEILING for catastrophic collapse, not a
+          # health target. Today's known-degraded baseline is large (61 funds with
+          # a 13-month hole, 25 with almost no history), so the real signal is the
+          # regression check inside the probe: below-grade-C rising versus the
+          # previous snapshot fails the run immediately. Ratchet this number down
+          # as the P4 backfill lands; never raise it to silence a regression.
+          python backend-core/scripts/funds_nav_updater.py \
+            --monitor --stale-days 5 --max-below-grade 150

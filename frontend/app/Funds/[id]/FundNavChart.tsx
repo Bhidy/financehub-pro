@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { findGaps, splitAtGaps, withGapBreaks, type NavPoint } from '@/lib/nav-gaps';
+import { findGaps, medianIntervalDays, splitAtGaps, withGapBreaks, type NavPoint } from '@/lib/nav-gaps';
 
 /**
  * Interactive NAV history chart — the premium fund page's centrepiece, rebuilt
@@ -35,6 +35,13 @@ type Range = (typeof RANGES)[number];
 
 /** Below this, a window is not a chart — it is two dots joined by a line. */
 const MIN_POINTS_TO_DRAW = 2;
+
+/**
+ * A labelled period must be backed by history covering at least this much of it.
+ * Below the bar the button is disabled rather than drawing a sliver of data
+ * against a mostly-empty axis and calling it "3Y".
+ */
+const MIN_WINDOW_COVERAGE = 1 / 3;
 
 const EN = {
     all: 'All',
@@ -125,10 +132,18 @@ export default function FundNavChart({
     const supported = useMemo(() => {
         const ok = new Set<Range>();
         if (!all) return ok;
+        const now = Date.now();
         for (const r of RANGES) {
             const c = rangeCutoff(r);
-            const n = c === null ? all.length : all.filter((p) => Date.parse(`${p.time}T00:00:00Z`) >= c).length;
-            if (n >= MIN_POINTS_TO_DRAW) ok.add(r);
+            if (c === null) { if (all.length >= MIN_POINTS_TO_DRAW) ok.add(r); continue; }
+            const win = all.filter((p) => Date.parse(`${p.time}T00:00:00Z`) >= c);
+            if (win.length < MIN_POINTS_TO_DRAW) continue;
+            // Two points inside a window is not a chart OF that window. A fund with
+            // five weeks of history has no "3Y" to show, and padding the axis out to
+            // three years would render a 1%-wide squiggle. Require the history to
+            // cover a real share of the period, else disable the button and say why.
+            const covered = now - Date.parse(`${win[0].time}T00:00:00Z`);
+            if (covered / (now - c) >= MIN_WINDOW_COVERAGE) ok.add(r);
         }
         return ok;
     }, [all]);
@@ -206,8 +221,23 @@ export default function FundNavChart({
             // A leading whitespace point at the cutoff makes the requested window
             // real to the time scale, so the emptiness renders as emptiness.
             if (cutoff !== null) {
-                const cutIso = new Date(cutoff).toISOString().slice(0, 10);
-                if (cutIso < spaced[0].time) spaced = [{ time: cutIso }, ...spaced];
+                const firstMs = Date.parse(`${spaced[0].time}T00:00:00Z`);
+                if (cutoff < firstMs) {
+                    // One point at the cutoff buys ONE bar, not the missing months —
+                    // the time scale is index-based. Emit cadence-spaced slots so the
+                    // axis genuinely spans the requested window.
+                    const stepDays = Math.max(1, Math.round(medianIntervalDays(filtered as NavPoint[])));
+                    const stepMs = stepDays * 86_400_000;
+                    const slots = Math.min(Math.floor((firstMs - cutoff) / stepMs), 600);
+                    const lead: { time: string; value?: number }[] = [];
+                    for (let k = 0; k < slots; k++) {
+                        const t = new Date(cutoff + (firstMs - cutoff) * (k / slots)).toISOString().slice(0, 10);
+                        if (t < spaced[0].time && (!lead.length || lead[lead.length - 1].time !== t)) {
+                            lead.push({ time: t });
+                        }
+                    }
+                    spaced = [...lead, ...spaced];
+                }
             }
 
             if (runs.length <= 1) {

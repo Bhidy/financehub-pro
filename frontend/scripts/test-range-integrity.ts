@@ -15,6 +15,7 @@ import { readFileSync } from 'fs';
 const RANGES = ['1M', '3M', 'YTD', '1Y', '3Y', 'ALL'] as const;
 type Range = (typeof RANGES)[number];
 const MIN_POINTS_TO_DRAW = 2;
+const MIN_WINDOW_COVERAGE = 1 / 3;
 const NOW = Date.UTC(2026, 7, 15);
 const DAY = 86_400_000;
 
@@ -49,11 +50,18 @@ function oldView(all: string[], r: Range): string[] {
  */
 function newView(all: string[], r: Range): { axis: string; data: string[] } | null {
     const c = cutoff(r);
-    const f = c === null ? all : all.filter((d) => ms(d) >= c);
+    if (c === null) {
+        return all.length >= MIN_POINTS_TO_DRAW ? { axis: `${all[0]}..${all[all.length - 1]}`, data: all } : null;
+    }
+    const f = all.filter((d) => ms(d) >= c);
     if (f.length < MIN_POINTS_TO_DRAW) return null;      // button disabled
-    const axis = c === null
-        ? `${f[0]}..${f[f.length - 1]}`                   // ALL fits its own content
-        : `${new Date(c).toISOString().slice(0, 10)}..${f[f.length - 1]}`;
+    // A labelled period must be backed by history covering a real share of it.
+    // Without this the thin cohort passed while "3Y" still showed five weeks —
+    // the earlier version of this gate modelled setVisibleRange as always
+    // succeeding, but it REFUSES a range extending past the series and the code
+    // fell back to fitContent(). Model the rule, not the happy path.
+    if ((NOW - ms(f[0])) / (NOW - c) < MIN_WINDOW_COVERAGE) return null;
+    const axis = `${new Date(c).toISOString().slice(0, 10)}..${f[f.length - 1]}`;
     return { axis, data: f };
 }
 

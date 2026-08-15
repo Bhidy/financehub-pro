@@ -40,9 +40,15 @@ def test_report_date_is_read_from_the_document():
 
 
 def test_every_fund_row_is_parsed():
+    # 186 EGP rows plus the 11 USD/EUR funds the first regex silently dropped —
+    # the $ prefix on Initial Value broke the match with no counter, so every
+    # foreign-currency fund vanished from every report.
     rows = parse_rows(_text())
-    assert len(rows) == 186, len(rows)
+    assert len(rows) == 197, len(rows)
     assert all(r["nav"] > 0 for r in rows)
+    cur = {r["currency"] for r in rows}
+    assert cur == {"EGP", "USD", "EUR"}, cur
+    assert sum(1 for r in rows if r["currency"] == "EGP") == 186
 
 
 def test_sections_are_tracked():
@@ -143,7 +149,7 @@ def test_a_total_loss_return_cannot_divide_by_zero():
 def test_whole_report_parses_end_to_end():
     rep = parse_report(_text())
     assert rep["report_date"] == date(2026, 6, 4)
-    assert len(rep["published"]) == 186
+    assert len(rep["published"]) == 197
     assert len(rep["derived"]) > 500
     assert all(p["derived"] is False for p in rep["published"])
     assert all(d["date"] < rep["report_date"] for d in rep["derived"])

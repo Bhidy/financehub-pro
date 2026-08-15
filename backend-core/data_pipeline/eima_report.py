@@ -63,8 +63,8 @@ _ROW = re.compile(
     r"^\s*(\d+)\s+"                       # row index
     r"(.+?)\s+"                           # fund name + management company
     r"([A-Z][a-z]{2}-\d{2})\s+"           # inception, e.g. Dec-21
-    r"([\d,]+(?:\.\d+)?)\s+"              # initial value
-    r"([\d,]+(?:\.\d+)?)\s+"              # NAV
+    r"(?:[$\u20ac\u00a3]\s*)?([\d,]+(?:\.\d+)?)\s+"   # initial value (may carry $/EUR/GBP)
+    r"(?:[$\u20ac\u00a3]\s*)?([\d,]+(?:\.\d+)?)\s+"   # NAV (same)
     r"(.*)$"                              # the return/rank tail
 )
 _PCT = re.compile(r"(-?\d+(?:\.\d+)?)%")
@@ -120,8 +120,16 @@ def parse_rows(text: str) -> list[dict]:
         # are skipped by matching only on the % sign.
         pcts = [float(x) / 100.0 for x in _PCT.findall(m.group(6))]
         returns = {c: p for c, p in zip(RETURN_COLUMNS, pcts)}
+        raw_name = re.sub(r"\s+", " ", m.group(2)).strip()
+        # Foreign-currency funds were silently DROPPED before (the $ broke the
+        # regex, 13 rows per report, no counter). They now parse, tagged, so the
+        # backfill can refuse to write a USD series into an EGP fund — the data
+        # gate would refuse anyway, but identity should not depend on luck.
+        currency = "USD" if "$" in raw_name or "usd" in raw_name.lower() else (
+            "EUR" if "\u20ac" in raw_name or "euro" in raw_name.lower() else "EGP")
         out.append({
-            "name": re.sub(r"\s+", " ", m.group(2)).strip(),
+            "name": raw_name,
+            "currency": currency,
             "section": section,
             "inception": m.group(3),
             "initial": _num(m.group(4)),

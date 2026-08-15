@@ -413,10 +413,24 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                 if not rep["report_date"]:
                     continue
                 parsed += 1
+                # Key by (name, SECTION). Proven in production: two different
+                # funds — an equity and a money-market fund — parsed to the same
+                # name, their series MERGED, the equity points reconciled against
+                # fund 6402's real data, and the money-market points rode in with
+                # them. Section is part of a fund's identity in these reports.
+                secmap = {r["name"]: r.get("section") for r in rep["rows"]}
+                # Our nav_history is EGP. A USD/EUR series must never be offered
+                # to the matcher at all — identity should not depend on the data
+                # gate happening to refuse it.
+                egp = {r["name"] for r in rep["rows"] if r.get("currency", "EGP") == "EGP"}
                 for p in rep["published"] + rep["derived"]:
-                    series[p["name"]].append(p)
+                    if p["name"] not in egp:
+                        continue
+                    key = f'{p["name"]}\u00a7{secmap.get(p["name"]) or ""}'
+                    series[key].append(p)
                 for r in rep["rows"]:
-                    managers.setdefault(r["name"], r.get("manager"))
+                    managers.setdefault(
+                        f'{r["name"]}\u00a7{r.get("section") or ""}', r.get("manager"))
             print(f"[eima] parsed {parsed}/{len(urls)} reports, "
                   f"{len(series)} distinct fund names", flush=True)
 
@@ -450,7 +464,8 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
         # ------------------------------------------------------------------
         from data_pipeline.fund_name_match import idf as _idf, score as _nm_score, tokens as _nm_tokens
         cat_toks = {c["fund_id"]: _nm_tokens(c["en"]) for c in catalogue}
-        weights = _idf(list(cat_toks.values()) + [_nm_tokens(n) for n in series])
+        weights = _idf(list(cat_toks.values())
+                       + [_nm_tokens(n.split("\u00a7")[0]) for n in series])
 
         # De-duplicate each name's points once (published beats derived per date).
         clean_pts: dict[str, list[dict]] = {}
@@ -462,14 +477,25 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                     byd[p["date"]] = p
             clean_pts[name] = sorted(byd.values(), key=lambda p: p["date"])
 
-        existing_cache: dict[str, dict] = {}
+        # Two views of a fund's history, and the distinction is load-bearing:
+        #   real_cache   — rows we did NOT write. The ONLY evidence reconcile may
+        #                  use. Without the source filter this gate validated
+        #                  candidates against rows this very pipeline wrote a run
+        #                  earlier — 0.00% error by construction, a wrong mapping
+        #                  permanently self-ratifying.
+        #   all_cache    — every row, for the insert-skip and proximity guards
+        #                  (we must not re-insert or crowd our own rows either).
+        real_cache: dict[str, dict] = {}
+        all_cache: dict[str, dict] = {}
 
         async def load_existing(fid: str) -> dict:
-            if fid not in existing_cache:
+            if fid not in real_cache:
                 rows = await conn.fetch(
-                    "SELECT date, nav FROM nav_history WHERE fund_id = $1", fid)
-                existing_cache[fid] = {r["date"]: float(r["nav"]) for r in rows}
-            return existing_cache[fid]
+                    "SELECT date, nav, source FROM nav_history WHERE fund_id = $1", fid)
+                all_cache[fid] = {r["date"]: float(r["nav"]) for r in rows}
+                real_cache[fid] = {r["date"]: float(r["nav"]) for r in rows
+                                   if r["source"] not in (SOURCE_PUBLISHED, SOURCE_DERIVED)}
+            return real_cache[fid]
 
         SHORTLIST_FLOOR = 0.30      # generous: recall here, precision from data
         AMBIGUITY_RATIO = 2.0       # best median must beat runner-up 2x, else skip
@@ -477,7 +503,7 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
         candidates = []            # (name, fid, name_score, verdict)
         ambiguous: list[str] = []
         for name in sorted(series):
-            et = _nm_tokens(name)
+            et = _nm_tokens(name.split("\u00a7")[0])
             short = [c["fund_id"] for c in catalogue
                      if _nm_score(et, cat_toks[c["fund_id"]], weights) >= SHORTLIST_FLOOR]
             if only_ids:
@@ -490,14 +516,18 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
             if not passed:
                 stats["skipped_no_match"] += 1
                 continue
-            passed.sort(key=lambda t: (-(t[1]["overlap"] or 0), t[1]["median_abs"] or 9e9))
+            passed.sort(key=lambda t: (
+                -(t[1]["overlap"] or 0),
+                t[1]["median_abs"] if t[1]["median_abs"] is not None else 9e9))
             best = passed[0]
             # Ambiguity guard: two funds tracking the same asset (gold funds all
             # follow gold) can BOTH reconcile. If the runner-up is nearly as
             # good, no write is safer than a coin flip.
             if len(passed) > 1:
                 b, r = best[1], passed[1][1]
-                if (r["median_abs"] or 9e9) < max((b["median_abs"] or 0) * AMBIGUITY_RATIO, 0.10):
+                r_med = r["median_abs"] if r["median_abs"] is not None else 9e9
+                b_med = b["median_abs"] if b["median_abs"] is not None else 0.0
+                if r_med < max(b_med * AMBIGUITY_RATIO, 0.10):
                     ambiguous.append(f"'{name[:36]}' ~ {best[0]} vs {passed[1][0]} "
                                      f"(medians {b['median_abs']:.2f}% / {r['median_abs']:.2f}%)")
                     continue
@@ -505,7 +535,9 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
             candidates.append((name, best[0], ns, best[1]))
 
         # One-to-one, best data quality first.
-        candidates.sort(key=lambda t: (-(t[3]["overlap"] or 0), t[3]["median_abs"] or 9e9))
+        candidates.sort(key=lambda t: (
+            -(t[3]["overlap"] or 0),
+            t[3]["median_abs"] if t[3]["median_abs"] is not None else 9e9))
         used_fid: set = set()
         assigned = []
         for name, fid, ns, v in candidates:
@@ -525,7 +557,7 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
 
         for name, fid, score, verdict in assigned:
             pts = clean_pts[name]
-            existing = existing_cache[fid]
+            existing = all_cache[fid]
             stats["validated"] += 1
 
             good = verdict["good_columns"]
@@ -606,6 +638,9 @@ def main() -> None:
                     help="seconds between requests to EIMA (be kind; default 2.0)")
     ap.add_argument("--verify-only", action="store_true",
                     help="audit the eima rows already in nav_history; no fetch, no writes")
+    ap.add_argument("--purge-eima-ids", type=str, default=None,
+                    help="[with --verify-only] delete ALL eima-sourced rows for these "
+                         "fund_ids (comma-separated). Only ever touches eima rows.")
     ap.add_argument("--prune-redundant", action="store_true",
                     help="[with --verify-only] delete eima rows sitting within a few days "
                          "of a real observation (noise, no information)")
@@ -615,10 +650,19 @@ def main() -> None:
         async def _v():
             conn = await connect_resilient(load_db_url())
             try:
-                if args.prune_redundant and await database_is_read_only(conn):
+                ro = await database_is_read_only(conn)
+                if args.purge_eima_ids and not ro:
+                    ids_ = [x.strip() for x in args.purge_eima_ids.split(",") if x.strip()]
+                    res = await conn.fetch(
+                        """DELETE FROM nav_history WHERE fund_id = ANY($1::text[])
+                           AND source IN ($2, $3) RETURNING fund_id""",
+                        ids_, SOURCE_PUBLISHED, SOURCE_DERIVED)
+                    print(f"[eima-verify] PURGED {len(res)} eima rows for funds {ids_}",
+                          flush=True)
+                if args.prune_redundant and ro:
                     print("[eima-verify] database READ-ONLY — verify runs, prune skipped.")
                     return await verify_written(conn, prune=False)
-                return await verify_written(conn, prune=args.prune_redundant)
+                return await verify_written(conn, prune=args.prune_redundant and not ro)
             finally:
                 await conn.close()
         sys.exit(asyncio.run(_v()))

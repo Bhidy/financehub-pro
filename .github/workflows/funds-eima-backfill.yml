@@ -8,25 +8,25 @@ name: Funds EIMA Backfill
 # 2025-05. Ruled out first, by measurement: Mubasher's entire
 # /api/1/funds/{id}/* subtree returns 500, only one CSV path exists, no fund was
 # migrated to a new id, the FRA portal has no history, and Wayback never
-# captured any of it.
+# captured any of it. EIMA also went dark through 2025 — five archive captures of
+# their Reports page all show February-2024 content — so the recovery inverts the
+# time-weighted RETURN columns of the 2026 reports to reconstruct historical NAV.
 #
-# EIMA also went dark — five archive captures of their Reports page across 2025
-# all show February-2024 content, so the 2025 PDFs were never published. The
-# recovery is that each 2026 report carries time-weighted RETURN columns beside
-# the NAV, and inverting them reconstructs NAV at each anchor date. A 2026
-# report therefore yields 2025 points without a 2025 report existing.
+# MAPPING IS DATA-FIRST (v3): fund names can only SHORTLIST candidates; the
+# assignment is decided by reconciliation quality against NAV we already hold,
+# with an ambiguity guard (two gold funds both track gold — if the runner-up
+# reconciles nearly as well, nothing is written) and a proximity guard (derived
+# points within a few days of real data are noise, not information).
 #
 # SELF-COMPLETING: each new weekly report's 12-month column is anchored 52 weeks
-# back, so every week that passes fills one more week of Aug-Dec 2025 — the part
-# of the hole nothing can reach today.
+# back, so every week that passes fills one more week of Aug-Dec 2025.
 #
-# SAFETY: a fuzzy English-name match is only a hypothesis. It is accepted solely
-# when the reconstructed series agrees with NAV we already hold at overlapping
-# dates; too little overlap means SKIP. Writes are ON CONFLICT DO NOTHING, so a
-# published NAV always beats a derived one and re-runs are idempotent.
+# SELF-AUDITING: a write run ALWAYS verifies its own output afterwards in the
+# same job — duplicates, value ranges, redundancy, join plausibility — so a
+# write that fails its own audit turns the run RED.
 #
-# BE KIND: EIMA is a small industry association on a modest WordPress host, not
-# a data vendor. Weekly, self-identifying, 2s between requests, with backoff.
+# BE KIND: EIMA is a small industry association on a modest WordPress host.
+# Weekly, self-identifying UA, 2s between requests, exponential backoff.
 #
 # Requires repo secret DATABASE_URL.
 # ============================================================
@@ -39,11 +39,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'dry-run reports what would be written; write commits it'
+        description: 'dry-run reports; write commits (then self-verifies); verify audits existing rows; prune deletes redundant eima rows'
         required: true
         default: 'dry-run'
         type: choice
-        options: [dry-run, write]
+        options: [dry-run, write, verify, prune]
 
 concurrency:
   group: funds-eima-backfill
@@ -56,7 +56,7 @@ jobs:
   backfill:
     name: Backfill NAV history from EIMA reports
     runs-on: [self-hosted, linux, x64, hetzner]
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -64,14 +64,22 @@ jobs:
           python-version: '3.11'
       - run: pip install --quiet httpx asyncpg pypdf
 
-      - name: Run EIMA backfill
+      - name: Run EIMA backfill / audit
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          # Scheduled runs stay in dry-run: this writes into fund NAV history,
-          # so the reconciliation report should be read by a human before the
-          # first real write. Dispatch with mode=write to commit.
           MODE="${{ github.event.inputs.mode }}"
-          EXTRA="--dry-run"
-          if [ "$MODE" = "write" ]; then EXTRA=""; fi
-          python backend-core/scripts/eima_backfill.py --delay 2.0 $EXTRA
+          case "$MODE" in
+            verify)
+              python backend-core/scripts/eima_backfill.py --verify-only ;;
+            prune)
+              python backend-core/scripts/eima_backfill.py --verify-only --prune-redundant ;;
+            write)
+              python backend-core/scripts/eima_backfill.py --delay 2.0
+              # A write must survive its own audit or the run goes red.
+              python backend-core/scripts/eima_backfill.py --verify-only ;;
+            *)
+              # Scheduled runs stay in dry-run: writes into fund NAV history are
+              # committed only after a human reads the reconciliation report.
+              python backend-core/scripts/eima_backfill.py --delay 2.0 --dry-run ;;
+          esac

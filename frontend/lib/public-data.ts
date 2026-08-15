@@ -202,15 +202,30 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
     if (!row) return null;
     // Canonical NAV = live value derived from nav_history (see /api/v1/funds/[id]).
     row.latest_nav = (row.live_latest_nav as number | null) ?? (Number(row.latest_nav) || null);
-    coalesceReturns(row);
-    // Merge computed risk metrics (fund_risk_metrics side table). Isolated in
-    // try/catch so a missing table can never break the page. Advanced metrics the
-    // view lacks (max_drawdown, volatility_annual) always come from here; returns
-    // and 52w fill ONLY gaps — never override a value funds_view already carries.
+    // ------------------------------------------------------------------
+    // TRUST HIERARCHY CUTOVER (2026-08-15 audit).
+    //
+    // The old order ran the legacy coalesce FIRST and let fund_risk_metrics
+    // "fill only gaps". The legacy figures are decypha/Mubasher-era columns
+    // that NOTHING refreshes from source anymore — reconciling them against
+    // our own nav_history reproduced the displayed YTD on 5 of 158 funds.
+    // Meanwhile fund_risk_metrics is recomputed daily from nav_history with
+    // audited math: a window return whose reference sits further than 10% of
+    // the window from its anchor is NULL, not a wrong number.
+    //
+    // So when a computed row exists it is AUTHORITATIVE for the whole return
+    // family and the 52w range — including its NULLs. A NULL here means "this
+    // cannot be computed honestly from the history we hold", and papering over
+    // it with a legacy figure we cannot reproduce is precisely the mistrust
+    // this page is being cured of. The tile renders '—', which is the truth.
+    // Legacy coalesce survives ONLY for funds with no computed row at all.
+    // ------------------------------------------------------------------
+    let computed = false;
     try {
         const rm = await db.query(`SELECT * FROM fund_risk_metrics WHERE fund_id = $1`, [String(fundId)]);
         const m = rm.rows[0] as Record<string, unknown> | undefined;
         if (m) {
+            computed = true;
             row.max_drawdown = m.max_drawdown;
             row.volatility_annual = m.volatility_annual;
             // Phase-2 analytics primitives live ONLY in fund_risk_metrics — take verbatim.
@@ -221,11 +236,12 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
             }
             for (const k of ['nav_52w_high', 'nav_52w_low', 'return_1m', 'return_3m', 'return_6m',
                 'return_ytd', 'return_1y', 'return_3y', 'return_5y']) {
-                if (row[k] === null || row[k] === undefined) row[k] = m[k];
+                row[k] = m[k];
             }
             if ((row.nav_points === null || row.nav_points === undefined) && m.points != null) row.nav_points = m.points;
         }
     } catch { /* side table isolated — never break the core payload */ }
+    if (!computed) coalesceReturns(row);
     // Harvested metadata that funds_view doesn't carry (prospectus / manager person /
     // purchase+redemption frequency) + distribution platforms. Isolated: a missing
     // column or the fund_platforms table can never break the page.

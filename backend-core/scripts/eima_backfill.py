@@ -58,6 +58,7 @@ import asyncpg
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data_pipeline.eima_report import parse_report  # noqa: E402
+from data_pipeline.fund_name_match import match_funds  # noqa: E402
 from data_pipeline.pg_resilient import (  # noqa: E402
     connect_resilient, database_is_read_only, is_read_only_error)
 
@@ -283,9 +284,10 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
         if not dry_run:
             await conn.execute(_MIGRATE)
 
-        catalogue = [(r["fund_id"], r["fund_name_en"] or "")
+        catalogue = [{"fund_id": r["fund_id"], "en": r["fund_name_en"] or "",
+                      "mgr_en": r["manager_name_en"] or ""}
                      for r in await conn.fetch(
-                         "SELECT fund_id, fund_name_en FROM mutual_funds "
+                         "SELECT fund_id, fund_name_en, manager_name_en FROM mutual_funds "
                          "WHERE fund_name_en IS NOT NULL")]
         print(f"[eima] catalogue: {len(catalogue)} funds with English names", flush=True)
 
@@ -298,6 +300,7 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
 
             # name -> list of {date, nav, derived}
             series: dict[str, list[dict]] = defaultdict(list)
+            managers: dict[str, str | None] = {}
             parsed = 0
             for u in urls:
                 try:
@@ -311,6 +314,8 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                 parsed += 1
                 for p in rep["published"] + rep["derived"]:
                     series[p["name"]].append(p)
+                for r in rep["rows"]:
+                    managers.setdefault(r["name"], r.get("manager"))
             print(f"[eima] parsed {parsed}/{len(urls)} reports, "
                   f"{len(series)} distinct fund names", flush=True)
 
@@ -323,7 +328,8 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
         gap_window = 0          # points landing in the 2025-05..2026-06 hole
         per_fund: list[tuple] = []
 
-        assignment = assign_one_to_one(sorted(series), catalogue)
+        assignment = match_funds(
+            [{"name": n, "manager": managers.get(n)} for n in sorted(series)], catalogue)
         print(f"[eima] one-to-one assignment: {len(assignment)} of {len(series)} names", flush=True)
 
         for name, pts in sorted(series.items()):

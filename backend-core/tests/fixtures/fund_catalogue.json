@@ -1,0 +1,982 @@
+[
+ {
+  "fund_id": "2738",
+  "en": "ABC Bank Egypt Fund",
+  "mgr_en": "CFH Asset Management"
+ },
+ {
+  "fund_id": "2681",
+  "en": "ABC Bank Egypt Money Market Fund",
+  "mgr_en": "CFH Asset Management"
+ },
+ {
+  "fund_id": "2686",
+  "en": "ABC Bank Equity Fund 1",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "2671",
+  "en": "ABC Bank Money Market Fund Mazaya",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "2732",
+  "en": "ABK Egypt Equity Fund",
+  "mgr_en": "Sigma Capital Holdings Financial Investments"
+ },
+ {
+  "fund_id": "2733",
+  "en": "ABK Egypt Money Market Fund",
+  "mgr_en": "Sigma Capital Holdings Financial Investments"
+ },
+ {
+  "fund_id": "5423",
+  "en": "ADIB Egypt Money Market Fund El Naharda",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "5751",
+  "en": "Afaaq Securities Investment Fund",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "2717",
+  "en": "Agricultural Bank of Egypt and Banque du Caire Fund Al Wefak",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2718",
+  "en": "Agricultural Bank of Egypt Fund 2 Al Hasad Al Yaumy",
+  "mgr_en": "HC Asset Management"
+ },
+ {
+  "fund_id": "2693",
+  "en": "Al Baraka Bank Egypt fund Al Baraka Certificate",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "5679",
+  "en": "Al Baraka Bank Egypt Money Market Fund Al Barakat Certificate",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2747",
+  "en": "Al Baraka Bank Investment Fund Balanced",
+  "mgr_en": "Naeem Financial Investments SAE"
+ },
+ {
+  "fund_id": "6428",
+  "en": "Al Baraka Capital Islamic Manasek Fund",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "5902",
+  "en": "Allianz Life Insurance Money Market Fund Liquidity",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "5844",
+  "en": "Aman Money Market Fund",
+  "mgr_en": "Prime Investments"
+ },
+ {
+  "fund_id": "2662",
+  "en": "Arab African International Bank Fixed Income Fund Gozoor",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "5555",
+  "en": "Arab African International Bank Fund Guard",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "2663",
+  "en": "Arab African International Bank Money Market Fund Juman",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "2664",
+  "en": "Arab African International Bank Mutual Fund Shield",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "6251",
+  "en": "Arab African Investment Holding AAIH Fund Issuance 1 Kenz Foras Equity",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "6250",
+  "en": "Arab African Investment Holding AAIH Fund Issuance 2 Kenz EGX33 Shariah",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "6457",
+  "en": "Arab African Investment Holding Bonds Fixed Income",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "2667",
+  "en": "Arab Bank Egypt Money Market Fund Yomaty",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "2677",
+  "en": "Arab Investment Bank 2 Helal",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "EGYAIB3",
+  "en": "Arab Investment Bank 3 Balanced Fund - Sanady",
+  "mgr_en": ""
+ },
+ {
+  "fund_id": "2712",
+  "en": "Arab Investment Bank 3 Balanced Fund Sanady",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "5239",
+  "en": "Arope Money Market Fund",
+  "mgr_en": "CFH Asset Management"
+ },
+ {
+  "fund_id": "5750",
+  "en": "Ataa Charitable Investment Fund",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "5547",
+  "en": "Attijariwafa Bank Money Market Fund Raseedy El Youm",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6422",
+  "en": "Azimut Equity Opportunities Fund Az LV",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "5753",
+  "en": "Azimut Equity Opportunities Fund Opportunities AZ",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "6122",
+  "en": "Azimut Equity opportunities Fund Opportunities Shariah AZ",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "5959",
+  "en": "Azimut Fixed Income Fund AZ ValU",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "6211",
+  "en": "Azimut Fixed Income Fund Halan AZ",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "5729",
+  "en": "Azimut Fixed Income Fund Idkhar AZ",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "6429",
+  "en": "Azimut Fixed Income Fund Maashy AZ",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "6403",
+  "en": "Azimut Fixed Income Sharia Compliant Thndr AZ",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "5989",
+  "en": "Azimut Gold Islamic 1 fund Gold AZ",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "5809",
+  "en": "Azimut Target Maturity Fund Target 2027 USD",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "6146",
+  "en": "Azimut Target Maturity Fund Target 2029 USD",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "6452",
+  "en": "Azimut Target Maturity Fund Target 2033 USD",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "2689",
+  "en": "BANK NXT Money Market Fund",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2691",
+  "en": "Bank of Alexandria 2 Money Market Fund",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2688",
+  "en": "Bank of Alexandria Fixed Income Fund",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2690",
+  "en": "Bank of Alexandria Mutual Fund 1",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2668",
+  "en": "Banque Du Caire 2 Money Market Fund El Kahera El Yawmi",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "4049",
+  "en": "Banque Du Caire Fixed Income Fund Al Thabet",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2697",
+  "en": "Banque Du Caire Mutual Fund 1",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2678",
+  "en": "Banque Misr Capital Guaranteed Fund Sandouk El Umr",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2674",
+  "en": "Banque Misr Money Market Fund Youm B Youm EGP",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2675",
+  "en": "Banque Misr Money Market Fund Youm B Youm EUR",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2676",
+  "en": "Banque Misr Money Market Fund Youm B Youm USD",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2719",
+  "en": "Banque Misr Mutual Fund 1",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2720",
+  "en": "Banque Misr Mutual Fund 2",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2709",
+  "en": "Banque Misr Mutual Fund 3",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2710",
+  "en": "Banque Misr Mutual Fund 4 Sharia Compliant Al Hessen",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6062",
+  "en": "Bareeq Fixed Income Fund",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "6426",
+  "en": "Beltone B 35 EFX35 LV Fund",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6424",
+  "en": "Beltone B Alph Fund",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6205",
+  "en": "Beltone Consumer Fund Issuance 6",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6148",
+  "en": "Beltone EGX100 Fund Issuance 2 Meya Meya",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6149",
+  "en": "Beltone EGX33 Shariah Issuance 1 Wafra",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6466",
+  "en": "Beltone EGX70 EWI Fund B 70",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6061",
+  "en": "Beltone Evolve Gold Fund Sabayek",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6202",
+  "en": "Beltone Financial Fund Issuance 3",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6035",
+  "en": "Beltone Fixed Income Fund B Secure",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6212",
+  "en": "Beltone Fixed Income Fund Issuance 1 USD",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6204",
+  "en": "Beltone Industrial Fund Issuance 5",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6203",
+  "en": "Beltone Real Estate Fund Issuance 4",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6467",
+  "en": "Bokra Precious Metals Investment Islamic Fund Issuance 1 El Shakmagya",
+  "mgr_en": "Bokra"
+ },
+ {
+  "fund_id": "6410",
+  "en": "Cairo Capital Cumulative Fund Momentum",
+  "mgr_en": "CFH Asset Management"
+ },
+ {
+  "fund_id": "6401",
+  "en": "Cairo Capital Fixed Income Fund Stream",
+  "mgr_en": "CFH Asset Management"
+ },
+ {
+  "fund_id": "6063",
+  "en": "Charitable Investment Fund in Support of Sports Egyptian Sports Fund",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "6451",
+  "en": "CI Asset Management CI ctor Speciaized Funds Issuance 6 CI The Quant",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6454",
+  "en": "CI Asset Management CI ctor Speciaized Funds Issuance 7 CI 20HD",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6197",
+  "en": "CI Asset Management CI ctor Specialized Funds Issuance 1 Building",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6198",
+  "en": "CI Asset Management CI ctor Specialized Funds Issuance 2 Technology",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6199",
+  "en": "CI Asset Management CI ctor Specialized Funds Issuance 3 Export",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6200",
+  "en": "CI Asset Management CI ctor Specialized Funds Issuance 4 Consumption",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6201",
+  "en": "CI Asset Management CI ctor Specialized Funds Issuance 5 E Payment",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6453",
+  "en": "CI Asset Management CI ctor Specialized Funds Issuance 8 CI IPO",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6144",
+  "en": "CI Asset Management EGX33 Misr Index Sharia Equity Fund",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "5903",
+  "en": "CI Asset Management Equity Misr Equity",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "5797",
+  "en": "CI Asset Management Fixed Income Fund Kol Shahr",
+  "mgr_en": "Misr Capital"
+ },
+ {
+  "fund_id": "5976",
+  "en": "CI Asset Management Money Market Fund Misr Al Youmy",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6378",
+  "en": "CIAM Fixed Income Fund Misr Al Yomy USD",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6427",
+  "en": "CIAM Gold Islamic Fund Gold Masr",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6379",
+  "en": "CIAM invest stocks index S P EGX ESG Misr Green Sustainability Fund",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "5798",
+  "en": "Civil Aviation Finance Holding Company Money Market Fund Sarwaty",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "5432",
+  "en": "Commercial International Bank Balanced Fund Takamol",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2685",
+  "en": "Commercial International Bank Fixed Income Fund Thabat",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2682",
+  "en": "Commercial International Bank Fund 4 Hemaya",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2684",
+  "en": "Commercial International Bank Money Market Fund 1 Osoul",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2683",
+  "en": "Commercial International Bank Mutual Fund 2 Istithmar",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2696",
+  "en": "Credit Agricole Egypt 3 Money Market Fund",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2716",
+  "en": "Credit Agricole Egypt Fund 4 Balanced Fund Al Thiqa",
+  "mgr_en": "HC Asset Management"
+ },
+ {
+  "fund_id": "2694",
+  "en": "Credit Agricole Egypt Mutual Fund 1",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2695",
+  "en": "Credit Agricole Egypt Mutual Fund 2",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "5808",
+  "en": "Delta Life Assurance Fund",
+  "mgr_en": "Alpha for Mutual Funds Management"
+ },
+ {
+  "fund_id": "5882",
+  "en": "Diamond Money Market Fund",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "6448",
+  "en": "EFG Hermes Equity Fund Issuance 2 Index Sharia EGX33",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "6450",
+  "en": "EFG Hermes Fixed Income Fund Issuance 1 Money Market EGP",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "6443",
+  "en": "EFG Hermes Gold Fund",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2703",
+  "en": "Egyptian Agricultural Bank Fund 1 Al Massy",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "4087",
+  "en": "Egyptian Arab Land Bank Fund Al Masry",
+  "mgr_en": "Alpha for Mutual Funds Management"
+ },
+ {
+  "fund_id": "2744",
+  "en": "Egyptian Gulf Bank Money Market Fund Tharaa",
+  "mgr_en": "Prime Investments"
+ },
+ {
+  "fund_id": "2698",
+  "en": "Egyptian Gulf Bank Mutual Fund",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "6120",
+  "en": "El Ahly Financial Investment Management Evolve Investment Holding Fund Dahab",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "5988",
+  "en": "El Ahly financial investments management and the Arab Contractors Pension Money Market fund Tamayoz",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "6047",
+  "en": "El Fanar Money Market fund",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "5635",
+  "en": "Emirates NBD Money Market Fund Mazid",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2687",
+  "en": "Export Development Bank of Egypt 2 Money Market Fund",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "2736",
+  "en": "Export Development Bank of Egypt 3 Konooz",
+  "mgr_en": "Prime Investments"
+ },
+ {
+  "fund_id": "2706",
+  "en": "Export Development Bank of Egypt Fund 1 Al Khabir",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "5556",
+  "en": "FAB Capital Preservation Fund Etm nan",
+  "mgr_en": "HC Asset Management"
+ },
+ {
+  "fund_id": "4114",
+  "en": "FAB Misr Al Awal Liquidity Fund",
+  "mgr_en": "HC Asset Management"
+ },
+ {
+  "fund_id": "4537",
+  "en": "FAB Misr Balanced Fund Ezdhar",
+  "mgr_en": "Acumen Asset Management and Funds Management Co"
+ },
+ {
+  "fund_id": "2680",
+  "en": "Faisal Islamic Bank of Egypt and Commercial International Bank Mutual Fund Al Aman",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2701",
+  "en": "Faisal Islamic Bank of Egypt Mutual Fund",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "5819",
+  "en": "Fawry Money Market Liquidity Fund",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2692",
+  "en": "First Abu Dhabi Bank Money Market Fund Modkharaty",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "5911",
+  "en": "GIG Egypt Takaful Shariah Money Market Fund Makaseb 1",
+  "mgr_en": "NI Capital"
+ },
+ {
+  "fund_id": "5912",
+  "en": "GIG Egypt Takaful Shariah Money Market Fund Makaseb 2",
+  "mgr_en": "NI Capital"
+ },
+ {
+  "fund_id": "2737",
+  "en": "GIG Insurance Egypt Equity Fund",
+  "mgr_en": "PFI Asset Management"
+ },
+ {
+  "fund_id": "5822",
+  "en": "GIG Insurance Money Market Fund",
+  "mgr_en": "PFI Asset Management"
+ },
+ {
+  "fund_id": "6442",
+  "en": "Gosour Equity Fund",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "6411",
+  "en": "Granite Fixed Income Fund Issuance 1 EGP",
+  "mgr_en": "Granite for Investment Fund Management"
+ },
+ {
+  "fund_id": "6465",
+  "en": "Granite Fixed Income Fund Issuance 2 USD",
+  "mgr_en": "Granite Construction Inc."
+ },
+ {
+  "fund_id": "5906",
+  "en": "Horus Money Market Fund Horus",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "2743",
+  "en": "Housing and Development Bank Fund Al Tameer",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "2739",
+  "en": "Housing and Development Bank Money Market Fund Mawared",
+  "mgr_en": "PFI Asset Management"
+ },
+ {
+  "fund_id": "2669",
+  "en": "HSBC Money Market Fund Kol Youm",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "6037",
+  "en": "Iskan Insurance Money Market Fund Kol Youm",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "4086",
+  "en": "KFH Sharia Compliant Equity Fund Alpha",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2679",
+  "en": "KFH Sharia Compliant Money Market Fund Tharwa",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "6121",
+  "en": "Maksab OZ Fixed Income Fund 1 USD",
+  "mgr_en": "Alpha for Mutual Funds Management Zaldi Capital Financial Consultants"
+ },
+ {
+  "fund_id": "6193",
+  "en": "Maksab OZ Fixed Income Fund 2 EURO",
+  "mgr_en": "Alpha for Mutual Funds Management Zaldi Capital Financial Consultants"
+ },
+ {
+  "fund_id": "6157",
+  "en": "Menthum Fixed Income Fund USD",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6384",
+  "en": "Menthum Grow Fund EGX30 Capped",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "5843",
+  "en": "Menthum Money Market Fund",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "2707",
+  "en": "MIDBank Mutual fund 1 Equality Fund",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "2708",
+  "en": "MIDBank Mutual Fund 2 Money Market fund",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "2711",
+  "en": "Misr Al Mostakbal Fund",
+  "mgr_en": "HC Asset Management"
+ },
+ {
+  "fund_id": "5901",
+  "en": "Misr Insurance Capital Protection Fund Istsmar w Aman",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "4877",
+  "en": "Misr Insurance Fund Hesn El Aman",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "5762",
+  "en": "Misr Life Insurance Money Market Fund",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "5823",
+  "en": "Misr Takaful Insurance Money Market Fund",
+  "mgr_en": "Arab African Investment Management"
+ },
+ {
+  "fund_id": "2665",
+  "en": "Mubasher Capital Daily Cumulative Return Fund Cash Mubasher",
+  "mgr_en": "Mubasher Securities Portfolio Management"
+ },
+ {
+  "fund_id": "6472",
+  "en": "Mubasher Empire of Gold Fadda Fund Fadda Mubasher",
+  "mgr_en": "Mubasher Securities Portfolio Management"
+ },
+ {
+  "fund_id": "6400",
+  "en": "Mubasher Evolve Gold Fund Dahab Mubasher",
+  "mgr_en": "Mubasher Securities Portfolio Management"
+ },
+ {
+  "fund_id": "6459",
+  "en": "Mubasher Fixed Income Fund Mubasher USD",
+  "mgr_en": "Mubasher Securities Portfolio Management"
+ },
+ {
+  "fund_id": "6145",
+  "en": "Mubasher Misr Equity Fund Mubasher Equity",
+  "mgr_en": "Mubasher Securities Portfolio Management"
+ },
+ {
+  "fund_id": "2721",
+  "en": "Naeem Misr Islamic Fund",
+  "mgr_en": "Naeem Financial Investments SAE"
+ },
+ {
+  "fund_id": "5958",
+  "en": "Nasser Social Bank and Azimut Egypt Islamic Money Market fund",
+  "mgr_en": "Azimut Egypt Asset Management S.A.E"
+ },
+ {
+  "fund_id": "5807",
+  "en": "National Bank of Egypt and Misr for Life Insurance Al Ahly Hayah",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "2728",
+  "en": "National Bank of Egypt Mutual Fund 1",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "2729",
+  "en": "National Bank of Egypt Mutual Fund 2",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "2713",
+  "en": "National Bank of Egypt Mutual Fund 3",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "2730",
+  "en": "National Bank of Egypt Mutual Fund 4 Money Market",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "2731",
+  "en": "National Bank of Egypt Mutual Fund 5",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "2726",
+  "en": "National Bank of Egypt Mutual Fund 6 and Al Baraka Bank Egypt fund Bashayer",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "2745",
+  "en": "National Bank of Egypt Mutual Fund 7 The Fund of Egyptian Funds",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "2727",
+  "en": "National Bank of Egypt Mutual Fund 9 Fixed Income El Wa ed",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "2725",
+  "en": "National Bank of Kuwait Egypt Balanced Fund Al Mizan",
+  "mgr_en": "NBK Egypt Financial Investments S.A.E"
+ },
+ {
+  "fund_id": "2722",
+  "en": "National Bank of Kuwait Egypt Islamic Fund Al Hayah",
+  "mgr_en": "NBK Egypt Financial Investments S.A.E"
+ },
+ {
+  "fund_id": "2723",
+  "en": "National Bank of Kuwait Egypt Money Market Fund Ishraq",
+  "mgr_en": "NBK Egypt Financial Investments S.A.E"
+ },
+ {
+  "fund_id": "2724",
+  "en": "National Bank of Kuwait Egypt Namaa",
+  "mgr_en": "NBK Egypt Financial Investments S.A.E"
+ },
+ {
+  "fund_id": "6064",
+  "en": "National Investment Charity Education Fund",
+  "mgr_en": "NI Capital"
+ },
+ {
+  "fund_id": "5907",
+  "en": "NI Capital Egypt Equity Fund Sahmy",
+  "mgr_en": "NI Capital"
+ },
+ {
+  "fund_id": "6387",
+  "en": "NI Capital Egypt Equity Fund Sahmy 70",
+  "mgr_en": "NI Capital"
+ },
+ {
+  "fund_id": "5820",
+  "en": "NI Capital Fixed Income Fund 15 30",
+  "mgr_en": "NI Capital"
+ },
+ {
+  "fund_id": "5737",
+  "en": "NI Capital Money Market Fund Siula",
+  "mgr_en": "NI Capital"
+ },
+ {
+  "fund_id": "6376",
+  "en": "Odin Equity Fund Trend",
+  "mgr_en": "Alpha for Mutual Funds Management"
+ },
+ {
+  "fund_id": "6375",
+  "en": "Odin Money Market Fund Odin 4",
+  "mgr_en": "Alpha for Mutual Funds Management"
+ },
+ {
+  "fund_id": "6412",
+  "en": "PFI Money Market Fund Issuance 1 PFI Cashi",
+  "mgr_en": "PFI Asset Management"
+ },
+ {
+  "fund_id": "2734",
+  "en": "Pharos Investment Fund 1",
+  "mgr_en": "Pharos Asset Management"
+ },
+ {
+  "fund_id": "2666",
+  "en": "Pioneers Fund 1 Al Raeed",
+  "mgr_en": "Amwal Financial Investment"
+ },
+ {
+  "fund_id": "6402",
+  "en": "Prime Holding 1st Equity Fund Prime Growth",
+  "mgr_en": "Prime Investments"
+ },
+ {
+  "fund_id": "2673",
+  "en": "QNB Al Ahli 2 Balanced Fund Tawazon",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "2715",
+  "en": "QNB Al Ahli Fund 3 Tadawol",
+  "mgr_en": "HC Asset Management"
+ },
+ {
+  "fund_id": "2704",
+  "en": "QNB Al Ahli Mutual Fund 1 Themar",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "2742",
+  "en": "Sanabel Equity Fund Islamic Sharia Compliant",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "5765",
+  "en": "Sarwa Life Insurance Money Market Fund",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2741",
+  "en": "Societe Arabe International De Banque 2",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "3748",
+  "en": "Societe Arabe International De Banque Mutual Fund 3 Al Rabeh",
+  "mgr_en": "Hermes Portfolio and Fund Management"
+ },
+ {
+  "fund_id": "4533",
+  "en": "Societe Arabe Internationale De Banque Money Market Fund Youmy",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "2672",
+  "en": "Suez Canal Bank 2 Equity Fund Al Agial",
+  "mgr_en": "Beltone Asset Management"
+ },
+ {
+  "fund_id": "2714",
+  "en": "Suez Canal Bank Fund 1",
+  "mgr_en": "HC Asset Management"
+ },
+ {
+  "fund_id": "5726",
+  "en": "Suez Canal Bank Money Market Fund Al Suez Al youmi",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "6391",
+  "en": "Target First Fixed Income Fund TFFIF",
+  "mgr_en": "Target for Constituting and Managing Securities Portfolios"
+ },
+ {
+  "fund_id": "3889",
+  "en": "The United Bank Money Market Fund Rakhaa",
+  "mgr_en": "CI Capital Asset Management"
+ },
+ {
+  "fund_id": "2670",
+  "en": "Traded Equity Fund Insight",
+  "mgr_en": "Sigma Capital Holdings Financial Investments"
+ },
+ {
+  "fund_id": "6038",
+  "en": "Weladna Charitable Investment Fund",
+  "mgr_en": "Mubasher Securities Portfolio Management"
+ },
+ {
+  "fund_id": "5784",
+  "en": "Wethaq Money Market Fund Cumulative and Periodic Income Fund Wethaq",
+  "mgr_en": "Al Ahly Financial Investments Management"
+ },
+ {
+  "fund_id": "6392",
+  "en": "Zaldi Money Market Fund Zaldi Star",
+  "mgr_en": "Zaldi Capital Financial Consultants"
+ }
+]

@@ -1,0 +1,932 @@
+[
+ {
+  "name": "Credit Agricole Egypt Fund I",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "ALEXBANK Fund I",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "GIG Insurance - Egypt Fund I",
+  "manager": "PFI Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Banque Misr Fund II",
+  "manager": "CI Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "National Bank of Egypt Fund II",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Banque Du Caire Fund I",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Ebank Fund (El Khabeer)",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Suez Canal Bank Fund I",
+  "manager": "HC Securities & Investment",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Credit Agricole Egypt Fund II",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Egyptian Gulf Bank Fund I",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Arab African International Bank (Shield)",
+  "manager": "Arab African Investment Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Banque Misr Fund III",
+  "manager": "CI Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "MID Bank Fund I",
+  "manager": "Beltone Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "National Bank of Egypt Fund III",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "CIB Fund II (Istthmar)",
+  "manager": "CI Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "National Bank of Egypt Fund V",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Al Ahli Bank of Kuwait - Egypt Fund I Sigma",
+  "manager": "Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Housing & Development Bank ( AL Tameer)",
+  "manager": "Arab African Investment Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Bank ABC Fund I",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Suez Canal Bank Fund II (Al Agial)",
+  "manager": "Beltone Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Blom Bank Fund I",
+  "manager": "CFH Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Pharos Fund I Pharos",
+  "manager": "Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Pioneers Fund I",
+  "manager": "Amwal for Financial Investments",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Misr Al Mostakbal Fund",
+  "manager": "HC Securities & Investment",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "National Bank of Kuwait Fund (Namaa)",
+  "manager": "NBK Capital Asset Management Egypt",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "AZ Foras",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "NI Capital (Sahmy Fund)",
+  "manager": "NI Capital",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Mubasher Equity",
+  "manager": "Mubasher Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Kenz Foras Equity",
+  "manager": "Arab African Investment Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "*Maashy",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Momentum",
+  "manager": "CFH Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Odin Trend Alpha",
+  "manager": "Financial Investments Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "B-Alpha",
+  "manager": "Beltone Asset Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Hermes Equity",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Gosour Equity",
+  "manager": "Arab African Investment Management",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Zaldi El Masry Zaldi Investments",
+  "manager": null,
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "Aspire Waffrah Plus",
+  "manager": "Amwal for Financial Investments",
+  "section": "Open End- Equity Funds"
+ },
+ {
+  "name": "QNB AlAHLI (Tadawol)",
+  "manager": "HC Securities & Investment",
+  "section": "Open End- Equity Funds These Funds were separated because of difference in valuation date 31/12/2025Return Rank Return Rank Return Rank Return Rank Return Rank Return Rank Return Rank Return Rank Return Rank"
+ },
+ {
+  "name": "Faisal Islamic Bank of Egypt Fund",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "Al Baraka Bank Egypt",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "FIBE & CIB (Aman)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "Banque Misr Fund IV",
+  "manager": "CI Asset Management",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "SAIB & ADIB Fund (Sanabel)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "NBE & Al Baraka Bank Egypt Fund (Bashayer)",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "National Bank of Kuwait (Hayat)",
+  "manager": "NBK Capital Asset Management Egypt",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "Bank Nxt Fund II (Helal)",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "Naeem Misr Fund Naeem",
+  "manager": "for Financial Investments",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "Agriculural Bank of Egypt (Al Wefak)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "AZ-Foras Shariah",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "Hermes Shariah",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "KFH Bank (Alpha)",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Islamic Equity Funds"
+ },
+ {
+  "name": "Credit Agricole Egypt Fund III",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Misr Money Market",
+  "manager": "CI Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "CIB Fund I (Osoul)",
+  "manager": "CI Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "MID Bank Fund II",
+  "manager": "Beltone Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "ALEXBANK Fund II",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "National Bank of Egypt Fund IV",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "QNB AlAhli (Themar)",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Ebank Fund II",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Bank ABC Fund (Mazaya)",
+  "manager": "Beltone Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "HSBC Egypt Bank Fund",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Arab African International Bank (Juman)",
+  "manager": "Arab African Investment Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Al Ahli Bank of Kuwait - Egypt Fund II Sigma",
+  "manager": "Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "FAB Misr (Modkharaty)",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Banque Du Caire Fund II",
+  "manager": "Beltone Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Blom Bank Fund II",
+  "manager": "CFH Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "National Bank of Kuwait Fund (Ishraq)",
+  "manager": "NBK Capital Asset Management Egypt",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Arab Bank Fund (Yomaty)",
+  "manager": "Beltone Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Housing & Development Bank (Mawared) PFI",
+  "manager": "Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Agricultural Bank of Egypt (Al Hasad Al Yaumy)",
+  "manager": "HC Securities & Investment",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Bank Nxt Fund I",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Egyptian Gulf Bank (Tharaa)",
+  "manager": "Prime Investments",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Fab Misr (Al Awal)",
+  "manager": "HC Securities & Investment",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Saib (Yaumy Fund)",
+  "manager": "Beltone Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Misr Insurance",
+  "manager": "Fund Beltone Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Arope Insurance Misr Fund",
+  "manager": "CFH Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Attijariwafa BankFund",
+  "manager": "Beltone Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Emirates NBD (Mazid)",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Suez Canal Bank ( Al Suez Al Youmi)",
+  "manager": "CI Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Sarwa Life Insurance",
+  "manager": "Fund CI Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Siula Money Market",
+  "manager": "NI Capital",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Misr Life Insurance",
+  "manager": "Fund CI Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Sarwaty",
+  "manager": "Arab African Investment Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Wethaq",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Delta Life Insurance",
+  "manager": "Alpha Financial Investment Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Fawry",
+  "manager": "CI Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "GIG Insurance",
+  "manager": "PFI Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Aman Micro Finance",
+  "manager": "Prime Investments",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Menthum",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Allianz",
+  "manager": "CI Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Diamond",
+  "manager": "Arab African Investment Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Hourus",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "CI Misr Al Youmy",
+  "manager": "CI Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "AZ Value",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Iskan Insurance",
+  "manager": "Arab African Investment Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Tamayoz",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "AZ Halan",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Fanar",
+  "manager": "Arab African Investment Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Odin 4",
+  "manager": "Alpha Financial Investment Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Zaldi Star Zaldi Investments",
+  "manager": null,
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Granite First Fund Granite",
+  "manager": "Fund Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Basata",
+  "manager": "CI Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "PFI Cashi PFI",
+  "manager": "Asset Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Hermes",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "Aspire Rawajj",
+  "manager": "Amwal for Financial Investments",
+  "section": "Open End- Money Market Funds"
+ },
+ {
+  "name": "The United Bank Fund (Rakhaa)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Islamic Money Market Funds"
+ },
+ {
+  "name": "ADIB Egypt Shari'a Compliant (Al Nahrda Fund)",
+  "manager": "Beltone Asset Management",
+  "section": "Open End - Islamic Money Market Funds"
+ },
+ {
+  "name": "Al Baraka Bank Egypt (Al Barakat)",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Islamic Money Market Funds"
+ },
+ {
+  "name": "Misr Takaful",
+  "manager": "Arab African Investment Management",
+  "section": "Open End - Islamic Money Market Funds"
+ },
+ {
+  "name": "GIG Makaseb Fund First Tranche",
+  "manager": "NI Capital",
+  "section": "Open End - Islamic Money Market Funds"
+ },
+ {
+  "name": "GIG Makaseb Fund Second Tranche",
+  "manager": "NI Capital",
+  "section": "Open End - Islamic Money Market Funds"
+ },
+ {
+  "name": "AZ Naser",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End - Islamic Money Market Funds"
+ },
+ {
+  "name": "AZ Thndr",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End - Islamic Money Market Funds"
+ },
+ {
+  "name": "Ahli United Bank (Tharwa)",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Islamic Money Market Funds"
+ },
+ {
+  "name": "SAIB Fund III (Al Rabeh)",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Fixed Income Funds"
+ },
+ {
+  "name": "ALEXBANK Fund III",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Fixed Income Funds"
+ },
+ {
+  "name": "AAIB (Gozoor)",
+  "manager": "Arab African Investment Management",
+  "section": "Open End - Fixed Income Funds"
+ },
+ {
+  "name": "Banque Du Caire (Al Thabet)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Fixed Income Funds"
+ },
+ {
+  "name": "Egyptian Arab Land Bank Fund (Al Masry)",
+  "manager": "Alpha Financial Investment Management",
+  "section": "Open End - Fixed Income Funds"
+ },
+ {
+  "name": "Manasek",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Islamic Money Market Funds"
+ },
+ {
+  "name": "National Bank of Egypt VIII",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "Afaaq",
+  "manager": "Arab African Investment Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "Edkhar",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "Misr Insurance (Istithmar and Aman)",
+  "manager": "Arab African Investment Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "NI Capital 15/30",
+  "manager": "NI Capital",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "Bareeq",
+  "manager": "Arab African Investment Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "Cash Mubasher",
+  "manager": "Mubasher Asset Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "B-Secure",
+  "manager": "Beltone Asset Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "*CI Fixed Income",
+  "manager": "Fund CI Asset Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "CIB (Thabat)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "Stream",
+  "manager": "CFH Asset Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "Target First Fund Target",
+  "manager": "Asset Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "Misr Capital Guaranteed (Al Omr)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "Arab African International Bank (Guard)",
+  "manager": "Arab African Investment Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "CIB Fund IV (Hamaya)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "FAB Misr Fund (Etm'nan)",
+  "manager": "HC Securities & Investment",
+  "section": "Open End - Mixed Money Market & Fixed Income"
+ },
+ {
+  "name": "National Bank of Egypt Fund I",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End - Balanced Funds"
+ },
+ {
+  "name": "Banque Misr Fund I",
+  "manager": "CI Asset Management",
+  "section": "Open End - Balanced Funds"
+ },
+ {
+  "name": "*National Bank of Kuwait (Al Mizan)",
+  "manager": "NBK Capital Asset Management Egypt",
+  "section": "Open End - Balanced Funds"
+ },
+ {
+  "name": "Agricultural Bank of Egypt Fund (Al Massy)",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Balanced Funds"
+ },
+ {
+  "name": "Credit Agricole Egypt Fund IV (Al Thiqa)",
+  "manager": "HC Securities & Investment",
+  "section": "Open End - Balanced Funds"
+ },
+ {
+  "name": "Bank Nxt Fund III (Sanady)",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End - Balanced Funds"
+ },
+ {
+  "name": "CIB Fund (Takamol)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Balanced Funds"
+ },
+ {
+  "name": "Al Ahly Hayat",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End - Balanced Funds"
+ },
+ {
+  "name": "QNB Al Ahli (Tawazon)",
+  "manager": "Beltone Asset Management",
+  "section": "Open End - Balanced Funds These Funds were separated because of difference in valuation date 31/12/2025 Return Rank Return Rank Return Rank Return Rank Return Rank Return Rank Return Rank Return Rank Return Rank"
+ },
+ {
+  "name": "Al Baraka Bank Egypt (Al Motawazen) Naeem Capital for Investments",
+  "manager": null,
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "FAB Misr Fund (Ezdhar) Acumen",
+  "manager": "Asset Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "SAIB Fund II",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "Sigma Traded Fund Sigma Funds Management",
+  "manager": null,
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "Ebank Fund III (Konooz)",
+  "manager": "Prime Investments",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "National Bank of Egypt VII",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "CIAM Misr Equity",
+  "manager": "CI Asset Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "CIAM Misr Shariah Equity",
+  "manager": "CI Asset Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "Beltone EGX33 Shariah Index Tracker – Wafra",
+  "manager": "Beltone Asset Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "Beltone EGX100 Index Tracker – Meya Meya",
+  "manager": "Beltone Asset Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "Kenoz EGX33 Shariah Index Tracker – Shariah",
+  "manager": "Arab African Investment Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "NI Capital EGX 70",
+  "manager": "NI Capital",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "Menthum Grow EGX 30 Capped",
+  "manager": "Beltone Asset Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "Prime NMOW",
+  "manager": "Prime Investments",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "AZ-LV",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "Beltone EGX 35 Tracker",
+  "manager": "Beltone Asset Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "B70- EGX 70 Tracker",
+  "manager": "Beltone Asset Management",
+  "section": "Open End - Islamic Balanced Funds"
+ },
+ {
+  "name": "CIAM 1st Issue (Real Estate)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Thematic Funds"
+ },
+ {
+  "name": "CIAM 2nd Issue (Technology)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Thematic Funds"
+ },
+ {
+  "name": "CIAM 3rd Issue (Export)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Thematic Funds"
+ },
+ {
+  "name": "CIAM 4th Issue (Consumption)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Thematic Funds"
+ },
+ {
+  "name": "CIAM 5th Issue (Electronic Payments)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Thematic Funds"
+ },
+ {
+  "name": "CIAM 6th Issue (The Quant)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Thematic Funds"
+ },
+ {
+  "name": "CIAM 7th Issue (HD 20)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Thematic Funds"
+ },
+ {
+  "name": "CIAM 8th Issue (IPOs)",
+  "manager": "CI Asset Management",
+  "section": "Open End - Thematic Funds"
+ },
+ {
+  "name": "Beltone Financial",
+  "manager": "Fund Beltone Asset Management",
+  "section": "Open End - Sectorial Funds"
+ },
+ {
+  "name": "Beltone Real Estate",
+  "manager": "Fund Beltone Asset Management",
+  "section": "Open End - Sectorial Funds"
+ },
+ {
+  "name": "Beltone Industrial",
+  "manager": "Fund Beltone Asset Management",
+  "section": "Open End - Sectorial Funds"
+ },
+ {
+  "name": "Beltone Consumer",
+  "manager": "Fund Beltone Asset Management",
+  "section": "Open End - Sectorial Funds"
+ },
+ {
+  "name": "EGX30 Index ETF- EGX30 Index ETF",
+  "manager": "Beltone Asset Management",
+  "section": "Open End - Sectorial Funds"
+ },
+ {
+  "name": "Ataa",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End - Charitable Funds"
+ },
+ {
+  "name": "Sports",
+  "manager": "Fund Beltone Asset Management",
+  "section": "Open End - Charitable Funds"
+ },
+ {
+  "name": "Shefa Orman Charity",
+  "manager": "Fund CI Asset Management",
+  "section": "Open End - Charitable Funds"
+ },
+ {
+  "name": "AZ Gold",
+  "manager": "Azimut Egypt Asset Management",
+  "section": "Open End - Gold Funds"
+ },
+ {
+  "name": "Sabayek",
+  "manager": "Beltone Asset Management",
+  "section": "Open End - Gold Funds"
+ },
+ {
+  "name": "Dahab",
+  "manager": "Al Ahly Financial Investments Management",
+  "section": "Open End - Gold Funds"
+ },
+ {
+  "name": "Mubasher Gold",
+  "manager": "Mubasher Asset Management",
+  "section": "Open End - Gold Funds"
+ },
+ {
+  "name": "CIAM Gold",
+  "manager": "Fund CI Asset Management",
+  "section": "Open End - Gold Funds"
+ },
+ {
+  "name": "Hermes Gold",
+  "manager": "Hermes Portfolio and Fund Management",
+  "section": "Open End - Gold Funds"
+ },
+ {
+  "name": "Beltone Fada",
+  "manager": "Beltone Asset Management",
+  "section": "Open End - Silver Funds"
+ },
+ {
+  "name": "CIAM ESG",
+  "manager": "CI Asset Management",
+  "section": "Open End - Silver Funds"
+ }
+]

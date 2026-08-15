@@ -143,6 +143,24 @@ class SchedulerService:
                 coalesce=True
             )
 
+            # --- TIER 4F: per-fund NAV DATA-QUALITY ledger (Sun-Thu) ---
+            # The 2026-08 audit found the pipeline failed for thirteen months with
+            # every alarm green, because every alarm was AGGREGATE and the failure was
+            # PER-FUND: MAX(date) is satisfied by one healthy fund and the fresh-10d
+            # count by the list-API trickle, while 61 funds carried a 13-month hole.
+            # This scores every fund individually (cadence, coverage, defect gaps,
+            # grade) so the monitor can alert on the DISTRIBUTION instead. Runs after
+            # the NAV writes above so it grades what was just ingested.
+            self.scheduler.add_job(
+                self.run_fund_data_quality_job,
+                CronTrigger(day_of_week='sun,mon,tue,wed,thu', hour='8,19', minute=45,
+                            timezone='Africa/Cairo'),
+                id='tier4f_fund_data_quality',
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True
+            )
+
             # --- TIER 5: Rubix Watchlist (Every 1 min in Session) ---
             self.scheduler.add_job(
                 self.run_rubix_watchlist_job,
@@ -504,6 +522,38 @@ class SchedulerService:
                     f"❌ **Fund Metrics Compute Failed**\nExit: {proc.returncode}", is_error=True)
         except Exception as e:
             logger.error(f"Fund metrics job error: {e}")
+
+    async def run_fund_data_quality_job(self):
+        """Score every fund's NAV history into the fund_data_quality ledger.
+
+        This is the per-entity check the aggregate monitors structurally cannot
+        make (2026-08 audit): it records cadence, coverage, defect gaps and a grade
+        per fund, which the freshness monitor then alerts on by distribution.
+        Read-only-safe, per-fund isolated, and a failure here never crashes the API
+        or touches NAV data — it only ever writes its own companion table."""
+        try:
+            from app.services.notification_service import notification_service
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            script_path = os.path.join(base_dir, 'scripts', 'compute_fund_data_quality.py')
+
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, script_path, '--min-scored', '50',
+                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
+            stdout, _ = await proc.communicate()
+            # Surface the grade distribution in the log even on success — a silently
+            # succeeding quality job tells you nothing about quality.
+            for line in (stdout or b"").decode("utf-8", "replace").splitlines():
+                if line.startswith("[fund-dq] RESULT"):
+                    logger.info(line)
+
+            if proc.returncode == 0:
+                notification_service.send_discord("✅ **Fund Data-Quality Ledger Updated**", is_error=False)
+            else:
+                notification_service.send_discord(
+                    f"❌ **Fund Data-Quality Compute Failed**\nExit: {proc.returncode}", is_error=True)
+        except Exception as e:
+            logger.error(f"Fund data-quality job error: {e}")
 
     async def run_fund_list_api_job(self):
         """Augment NAVs from Mubasher's LIST API (fresher than the per-fund CSV,

@@ -224,20 +224,36 @@ async def fetch_one(client, sem, fund_id):
         return fund_id, None, src if src != "mubasher_csv" else src2
 
 
-async def write_one(conn, fund_id, pts) -> int:
+async def write_one(conn, fund_id, pts) -> tuple[int, int]:
     """Idempotent upsert of NAV history + reconcile mutual_funds latest_nav.
 
-    Layer 3 (preserve): ON CONFLICT updates the value (so corrections flow) but
-    never deletes; an empty `pts` is filtered out by the caller, so existing data
-    is never wiped.
+    Returns (new_dates, corrections) — INFORMATION GAIN, not rows attempted.
+
+    WHY THIS SIGNATURE (2026-08-15 audit)
+    -------------------------------------
+    This used to `executemany(... DO UPDATE ...)` and `return len(records)`, and
+    the caller counted that as "points_saved". asyncpg discards per-row status for
+    executemany, so the number was simply the size of the CSV. A source frozen for
+    fourteen months re-upserted the same 737 rows every run and scored 737 points
+    saved, forever. The scheduled run on 2026-08-13 reported
+    `updated=176, points_saved=197959` while the entire universe was missing only
+    TWO rows the source actually had. The run exited 0. Ten consecutive greens.
+
+    `xmax = 0` is true only for a genuine INSERT, so the RETURNING clause separates
+    new dates from corrections. The `WHERE ... IS DISTINCT FROM` means an unchanged
+    row is not written at all and never comes back — which is exactly the frozen
+    case, and now it is visible as zero instead of as success.
     """
-    records = [(fund_id, d, nav) for d, nav in pts]
-    await conn.executemany(
+    rows = await conn.fetch(
         """INSERT INTO nav_history (fund_id, date, nav)
-           VALUES ($1, $2, $3)
-           ON CONFLICT (fund_id, date) DO UPDATE SET nav = EXCLUDED.nav""",
-        records,
+           SELECT * FROM unnest($1::text[], $2::date[], $3::numeric[])
+           ON CONFLICT (fund_id, date) DO UPDATE SET nav = EXCLUDED.nav
+             WHERE nav_history.nav IS DISTINCT FROM EXCLUDED.nav
+           RETURNING (xmax = 0) AS inserted""",
+        [fund_id] * len(pts), [d for d, _ in pts], [nav for _, nav in pts],
     )
+    new_dates = sum(1 for r in rows if r["inserted"])
+    corrections = len(rows) - new_dates
     # Reconcile latest_nav / last_update_date from the freshest row we now hold.
     # Uses only core columns that always exist, so this can never fail on a
     # minimal schema and wrongly mark a healthy fund as un-updated.
@@ -259,11 +275,68 @@ async def write_one(conn, fund_id, pts) -> int:
             "UPDATE mutual_funds SET source = 'mubasher_csv' WHERE fund_id = $1", fund_id)
     except Exception:  # noqa: BLE001 - provenance is cosmetic; never fail the write
         pass
-    return len(records)
+    return new_dates, corrections
+
+
+# ---------------------------------------------------------------------------
+# Run ledger — the memory that lets "we learned nothing" be judged over a window
+# rather than a single run. Self-migrating: CREATE TABLE IF NOT EXISTS on every
+# run, so there is no separate migration step to forget (same pattern as
+# fund_risk_metrics).
+# ---------------------------------------------------------------------------
+_RUNS_DDL = """
+CREATE TABLE IF NOT EXISTS fund_ingest_runs (
+    id                  BIGSERIAL PRIMARY KEY,
+    ran_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    universe            INTEGER,
+    funds_fetched       INTEGER,
+    new_dates           INTEGER,
+    corrections         INTEGER,
+    funds_with_new_dates INTEGER,
+    no_data             INTEGER,
+    numeric_stale_gt7d  INTEGER,
+    by_source           JSONB,
+    failures            INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_fund_ingest_runs_ran_at ON fund_ingest_runs (ran_at DESC);
+"""
+
+
+async def record_run(conn, stats: dict) -> None:
+    """Append one row per run. Never raises into the caller's verdict."""
+    await conn.execute(_RUNS_DDL)
+    await conn.execute(
+        """INSERT INTO fund_ingest_runs
+             (universe, funds_fetched, new_dates, corrections, funds_with_new_dates,
+              no_data, numeric_stale_gt7d, by_source, failures)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9)""",
+        stats.get("universe"), stats.get("updated"), stats.get("new_dates"),
+        stats.get("corrections"), stats.get("funds_with_new_dates"),
+        stats.get("no_data"), stats.get("numeric_stale_gt7d"),
+        json.dumps(stats.get("by_source") or {}), len(stats.get("failures") or []),
+    )
+
+
+async def recent_zero_gain_runs(conn, window: int) -> int:
+    """
+    How many of the most recent runs in a row added ZERO new NAV dates.
+
+    Counts back from the newest run and stops at the first one that learned
+    something, so a single good run resets the streak. Read-only.
+    """
+    rows = await conn.fetch(
+        "SELECT new_dates FROM fund_ingest_runs ORDER BY ran_at DESC LIMIT $1",
+        max(window, 1))
+    streak = 0
+    for r in rows:
+        if (r["new_dates"] or 0) > 0:
+            break
+        streak += 1
+    return streak
 
 
 async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
-              dry_run=False, min_updated=1):
+              dry_run=False, min_updated=1, zero_gain_streak=None, max_stale=None):
     db_url = load_db_url()
     conn = await connect_resilient(db_url)
     try:
@@ -284,6 +357,11 @@ async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
 
         sem = asyncio.Semaphore(concurrency)
         stats = {"universe": len(universe), "updated": 0, "points_saved": 0,
+                 # INFORMATION GAIN — the numbers that can actually tell a working
+                 # run from a frozen source. `updated`/`points_saved` cannot: they
+                 # count funds fetched and rows attempted, so a source that has
+                 # published nothing for a year still scores full marks.
+                 "new_dates": 0, "corrections": 0, "funds_with_new_dates": 0,
                  "no_data": 0, "by_source": {}, "failures": [], "stale_after": []}
 
         timeout = httpx.Timeout(25.0, connect=10.0)
@@ -301,11 +379,19 @@ async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
                 latest = pts[-1][0]
                 try:
                     if dry_run:
+                        # Dry-run cannot know what is new without writing, so it must
+                        # not fabricate a gain figure. It reports transport only.
+                        new_dates, corrections = 0, 0
                         n = len(pts)
                     else:
-                        n = await write_one(conn, fund_id, pts)
+                        new_dates, corrections = await write_one(conn, fund_id, pts)
+                        n = new_dates + corrections
                     stats["updated"] += 1
                     stats["points_saved"] += n
+                    stats["new_dates"] += new_dates
+                    stats["corrections"] += corrections
+                    if new_dates:
+                        stats["funds_with_new_dates"] += 1
                     if latest < _today().replace(day=1):  # informational: still old after update
                         pass
                 except Exception as e:  # noqa: BLE001 - per-fund isolation
@@ -327,6 +413,15 @@ async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
         except Exception:
             pass
 
+        # Persist this run so "no new data for N cycles" has memory. Without a
+        # ledger the only alternative is failing on a single zero-gain run, which
+        # would red every weekend and every holiday and be muted within a week.
+        if not dry_run:
+            try:
+                await record_run(conn, stats)
+            except Exception as e:  # noqa: BLE001 - telemetry must never fail the run
+                print(f"[funds-nav] WARN could not record run: {type(e).__name__}", flush=True)
+
         print("[funds-nav] RESULT " + json.dumps(stats, default=str), flush=True)
 
         if stats.get("read_only"):
@@ -339,13 +434,46 @@ async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
                   f"(< {min_updated}). Treating as FAILURE (kills false-green).",
                   flush=True)
             return 2
+
+        # INFORMATION-GAIN GATE. `updated` above proves the transport worked; this
+        # proves we LEARNED something. A frozen upstream serving HTTP 200 passes the
+        # first and fails the second — which is precisely the case that ran green for
+        # fourteen months. Judged over a window, not a single run, so an ordinary
+        # quiet day (weekend, Eid, a source that publishes late) cannot page anyone.
+        if not dry_run and zero_gain_streak is not None:
+            try:
+                streak = await recent_zero_gain_runs(conn, zero_gain_streak)
+            except Exception as e:  # noqa: BLE001 - ledger unavailable: do not invent a verdict
+                print(f"[funds-nav] WARN gain gate skipped: {type(e).__name__}", flush=True)
+                streak = 0
+            if streak >= zero_gain_streak:
+                print(f"::error::funds-nav learned NOTHING across {streak} consecutive "
+                      f"runs (0 new NAV dates universe-wide). The fetch is succeeding, so "
+                      f"this is an upstream freeze, not a transport failure — the exact "
+                      f"condition that stayed green from 2025-05 to 2026-06.", flush=True)
+                return 2
+
+        # The per-fund staleness count was already being computed and thrown away on
+        # every run since this file was written. It is now a gate.
+        stale_n = stats.get("numeric_stale_gt7d")
+        if max_stale is not None and isinstance(stale_n, int) and stale_n > max_stale:
+            print(f"::error::funds-nav {stale_n} funds have no NAV newer than 7 days "
+                  f"(> {max_stale}). Per-fund staleness is the failure mode aggregate "
+                  f"checks cannot see.", flush=True)
+            return 2
         return 0
     finally:
         await conn.close()
 
 
-async def monitor(stale_days: int = 5, min_fresh_10d: int = 30):
-    """READ-ONLY freshness probe for the funds-freshness-monitor workflow.
+async def monitor(stale_days: int = 5, min_fresh_10d: int = 30,
+                  max_below_grade: int | None = None):
+    """READ-ONLY health probe for the funds-freshness-monitor workflow.
+
+    Aggregates (newest NAV, fresh-within-10d) are kept as a cheap transport check,
+    but they can NEVER detect this pipeline's actual failure mode: Mubasher froze
+    one fund's CSV at a time while a daily list-API sync kept every aggregate
+    green. The per-fund `fund_data_quality` distribution below is the real check.
 
     Emits GitHub `key=value` lines + a human summary. Never writes. Returns 2
     when fund data is stale — the red run's GitHub mobile push IS the page
@@ -369,20 +497,69 @@ async def monitor(stale_days: int = 5, min_fresh_10d: int = 30):
         if (fresh10 or 0) < min_fresh_10d:
             stale = 1
             reasons.append(f"only {fresh10} funds fresh within 10d (<{min_fresh_10d})")
+
+        # PER-FUND CHECK — the one the two aggregates above structurally cannot make.
+        # MAX(date) is satisfied by any single healthy fund, and the fresh-10d count
+        # is satisfied by the list-API trickle. Both stayed green for fourteen months
+        # while 61 funds carried a 13-month hole. The quality ledger is per fund, so
+        # this reads the DISTRIBUTION: how many funds are actually unusable.
+        below, worst = None, None
+        try:
+            below = await conn.fetchval(
+                "SELECT COUNT(*) FROM fund_data_quality WHERE grade IN ('D','F')")
+            worst = await conn.fetchrow(
+                """SELECT fund_id, grade, coverage_pct, worst_gap_days
+                   FROM fund_data_quality
+                   ORDER BY worst_gap_days DESC NULLS LAST LIMIT 1""")
+        except Exception:
+            # Ledger absent (first deploy, or compute job has not run yet). Say so —
+            # never let a missing check read as a passing one.
+            reasons.append("fund_data_quality ledger UNAVAILABLE (per-fund check skipped)")
+            stale = 1
+        else:
+            if max_below_grade is not None and (below or 0) > max_below_grade:
+                stale = 1
+                reasons.append(f"{below} funds grade D/F (>{max_below_grade})")
+
+            # REGRESSION check, which is what actually fits this pipeline's state.
+            # The universe is knowingly degraded right now — 61 funds carry a
+            # 13-month hole that no source can fill yet — so an absolute threshold
+            # would either sit red until the backfill lands (and be muted within a
+            # week) or be set so loose it could never fire. Comparing the last two
+            # snapshots catches NEW damage the day it appears, while the known
+            # backlog is worked down, and needs no tuning.
+            try:
+                snaps = await conn.fetch(
+                    """SELECT below_grade_c, taken_at FROM fund_quality_snapshots
+                       ORDER BY taken_at DESC LIMIT 2""")
+                if len(snaps) == 2:
+                    now_n, prev_n = snaps[0]["below_grade_c"], snaps[1]["below_grade_c"]
+                    if now_n is not None and prev_n is not None and now_n > prev_n:
+                        stale = 1
+                        reasons.append(
+                            f"data quality REGRESSED: funds below grade C went "
+                            f"{prev_n} -> {now_n} since the previous snapshot")
+            except Exception:
+                pass  # snapshots absent on first deploy; the ledger check above stands
+
         reason = "; ".join(reasons)
         gho = os.environ.get("GITHUB_OUTPUT")
         lines = [f"newest={newest}", f"age_days={age_days}",
-                 f"fresh10={fresh10}", f"stale={stale}", f"reason={reason}"]
+                 f"fresh10={fresh10}", f"below_grade={below}", f"stale={stale}",
+                 f"reason={reason}"]
         if gho:
             with open(gho, "a") as fh:
                 fh.write("\n".join(lines) + "\n")
         print("[funds-monitor] " + json.dumps(
             {"newest": str(newest), "age_days": age_days, "fresh_within_10d": fresh10,
-             "stale": stale, "reason": reason}))
+             "funds_below_grade_c": below,
+             "worst_fund": (dict(worst) if worst else None),
+             "stale": stale, "reason": reason}, default=str))
         if stale:
             print(f"::error::FUNDS DATA STALE — {reason}")
             return 2
-        print(f"✅ Funds fresh — newest={newest} ({age_days}d), {fresh10} fresh within 10d")
+        print(f"✅ Funds fresh — newest={newest} ({age_days}d), {fresh10} fresh within 10d, "
+              f"{below} funds below grade C")
         return 0
     finally:
         await conn.close()
@@ -401,14 +578,32 @@ def main():
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--concurrency", type=int, default=8)
     ap.add_argument("--min-updated", type=int, default=1,
-                    help="exit non-zero if fewer than this many funds updated")
+                    help="exit non-zero if fewer than this many funds updated "
+                         "(TRANSPORT health: did fetching and writing work at all)")
+    ap.add_argument("--zero-gain-streak", type=int, default=None,
+                    help="exit non-zero when this many consecutive runs added ZERO new "
+                         "NAV dates (INFORMATION health: is the source still publishing). "
+                         "Off by default; the scheduled workflow sets it.")
+    ap.add_argument("--max-stale", type=int, default=None,
+                    help="exit non-zero if more than this many funds have no NAV newer "
+                         "than 7 days. Per-fund staleness is invisible to aggregate checks.")
+    ap.add_argument("--min-fresh-10d", type=int, default=30,
+                    help="[monitor] alert if fewer than this many funds are fresh within 10d")
+    ap.add_argument("--max-below-grade", type=int, default=None,
+                    help="[monitor] alert if more than this many funds grade D or F in "
+                         "fund_data_quality. This is the per-fund check the old aggregate "
+                         "monitor could not make.")
     args = ap.parse_args()
     if args.monitor:
-        sys.exit(asyncio.run(monitor(stale_days=args.stale_days)))
+        sys.exit(asyncio.run(monitor(stale_days=args.stale_days,
+                                     min_fresh_10d=args.min_fresh_10d,
+                                     max_below_grade=args.max_below_grade)))
     ids = [s.strip() for s in args.ids.split(",")] if args.ids else None
     rc = asyncio.run(run(only_numeric=not args.all, ids=ids, limit=args.limit,
                          concurrency=args.concurrency, dry_run=args.dry_run,
-                         min_updated=args.min_updated))
+                         min_updated=args.min_updated,
+                         zero_gain_streak=args.zero_gain_streak,
+                         max_stale=args.max_stale))
     sys.exit(rc)
 
 

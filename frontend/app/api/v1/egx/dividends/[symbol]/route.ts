@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
 
@@ -20,6 +21,6 @@ export async function GET(
         return NextResponse.json(result.rows);
     } catch (error: any) {
         console.error('[API] /egx/dividends error:', error.message);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError('/v1/egx/dividends/[symbol]', error);
     }
 }

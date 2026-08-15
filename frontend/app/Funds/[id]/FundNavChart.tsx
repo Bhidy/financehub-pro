@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { findGaps, medianIntervalDays, splitAtGaps, withGapBreaks, type NavPoint } from '@/lib/nav-gaps';
+import { breakToleranceDays, findGaps, medianIntervalDays, splitAtGaps, withGapBreaks, type NavPoint } from '@/lib/nav-gaps';
 
 /**
  * Interactive NAV history chart — the premium fund page's centrepiece, rebuilt
@@ -122,6 +122,9 @@ export default function FundNavChart({
     // The currently-drawn (range-filtered) series — read by the hover overlay so
     // cursor→index resolution always matches what's on screen.
     const viewRef = useRef<Point[]>([]);
+    // The drawn array INCLUDING whitespace — what the time scale's logical
+    // indices actually address.
+    const viewSpacedRef = useRef<{ time: string; value?: number }[]>([]);
 
     const [all, setAll] = useState<Point[] | null>(null);
     const [range, setRange] = useState<Range>('YTD');
@@ -153,7 +156,12 @@ export default function FundNavChart({
         if (!all) return [];
         const c = rangeCutoff(range);
         const win = c === null ? all : all.filter((p) => Date.parse(`${p.time}T00:00:00Z`) >= c);
-        return win.length >= MIN_POINTS_TO_DRAW ? findGaps(win as NavPoint[]) : [];
+        // Count what the EYE sees: gaps severe enough that the line is severed.
+        // Counting at the (deliberately more sensitive) detection threshold made
+        // the notice claim more breaks than the chart shows.
+        return win.length >= MIN_POINTS_TO_DRAW
+            ? findGaps(win as NavPoint[], breakToleranceDays(win as NavPoint[]))
+            : [];
     }, [all, range]);
 
     // If the remembered range is not supported by this fund, fall back to the
@@ -167,7 +175,7 @@ export default function FundNavChart({
     // Fetch NAV history once.
     useEffect(() => {
         let alive = true;
-        fetch(`/api/v1/funds/${encodeURIComponent(String(fundId))}/nav?limit=2200`)
+        fetch(`/api/v1/funds/${encodeURIComponent(String(fundId))}/nav?limit=6000`)
             .then((r) => (r.ok ? r.json() : Promise.reject(new Error('nav fetch failed'))))
             .then((rows: Array<{ date?: string; nav?: string | number }>) => {
                 if (!alive) return;
@@ -200,6 +208,11 @@ export default function FundNavChart({
             // render twenty years of history under a one-month label.
             if (filtered.length < MIN_POINTS_TO_DRAW) return;
 
+            // The hover overlay maps cursor x -> logical index on the TIME SCALE,
+            // and the drawn series now contains whitespace slots inside severed
+            // gaps. viewRef must mirror the DRAWN array exactly — holding only
+            // the real points shifted every index after a gap and the tooltip
+            // reported the wrong date/price on any backfilled fund.
             viewRef.current = filtered;
 
             // Drop any segment series from the previous range before redrawing.
@@ -240,6 +253,8 @@ export default function FundNavChart({
                 }
             }
 
+            viewRef.current = spaced.filter((p) => p.value !== undefined) as Point[];
+            viewSpacedRef.current = spaced as { time: string; value?: number }[];
             if (runs.length <= 1) {
                 series.setData(spaced);
             } else {
@@ -402,6 +417,13 @@ export default function FundNavChart({
                 // right edge always resolves to the latest NAV, inside the plot.
                 const resolve = (clientX: number): { pt: Point; idx: number; xAt: (i: number) => number | null } | null => {
                     const view = viewRef.current;
+                    // Bar spacing is uniform over the DRAWN array — which now
+                    // contains whitespace slots inside severed gaps. Inverting the
+                    // cursor over the real-points array shifted every index after a
+                    // gap, so the tooltip named the wrong date on any backfilled
+                    // fund. Invert over the spaced array, then snap to the nearest
+                    // slot that carries a value.
+                    const spaced = viewSpacedRef.current.length ? viewSpacedRef.current : view;
                     if (!view.length) return null;
                     const paneCanvas = host.querySelector('canvas') as HTMLCanvasElement | null;
                     const rect = (paneCanvas ?? host).getBoundingClientRect();
@@ -417,19 +439,40 @@ export default function FundNavChart({
                         : rect.width;
                     const scale = rect.width > 0 ? cssW / rect.width : 1;
                     const x = (clientX - rect.left) * scale;
-                    const n = view.length;
                     const ts = chart.timeScale();
                     const xAt = (i: number) => ts.timeToCoordinate(view[i].time) as number | null;
-                    const xFirst = xAt(0);
-                    const xLast = xAt(n - 1);
-                    let idx: number;
-                    if (n > 1 && xFirst != null && xLast != null && xLast > xFirst) {
-                        idx = Math.round(((x - xFirst) / (xLast - xFirst)) * (n - 1));
+                    const nS = spaced.length;
+                    const xAtS = (i: number) => ts.timeToCoordinate(spaced[i].time) as number | null;
+                    const xFirst = xAtS(0);
+                    const xLast = xAtS(nS - 1);
+                    let idxS: number;
+                    if (nS > 1 && xFirst != null && xLast != null && xLast > xFirst) {
+                        idxS = Math.round(((x - xFirst) / (xLast - xFirst)) * (nS - 1));
                     } else {
-                        idx = n - 1;
+                        idxS = nS - 1;
+                    }
+                    idxS = Math.max(0, Math.min(nS - 1, idxS));
+                    // Snap outward to the nearest value-bearing slot.
+                    let snapped = -1;
+                    for (let d = 0; d < nS && snapped < 0; d++) {
+                        for (const j of [idxS - d, idxS + d]) {
+                            if (j >= 0 && j < nS && (spaced[j] as { value?: number }).value !== undefined) {
+                                snapped = j;
+                                break;
+                            }
+                        }
+                    }
+                    if (snapped < 0) return null;
+                    const snapTime = spaced[snapped].time;
+                    // Map back to the real-points array by time (both sorted).
+                    let lo = 0, hi = view.length - 1, idx = view.length - 1;
+                    while (lo <= hi) {
+                        const mid = (lo + hi) >> 1;
+                        if (view[mid].time === snapTime) { idx = mid; break; }
+                        if (view[mid].time < snapTime) lo = mid + 1; else { idx = mid; hi = mid - 1; }
                     }
                     if (idx < 0) idx = 0;
-                    if (idx > n - 1) idx = n - 1;
+                    if (idx > view.length - 1) idx = view.length - 1;
                     return { pt: view[idx], idx, xAt };
                 };
 

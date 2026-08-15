@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api-error';
 import { db } from '@/lib/db-server';
 
 export async function GET(request: Request) {
@@ -29,6 +30,6 @@ export async function GET(request: Request) {
         const result = await db.query(query, params);
         return NextResponse.json(result.rows);
     } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError('/v1/insider-trading', error);
     }
 }

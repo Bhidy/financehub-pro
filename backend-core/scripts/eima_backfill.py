@@ -162,20 +162,28 @@ def best_match(eima_name: str, catalogue: list[tuple[str, str]]) -> tuple[str, f
 # ------------------------------------------------------- reconciliation ----
 
 def _errors_by_column(points: list[dict], existing: dict) -> dict:
-    """Per-anchor-column signed errors against NAV we already hold."""
+    """Per-anchor-column signed errors against NAV we already hold.
+
+    Each STORED row may vouch for at most one candidate point per column —
+    letting two derived points both match the same real row inflated the overlap
+    count that the 3-point mapping floor and the data-first ranking both key on.
+    """
     out: dict[str, list[float]] = defaultdict(list)
+    used: dict[str, set] = defaultdict(set)
     for p in points:
-        got = None
+        col = p.get("column", "?")
+        got = got_d = None
         for off in range(0, MATCH_WINDOW_DAYS + 1):
             for d in ({p["date"] - timedelta(days=off), p["date"] + timedelta(days=off)}
                       if off else {p["date"]}):
-                if d in existing:
-                    got = existing[d]
+                if d in existing and d not in used[col]:
+                    got, got_d = existing[d], d
                     break
             if got is not None:
                 break
         if got:
-            out[p.get("column", "?")].append((p["nav"] - got) / got * 100.0)
+            used[col].add(got_d)
+            out[col].append((p["nav"] - got) / got * 100.0)
     return out
 
 
@@ -436,7 +444,8 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                 # Our nav_history is EGP. A USD/EUR series must never be offered
                 # to the matcher at all — identity should not depend on the data
                 # gate happening to refuse it.
-                egp = {r["name"] for r in rep["rows"] if r.get("currency", "EGP") == "EGP"}
+                egp = {r["name"] for r in rep["rows"]
+                       if r.get("currency", "EGP") == "EGP" and not r.get("separated")}
                 for p in rep["published"] + rep["derived"]:
                     if p["name"] not in egp:
                         continue

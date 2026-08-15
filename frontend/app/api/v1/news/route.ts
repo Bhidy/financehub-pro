@@ -90,7 +90,7 @@ export async function GET(request: Request) {
             headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=600' },
         });
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Unknown server error';
+        const message = 'Internal server error';  // detail stays server-side (2026-08-15 audit)
         console.error('[API /news ERROR]', message);
         return NextResponse.json({ error: message }, { status: 500 });
     }

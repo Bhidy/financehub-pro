@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
         console.error('[Auth Route] Error:', error);
         return NextResponse.json(
-            { detail: error.message || 'Authentication failed' },
+            { detail: 'Authentication failed' },
             { status: 500 }
         );
     }

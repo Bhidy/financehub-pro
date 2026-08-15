@@ -79,7 +79,7 @@ export async function GET(request: Request) {
             available_symbols: symbolsResult.rows,
         });
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Unknown server error";
+        const message = "Internal server error";  // detail stays server-side (2026-08-15 audit)
         console.error("[API /company-profile-v2 ERROR]", message);
         return NextResponse.json({ error: message }, { status: 500 });
     }

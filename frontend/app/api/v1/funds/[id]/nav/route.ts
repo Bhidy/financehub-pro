@@ -9,7 +9,7 @@ export async function GET(
 ) {
     const { id } = await params;
     const { searchParams } = new URL(request.url);
-    const limit = searchParams.get('limit') || '90';
+    const limit = clampLimit(new URL(request.url).searchParams.get('limit'), 90, 10000);
 
     try {
         const result = await db.query(

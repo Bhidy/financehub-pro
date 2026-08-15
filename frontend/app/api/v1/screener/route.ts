@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api-error';
 import { db } from '@/lib/db-server';
 
 // Force dynamic to prevent Vercel caching
@@ -62,6 +63,6 @@ export async function GET(request: Request) {
         return NextResponse.json(mapped);
     } catch (error: any) {
         console.error('[API /screener ERROR]', error.message);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError('/v1/screener', error);
     }
 }

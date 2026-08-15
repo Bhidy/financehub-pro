@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api-error';
 import { db, numerify } from '@/lib/db-server';
 
 // income_statements / balance_sheets / cashflow_statements store EGP in MILLIONS.
@@ -198,8 +199,8 @@ export async function GET(
                     financialsMap[key].raw_data = row.raw_data;
                 }
             }
-        } catch (err) {
-            console.warn('[legacyRes query warning]', err);
+        } catch (error) {
+            console.warn('[legacyRes query warning]', error);
         }
 
         // Convert the map to a sorted array (descending by year)
@@ -224,7 +225,7 @@ export async function GET(
         return NextResponse.json(normalised);
     } catch (error: any) {
         console.error('[API /financials ERROR]', error.message);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError('/v1/financials/[symbol]', error);
     }
 }
 

@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
         console.error('[Auth Route] Signup error:', error);
         return NextResponse.json(
-            { detail: error.message || 'Registration failed' },
+            { detail: 'Registration failed' },
             { status: 500 }
         );
     }

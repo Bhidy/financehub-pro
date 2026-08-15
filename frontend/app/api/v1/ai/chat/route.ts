@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
                 language: "en",
                 cards: [],
                 actions: [],
-                meta: { intent: "ERROR", confidence: 0, entities: {}, error: error.message }
+                meta: { intent: "ERROR", confidence: 0, entities: {}, error: "assistant error" }
             },
             { status: 500 }
         );

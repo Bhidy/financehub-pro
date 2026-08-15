@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
         console.error('[Auth Route] Users error:', error);
         return NextResponse.json(
-            { detail: error.message || 'Failed to fetch users' },
+            { detail: 'Failed to fetch users' },
             { status: 500 }
         );
     }

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
 
@@ -53,8 +54,8 @@ export async function GET(
             if (resultData && resultData.rows && resultData.rows.length > 0) {
                 return NextResponse.json(resultData.rows, { headers: freshnessHeaders(resultData.rows, 'ohlc_data', 'time') });
             }
-        } catch (err: any) {
-            console.warn('[ohlc_data query warning in ohlc]', err.message);
+        } catch (error: any) {
+            console.warn('[ohlc_data query warning in ohlc]', error.message);
         }
 
         // Fallback to ohlc_history (Saudi market or legacy)
@@ -70,6 +71,6 @@ export async function GET(
         return NextResponse.json(resultHistory.rows, { headers: freshnessHeaders(resultHistory.rows, 'ohlc_history', 'time') });
     } catch (error: any) {
         console.error('[API /ohlc ERROR]', error.message);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError('/v1/ohlc/[symbol]', error);
     }
 }

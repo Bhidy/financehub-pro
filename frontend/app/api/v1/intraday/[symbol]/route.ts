@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { apiError } from '@/lib/api-error';
 import { db } from '@/lib/db-server';
 
 export async function GET(
@@ -26,6 +27,6 @@ export async function GET(
         return NextResponse.json(result.rows.reverse());
     } catch (error: any) {
         console.error('[API /intraday ERROR]', error.message);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return apiError('/v1/intraday/[symbol]', error);
     }
 }

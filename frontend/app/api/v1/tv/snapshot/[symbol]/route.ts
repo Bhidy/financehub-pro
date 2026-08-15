@@ -47,7 +47,7 @@ export async function GET(
         });
     } catch (error: any) {
         return NextResponse.json(
-            { error: `TradingView fetch failed: ${error.message}` },
+            { error: "TradingView fetch failed" },  // detail stays server-side (2026-08-15 audit)
             { status: 502 }
         );
     }

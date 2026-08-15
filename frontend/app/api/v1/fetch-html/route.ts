@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
             { status: 200 }
         );
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Unknown proxy error";
+        const message = "Proxy request failed";  // detail stays server-side (2026-08-15 audit)
         return NextResponse.json({ error: message }, { status: 502 });
     }
 }

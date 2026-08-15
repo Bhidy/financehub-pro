@@ -110,6 +110,14 @@ def parse_rows(text: str) -> list[dict]:
         if sec:
             section = re.sub(r"\s+", " ", sec.group(1)).strip()
             continue
+        # "These Funds were separated because of difference in valuation date"
+        # header lines are NOT matched by _SECTION (trailing text), but they DO
+        # flip the context: every row that follows carries a NAV valued at the
+        # PRIOR YEAR-END, not at this report's date. Writing those under report
+        # dates would place a December price in June. Mark and let callers skip.
+        if "separated" in line.lower() and "valuation" in line.lower():
+            section = (section or "") + " [SEPARATED-VALUATION]"
+            continue
         m = _ROW.match(line)
         if not m:
             continue
@@ -138,6 +146,7 @@ def parse_rows(text: str) -> list[dict]:
         out.append({
             "name": raw_name,
             "currency": currency,
+            "separated": bool(section and "[SEPARATED-VALUATION]" in section),
             "section": section,
             "inception": m.group(3),
             "initial": _num(m.group(4)),

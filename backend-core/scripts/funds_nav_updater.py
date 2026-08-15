@@ -247,7 +247,12 @@ async def write_one(conn, fund_id, pts) -> tuple[int, int]:
     rows = await conn.fetch(
         """INSERT INTO nav_history (fund_id, date, nav)
            SELECT * FROM unnest($1::text[], $2::date[], $3::numeric[])
-           ON CONFLICT (fund_id, date) DO UPDATE SET nav = EXCLUDED.nav
+           ON CONFLICT (fund_id, date) DO UPDATE
+             SET nav = EXCLUDED.nav,
+                 -- The primary source now vouches for this date: claim it, or a
+                 -- corrected row keeps its eima tag and the backfill's prune
+                 -- could later delete a value the real source re-supplied.
+                 source = 'mubasher_csv'
              WHERE nav_history.nav IS DISTINCT FROM EXCLUDED.nav
            RETURNING (xmax = 0) AS inserted""",
         [fund_id] * len(pts), [d for d, _ in pts], [nav for _, nav in pts],

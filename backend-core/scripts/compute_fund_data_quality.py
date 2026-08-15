@@ -38,7 +38,8 @@ import os
 import re
 import sys
 from collections import Counter
-from datetime import date
+from decimal import Decimal
+from datetime import date, datetime
 
 import asyncpg
 
@@ -93,7 +94,7 @@ INSERT INTO fund_data_quality
   (fund_id, points, first_date, last_date, cadence, median_interval_days,
    expected_points, coverage_pct, gap_count, gap_days_total, worst_gap_days,
    worst_gap_from, worst_gap_to, age_days, grade, computed_at)
-VALUES ($1,$2,$3::date,$4::date,$5,$6,$7,$8,$9,$10,$11,$12::date,$13::date,$14,$15,NOW())
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,NOW())
 ON CONFLICT (fund_id) DO UPDATE SET
   points=EXCLUDED.points, first_date=EXCLUDED.first_date, last_date=EXCLUDED.last_date,
   cadence=EXCLUDED.cadence, median_interval_days=EXCLUDED.median_interval_days,
@@ -103,6 +104,16 @@ ON CONFLICT (fund_id) DO UPDATE SET
   worst_gap_to=EXCLUDED.worst_gap_to, age_days=EXCLUDED.age_days,
   grade=EXCLUDED.grade, computed_at=NOW()
 """
+
+
+def _d(iso):
+    """ISO string -> datetime.date for asyncpg. Strings raise DataError on DATE."""
+    return date.fromisoformat(iso) if iso else None
+
+
+def _num(v):
+    """Python float -> Decimal for asyncpg NUMERIC columns."""
+    return Decimal(str(v)) if v is not None else None
 
 
 def load_db_url() -> str:
@@ -156,12 +167,13 @@ async def compute(ids=None, dry_run=False, min_scored=1) -> int:
                     worst.append((rec["worst_gap_days"], fid))
                 if not dry_run:
                     await conn.execute(
-                        UPSERT, rec["fund_id"], rec["points"], rec["first_date"],
-                        rec["last_date"], rec["cadence"], rec["median_interval_days"],
-                        rec["expected_points"], rec["coverage_pct"], rec["gap_count"],
-                        rec["gap_days_total"], rec["worst_gap_days"],
-                        rec["worst_gap_from"], rec["worst_gap_to"], rec["age_days"],
-                        rec["grade"])
+                        UPSERT, rec["fund_id"], rec["points"], _d(rec["first_date"]),
+                        _d(rec["last_date"]), rec["cadence"],
+                        _num(rec["median_interval_days"]),
+                        rec["expected_points"], _num(rec["coverage_pct"]),
+                        rec["gap_count"], rec["gap_days_total"], rec["worst_gap_days"],
+                        _d(rec["worst_gap_from"]), _d(rec["worst_gap_to"]),
+                        rec["age_days"], rec["grade"])
                 scored += 1
             except Exception as e:  # noqa: BLE001 - per-fund isolation
                 if is_read_only_error(e):

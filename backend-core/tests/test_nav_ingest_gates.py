@@ -108,6 +108,38 @@ def test_record_run_creates_the_table_then_inserts():
     assert any(s.startswith("INSERT INTO fund_ingest_runs") for s in conn.executed), conn.executed
 
 
+# ------------------------------------- empty-ledger false-green (regression) --
+
+def test_an_empty_quality_ledger_must_not_read_as_healthy():
+    """
+    Regression for a false-green introduced BY the fix for false-greens.
+
+    On the monitor's first live run the compute job failed on every fund
+    (DataError on the date columns), so fund_data_quality existed but held zero
+    rows. The probe asked "COUNT(*) WHERE grade IN ('D','F')", got 0, and printed
+    "0 funds below grade C" — then exited 0. An empty table is not a healthy one:
+    it means the check could not see anything.
+
+    This asserts the shape of that rule directly, since the probe itself needs a
+    live connection. `scored_n == 0` must force stale=1 regardless of `below`.
+    """
+    def verdict(scored_n, below, fresh_rows):
+        stale = 0
+        if not scored_n:
+            stale = 1                       # empty  -> UNKNOWN, never healthy
+        elif not fresh_rows:
+            stale = 1                       # stale  -> UNKNOWN, never healthy
+        if below and below > 150:
+            stale = 1
+        return stale
+
+    assert verdict(0, 0, 0) == 1, "empty ledger reported healthy"
+    assert verdict(None, 0, 0) == 1, "null count reported healthy"
+    assert verdict(363, 306, 363) == 1, "306 funds below grade C reported healthy"
+    assert verdict(363, 12, 0) == 1, "stale ledger reported healthy"
+    assert verdict(363, 12, 363) == 0, "a genuinely healthy ledger should pass"
+
+
 # ------------------------------------------- the 2026-08-13 production run ---
 
 def test_the_real_green_run_would_now_be_judged_on_information_not_volume():

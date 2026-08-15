@@ -503,20 +503,40 @@ async def monitor(stale_days: int = 5, min_fresh_10d: int = 30,
         # is satisfied by the list-API trickle. Both stayed green for fourteen months
         # while 61 funds carried a 13-month hole. The quality ledger is per fund, so
         # this reads the DISTRIBUTION: how many funds are actually unusable.
-        below, worst = None, None
+        below, worst, scored_n = None, None, None
         try:
+            scored_n = await conn.fetchval("SELECT COUNT(*) FROM fund_data_quality")
             below = await conn.fetchval(
                 "SELECT COUNT(*) FROM fund_data_quality WHERE grade IN ('D','F')")
             worst = await conn.fetchrow(
                 """SELECT fund_id, grade, coverage_pct, worst_gap_days
                    FROM fund_data_quality
                    ORDER BY worst_gap_days DESC NULLS LAST LIMIT 1""")
+            fresh_rows = await conn.fetchval(
+                """SELECT COUNT(*) FROM fund_data_quality
+                   WHERE computed_at >= NOW() - INTERVAL '3 days'""")
         except Exception:
-            # Ledger absent (first deploy, or compute job has not run yet). Say so —
+            # Table absent (first deploy, or compute job has never run). Say so —
             # never let a missing check read as a passing one.
             reasons.append("fund_data_quality ledger UNAVAILABLE (per-fund check skipped)")
             stale = 1
         else:
+            # An EMPTY or STALE ledger is the dangerous case, not a missing one.
+            # First live run of this monitor: the compute job failed on every fund
+            # (DataError), so the table existed but held zero rows — and
+            # "COUNT(*) WHERE grade IN ('D','F')" dutifully returned 0, which read
+            # as "no funds below grade C" and the run went GREEN. That is the exact
+            # false-green this whole audit is about, reintroduced by the fix for it.
+            # A check that cannot see anything must never report health.
+            if not scored_n:
+                reasons.append("fund_data_quality ledger is EMPTY — the compute job "
+                               "is failing; per-fund quality is UNKNOWN, not healthy")
+                stale = 1
+            elif not fresh_rows:
+                reasons.append(f"fund_data_quality ledger is STALE (no row computed in "
+                               f"3 days; {scored_n} rows on file) — quality is UNKNOWN")
+                stale = 1
+
             if max_below_grade is not None and (below or 0) > max_below_grade:
                 stale = 1
                 reasons.append(f"{below} funds grade D/F (>{max_below_grade})")

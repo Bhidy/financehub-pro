@@ -355,6 +355,20 @@ async def verify_written(conn, prune: bool = False) -> int:
     for f in join_flags[:12]:
         print(f"[eima-verify]   REVIEW fund {f[0]}: {f[1]} -> {f[2]} step {f[3]}%", flush=True)
 
+    if prune and bad_vals:
+        # A fund holding eima rows OUTSIDE its own real value range received data
+        # that is not its own. Half-measures are worse than none here: ALL eima
+        # rows for that fund go, and the fixed pipeline re-fills from scratch on
+        # the next write — where the (name, section) keying and real-rows-only
+        # reconciliation prevent the contamination from recurring.
+        bad_funds = sorted({f for f, _, _ in bad_vals})
+        res = await conn.fetch(
+            """DELETE FROM nav_history WHERE fund_id = ANY($1::text[])
+               AND source IN ($2, $3) RETURNING fund_id""",
+            bad_funds, SOURCE_PUBLISHED, SOURCE_DERIVED)
+        print(f"[eima-verify] PURGED {len(res)} eima rows from value-violating "
+              f"funds {bad_funds}", flush=True)
+
     if prune and redundant:
         res = await conn.fetch(
             """DELETE FROM nav_history e

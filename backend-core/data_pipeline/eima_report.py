@@ -113,6 +113,14 @@ def parse_rows(text: str) -> list[dict]:
         m = _ROW.match(line)
         if not m:
             continue
+        # THE EMPTY-NAV SIGNATURE (found in production, the hard way). When a
+        # row's NAV cell is blank, the regex slides right and captures the first
+        # RETURN's digits as the NAV — "1.0493%" became NAV 1.0493 and fund 6402
+        # received a series of percentages as prices. The tell is exact: the
+        # remainder then STARTS with the orphaned '%'. Such a row has no NAV and
+        # must not exist, not guess.
+        if m.group(6).lstrip().startswith("%"):
+            continue
         nav = _num(m.group(5))
         if nav is None or nav <= 0:
             continue

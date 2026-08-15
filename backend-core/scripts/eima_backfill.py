@@ -516,7 +516,24 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
 
         candidates = []            # (name, fid, name_score, verdict)
         ambiguous: list[str] = []
+        incoherent: list[str] = []
         for name in sorted(series):
+            # INTERNAL COHERENCE. A single fund's own series cannot jump 3x
+            # between adjacent observations except in a redenomination — and a
+            # redenomination needs human handling, not an automated write. Fund
+            # 6402 received percentages-as-prices precisely because the poisoned
+            # points sat in months with no real data for reconcile to check;
+            # this gate needs no external data at all — the series indicts
+            # itself. Skip and report, never guess.
+            sp = sorted(clean_pts[name], key=lambda p: p["date"])
+            bad = False
+            for a, b in zip(sp, sp[1:]):
+                if a["nav"] > 0 and not (1 / 3 <= b["nav"] / a["nav"] <= 3):
+                    bad = True
+                    break
+            if bad:
+                incoherent.append(name.split("\u00a7")[0][:40])
+                continue
             et = _nm_tokens(name.split("\u00a7")[0])
             short = [c["fund_id"] for c in catalogue
                      if _nm_score(et, cat_toks[c["fund_id"]], weights) >= SHORTLIST_FLOOR]
@@ -564,6 +581,9 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
             assigned.append((name, fid, ns, v))
         stats["mapped"] = len(candidates) + stats["rejected"]
         stats["ambiguous"] = len(ambiguous)
+        stats["incoherent"] = len(incoherent)
+        for n in incoherent[:10]:
+            print(f"[eima]   INCOHERENT series skipped: '{n}'", flush=True)
         print(f"[eima] data-first assignment: {len(assigned)} funds "
               f"({len(ambiguous)} ambiguous skipped)", flush=True)
         for a in ambiguous[:15]:

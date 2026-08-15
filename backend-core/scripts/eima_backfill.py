@@ -203,10 +203,13 @@ def reconcile(points: list[dict], existing: dict) -> dict:
     """
     by_col = _errors_by_column(points, existing)
     total = sum(len(v) for v in by_col.values())
+    all_errs = [abs(x) for v in by_col.values() for x in v]
+    med_all = _median(all_errs) if all_errs else None
     if total < MIN_OVERLAP_POINTS:
         return {"ok": False, "reason": f"only {total} overlapping points "
                                        f"(need {MIN_OVERLAP_POINTS})",
-                "good_columns": set(), "by_col": by_col}
+                "good_columns": set(), "by_col": by_col,
+                "overlap": total, "median_abs": med_all}
 
     # The mapping is judged on the BEST-evidenced columns: if any column agrees
     # tightly across several points, this is the right fund.
@@ -220,9 +223,11 @@ def reconcile(points: list[dict], existing: dict) -> dict:
                 return {"ok": False,
                         "reason": f"looks like a {label} redenomination "
                                   f"({len(near)}/{total} points near {level}%)",
-                        "good_columns": set(), "by_col": by_col}
+                        "good_columns": set(), "by_col": by_col,
+                        "overlap": total, "median_abs": med_all}
         return {"ok": False, "reason": f"no column agrees; median |err| {overall:.2f}%",
-                "good_columns": set(), "by_col": by_col}
+                "good_columns": set(), "by_col": by_col,
+                "overlap": total, "median_abs": med_all}
 
     # Mapping accepted. Now keep only the columns that are individually sound —
     # a column with a wide spread is a broken anchor, not usable history.
@@ -231,10 +236,12 @@ def reconcile(points: list[dict], existing: dict) -> dict:
         if len(e) >= 2 and abs(_median(e)) <= MAX_MEDIAN_ERR_PCT and max(abs(x) for x in e) <= MAX_SINGLE_ERR_PCT:
             good.add(c)
     dropped = sorted(set(by_col) - good)
+    good_errs = [abs(x) for c in good for x in by_col[c]]
     return {"ok": True,
             "reason": f"{total} points; columns kept={sorted(good)}"
                       + (f", dropped={dropped}" if dropped else ""),
-            "good_columns": good, "by_col": by_col}
+            "good_columns": good, "by_col": by_col,
+            "overlap": len(good_errs), "median_abs": _median(good_errs)}
 
 
 def assign_one_to_one(names: list[str], catalogue: list[tuple[str, str]]) -> dict[str, tuple[str, float]]:
@@ -267,6 +274,100 @@ def assign_one_to_one(names: list[str], catalogue: list[tuple[str, str]]) -> dic
 
 
 # ------------------------------------------------------------------ main ----
+
+
+
+async def verify_written(conn, prune: bool = False) -> int:
+    """
+    Audit every EIMA-sourced row already in nav_history, at the source of truth.
+
+    Checks, in order of severity:
+      1. duplicates (the PK forbids them — verify anyway, trust nothing);
+      2. non-positive or absurd values relative to the fund's own real range;
+      3. REDUNDANT rows: an EIMA row within MATCH_WINDOW_DAYS of a real
+         observation adds no information and only noise — counted, and deleted
+         when prune=True (deletes ONLY eima-sourced rows, nothing else);
+      4. JOIN plausibility: at every boundary between a real row and an EIMA
+         row, the implied per-interval return is compared against the fund's own
+         behaviour. Flags are a review list, not an auto-delete.
+    """
+    rows = await conn.fetch(
+        """SELECT fund_id, date, nav, source FROM nav_history
+           WHERE source IN ($1, $2) ORDER BY fund_id, date""",
+        SOURCE_PUBLISHED, SOURCE_DERIVED)
+    print(f"[eima-verify] eima-sourced rows on file: {len(rows)}", flush=True)
+    if not rows:
+        return 0
+
+    by_fund: dict[str, list] = defaultdict(list)
+    for r in rows:
+        by_fund[r["fund_id"]].append(r)
+    print(f"[eima-verify] funds holding eima rows: {len(by_fund)}", flush=True)
+
+    dup = await conn.fetch(
+        """SELECT fund_id, date, COUNT(*) c FROM nav_history
+           GROUP BY fund_id, date HAVING COUNT(*) > 1 LIMIT 5""")
+    print(f"[eima-verify] duplicate (fund_id,date) rows: {len(dup)}"
+          + (" ❌" if dup else " ✅"), flush=True)
+
+    bad_vals, redundant, join_flags = [], [], []
+    for fid, ers in by_fund.items():
+        full = await conn.fetch(
+            "SELECT date, nav, source FROM nav_history WHERE fund_id=$1 ORDER BY date", fid)
+        real = [(r["date"], float(r["nav"])) for r in full
+                if r["source"] not in (SOURCE_PUBLISHED, SOURCE_DERIVED)]
+        if real:
+            lo = min(v for _, v in real) * 0.5
+            hi = max(v for _, v in real) * 2.0
+            for r in ers:
+                v = float(r["nav"])
+                if v <= 0 or v < lo or v > hi:
+                    bad_vals.append((fid, str(r["date"]), v))
+        real_dates = [d for d, _ in real]
+        import bisect as _b
+        for r in ers:
+            i = _b.bisect_left(real_dates, r["date"])
+            for j in (i - 1, i):
+                if 0 <= j < len(real_dates) and abs((real_dates[j] - r["date"]).days) <= MATCH_WINDOW_DAYS:
+                    redundant.append((fid, str(r["date"])))
+                    break
+        # join plausibility across real<->eima boundaries
+        seq = [(r["date"], float(r["nav"]), r["source"] in (SOURCE_PUBLISHED, SOURCE_DERIVED))
+               for r in full]
+        daily = [abs((b[1] / a[1]) - 1) / max(1, (b[0] - a[0]).days)
+                 for a, b in zip(seq, seq[1:]) if not a[2] and not b[2] and a[1] > 0]
+        daily.sort()
+        med_daily = daily[len(daily) // 2] if daily else 0.0005
+        for a, b in zip(seq, seq[1:]):
+            if a[2] == b[2] or a[1] <= 0:
+                continue
+            d = max(1, (b[0] - a[0]).days)
+            step = abs(b[1] / a[1] - 1)
+            allow = max(med_daily * d * 6, 0.02 + 0.0015 * d)
+            if step > allow:
+                join_flags.append((fid, str(a[0]), str(b[0]), round(step * 100, 2)))
+
+    print(f"[eima-verify] value-range violations: {len(bad_vals)}"
+          + (" ❌ " + str(bad_vals[:5]) if bad_vals else " ✅"), flush=True)
+    print(f"[eima-verify] redundant rows (within {MATCH_WINDOW_DAYS}d of real data): "
+          f"{len(redundant)}", flush=True)
+    print(f"[eima-verify] join-plausibility flags (review list): {len(join_flags)}", flush=True)
+    for f in join_flags[:12]:
+        print(f"[eima-verify]   REVIEW fund {f[0]}: {f[1]} -> {f[2]} step {f[3]}%", flush=True)
+
+    if prune and redundant:
+        res = await conn.fetch(
+            """DELETE FROM nav_history e
+               WHERE e.source IN ($1, $2)
+                 AND EXISTS (SELECT 1 FROM nav_history r
+                             WHERE r.fund_id = e.fund_id
+                               AND COALESCE(r.source, '') NOT IN ($1, $2)
+                               AND r.date BETWEEN e.date - $3::int AND e.date + $3::int)
+               RETURNING e.fund_id""",
+            SOURCE_PUBLISHED, SOURCE_DERIVED, MATCH_WINDOW_DAYS)
+        print(f"[eima-verify] PRUNED {len(res)} redundant eima rows", flush=True)
+    return 1 if (dup or bad_vals) else 0
+
 
 async def run(dry_run: bool = False, only_ids: list[str] | None = None,
               limit_reports: int | None = None,
@@ -328,42 +429,128 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
         gap_window = 0          # points landing in the 2025-05..2026-06 hole
         per_fund: list[tuple] = []
 
-        assignment = match_funds(
-            [{"name": n, "manager": managers.get(n)} for n in sorted(series)], catalogue)
-        print(f"[eima] one-to-one assignment: {len(assignment)} of {len(series)} names", flush=True)
+        # ------------------------------------------------------------------
+        # DATA-FIRST ASSIGNMENT (v3). Names can only SHORTLIST; data decides.
+        #
+        # Why, proven on production: the name matcher — both versions of it —
+        # got real funds WRONG in ways no scorer can fix:
+        #   * "Hermes" (a 2026 money-market fund) scored a perfect 1.00 against
+        #     our "EFG Hermes Gold Fund" by containment;
+        #   * the two GIG Insurance siblings (equity vs money market) were
+        #     swapped outright;
+        #   * EIMA and Mubasher NUMBER THE SAME FUND DIFFERENTLY — EIMA's
+        #     "NBE Fund IV" is our "NBE Mutual Fund 2", confirmed by NAVs
+        #     agreeing to <1% — so series-number logic cannot be authoritative
+        #     in either direction.
+        # The one instrument that was right every time is reconciliation
+        # against NAV we already hold. So each name is scored against EVERY
+        # shortlisted fund by RECONCILE QUALITY, and assignment is one-to-one
+        # by (overlap points, lowest median error). A fund whose data agrees
+        # to 0.2% across ten dates IS that fund, whatever the names say.
+        # ------------------------------------------------------------------
+        from data_pipeline.fund_name_match import idf as _idf, score as _nm_score, tokens as _nm_tokens
+        cat_toks = {c["fund_id"]: _nm_tokens(c["en"]) for c in catalogue}
+        weights = _idf(list(cat_toks.values()) + [_nm_tokens(n) for n in series])
 
-        for name, pts in sorted(series.items()):
-            hit = assignment.get(name)
-            if not hit:
-                stats["skipped_no_match"] += 1
-                continue
-            fid, score = hit
-            if only_ids and fid not in only_ids:
-                continue
-            stats["mapped"] += 1
-
-            rows = await conn.fetch(
-                "SELECT date, nav FROM nav_history WHERE fund_id = $1", fid)
-            existing = {r["date"]: float(r["nav"]) for r in rows}
-
-            # De-duplicate: prefer a published NAV over a derived one for a date.
+        # De-duplicate each name's points once (published beats derived per date).
+        clean_pts: dict[str, list[dict]] = {}
+        for name, pts in series.items():
             byd: dict[date, dict] = {}
             for p in pts:
                 cur = byd.get(p["date"])
                 if cur is None or (cur["derived"] and not p["derived"]):
                     byd[p["date"]] = p
-            pts = sorted(byd.values(), key=lambda p: p["date"])
+            clean_pts[name] = sorted(byd.values(), key=lambda p: p["date"])
 
-            verdict = reconcile(pts, existing)
-            if not verdict["ok"]:
-                stats["rejected"] += 1
-                rejects.append(f"{fid} <- '{name[:38]}' (score {score:.2f}): {verdict['reason']}")
+        existing_cache: dict[str, dict] = {}
+
+        async def load_existing(fid: str) -> dict:
+            if fid not in existing_cache:
+                rows = await conn.fetch(
+                    "SELECT date, nav FROM nav_history WHERE fund_id = $1", fid)
+                existing_cache[fid] = {r["date"]: float(r["nav"]) for r in rows}
+            return existing_cache[fid]
+
+        SHORTLIST_FLOOR = 0.30      # generous: recall here, precision from data
+        AMBIGUITY_RATIO = 2.0       # best median must beat runner-up 2x, else skip
+
+        candidates = []            # (name, fid, name_score, verdict)
+        ambiguous: list[str] = []
+        for name in sorted(series):
+            et = _nm_tokens(name)
+            short = [c["fund_id"] for c in catalogue
+                     if _nm_score(et, cat_toks[c["fund_id"]], weights) >= SHORTLIST_FLOOR]
+            if only_ids:
+                short = [f for f in short if f in only_ids]
+            passed = []
+            for fid in short:
+                v = reconcile(clean_pts[name], await load_existing(fid))
+                if v["ok"]:
+                    passed.append((fid, v))
+            if not passed:
+                stats["skipped_no_match"] += 1
                 continue
+            passed.sort(key=lambda t: (-(t[1]["overlap"] or 0), t[1]["median_abs"] or 9e9))
+            best = passed[0]
+            # Ambiguity guard: two funds tracking the same asset (gold funds all
+            # follow gold) can BOTH reconcile. If the runner-up is nearly as
+            # good, no write is safer than a coin flip.
+            if len(passed) > 1:
+                b, r = best[1], passed[1][1]
+                if (r["median_abs"] or 9e9) < max((b["median_abs"] or 0) * AMBIGUITY_RATIO, 0.10):
+                    ambiguous.append(f"'{name[:36]}' ~ {best[0]} vs {passed[1][0]} "
+                                     f"(medians {b['median_abs']:.2f}% / {r['median_abs']:.2f}%)")
+                    continue
+            ns = _nm_score(et, cat_toks[best[0]], weights)
+            candidates.append((name, best[0], ns, best[1]))
+
+        # One-to-one, best data quality first.
+        candidates.sort(key=lambda t: (-(t[3]["overlap"] or 0), t[3]["median_abs"] or 9e9))
+        used_fid: set = set()
+        assigned = []
+        for name, fid, ns, v in candidates:
+            if fid in used_fid:
+                rejects.append(f"{fid} <- '{name[:38]}': fund already taken by a "
+                               f"better-reconciling name")
+                stats["rejected"] += 1
+                continue
+            used_fid.add(fid)
+            assigned.append((name, fid, ns, v))
+        stats["mapped"] = len(candidates) + stats["rejected"]
+        stats["ambiguous"] = len(ambiguous)
+        print(f"[eima] data-first assignment: {len(assigned)} funds "
+              f"({len(ambiguous)} ambiguous skipped)", flush=True)
+        for a in ambiguous[:15]:
+            print(f"[eima]   AMBIGUOUS {a}", flush=True)
+
+        for name, fid, score, verdict in assigned:
+            pts = clean_pts[name]
+            existing = existing_cache[fid]
             stats["validated"] += 1
 
             good = verdict["good_columns"]
             new = [p for p in pts
                    if p["date"] not in existing and p.get("column") in good]
+
+            # PROXIMITY GUARD. A derived point within a few days of data we
+            # already hold adds no information — the fund has an observation
+            # there — but it does add noise: derived values sit ~0.5% off the
+            # real curve, and interleaving them with genuine rows manufactures
+            # sawtooth volatility the metrics pipeline would then dutifully
+            # report. Only genuine voids get filled.
+            if new:
+                have = sorted(existing)
+                import bisect as _bisect
+                def _near(d):
+                    i = _bisect.bisect_left(have, d)
+                    for j in (i - 1, i):
+                        if 0 <= j < len(have) and abs((have[j] - d).days) <= MATCH_WINDOW_DAYS:
+                            return True
+                    return False
+                before_n = len(new)
+                new = [p for p in new if not _near(p["date"])]
+                stats["skipped_redundant"] = stats.get("skipped_redundant", 0) + (before_n - len(new))
+
             if not new:
                 continue
             for q in new:
@@ -417,8 +604,24 @@ def main() -> None:
                     help="only process the first N reports (for a fast check)")
     ap.add_argument("--delay", type=float, default=DEFAULT_DELAY_SECONDS,
                     help="seconds between requests to EIMA (be kind; default 2.0)")
+    ap.add_argument("--verify-only", action="store_true",
+                    help="audit the eima rows already in nav_history; no fetch, no writes")
+    ap.add_argument("--prune-redundant", action="store_true",
+                    help="[with --verify-only] delete eima rows sitting within a few days "
+                         "of a real observation (noise, no information)")
     args = ap.parse_args()
     ids = [s.strip() for s in args.ids.split(",")] if args.ids else None
+    if args.verify_only:
+        async def _v():
+            conn = await connect_resilient(load_db_url())
+            try:
+                if args.prune_redundant and await database_is_read_only(conn):
+                    print("[eima-verify] database READ-ONLY — verify runs, prune skipped.")
+                    return await verify_written(conn, prune=False)
+                return await verify_written(conn, prune=args.prune_redundant)
+            finally:
+                await conn.close()
+        sys.exit(asyncio.run(_v()))
     sys.exit(asyncio.run(run(dry_run=args.dry_run, only_ids=ids,
                              limit_reports=args.limit_reports, delay=args.delay)))
 

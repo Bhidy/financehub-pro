@@ -157,6 +157,39 @@ def test_best_match_prefers_the_right_fund():
     assert fid == "5635"
 
 
+
+
+# ----------------------------------------------- data-first assignment ------
+
+def test_reconcile_reports_quality_for_ranking():
+    ex = {**EXISTING, date(2024, 6, 6): 14.6337, date(2023, 6, 2): 12.0447}
+    v = eb.reconcile(cols([("2024-06-04", 14.5964, "y2"), ("2024-06-06", 14.60, "y2"),
+                           ("2023-06-04", 12.0398, "y3"), ("2023-06-02", 12.05, "y3")]), ex)
+    assert v["ok"]
+    assert v["overlap"] >= 3
+    assert v["median_abs"] is not None and v["median_abs"] < 1.0
+
+
+def test_data_decides_a_name_swap():
+    """
+    The production GIG case, in miniature. Two sibling funds with confusable
+    names; the name scorer swaps them; the DATA cannot be swapped: the equity
+    series reconciles only with the equity fund's history and vice versa. With
+    data-first ranking, whichever candidate reconciles is the assignment —
+    whatever any name score says.
+    """
+    equity_hist = {date(2026, 6, 4): 18.30, date(2026, 6, 11): 18.55,
+                   date(2026, 6, 18): 18.20}
+    mm_hist = {date(2026, 6, 4): 15.52, date(2026, 6, 11): 15.57,
+               date(2026, 6, 18): 15.62}
+    equity_pts = cols([("2026-06-04", 18.31, "nav"), ("2026-06-11", 18.54, "nav"),
+                       ("2026-06-18", 18.21, "nav")])
+    # equity data against the equity fund: agrees
+    assert eb.reconcile(equity_pts, equity_hist)["ok"]
+    # equity data against the money-market sibling: refused
+    assert not eb.reconcile(equity_pts, mm_hist)["ok"]
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

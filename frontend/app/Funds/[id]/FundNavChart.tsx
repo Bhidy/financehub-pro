@@ -197,7 +197,18 @@ export default function FundNavChart({
             // series to draw, so nothing can be interpolated. Whitespace still goes
             // to the PRIMARY series so the time scale gives the hole its true width.
             const runs = splitAtGaps(filtered as NavPoint[]);
-            const spaced = withGapBreaks(filtered as NavPoint[]) as { time: string; value?: number }[];
+            let spaced = withGapBreaks(filtered as NavPoint[]) as { time: string; value?: number }[];
+
+            // Pad back to the window's start when the fund has no data that early.
+            // setVisibleRange REFUSES a range extending beyond the series (it throws,
+            // and the catch below then falls back to fitContent) — which is how a
+            // fund holding five weeks of history still filled a chart labelled "3Y".
+            // A leading whitespace point at the cutoff makes the requested window
+            // real to the time scale, so the emptiness renders as emptiness.
+            if (cutoff !== null) {
+                const cutIso = new Date(cutoff).toISOString().slice(0, 10);
+                if (cutIso < spaced[0].time) spaced = [{ time: cutIso }, ...spaced];
+            }
 
             if (runs.length <= 1) {
                 series.setData(spaced);
@@ -205,7 +216,9 @@ export default function FundNavChart({
                 // Primary carries run 0 plus the whitespace that spans every hole,
                 // so the axis keeps calendar-honest spacing end to end.
                 const holeSlots = spaced.filter((p) => p.value === undefined);
-                const head = [...runs[0], ...holeSlots].sort((a, b) => (a.time < b.time ? -1 : 1));
+                const head = [...runs[0], ...holeSlots]
+                    .filter((p, i, arr) => i === 0 || p.time !== arr[i - 1].time)
+                    .sort((a, b) => (a.time < b.time ? -1 : 1));
                 series.setData(head as { time: string; value?: number }[]);
                 for (const run of runs.slice(1)) {
                     const extra = makeSeriesRef.current?.();

@@ -603,7 +603,25 @@
         // would flag every one of them), and the 2011 EGX closure is real history.
         const EGX_CLOSURES = [['2011-01-27', '2011-03-23']];
         const DAY_MS = 86400000;
-        const isoMs = (s) => Date.parse(s + 'T00:00:00Z');
+        // This page's history carries FULL ISO timestamps ("2021-11-16T00:00:00.000Z"),
+        // not bare dates. The first version of this appended 'T00:00:00Z' unconditionally,
+        // which produced NaN for every real point — so every gap comparison was false and
+        // nothing ever split. Unit tests used bare dates and passed; the live chart still
+        // drew straight through a 412-day hole. Accept both shapes, and the {year,month,day}
+        // object lightweight-charts also emits.
+        const isoMs = (t) => {
+            if (t == null) return NaN;
+            if (typeof t === 'object' && t.year) return Date.UTC(+t.year, +t.month - 1, +t.day);
+            const s = String(t);
+            return Date.parse(/^\d{4}-\d{2}-\d{2}$/.test(s) ? s + 'T00:00:00Z' : s);
+        };
+        // Emit whitespace in the SAME shape as the surrounding real points, so the
+        // series stays sortable and lightweight-charts does not reject mixed formats.
+        const stampLike = (sample, ms) => {
+            const iso = new Date(ms).toISOString();
+            if (typeof sample === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(sample)) return iso.slice(0, 10);
+            return iso;
+        };
 
         function medianGapDays(points) {
             if (points.length < 3) return 1;
@@ -650,7 +668,7 @@
                 const days = (isoMs(b) - isoMs(a)) / DAY_MS;
                 if (days <= tol) continue;
                 if (EGX_CLOSURES.some(([cs, ce]) => !(isoMs(b) <= isoMs(cs) || isoMs(a) >= isoMs(ce)))) continue;
-                const mid = new Date((isoMs(a) + isoMs(b)) / 2).toISOString().slice(0, 10);
+                const mid = stampLike(a, (isoMs(a) + isoMs(b)) / 2);
                 if (mid !== a && mid !== b) out.push({ time: mid });   // whitespace = line break
             }
             return out;

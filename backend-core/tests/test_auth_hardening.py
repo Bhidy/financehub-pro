@@ -11,7 +11,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.core.identity import normalize_email
-from app.core.rate_limit import SlidingWindowLimiter, client_key, enforce
+from app.core.rate_limit import SlidingWindowLimiter, enforce
 
 
 # ── Email normalisation ──────────────────────────────────────────────────
@@ -74,43 +74,6 @@ def test_enforce_raises_429_with_retry_after_header():
     assert "Retry-After" in exc.value.headers
 
 
-# ── Caller identification ────────────────────────────────────────────────
-# The app sits behind Caddy, so request.client.host is the proxy. Only the
-# FIRST X-Forwarded-For entry is meaningful; later entries are caller-supplied
-# and trusting them would let an attacker mint a fresh budget per request.
-
-class _FakeClient:
-    def __init__(self, host):
-        self.host = host
-
-
-class _FakeRequest:
-    def __init__(self, headers=None, host="10.0.0.1"):
-        self.headers = headers or {}
-        self.client = _FakeClient(host) if host else None
-
-
-def test_client_key_prefers_first_forwarded_for_entry():
-    req = _FakeRequest({"x-forwarded-for": "203.0.113.7, 198.51.100.2, 192.0.2.9"})
-    assert client_key(req) == "203.0.113.7"
-
-
-def test_client_key_ignores_spoofed_trailing_entries():
-    """A caller appending their own entries must not change their identity."""
-    a = client_key(_FakeRequest({"x-forwarded-for": "203.0.113.7"}))
-    b = client_key(_FakeRequest({"x-forwarded-for": "203.0.113.7, evil-1"}))
-    c = client_key(_FakeRequest({"x-forwarded-for": "203.0.113.7, evil-2"}))
-    assert a == b == c
-
-
-def test_client_key_falls_back_to_socket_peer():
-    assert client_key(_FakeRequest({}, host="198.51.100.44")) == "198.51.100.44"
-
-
-def test_client_key_handles_missing_client():
-    assert client_key(_FakeRequest({}, host=None)) == "unknown"
-
-
 # ── Shared-bucket regression ─────────────────────────────────────────────
 # Caught in production QA: the API sits behind a server-side proxy, so if the
 # real client address is not forwarded, every visitor is keyed identically and
@@ -124,18 +87,6 @@ def test_distinct_callers_never_share_a_budget():
     for ip in callers:
         assert limiter.hit(ip) is None, f"{ip} was throttled by another caller's traffic"
         assert limiter.hit(ip) is None
-
-
-def test_proxy_style_forwarded_chain_keys_on_the_visitor_not_the_proxy():
-    """
-    The proxy sends the visitor's address; the edge appends its own. Two
-    visitors arriving through the SAME proxy must key differently.
-    """
-    proxy = "76.76.21.9"  # stands in for the serverless egress address
-    a = client_key(_FakeRequest({"x-forwarded-for": f"203.0.113.5, {proxy}"}))
-    b = client_key(_FakeRequest({"x-forwarded-for": f"203.0.113.6, {proxy}"}))
-    assert a != b, "two visitors behind one proxy must not share a rate-limit bucket"
-    assert a == "203.0.113.5" and b == "203.0.113.6"
 
 
 def _limiter_args(name: str) -> dict:
@@ -159,19 +110,54 @@ def _limiter_args(name: str) -> dict:
     raise AssertionError(f"{name} not found in auth.py")
 
 
-def test_global_backstop_sits_far_above_per_caller_budget():
+def test_signup_ceiling_sits_far_above_real_volume():
     """
-    The backstop must never be the limit a normal day hits — otherwise it
-    recreates the site-wide lockout it exists to prevent.
+    The global ceiling is a runaway bound, not a daily limit. Everything it
+    blocks is a real person who cannot register, so it must stay well clear of
+    normal traffic.
     """
-    per_ip = _limiter_args("_SIGNUP_IP_LIMITER")
-    backstop = _limiter_args("_SIGNUP_GLOBAL_LIMITER")
-    assert backstop["limit"] >= per_ip["limit"] * 20
+    assert _limiter_args("_SIGNUP_GLOBAL_LIMITER")["limit"] >= 300
 
 
-def test_signup_budget_is_humane_for_a_shared_address():
+def test_no_per_ip_budget_survives_in_the_auth_endpoints():
     """
-    Households, offices and mobile carriers put many real people behind one
-    address. A budget in the low single digits turns that into a support ticket.
+    Per-IP budgets collapse into a per-SITE budget whenever the client address
+    does not survive the proxy chain — which took the whole signup flow down
+    once. The design must not reintroduce one.
     """
-    assert _limiter_args("_SIGNUP_IP_LIMITER")["limit"] >= 10
+    from pathlib import Path
+
+    src = (Path(__file__).resolve().parents[1] / "app/api/v1/endpoints/auth.py").read_text("utf-8")
+    assert "client_key" not in src, "auth endpoints must not key a budget on the client address"
+
+
+def test_successful_logins_never_consume_the_failure_budget():
+    """The core property: only failures are charged."""
+    limiter = SlidingWindowLimiter(limit=3, window_seconds=900)
+    key = "acct:user@example.com"
+    for _ in range(50):
+        assert limiter.would_block(key) is False  # a correct password, 50 times
+
+
+def test_repeated_failures_eventually_block_that_account():
+    limiter = SlidingWindowLimiter(limit=3, window_seconds=900)
+    key = "acct:victim@example.com"
+    for _ in range(3):
+        assert limiter.would_block(key) is False
+        limiter.hit(key)
+    assert limiter.would_block(key) is True
+
+
+def test_one_accounts_failures_never_throttle_another():
+    limiter = SlidingWindowLimiter(limit=2, window_seconds=900)
+    for _ in range(5):
+        limiter.hit("acct:victim@example.com")
+    assert limiter.would_block("acct:victim@example.com") is True
+    assert limiter.would_block("acct:bystander@example.com") is False
+
+
+def test_would_block_does_not_consume_budget():
+    limiter = SlidingWindowLimiter(limit=1, window_seconds=900)
+    for _ in range(10):
+        assert limiter.would_block("k") is False
+    assert limiter.hit("k") is None, "checking must not have spent the budget"

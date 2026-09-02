@@ -10,7 +10,7 @@ import re
 from app.db.session import db
 from app.core.security import verify_password, create_access_token, get_password_hash, create_refresh_token
 from app.core.config import settings
-from app.core.rate_limit import SlidingWindowLimiter, client_key, enforce
+from app.core.rate_limit import SlidingWindowLimiter, enforce
 from app.core.identity import normalize_email
 
 router = APIRouter()
@@ -19,28 +19,44 @@ router = APIRouter()
 # Neither endpoint had ANY throttle: account creation and password grinding
 # were both free.
 #
-# THE PER-IP BUDGET IS ONLY AS GOOD AS THE CLIENT IP. Traffic arrives through
-# the Next.js proxy on Vercel, which calls this API server-side — so unless the
-# proxy forwards the visitor's address, every signup on the site shares ONE
-# bucket. It did, briefly, and a 5/hour per-IP budget became 5/hour for the
-# whole site (caught in production QA: the third unrelated request got a 429).
-# The proxy now sends the visitor's address as the first X-Forwarded-For entry,
-# which is what client_key() reads.
+# WHY THERE IS NO PER-IP BUDGET HERE (learned the hard way, twice)
+# Traffic reaches this API through the Next.js proxy on Vercel, which calls it
+# SERVER-SIDE. The client address therefore depends on (a) the proxy forwarding
+# it and (b) Caddy preserving it — and Caddy's config lives on the VPS, outside
+# this repo, so (b) cannot be verified from here. When that chain breaks, every
+# visitor collapses onto ONE key and a per-IP budget becomes a per-SITE budget:
+# a 5/hour signup limit locked the whole site out after five requests, caught in
+# production QA. A per-IP limit that is useful when it works is an outage when
+# it silently doesn't, so this design does not depend on the client address at
+# all. The two budgets below cannot collapse, because both are keyed on data
+# that is always present and always correct.
 #
-# Because that header is caller-supplied, the per-IP budget is best-effort
-# abuse control, NOT a security boundary. The control that actually matters is
-# _LOGIN_ACCOUNT_LIMITER: it is keyed on the email being attacked, so a
-# distributed credential-stuffing run against one victim is throttled no matter
-# how many addresses it comes from, and it cannot be spoofed away.
-_SIGNUP_IP_LIMITER = SlidingWindowLimiter(limit=10, window_seconds=3600)
-_LOGIN_IP_LIMITER = SlidingWindowLimiter(limit=30, window_seconds=900)
-_LOGIN_ACCOUNT_LIMITER = SlidingWindowLimiter(limit=10, window_seconds=900)
-
-# Backstop against a flood that rotates (or forges) addresses. Deliberately set
-# FAR above real signup volume — its job is to bound a runaway, never to be the
-# thing a normal day hits. If this ever fires in normal use, raise it; do not
-# lower it, because everything behind it is a real person who cannot register.
+# 1. FAILED LOGINS PER ACCOUNT — the real security control. Keyed on the email
+#    under attack, so a distributed credential-stuffing run is throttled no
+#    matter how many source addresses it uses. Only FAILURES are counted, so a
+#    legitimate user signing in normally can never be locked out by it.
+# 2. A GLOBAL SIGNUP CEILING — bounds a runaway. Set FAR above real volume on
+#    purpose: everything it blocks is a real person who cannot register, so if
+#    it ever fires in normal use the answer is to raise it, never to lower it.
+_LOGIN_FAILURE_LIMITER = SlidingWindowLimiter(limit=10, window_seconds=900)
 _SIGNUP_GLOBAL_LIMITER = SlidingWindowLimiter(limit=300, window_seconds=3600)
+
+_LOGIN_THROTTLED = "Too many failed sign-in attempts for this account. Please try again later."
+
+
+def _assert_login_allowed(email: str) -> None:
+    """Refuse a sign-in once this account has accumulated too many failures."""
+    if _LOGIN_FAILURE_LIMITER.would_block(f"acct:{email}"):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=_LOGIN_THROTTLED,
+            headers={"Retry-After": "900"},
+        )
+
+
+def _record_login_failure(email: str) -> None:
+    """Charge one failed attempt against this account's budget."""
+    _LOGIN_FAILURE_LIMITER.hit(f"acct:{email}")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token", auto_error=False)
 
@@ -199,16 +215,15 @@ async def login_for_access_token(
     response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
-    # Two budgets: one per source address (stops a single host grinding many
-    # accounts) and one per account (stops a distributed grind on one victim).
-    # The per-IP budget is checked first so a botnet cannot exhaust a victim's
-    # per-account budget cheaply from one machine.
     email = normalize_email(form_data.username)
-    enforce(_LOGIN_IP_LIMITER, client_key(request), "Too many sign-in attempts. Please try again later.")
-    enforce(_LOGIN_ACCOUNT_LIMITER, f"acct:{email}", "Too many sign-in attempts. Please try again later.")
+    # Budget is checked BEFORE verifying, then consumed only ON FAILURE, so a
+    # user who knows their password is never throttled no matter how often they
+    # sign in — only a grinder accumulates against the budget.
+    _assert_login_allowed(email)
 
     user = await get_user_by_email(email)
     if not user or not verify_password(form_data.password, user['hashed_password']):
+        _record_login_failure(email)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -244,14 +259,14 @@ async def login_for_access_token(
 
 @router.post("/login", response_model=Token)
 async def login_json(request: Request, req: LoginRequest, response: Response):
-    # Same budgets as /token — this is the JSON twin of the same grant and was
+    # Same budget as /token — this is the JSON twin of the same grant and was
     # an unthrottled way around it.
     email = normalize_email(req.email)
-    enforce(_LOGIN_IP_LIMITER, client_key(request), "Too many sign-in attempts. Please try again later.")
-    enforce(_LOGIN_ACCOUNT_LIMITER, f"acct:{email}", "Too many sign-in attempts. Please try again later.")
+    _assert_login_allowed(email)
 
     user = await get_user_by_email(email)
     if not user or not verify_password(req.password, user['hashed_password']):
+        _record_login_failure(email)
         raise HTTPException(status_code=401, detail="Incorrect email or password")
     
     access_token = create_access_token(data={"sub": user['email'], "role": user['role']})
@@ -297,11 +312,6 @@ async def signup(request: Request, reg: RegisterRequest, response: Response):
     3. EMPTY NAMES. `full_name: ""` was accepted, producing accounts that
        render as a blank identity everywhere in the UI.
     """
-    enforce(
-        _SIGNUP_IP_LIMITER,
-        client_key(request),
-        "Too many accounts created from this address. Please try again later.",
-    )
     enforce(
         _SIGNUP_GLOBAL_LIMITER,
         "global",

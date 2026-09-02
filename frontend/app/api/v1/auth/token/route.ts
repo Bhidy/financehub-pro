@@ -8,18 +8,19 @@ export const dynamic = 'force-dynamic';
 const HF_API_URL = `${env.NEXT_PUBLIC_API_URL}/api/v1/auth`;
 
 /**
- * Forward the REAL client IP as the first X-Forwarded-For entry.
+ * Forward the visitor's address as the first X-Forwarded-For entry.
  *
- * This proxy calls the backend server-side, so without it every signup on the
- * site arrives at the API from the same handful of Vercel egress addresses and
- * the backend's per-IP budget becomes ONE GLOBAL bucket for all users —
- * verified in production: the 3rd request from an unrelated caller got a 429.
- * Caddy appends its own view of the peer, and the backend reads the FIRST
- * entry, so sending the client's address here restores per-user bucketing.
+ * This proxy calls the backend server-side, so without it every request arrives
+ * from the same handful of serverless egress addresses and the VPS access logs
+ * attribute the whole site's traffic to one client. Forwarding it is ordinary
+ * reverse-proxy hygiene and makes those logs truthful.
  *
- * This is best-effort abuse control, not authentication: anyone calling the
- * backend directly can claim any address. The security-critical budget is the
- * per-ACCOUNT login limit, which is keyed on the email and cannot be spoofed.
+ * It is NOT a security signal and nothing is authorised on it: the header is
+ * caller-supplied, and whether it survives the remaining hops depends on the
+ * VPS's own proxy config. That is exactly why the backend's rate limits are
+ * keyed on the account and on a global counter rather than on the address — an
+ * address-keyed budget silently becomes a site-wide one the moment this chain
+ * breaks, which took registration down once.
  */
 function clientIp(request: NextRequest): string | null {
     const forwarded = request.headers.get('x-forwarded-for');

@@ -20,8 +20,15 @@ Both are fine for abuse control (they raise the cost of automation by orders of
 magnitude); neither is fine for billing or quota enforcement. If the API is ever
 horizontally scaled, move this to a shared store rather than raising the limits.
 
+Keys are chosen by the caller and must be values that are ALWAYS present and
+correct — an email, or a fixed global key. Deliberately NOT the client IP: this
+API is reached through a server-side proxy, so the visitor's address survives
+only if every hop forwards it, and when that chain breaks every visitor
+collapses onto one key and a per-IP budget silently becomes a per-SITE one.
+That took the signup flow down once; see the note in the auth endpoints.
+
 Memory is bounded: expired buckets are swept on write, and the key count is
-capped so a flood of unique client IPs cannot grow the dict without limit.
+capped so a flood of unique keys cannot grow the dict without limit.
 """
 
 from __future__ import annotations
@@ -31,7 +38,7 @@ from collections import deque
 from threading import Lock
 from typing import Deque, Dict
 
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, status
 
 # Hard ceiling on tracked keys. Past this the oldest-idle keys are dropped:
 # losing a counter fails OPEN for that caller, which is the correct trade
@@ -59,6 +66,23 @@ class SlidingWindowLimiter:
             for k in sorted(self._hits, key=lambda k: self._hits[k][-1])[: len(self._hits) - _MAX_KEYS]:
                 del self._hits[k]
 
+    def would_block(self, key: str) -> bool:
+        """
+        Is `key` already over budget? Does NOT consume any budget.
+
+        Paired with hit() this separates "may I try" from "that try failed", so
+        a login budget can charge only FAILED attempts — a user who knows their
+        password is then never throttled, however often they sign in.
+        """
+        now = time.monotonic()
+        with self._lock:
+            hits = self._hits.get(key)
+            if not hits:
+                return False
+            while hits and now - hits[0] > self.window:
+                hits.popleft()
+            return len(hits) >= self.limit
+
     def hit(self, key: str) -> int | None:
         """
         Record an attempt.
@@ -76,23 +100,6 @@ class SlidingWindowLimiter:
                 return max(1, int(self.window - (now - hits[0])))
             hits.append(now)
             return None
-
-
-def client_key(request: Request) -> str:
-    """
-    Identify the caller.
-
-    Requests reach the app through Caddy, so request.client.host is the proxy;
-    the real address is the FIRST entry of X-Forwarded-For (the ones after it
-    are attacker-controllable and must never be trusted). Falls back to the
-    socket peer when the header is absent.
-    """
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        first = forwarded.split(",")[0].strip()
-        if first:
-            return first
-    return request.client.host if request.client else "unknown"
 
 
 def enforce(limiter: SlidingWindowLimiter, key: str, message: str) -> None:

@@ -8,6 +8,29 @@ export const dynamic = 'force-dynamic';
 const HF_API_URL = `${env.NEXT_PUBLIC_API_URL}/api/v1/auth`;
 
 /**
+ * Forward the REAL client IP as the first X-Forwarded-For entry.
+ *
+ * This proxy calls the backend server-side, so without it every signup on the
+ * site arrives at the API from the same handful of Vercel egress addresses and
+ * the backend's per-IP budget becomes ONE GLOBAL bucket for all users —
+ * verified in production: the 3rd request from an unrelated caller got a 429.
+ * Caddy appends its own view of the peer, and the backend reads the FIRST
+ * entry, so sending the client's address here restores per-user bucketing.
+ *
+ * This is best-effort abuse control, not authentication: anyone calling the
+ * backend directly can claim any address. The security-critical budget is the
+ * per-ACCOUNT login limit, which is keyed on the email and cannot be spoofed.
+ */
+function clientIp(request: NextRequest): string | null {
+    const forwarded = request.headers.get('x-forwarded-for');
+    if (forwarded) {
+        const first = forwarded.split(',')[0].trim();
+        if (first) return first;
+    }
+    return request.headers.get('x-real-ip');
+}
+
+/**
  * Signup proxy.
  *
  * This route is the one auth boundary that is deployable on its own (Vercel),
@@ -48,10 +71,14 @@ export async function POST(request: NextRequest) {
             phone: typeof phone === 'string' && phone.trim() ? phone.trim() : null,
         };
 
+        const ip = clientIp(request);
         const response = await fetch(`${HF_API_URL}/signup`, {
             method: 'POST',
             signal: AbortSignal.timeout(15000), // don't hang on a slow/sleeping backend (L-4)
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(ip ? { 'X-Forwarded-For': ip } : {}),
+            },
             body: JSON.stringify(payload),
         });
 

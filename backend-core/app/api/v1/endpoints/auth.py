@@ -17,13 +17,30 @@ router = APIRouter()
 
 # ── Abuse control ────────────────────────────────────────────────────────
 # Neither endpoint had ANY throttle: account creation and password grinding
-# were both free. Limits are deliberately generous for a human and hostile to a
-# script. Signup is per-IP; login is per-IP AND per-account, so one attacker
-# cannot lock a victim out by burning that victim's per-account budget from a
-# botnet — the per-account counter is the slower of the two by design.
-_SIGNUP_LIMITER = SlidingWindowLimiter(limit=5, window_seconds=3600)
+# were both free.
+#
+# THE PER-IP BUDGET IS ONLY AS GOOD AS THE CLIENT IP. Traffic arrives through
+# the Next.js proxy on Vercel, which calls this API server-side — so unless the
+# proxy forwards the visitor's address, every signup on the site shares ONE
+# bucket. It did, briefly, and a 5/hour per-IP budget became 5/hour for the
+# whole site (caught in production QA: the third unrelated request got a 429).
+# The proxy now sends the visitor's address as the first X-Forwarded-For entry,
+# which is what client_key() reads.
+#
+# Because that header is caller-supplied, the per-IP budget is best-effort
+# abuse control, NOT a security boundary. The control that actually matters is
+# _LOGIN_ACCOUNT_LIMITER: it is keyed on the email being attacked, so a
+# distributed credential-stuffing run against one victim is throttled no matter
+# how many addresses it comes from, and it cannot be spoofed away.
+_SIGNUP_IP_LIMITER = SlidingWindowLimiter(limit=10, window_seconds=3600)
 _LOGIN_IP_LIMITER = SlidingWindowLimiter(limit=30, window_seconds=900)
 _LOGIN_ACCOUNT_LIMITER = SlidingWindowLimiter(limit=10, window_seconds=900)
+
+# Backstop against a flood that rotates (or forges) addresses. Deliberately set
+# FAR above real signup volume — its job is to bound a runaway, never to be the
+# thing a normal day hits. If this ever fires in normal use, raise it; do not
+# lower it, because everything behind it is a real person who cannot register.
+_SIGNUP_GLOBAL_LIMITER = SlidingWindowLimiter(limit=300, window_seconds=3600)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token", auto_error=False)
 
@@ -281,9 +298,14 @@ async def signup(request: Request, reg: RegisterRequest, response: Response):
        render as a blank identity everywhere in the UI.
     """
     enforce(
-        _SIGNUP_LIMITER,
+        _SIGNUP_IP_LIMITER,
         client_key(request),
         "Too many accounts created from this address. Please try again later.",
+    )
+    enforce(
+        _SIGNUP_GLOBAL_LIMITER,
+        "global",
+        "Sign-ups are temporarily rate limited. Please try again shortly.",
     )
 
     email = normalize_email(reg.email)

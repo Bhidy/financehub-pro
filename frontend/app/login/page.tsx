@@ -19,6 +19,7 @@ import { useState, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { writeSession } from "@/lib/auth-session";
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Layers, BarChart3, Calculator, Shield, Check, ArrowRight, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import GoogleLoginButton, { OrDivider } from "@/components/GoogleLoginButton";
@@ -96,11 +97,10 @@ function LoginPageContent() {
         if (googleAuth === "success" && token && userStr) {
             try {
                 const user = JSON.parse(decodeURIComponent(userStr));
-                localStorage.setItem("fh_auth_token", token);
-                if (refreshToken) {
-                    localStorage.setItem("fh_refresh_token", refreshToken);
-                }
-                localStorage.setItem("fh_user", JSON.stringify(user));
+                // writeSession (not raw localStorage) so every nav on the page —
+                // including the vanilla renderer on the static pages — is told
+                // about the new session instead of waiting for a reload.
+                writeSession(token, user, refreshToken);
                 clearAuthHandoff();
 
                 const destination = resolvePostAuthDestination(param("redirect"));
@@ -128,6 +128,9 @@ function LoginPageContent() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        // Re-entrancy guard: a double-tap fired two /token requests and the
+        // second could resolve after the first had already navigated away.
+        if (isLoading) return;
         setError(null);
 
         if (!email.trim()) {
@@ -371,6 +374,12 @@ function LoginPageContent() {
                                         className="w-full ps-12 pe-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-sm"
                                         placeholder={labels.common.emailPlaceholder}
                                         autoComplete="email"
+                                        inputMode="email"
+                                        autoCapitalize="none"
+                                        autoCorrect="off"
+                                        spellCheck={false}
+                                        required
+                                        dir="ltr"
                                     />
                                 </div>
                             </div>
@@ -395,6 +404,8 @@ function LoginPageContent() {
                                         className="w-full ps-12 pe-12 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-sm"
                                         placeholder={t.passwordPlaceholder}
                                         autoComplete="current-password"
+                                        required
+                                        dir="ltr"
                                     />
                                     <button
                                         type="button"
@@ -576,6 +587,12 @@ function LoginPageContent() {
                                         className="w-full ps-12 pe-4 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/20 transition-all text-sm"
                                         placeholder={labels.common.emailPlaceholder}
                                         autoComplete="email"
+                                        inputMode="email"
+                                        autoCapitalize="none"
+                                        autoCorrect="off"
+                                        spellCheck={false}
+                                        required
+                                        dir="ltr"
                                     />
                                 </div>
                             </div>
@@ -594,6 +611,8 @@ function LoginPageContent() {
                                         className="w-full ps-12 pe-12 py-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] focus:ring-2 focus:ring-[#14B8A6]/20 transition-all text-sm"
                                         placeholder={t.passwordPlaceholder}
                                         autoComplete="current-password"
+                                        required
+                                        dir="ltr"
                                     />
                                     <button
                                         type="button"

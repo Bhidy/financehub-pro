@@ -15,6 +15,7 @@
  */
 
 import type { StoredLang } from "@/hooks/useStoredLang";
+import authNav from "@/lib/auth-nav.json";
 
 export interface AuthLabels {
     /** Shared across all three auth screens. */
@@ -28,6 +29,7 @@ export interface AuthLabels {
         passwordLabel: string;
         confirmPasswordLabel: string;
         emailRequired: string;
+        emailInvalid: string;
         passwordsMismatch: string;
     };
     /** Site navigation auth affordances. */
@@ -73,6 +75,9 @@ export interface AuthLabels {
         mobileSubtitle: string;
         fullNameLabel: string;
         fullNamePlaceholder: string;
+        phoneLabel: string;
+        phoneOptional: string;
+        phonePlaceholder: string;
         passwordPlaceholder: string;
         confirmPasswordPlaceholder: string;
         submit: string;
@@ -142,13 +147,11 @@ const EN: AuthLabels = {
         passwordLabel: "Password",
         confirmPasswordLabel: "Confirm Password",
         emailRequired: "Please enter your email",
+        emailInvalid: "Please enter a valid email address",
         passwordsMismatch: "Passwords do not match",
     },
     nav: {
-        signIn: "Sign In",
-        createAccount: "Create Account",
-        signOut: "Sign Out",
-        account: "Account",
+        ...authNav.labels.en,
     },
     login: {
         heroLine1: "Egypt's Mutual Funds",
@@ -192,7 +195,10 @@ const EN: AuthLabels = {
         mobileSubtitle: "Compare Egyptian mutual funds with Starta",
         fullNameLabel: "Full Name",
         fullNamePlaceholder: "John Doe",
-        passwordPlaceholder: "Min 6 characters",
+        phoneLabel: "Phone Number",
+        phoneOptional: "optional",
+        phonePlaceholder: "+20 100 000 0000",
+        passwordPlaceholder: "Min 8 characters",
         confirmPasswordPlaceholder: "Confirm your password",
         submit: "Get Started",
         haveAccount: "Already have an account?",
@@ -264,13 +270,11 @@ const AR: AuthLabels = {
         passwordLabel: "كلمة المرور",
         confirmPasswordLabel: "تأكيد كلمة المرور",
         emailRequired: "يرجى إدخال بريدك الإلكتروني",
+        emailInvalid: "يرجى إدخال بريد إلكتروني صحيح",
         passwordsMismatch: "كلمتا المرور غير متطابقتين",
     },
     nav: {
-        signIn: "تسجيل الدخول",
-        createAccount: "إنشاء حساب",
-        signOut: "تسجيل الخروج",
-        account: "حسابي",
+        ...authNav.labels.ar,
     },
     login: {
         heroLine1: "صناديق مصر الاستثمارية",
@@ -314,7 +318,10 @@ const AR: AuthLabels = {
         mobileSubtitle: "قارن صناديق الاستثمار المصرية مع ستارتا",
         fullNameLabel: "الاسم الكامل",
         fullNamePlaceholder: "أحمد محمد",
-        passwordPlaceholder: "6 أحرف على الأقل",
+        phoneLabel: "رقم الهاتف",
+        phoneOptional: "اختياري",
+        phonePlaceholder: "+20 100 000 0000",
+        passwordPlaceholder: "8 أحرف على الأقل",
         confirmPasswordPlaceholder: "أعد إدخال كلمة المرور",
         submit: "ابدأ الآن",
         haveAccount: "لديك حساب بالفعل؟",

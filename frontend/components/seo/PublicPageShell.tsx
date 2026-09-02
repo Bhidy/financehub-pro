@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Script from 'next/script';
 import ThemeToggle from '@/components/seo/ThemeToggle';
+import NavAuth from '@/components/seo/NavAuth';
 import navConfig from '@/lib/nav.json';
 import assetVersions from '@/lib/asset-versions.json';
 import arTwinRoutes from '@/lib/ar-twin-routes.json';
@@ -28,12 +29,10 @@ const NAV_LABELS: Record<Lang, Record<string, string>> = {
     en: {
         home: 'HOME', funds: 'MUTUAL FUNDS', pulse: 'MARKET PULSE', news: 'MARKET NEWS',
         portfolio: 'MY PORTFOLIO', learn: 'LEARN', cta: 'Free Risk Profile',
-        login: 'SIGN IN', register: 'CREATE ACCOUNT',
     },
     ar: {
         home: 'الرئيسية', funds: 'الصناديق الاستثمارية', pulse: 'نبض السوق', news: 'أخبار السوق',
         portfolio: 'محفظتي', learn: 'تعلّم', cta: 'اعرف ملف مخاطرك',
-        login: 'تسجيل الدخول', register: 'إنشاء حساب',
     },
 };
 
@@ -203,25 +202,17 @@ export default function PublicPageShell({
                     </div>
 
                     <div className="flex items-center gap-3 ml-3 starta-nav-controls">
-                        {/* Auth entry points. /login and /register are single-URL pages
-                            that follow the STORED language (no /ar twin), so they stay
-                            in the visitor's language without a prefix. */}
-                        <Link
-                            href="/login"
-                            prefetch={false}
-                            className="hidden md:inline-flex px-4 py-2 text-xs font-bold tracking-widest text-muted hover:text-starta-teal transition-colors"
-                            data-key="nav_login"
-                        >
-                            {t.login}
-                        </Link>
-                        <Link
-                            href="/register"
-                            prefetch={false}
-                            className="hidden md:inline-flex px-5 py-2 rounded-full text-xs font-bold tracking-widest btn-primary"
-                            data-key="nav_register"
-                        >
-                            {t.register}
-                        </Link>
+                        {/* Auth entry points. This shell is a SERVER component and the
+                            session lives in localStorage, so the two links used to be
+                            hardcoded here — every one of the ~40 routes this shell
+                            renders told a signed-in user to "Create Account" and offered
+                            no way to reach /settings or sign out. NavAuth is the shared
+                            client island: it server-renders the signed-out pair (correct
+                            for crawlers and for most requests, and hydration-safe) and
+                            swaps to the account state in an effect.
+                            /login and /register are single-URL pages that follow the
+                            STORED language (no /ar twin), so they carry no prefix. */}
+                        <NavAuth lang={lang} />
                         <div className="nav-controls">
                             <ThemeToggle />
                             {altHref && (

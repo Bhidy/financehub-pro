@@ -1,0 +1,28 @@
+{
+  "_comment": "CANONICAL AUTH-NAV CONTRACT — the single definition of the session's storage keys, the account routes, and the four nav labels. Consumed directly by lib/auth-session.ts, lib/auth-i18n.ts (AUTH_LABELS.nav) and components/seo/NavAuth.tsx; mirrored into public/assets/starta-auth-nav.js for the static HTML pages, which cannot import JSON. The mirror is build-gated (scripts/verify-route-aliases.mjs) — edit HERE ONLY, then run `node scripts/sync-auth-nav.mjs`. Same pattern as lib/nav.json.",
+  "storage": {
+    "token": "fh_auth_token",
+    "refresh": "fh_refresh_token",
+    "user": "fh_user",
+    "avatar": "user_avatar_url"
+  },
+  "routes": {
+    "signIn": "/login",
+    "createAccount": "/register",
+    "account": "/settings"
+  },
+  "labels": {
+    "en": {
+      "signIn": "Sign In",
+      "createAccount": "Create Account",
+      "signOut": "Sign Out",
+      "account": "Account"
+    },
+    "ar": {
+      "signIn": "تسجيل الدخول",
+      "createAccount": "إنشاء حساب",
+      "signOut": "تسجيل الخروج",
+      "account": "حسابي"
+    }
+  }
+}

@@ -19,8 +19,9 @@ import { track } from '@/lib/analytics';
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { writeSession } from "@/lib/auth-session";
 import {
-    User, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2,
+    User, Mail, Lock, Phone, Eye, EyeOff, ArrowRight, Loader2,
     AlertCircle, ArrowLeft, CheckCircle, ArrowLeftRight, Calculator,
     TrendingUp, Shield, Users
 } from "lucide-react";
@@ -55,6 +56,7 @@ function MobileRegisterPageContent() {
     const [formData, setFormData] = useState({
         full_name: "",
         email: "",
+        phone: "",
         password: "",
         confirmPassword: "",
     });
@@ -96,11 +98,10 @@ function MobileRegisterPageContent() {
         if (googleAuth === "success" && token && userStr) {
             try {
                 const user = JSON.parse(decodeURIComponent(userStr));
-                localStorage.setItem("fh_auth_token", token);
-                if (refreshToken) {
-                    localStorage.setItem("fh_refresh_token", refreshToken);
-                }
-                localStorage.setItem("fh_user", JSON.stringify(user));
+                // writeSession (not raw localStorage) so every nav on the page —
+                // including the vanilla renderer on the static pages — is told
+                // about the new session instead of waiting for a reload.
+                writeSession(token, user, refreshToken);
                 clearAuthHandoff();
 
                 const destination = resolvePostAuthDestination(param("redirect"));
@@ -126,14 +127,30 @@ function MobileRegisterPageContent() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        // A double submit creates the account twice: the first request wins and
+        // the second comes back "Email already registered", so an impatient
+        // double-tap used to end on an error screen for an account that WAS
+        // created. The in-flight flag is the guard.
+        if (isLoading) return;
         setError(null);
 
-        if (!formData.full_name.trim()) {
+        const fullName = formData.full_name.trim();
+        const email = formData.email.trim();
+        const phone = formData.phone.trim();
+
+        if (!fullName) {
             setError(t.errors.nameRequired);
             return;
         }
-        if (!formData.email.trim()) {
+        if (!email) {
             setError(labels.common.emailRequired);
+            return;
+        }
+        // The browser's type="email" check accepts "ahmed@gmail" (no TLD) while
+        // the API's validator rejects it, so validate here too and say so in the
+        // user's own language instead of surfacing a Pydantic message.
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+            setError(labels.common.emailInvalid);
             return;
         }
         if (formData.password.length < 8) {
@@ -148,9 +165,10 @@ function MobileRegisterPageContent() {
         setIsLoading(true);
 
         const result = await register({
-            email: formData.email,
+            email,
             password: formData.password,
-            full_name: formData.full_name,
+            full_name: fullName,
+            ...(phone ? { phone } : {}),
         });
 
         if (result.success) {
@@ -439,6 +457,10 @@ function renderSharedForm(formData: any, setFormData: any, showPassword: boolean
                         <User className={`absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'name' ? 'text-[#14B8A6]' : 'text-slate-400'}`} />
                         <input
                             type="text"
+                            name="name"
+                            autoComplete="name"
+                            required
+                            maxLength={255}
                             value={formData.full_name}
                             onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                             onFocus={() => setFocusedField('name')}
@@ -458,12 +480,49 @@ function renderSharedForm(formData: any, setFormData: any, showPassword: boolean
                         <Mail className={`absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'email' ? 'text-[#14B8A6]' : 'text-slate-400'}`} />
                         <input
                             type="email"
+                            name="email"
+                            autoComplete="email"
+                            inputMode="email"
+                            autoCapitalize="none"
+                            autoCorrect="off"
+                            spellCheck={false}
+                            required
+                            maxLength={255}
+                            dir="ltr"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             onFocus={() => setFocusedField('email')}
                             onBlur={() => setFocusedField(null)}
                             className="w-full ps-12 pe-4 py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
                             placeholder={labels.common.emailPlaceholder}
+                        />
+                    </div>
+                </div>
+
+                {/* Phone (optional). The users.phone column, the signup API field
+                    and the Settings screen all already existed — registration was
+                    the only step that never asked, so every account arrived with a
+                    null phone and no way to reach the customer. */}
+                <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        {t.phoneLabel}
+                        <span className="ms-1.5 font-normal text-slate-400">({t.phoneOptional})</span>
+                    </label>
+                    <div className={`relative rounded-xl transition-all duration-300 ${focusedField === 'phone' ? 'ring-2 ring-[#14B8A6]/30 shadow-lg shadow-[#14B8A6]/10' : ''}`}>
+                        <Phone className={`absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'phone' ? 'text-[#14B8A6]' : 'text-slate-400'}`} />
+                        <input
+                            type="tel"
+                            name="tel"
+                            autoComplete="tel"
+                            inputMode="tel"
+                            maxLength={20}
+                            dir="ltr"
+                            value={formData.phone}
+                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            onFocus={() => setFocusedField('phone')}
+                            onBlur={() => setFocusedField(null)}
+                            className="w-full ps-12 pe-4 py-3.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#14B8A6] transition-all text-[15px]"
+                            placeholder={t.phonePlaceholder}
                         />
                     </div>
                 </div>
@@ -477,6 +536,11 @@ function renderSharedForm(formData: any, setFormData: any, showPassword: boolean
                         <Lock className={`absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'password' ? 'text-[#14B8A6]' : 'text-slate-400'}`} />
                         <input
                             type={showPassword ? "text" : "password"}
+                            name="new-password"
+                            autoComplete="new-password"
+                            required
+                            minLength={8}
+                            dir="ltr"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             onFocus={() => setFocusedField('password')}
@@ -519,6 +583,11 @@ function renderSharedForm(formData: any, setFormData: any, showPassword: boolean
                         <Lock className={`absolute start-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${focusedField === 'confirm' ? 'text-[#14B8A6]' : 'text-slate-400'}`} />
                         <input
                             type={showPassword ? "text" : "password"}
+                            name="confirm-password"
+                            autoComplete="new-password"
+                            required
+                            minLength={8}
+                            dir="ltr"
                             value={formData.confirmPassword}
                             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                             onFocus={() => setFocusedField('confirm')}

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header, Response, Cookie
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Request, Response, Cookie
+from asyncpg.exceptions import UniqueViolationError
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, validator
 from datetime import timedelta, datetime
@@ -9,8 +10,21 @@ import re
 from app.db.session import db
 from app.core.security import verify_password, create_access_token, get_password_hash, create_refresh_token
 from app.core.config import settings
+from app.core.rate_limit import SlidingWindowLimiter, client_key, enforce
+from app.core.identity import normalize_email
 
 router = APIRouter()
+
+# ── Abuse control ────────────────────────────────────────────────────────
+# Neither endpoint had ANY throttle: account creation and password grinding
+# were both free. Limits are deliberately generous for a human and hostile to a
+# script. Signup is per-IP; login is per-IP AND per-account, so one attacker
+# cannot lock a victim out by burning that victim's per-account budget from a
+# botnet — the per-account counter is the slower of the two by design.
+_SIGNUP_LIMITER = SlidingWindowLimiter(limit=5, window_seconds=3600)
+_LOGIN_IP_LIMITER = SlidingWindowLimiter(limit=30, window_seconds=900)
+_LOGIN_ACCOUNT_LIMITER = SlidingWindowLimiter(limit=10, window_seconds=900)
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token", auto_error=False)
 
 class LoginRequest(BaseModel):
@@ -80,8 +94,19 @@ class RefreshRequest(BaseModel):
 # ============================================================
 
 async def get_user_by_email(email: str):
-    query = "SELECT * FROM users WHERE email = $1"
-    user = await db.fetch_one(query, email)
+    """
+    Look a user up case-insensitively.
+
+    LOWER(email) rather than a plain match so accounts created BEFORE
+    normalisation shipped stay reachable. Add the matching functional index
+    when the table outgrows a sequential scan:
+        CREATE UNIQUE INDEX CONCURRENTLY users_email_lower_key
+            ON users (LOWER(email));
+    That index is also what will make the duplicate rows impossible rather than
+    merely unlikely — see the signup handler's unique-violation branch.
+    """
+    query = "SELECT * FROM users WHERE LOWER(email) = LOWER($1) ORDER BY id LIMIT 1"
+    user = await db.fetch_one(query, email.strip())
     return dict(user) if user else None
 
 async def get_current_user_optional(token: Annotated[str | None, Depends(oauth2_scheme)]):
@@ -153,10 +178,19 @@ def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(
+    request: Request,
     response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
-    user = await get_user_by_email(form_data.username)
+    # Two budgets: one per source address (stops a single host grinding many
+    # accounts) and one per account (stops a distributed grind on one victim).
+    # The per-IP budget is checked first so a botnet cannot exhaust a victim's
+    # per-account budget cheaply from one machine.
+    email = normalize_email(form_data.username)
+    enforce(_LOGIN_IP_LIMITER, client_key(request), "Too many sign-in attempts. Please try again later.")
+    enforce(_LOGIN_ACCOUNT_LIMITER, f"acct:{email}", "Too many sign-in attempts. Please try again later.")
+
+    user = await get_user_by_email(email)
     if not user or not verify_password(form_data.password, user['hashed_password']):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -192,8 +226,14 @@ async def login_for_access_token(
     }
 
 @router.post("/login", response_model=Token)
-async def login_json(req: LoginRequest, response: Response):
-    user = await get_user_by_email(req.email)
+async def login_json(request: Request, req: LoginRequest, response: Response):
+    # Same budgets as /token — this is the JSON twin of the same grant and was
+    # an unthrottled way around it.
+    email = normalize_email(req.email)
+    enforce(_LOGIN_IP_LIMITER, client_key(request), "Too many sign-in attempts. Please try again later.")
+    enforce(_LOGIN_ACCOUNT_LIMITER, f"acct:{email}", "Too many sign-in attempts. Please try again later.")
+
+    user = await get_user_by_email(email)
     if not user or not verify_password(req.password, user['hashed_password']):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
     
@@ -210,6 +250,7 @@ async def login_json(req: LoginRequest, response: Response):
             "id": user['id'],
             "email": user['email'],
             "full_name": user.get('full_name'),
+            "phone": user.get('phone'),
             "role": user['role'],
             "subscription_status": user.get('subscription_status', 'none'),
             "subscription_plan": user.get('subscription_plan')
@@ -217,47 +258,86 @@ async def login_json(req: LoginRequest, response: Response):
     }
 
 @router.post("/register")
-async def register_alias(reg: RegisterRequest, response: Response):
-    return await signup(reg, response)
+async def register_alias(request: Request, reg: RegisterRequest, response: Response):
+    return await signup(request, reg, response)
 
 @router.post("/signup")
-async def signup(reg: RegisterRequest, response: Response):
-    existing = await get_user_by_email(reg.email)
-    if existing:
+async def signup(request: Request, reg: RegisterRequest, response: Response):
+    """
+    Create an account and sign the user straight in.
+
+    Three defects fixed here (all reproduced against production):
+
+    1. RAW DB ERRORS WERE PUBLIC. The old handler wrapped everything in
+       `except Exception` and returned f"Signup Database Error: {e}" — verbatim
+       Postgres text, i.e. table and column names, handed to anonymous callers.
+       Errors are now logged server-side and answered generically.
+    2. DUPLICATES UNDER A RACE. Existence was checked and then inserted with no
+       handling for the window between them, so two concurrent signups for the
+       same address produced a unique violation that fell into that same
+       `except` and surfaced as a 500. It is now caught and answered 400, the
+       same as the non-racing case.
+    3. EMPTY NAMES. `full_name: ""` was accepted, producing accounts that
+       render as a blank identity everywhere in the UI.
+    """
+    enforce(
+        _SIGNUP_LIMITER,
+        client_key(request),
+        "Too many accounts created from this address. Please try again later.",
+    )
+
+    email = normalize_email(reg.email)
+    full_name = (reg.full_name or "").strip()
+    if not full_name:
+        raise HTTPException(status_code=400, detail="Full name is required")
+    phone = (reg.phone or "").strip() or None
+
+    if await get_user_by_email(email):
         raise HTTPException(status_code=400, detail="Email already registered")
-         
+
     hashed_pw = get_password_hash(reg.password)
+    query = """
+        INSERT INTO users (email, hashed_password, full_name, phone, role, is_active, created_at)
+        VALUES ($1, $2, $3, $4, 'user', TRUE, NOW())
+        RETURNING id, email, full_name, phone, role, is_active
+    """
     try:
-        query = """
-            INSERT INTO users (email, hashed_password, full_name, phone, role, is_active, created_at)
-            VALUES ($1, $2, $3, $4, 'user', TRUE, NOW())
-            RETURNING id, email, full_name, phone, role, is_active
-        """
-        user = await db.fetch_one(query, reg.email, hashed_pw, reg.full_name, reg.phone)
-        
-        if not user:
-            raise HTTPException(status_code=500, detail="Failed to create user (DB returned None)")
-        
-        # Auto-generate token for immediate login
-        access_token = create_access_token(
-            data={"sub": user['email'], "role": user['role']}
-        )
-        refresh_token = create_refresh_token(
-            data={"sub": user['email'], "role": user['role']}
-        )
-        
-        _set_refresh_cookie(response, refresh_token)
-        
-        return {
-            "message": "Registration successful",
-            "access_token": access_token,
-            "token_type": "bearer",
-            "refresh_token": refresh_token,
-            "user": dict(user)
-        }
+        user = await db.fetch_one(query, email, hashed_pw, full_name, phone)
+    except UniqueViolationError:
+        # Lost the race against a concurrent signup for the same address.
+        raise HTTPException(status_code=400, detail="Email already registered")
     except Exception as e:
-        print(f"Signup Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Signup Database Error: {str(e)}")
+        print(f"Signup Error: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail="Could not create the account")
+
+    if not user:
+        print("Signup Error: INSERT ... RETURNING produced no row")
+        raise HTTPException(status_code=500, detail="Could not create the account")
+
+    access_token = create_access_token(data={"sub": user['email'], "role": user['role']})
+    refresh_token = create_refresh_token(data={"sub": user['email'], "role": user['role']})
+
+    _set_refresh_cookie(response, refresh_token)
+
+    return {
+        "message": "Registration successful",
+        "access_token": access_token,
+        "token_type": "bearer",
+        "refresh_token": refresh_token,
+        # Same shape /token and /login return. It used to omit the subscription
+        # fields, so a just-registered user and a just-logged-in user handed the
+        # frontend two different objects for the same person.
+        "user": {
+            "id": user['id'],
+            "email": user['email'],
+            "full_name": user.get('full_name'),
+            "phone": user.get('phone'),
+            "role": user['role'],
+            "is_active": user['is_active'],
+            "subscription_status": "none",
+            "subscription_plan": None,
+        }
+    }
 
 @router.post("/refresh", response_model=Token)
 async def refresh_access_token(

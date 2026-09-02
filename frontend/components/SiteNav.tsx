@@ -5,6 +5,7 @@ import { Sun, Moon, Menu, X, History, LogOut, UserRound } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import NavAuth from "@/components/seo/NavAuth";
 import { AUTH_LABELS } from "@/lib/auth-i18n";
 import navConfig from "@/lib/nav.json";
 import assetVersions from '@/lib/asset-versions.json';
@@ -36,13 +37,6 @@ const NAV_LINKS = navConfig.items;
  * Auth pill styles — Sign In is the secondary (outlined) action, Create Account
  * the primary (filled teal) one, both matching the existing nav pill geometry.
  */
-const AUTH_PILL_BASE =
-    "px-5 py-2 rounded-full text-xs font-bold tracking-widest transition-all duration-200 hover:-translate-y-px";
-const AUTH_PILL_SECONDARY =
-    `${AUTH_PILL_BASE} border border-slate-200 dark:border-white/[0.09] bg-white/50 dark:bg-[rgba(14,16,16,0.56)] text-slate-700 dark:text-[#eef2f6] hover:text-[#14B8A6] hover:border-[rgba(20,184,166,0.5)]`;
-const AUTH_PILL_PRIMARY =
-    `${AUTH_PILL_BASE} bg-[#14B8A6] text-white hover:bg-[#0D9488] shadow-sm shadow-[#14B8A6]/30`;
-
 export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }: SiteNavProps) {
     const { theme, toggleTheme } = useTheme();
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -102,33 +96,11 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                             </a>
                         )}
 
-                        {/* Auth — real links, desktop/tablet only; mobile lives in overlay */}
-                        {!isAuthLoading && (
-                            isAuthenticated ? (
-                                <div className="hidden md:flex items-center gap-2">
-                                    <a href="/settings" className={`hidden md:inline-flex items-center gap-2 ${AUTH_PILL_SECONDARY}`}>
-                                        <UserRound className="w-3.5 h-3.5" />
-                                        {authLabels.account}
-                                    </a>
-                                    <button
-                                        onClick={logout}
-                                        className={`hidden md:inline-flex items-center gap-2 ${AUTH_PILL_SECONDARY}`}
-                                    >
-                                        <LogOut className="w-3.5 h-3.5" />
-                                        {authLabels.signOut}
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="hidden md:flex items-center gap-2">
-                                    <a href="/login" className={`inline-flex items-center ${AUTH_PILL_SECONDARY}`}>
-                                        {authLabels.signIn}
-                                    </a>
-                                    <a href="/register" className={`inline-flex items-center ${AUTH_PILL_PRIMARY}`}>
-                                        {authLabels.createAccount}
-                                    </a>
-                                </div>
-                            )
-                        )}
+                        {/* Auth — the SHARED control (components/seo/NavAuth.tsx), the
+                            same one PublicPageShell and the static pages render, so the
+                            three nav surfaces cannot drift. The mobile overlay below
+                            keeps its own full-width treatment. */}
+                        <NavAuth lang={lang === "ar" ? "ar" : "en"} />
 
                         {/* Theme — desktop only; mobile lives in overlay */}
                         <button

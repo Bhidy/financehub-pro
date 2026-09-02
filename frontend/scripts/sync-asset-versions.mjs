@@ -27,6 +27,7 @@ export const MANAGED_ASSETS = [
   "manager-logos.js",
   "starta-nav.css",
   "starta-nav.js",
+  "starta-auth-nav.js",
   "starta-i18n.js",
   "starta-lang-boot.js",
   "starta-theme.js",

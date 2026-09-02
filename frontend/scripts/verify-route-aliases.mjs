@@ -2,6 +2,7 @@ import { constants } from "node:fs";
 import { access, readFile, readdir } from "node:fs/promises";
 import { assetHashes } from "./sync-asset-versions.mjs";
 import { deriveArRoutes } from "./sync-ar-routes.mjs";
+import { renderMirror, extractMirror, readContract } from "./sync-auth-nav.mjs";
 import { buildManifest, referencedImages } from "./sync-learn-image-sizes.mjs";
 import { validate as validateManagerLogos, MIN_RASTER_WIDTH } from "./sync-manager-logos.mjs";
 import path from "node:path";
@@ -295,6 +296,36 @@ const checks = [
     file: "components/seo/PublicPageShell.tsx",
     assert: (text) => /import navConfig from '@\/lib\/nav\.json'/.test(text)
       && /navConfig\.items\.map/.test(text),
+  },
+  {
+    // ── AUTH NAV ────────────────────────────────────────────────────────
+    // The session's storage keys, account routes and four labels are defined
+    // ONCE in lib/auth-nav.json. Three surfaces render them: NavAuth.tsx (both
+    // React shells) and the mirrored public/assets/starta-auth-nav.js (the 13
+    // static pages). Drift here is not cosmetic — it is how the site shipped an
+    // auth-aware nav that no user could reach while every reachable nav was
+    // hardcoded to "Create Account", including for users who had just
+    // registered. These four checks make that unshippable.
+    name: "static auth-nav mirror matches lib/auth-nav.json (run: node scripts/sync-auth-nav.mjs)",
+    file: "public/assets/starta-auth-nav.js",
+    assert: (text, ctx) => extractMirror(text) === renderMirror(ctx.authNav),
+  },
+  {
+    name: "no page paints auth links without reading the session",
+    file: "public/assets/starta-lang-boot.js",
+    assert: (text) => !/paintAuthLinks/.test(text),
+  },
+  {
+    name: "NavAuth renders from lib/auth-nav.json and the canonical session",
+    file: "components/seo/NavAuth.tsx",
+    assert: (text) => /import authNav from '@\/lib\/auth-nav\.json'/.test(text)
+      && /readSession/.test(text)
+      && /subscribeSession/.test(text),
+  },
+  {
+    name: "both React navs mount NavAuth (never hardcoded auth links)",
+    file: "components/seo/PublicPageShell.tsx",
+    assert: (text) => /<NavAuth\b/.test(text) && !/href="\/register"[\s\S]{0,400}nav_register/.test(text),
   },
   {
     // News rows carry `image_url` scraped from the originating publisher.
@@ -644,11 +675,12 @@ async function run() {
 
   // Canonical nav config, passed to checks that compare a surface against it.
   const navConfig = await readFile(path.join(root, "lib/nav.json"), "utf8");
+  const authNav = await readContract();
 
   for (const check of checks) {
     const fullPath = path.join(root, check.file);
     const text = await readFile(fullPath, "utf8");
-    if (!check.assert(text, { navConfig })) {
+    if (!check.assert(text, { navConfig, authNav })) {
       console.error(`FAIL: ${check.name} (${check.file})`);
       process.exit(1);
     }

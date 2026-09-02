@@ -114,3 +114,142 @@ html[data-theme="dark"] .starta-nav-cta {
 @media (min-width: 1024px) {
     nav .smn-burger { display: none !important; }
 }
+
+/* ── Auth cluster ───────────────────────────────────────────────────────
+   Rendered by three surfaces from ONE definition (lib/auth-nav.json):
+   components/seo/NavAuth.tsx for both React shells, and
+   public/assets/starta-auth-nav.js for the static HTML pages.
+
+   Plain CSS for the same reason the CTA above is: every static page ships its
+   own FROZEN Tailwind build, so utility classes written here silently no-op on
+   most of them. Never restyle this with utilities.
+
+   Below 768px the cluster is hidden and auth lives in the mobile drawer. That
+   is not only for parity: the previous unconditional pills were 168px wide and
+   pushed the burger and language toggle off the edge of a 375px bar, so the
+   menu could not be opened at all. */
+.starta-auth-links {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'IBM Plex Sans Arabic', 'Sora', sans-serif;
+}
+
+@media (min-width: 768px) {
+    .starta-auth-links { display: flex; }
+}
+
+.starta-auth-link,
+.starta-auth-cta,
+.starta-auth-account,
+.starta-auth-signout {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    /* One height for every control in the cluster. Without it the account pill
+       (which contains a 1.6rem avatar) stood 7px taller than its neighbour and
+       the row read as two mismatched components. */
+    min-height: 2.2rem;
+    box-sizing: border-box;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: transparent;
+    font-family: inherit;
+    transition: color 0.22s ease, background-color 0.22s ease, border-color 0.22s ease;
+}
+
+/* Signed out ─────────────────────────────────────────────────────────── */
+.starta-auth-link {
+    padding: 0.5rem 0.7rem;
+    color: var(--c-text-muted, #5c6676);
+}
+
+.starta-auth-link:hover { color: #14B8A6; }
+
+.starta-auth-cta {
+    padding: 0.5rem 0.9rem;
+    color: #fff;
+    background: linear-gradient(135deg, #14B8A6 20%, #0f766e 100%);
+    box-shadow: 0 8px 20px rgba(20, 184, 166, 0.22);
+}
+
+.starta-auth-cta:hover { filter: saturate(1.08) brightness(1.04); }
+
+/* Signed in ──────────────────────────────────────────────────────────── */
+.starta-auth-account {
+    padding: 0.3rem 0.85rem 0.3rem 0.3rem;
+    color: var(--c-text-main, #0f172a);
+    border-color: var(--c-border, rgba(15, 23, 42, 0.1));
+    background: rgba(20, 184, 166, 0.06);
+    max-width: 12rem;
+}
+
+html[dir="rtl"] .starta-auth-account {
+    padding: 0.3rem 0.3rem 0.3rem 0.85rem;
+}
+
+.starta-auth-account:hover {
+    border-color: rgba(20, 184, 166, 0.55);
+    background: rgba(20, 184, 166, 0.12);
+}
+
+.starta-auth-avatar {
+    flex: 0 0 auto;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #14B8A6 20%, #0f766e 100%);
+}
+
+/* The name is the one variable-length token in the bar — cap it so a long
+   Arabic first name cannot push the theme and language controls off-screen. */
+.starta-auth-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 8rem;
+}
+
+.starta-auth-signout {
+    padding: 0.5rem 0.75rem;
+    color: var(--c-text-muted, #5c6676);
+    border-color: var(--c-border, rgba(15, 23, 42, 0.1));
+}
+
+.starta-auth-signout:hover {
+    color: #e11d48;
+    border-color: rgba(225, 29, 72, 0.45);
+}
+
+/* Only the TEAL ACCENT is restated for dark — text and border colours already
+   come from --c-text-main / --c-text-muted / --c-border, which each surface
+   redefines for its own theme. Hardcoding them here was actively wrong: on the
+   App Router shell the theme is driven by the `light`/`dark` CLASS while
+   <html data-theme> can hold the opposite value, so a [data-theme="dark"]
+   colour override painted near-white text onto a light nav bar. Following the
+   token is what the rest of this file does (see .starta-nav-links a). */
+html[data-theme="dark"] .starta-auth-link:hover { color: #2DD4BF; }
+html[data-theme="dark"] .starta-auth-account:hover { border-color: rgba(45, 212, 191, 0.55); }
+
+/* Keyboard focus must be visible on every auth control — these are the only
+   controls in the bar that change account state. */
+.starta-auth-link:focus-visible,
+.starta-auth-cta:focus-visible,
+.starta-auth-account:focus-visible,
+.starta-auth-signout:focus-visible {
+    outline: 2px solid #14B8A6;
+    outline-offset: 2px;
+}

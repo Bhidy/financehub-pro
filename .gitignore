@@ -31,6 +31,9 @@ debug_*.png
 !yahoo_master_map.json
 # Canonical primary nav — the build reads it, so it MUST be tracked.
 !frontend/lib/nav.json
+# Canonical auth-nav contract (session keys, account routes, nav labels).
+# React imports it and the static mirror is generated from it — must be tracked.
+!frontend/lib/auth-nav.json
 # Generated asset hash manifest — React imports it, so the build needs it.
 !frontend/lib/asset-versions.json
 # Arabic twin routes, derived from app/ar/** — the build reads it.

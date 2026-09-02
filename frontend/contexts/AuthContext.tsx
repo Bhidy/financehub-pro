@@ -1,20 +1,42 @@
 "use client";
 
+/**
+ * ============================================================================
+ * AUTH CONTEXT — React's view of the canonical client session
+ * ============================================================================
+ *
+ * The session itself (storage keys, JWT expiry, cross-tab notification) lives in
+ * lib/auth-session.ts, which the static-page nav renderer mirrors. This context
+ * is the React binding on top of it, so a sign-in performed here is observed by
+ * every nav on the page — including the vanilla one on the static HTML pages —
+ * without a reload.
+ *
+ * Two defects this replaced:
+ *  1. The session was read straight out of localStorage with no expiry check, so
+ *     a long-dead JWT still rendered as "signed in" until some API call
+ *     happened to 401.
+ *  2. Errors were surfaced as `error.detail`, which for any 422 is an ARRAY of
+ *     Pydantic error objects. It reached `{error}` in JSX and crashed the page
+ *     with "Objects are not valid as a React child" — reachable in production by
+ *     typing an address like `ahmed@gmail`, which the browser's own type="email"
+ *     check accepts. Everything now goes through readApiError().
+ */
+
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { api } from "@/lib/api";
+import {
+    readSession,
+    writeSession,
+    clearSession,
+    SESSION_KEYS,
+    type SessionUser,
+} from "@/lib/auth-session";
+import { readApiError, normalizeEmail } from "@/lib/auth-errors";
 
 // ============================================================
 // TYPES
 // ============================================================
 
-export interface User {
-    id: number;
-    email: string;
-    full_name: string | null;
-    phone: string | null;
-    avatar_url?: string | null;
-    role: string;
-}
+export type User = SessionUser;
 
 interface AuthContextType {
     user: User | null;
@@ -37,14 +59,6 @@ interface RegisterData {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // ============================================================
-// CONSTANTS
-// ============================================================
-
-const TOKEN_KEY = "fh_auth_token";
-const USER_KEY = "fh_user";
-const REFRESH_TOKEN_KEY = "fh_refresh_token";
-
-// ============================================================
 // PROVIDER
 // ============================================================
 
@@ -52,137 +66,131 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Load user from localStorage on mount
+    // Restore the session on mount. readSession() validates the JWT's `exp`, so
+    // an expired token no longer leaves a ghost signed-in UI.
     useEffect(() => {
-        const savedUser = localStorage.getItem(USER_KEY);
-        const savedToken = localStorage.getItem(TOKEN_KEY);
-        const savedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-        const savedAvatar = localStorage.getItem('user_avatar_url');
-
-        if (savedUser && savedToken) {
-            try {
-                const parsedUser = JSON.parse(savedUser);
-                if (savedAvatar) {
-                    parsedUser.avatar_url = savedAvatar;
-                }
-                setUser(parsedUser);
-
-                // Legacy-session bridge:
-                // If a logged-in user has no persisted refresh token yet, mint one silently.
-                if (!savedRefreshToken) {
-                    void fetch(`/api/proxy/auth/bootstrap-refresh`, {
-                        method: "POST",
-                        headers: {
-                            "Authorization": `Bearer ${savedToken}`,
-                            "Content-Type": "application/json",
-                        },
-                        credentials: "include",
-                    })
-                        .then(async (res) => {
-                            if (!res.ok) return null;
-                            return res.json().catch(() => null);
-                        })
-                        .then((data) => {
-                            if (!data) return;
-                            if (data.access_token) {
-                                localStorage.setItem(TOKEN_KEY, data.access_token);
-                            }
-                            if (data.refresh_token) {
-                                localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
-                            }
-                            if (data.user) {
-                                localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-                                setUser(data.user);
-                            }
-                        })
-                        .catch(() => {
-                            // No-op: keep the existing session state; hard failures are handled by normal auth flow.
-                        });
-                }
-            } catch (e) {
-                console.error("Failed to parse saved user:", e);
-                localStorage.removeItem(USER_KEY);
-                localStorage.removeItem(TOKEN_KEY);
-                localStorage.removeItem(REFRESH_TOKEN_KEY);
-            }
-        }
+        const session = readSession();
+        setUser(session.user);
         setIsLoading(false);
-    }, []);
 
-    const getToken = useCallback((): string | null => {
-        return localStorage.getItem(TOKEN_KEY);
-    }, []);
+        if (session.status === "none") return;
 
-    const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+        // Legacy-session bridge + silent revival:
+        //  - "stale": the access token has expired but a live refresh token can
+        //    mint a new one, so do it before the user hits a 401.
+        //  - "active" with no stored refresh token: a session from before
+        //    refresh tokens existed; mint one so it survives expiry.
+        let needsRefresh = session.status === "stale";
         try {
-            const formData = new URLSearchParams();
-            formData.append("username", email);
-            formData.append("password", password);
-
-            const response = await fetch(`/api/v1/auth/token`, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: formData.toString(),
-                credentials: "include",
-            });
-
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                return { success: false, error: error.detail || "Login failed" };
-            }
-
-            const data = await response.json();
-
-            localStorage.setItem(TOKEN_KEY, data.access_token);
-            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-            if (data.refresh_token) {
-                localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
-            }
-            setUser(data.user);
-
-            return { success: true };
-        } catch (error: any) {
-            console.error("Login error:", error);
-            return { success: false, error: error.message || "Login failed" };
+            needsRefresh ||= !localStorage.getItem(SESSION_KEYS.refresh);
+        } catch {
+            /* storage unavailable */
         }
+        if (!needsRefresh) return;
+
+        void fetch(`/api/proxy/auth/bootstrap-refresh`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${session.token}`,
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+        })
+            .then((res) => (res.ok ? res.json().catch(() => null) : null))
+            .then((data) => {
+                if (!data?.access_token || !data?.user) {
+                    // A stale session that cannot be revived is a dead session:
+                    // sign out rather than leaving a nav that lies.
+                    if (session.status === "stale") {
+                        clearSession();
+                        setUser(null);
+                    }
+                    return;
+                }
+                writeSession(data.access_token, data.user, data.refresh_token);
+                setUser(data.user);
+            })
+            .catch(() => {
+                // Network failure is not proof the session is dead — keep it and
+                // let the next authenticated call decide.
+            });
     }, []);
 
-    const register = useCallback(async (data: RegisterData): Promise<{ success: boolean; error?: string }> => {
-        try {
-            const response = await fetch(`/api/v1/auth/signup`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data),
-                credentials: "include",
-            });
+    const getToken = useCallback((): string | null => readSession().token, []);
 
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                return { success: false, error: error.detail || "Registration failed" };
+    const login = useCallback(
+        async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+            try {
+                const formData = new URLSearchParams();
+                // Normalised so "Ahmed@Gmail.com" signs into the account created
+                // as "ahmed@gmail.com" (see normalizeEmail).
+                formData.append("username", normalizeEmail(email));
+                formData.append("password", password);
+
+                const response = await fetch(`/api/v1/auth/token`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: formData.toString(),
+                    credentials: "include",
+                });
+
+                if (!response.ok) {
+                    return { success: false, error: await readApiError(response, "Login failed") };
+                }
+
+                const data = await response.json();
+                if (!data?.access_token || !data?.user) {
+                    return { success: false, error: "Login failed" };
+                }
+
+                writeSession(data.access_token, data.user, data.refresh_token);
+                setUser(data.user);
+                return { success: true };
+            } catch (error) {
+                console.error("Login error:", error);
+                return { success: false, error: "Login failed" };
             }
+        },
+        []
+    );
 
-            const result = await response.json();
+    const register = useCallback(
+        async (data: RegisterData): Promise<{ success: boolean; error?: string }> => {
+            try {
+                const response = await fetch(`/api/v1/auth/signup`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ...data, email: normalizeEmail(data.email) }),
+                    credentials: "include",
+                });
 
-            localStorage.setItem(TOKEN_KEY, result.access_token);
-            localStorage.setItem(USER_KEY, JSON.stringify(result.user));
-            if (result.refresh_token) {
-                localStorage.setItem(REFRESH_TOKEN_KEY, result.refresh_token);
+                if (!response.ok) {
+                    return {
+                        success: false,
+                        error: await readApiError(response, "Registration failed"),
+                    };
+                }
+
+                const result = await response.json();
+                // A 200 with no token would silently "succeed" into a signed-out
+                // session; treat it as the failure it is.
+                if (!result?.access_token || !result?.user) {
+                    return { success: false, error: "Registration failed" };
+                }
+
+                writeSession(result.access_token, result.user, result.refresh_token);
+                setUser(result.user);
+                return { success: true };
+            } catch (error) {
+                console.error("Registration error:", error);
+                return { success: false, error: "Registration failed" };
             }
-            setUser(result.user);
-
-            return { success: true };
-        } catch (error: any) {
-            console.error("Registration error:", error);
-            return { success: false, error: error.message || "Registration failed" };
-        }
-    }, []);
+        },
+        []
+    );
 
     const logout = useCallback(() => {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
-        localStorage.removeItem('user_avatar_url');
-        localStorage.removeItem("fh_chat_session"); // Prevent session cross-contamination
+        clearSession();
         setUser(null);
     }, []);
 
@@ -190,7 +198,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser((prev) => {
             if (!prev) return null;
             const updated = { ...prev, ...userData };
-            localStorage.setItem(USER_KEY, JSON.stringify(updated));
+            try {
+                localStorage.setItem(SESSION_KEYS.user, JSON.stringify(updated));
+            } catch {
+                /* storage unavailable */
+            }
             return updated;
         });
     }, []);

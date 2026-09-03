@@ -60,5 +60,11 @@ const noOwner = rows.map(({ owner_name, owner_name_en, ...rest }) => rest);
 check('without owner columns, Banque Misr survives via manager', !!buildProviders(noOwner).find((p) => p.slug === 'banque-misr-s-a-e'), true);
 check('without owner columns, CIB disappears (owner-only entity)', !!buildProviders(noOwner).find((p) => p.slug === 'commercial-international-bank'), false);
 
+console.log('\n[5] legal-form suffixes are stripped from headings, never from slugs');
+const bm = providers.find((p) => p.slug === 'banque-misr-s-a-e');
+check('EN display name drops S.A.E', bm?.nameEn, 'Banque Misr');
+check('AR display name drops ش.م.م', bm?.nameAr, 'بنك مصر');
+check('slug is UNCHANGED (URLs are contracts)', bm?.slug, 'banque-misr-s-a-e');
+
 console.log(failures === 0 ? '\nPASS: fund provider gate\n' : `\nFAIL: ${failures} check(s) failed\n`);
 process.exit(failures === 0 ? 0 : 1);

@@ -41,6 +41,25 @@ export const MIN_FUNDS_PER_PROVIDER = 3;
 const clean = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
 
 /**
+ * Strip the legal-form suffix from a display name.
+ *
+ * The register carries "بنك مصر ش.م.م" and "Banque Misr S.A.E", but nobody
+ * searches for the legal form — the query is "صناديق بنك مصر". Leaving it in
+ * pushes the heading and the title away from the phrase they exist to match.
+ * Only the suffix is removed; the entity name itself is never altered, and the
+ * SLUG is unaffected so no URL changes.
+ */
+const LEGAL_SUFFIX =
+    /\s*[-–—,]?\s*(?:ش\s*\.?\s*م\s*\.?\s*م\s*\.?|ش\.م\.م|S\.?A\.?E\.?|SAE|S\.?A\.?E\.? *\(.*?\)|Co\.?|Company|Holding Co\.?)\s*$/iu;
+
+export function displayName(name: string): string {
+    let out = name.trim();
+    // Twice: some names carry both a bracketed form and a suffix.
+    for (let i = 0; i < 2; i++) out = out.replace(LEGAL_SUFFIX, '').trim();
+    return out.replace(/[-–—,\s]+$/u, '').trim() || name;
+}
+
+/**
  * Build the provider list from fund rows.
  *
  * Owners win over managers on a name collision: the institution a saver
@@ -80,8 +99,8 @@ export function buildProviders(rows: Array<Record<string, unknown>>): FundProvid
         .filter(([, a]) => a.count >= MIN_FUNDS_PER_PROVIDER)
         .map(([slug, a]) => ({
             slug,
-            nameEn: a.nameEn,
-            nameAr: hasArabicScript(a.nameAr) ? a.nameAr : a.nameEn,
+            nameEn: displayName(a.nameEn),
+            nameAr: displayName(hasArabicScript(a.nameAr) ? a.nameAr : a.nameEn),
             slugAr: hasArabicScript(a.nameAr) ? arabicSlug(a.nameAr) : '',
             fundCount: a.count,
             role: a.role,

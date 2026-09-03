@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
+import { getMarketLists } from '@/lib/public-data';
 import { SITE_URL, absUrl, fundPath, symbolPath, symbolPathAr, slugify, learnPath, glossaryPath, sectorPath } from '@/lib/seo';
 import { canonicalNewsPath } from '@/lib/news-display';
 import { sectorAr } from '@/content/sector-names-ar';
@@ -45,12 +46,7 @@ async function coreEntries(): Promise<Entry[]> {
         ['/companies', 'daily', '0.9'],
         ['/sectors', 'daily', '0.7'],
         ['/markets/movers', 'hourly', '0.7'],
-        // Market screens — one URL per intent (gainers, losers, most active,
-        // oversold, overbought, most volatile), in both languages.
-        ...MARKET_SCREENS.flatMap((sc) => [
-            [screenPath(sc, 'en'), 'hourly', '0.7'] as [string, string, string],
-            [screenPath(sc, 'ar'), 'hourly', '0.7'] as [string, string, string],
-        ]),
+        // Market screens are added below, gated on actually having rows.
         ['/markets/dividend-calendar', 'daily', '0.7'],
         ['/markets/egx30', 'hourly', '0.8'],
         ['/markets/top-dividend-yield', 'daily', '0.7'],
@@ -81,6 +77,23 @@ async function coreEntries(): Promise<Entry[]> {
         ['/privacy', 'yearly', '0.2'],
         ['/terms', 'yearly', '0.2'],
     ];
+    // MARKET SCREENS — advertised only when the screen currently has enough
+    // rows to render. `oversold-stocks` legitimately empties when no EGX stock
+    // is below RSI 30, and a sitemap that keeps listing it while the page 404s
+    // is the sitemap/page disagreement this codebase keeps having to fix.
+    // getMarketLists is cached (300s), so this costs one shared query.
+    try {
+        const lists = await getMarketLists(30);
+        for (const sc of MARKET_SCREENS) {
+            if ((lists[sc.key]?.length ?? 0) < sc.minRows) continue;
+            hubs.push([screenPath(sc, 'en'), 'hourly', '0.7']);
+            hubs.push([screenPath(sc, 'ar'), 'hourly', '0.7']);
+        }
+    } catch (error) {
+        // A failed screener read must not empty the whole core segment.
+        console.error('[sitemap:core] market screens unavailable:', (error as Error).message);
+    }
+
     return hubs.map(([path, changefreq, priority]) => ({ loc: SITE_URL + path, changefreq, priority }));
 }
 

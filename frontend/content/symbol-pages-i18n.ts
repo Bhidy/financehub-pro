@@ -328,5 +328,46 @@ export const STATISTICS = {
     ),
 };
 
+/* ── fund NAV history ────────────────────────────────────────────────────── */
+
+export const NAVHIST = {
+    h1: (name: string): S => s(`${name} — NAV History`, `سجل صافي قيمة أصول ${name}`),
+    title: (name: string): S =>
+        s(
+            `${name} NAV History — Annual and Monthly Net Asset Value`,
+            `سجل صافي قيمة أصول ${name} — القيم السنوية والشهرية`
+        ),
+    description: (name: string, from: string, to: string, pts: number): S =>
+        s(
+            `Net asset value history for ${name} from ${from} to ${to} — ${pts} published NAV points, with annual closes and yearly change.`,
+            `سجل صافي قيمة الأصول لصندوق ${name} من ${from} إلى ${to} — ${pts} قيمة منشورة، مع إغلاقات كل سنة ونسبة التغير السنوي.`
+        ),
+    lede: (name: string, pts: number, from: string, to: string): S =>
+        s(
+            `Every published net asset value for ${name} between ${from} and ${to} — ${pts} points in total. Annual closes and the change between them are computed from that series; nothing is interpolated for dates the manager did not publish.`,
+            `كل قيم صافي الأصول المنشورة لصندوق ${name} بين ${from} و${to} — ${pts} قيمة إجمالاً. تُحسب إغلاقات كل سنة والتغير بينها من هذه السلسلة، ولا يتم استكمال أي تواريخ لم يُفصح عنها مدير الصندوق.`
+        ),
+    annual: s('Annual net asset value', 'صافي قيمة الأصول سنوياً'),
+    recent: s('Recent published values', 'أحدث القيم المنشورة'),
+    cols: {
+        year: s('Year', 'السنة'),
+        date: s('Date', 'التاريخ'),
+        nav: s('NAV', 'صافي قيمة الأصول'),
+        change: s('Change', 'التغير'),
+        yearEnd: s('Year-end NAV', 'صافي قيمة الأصول في نهاية السنة'),
+    },
+    stats: {
+        first: s('First published', 'أول قيمة منشورة'),
+        latest: s('Latest', 'أحدث قيمة'),
+        points: s('Published values', 'عدد القيم المنشورة'),
+        high: s('Highest', 'الأعلى'),
+        low: s('Lowest', 'الأدنى'),
+    },
+    sourceNote: s(
+        'Net asset values as published by the fund manager. A fund does not publish a value every calendar day, so gaps in the series are the manager’s publication schedule, not missing data.',
+        'صافي قيمة الأصول كما ينشرها مدير الصندوق. لا ينشر الصندوق قيمة كل يوم تقويمي، لذا فإن الفجوات في السلسلة تعود إلى جدول النشر لدى المدير وليست بيانات ناقصة.'
+    ),
+};
+
 /** Pick the string for a language. */
 export const t = (v: S, lang: Lang): string => v[lang];

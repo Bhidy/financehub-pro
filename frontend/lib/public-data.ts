@@ -780,6 +780,68 @@ const _marketListsCached = unstable_cache(
 
 export const getMarketLists = cache((limit = 30): Promise<Record<MarketListKey, Ticker[]>> => _marketListsCached(limit));
 
+/**
+ * RECENT NEWS WINDOW for the topic hubs.
+ *
+ * Topic assignment reads `source_section`, which arrives percent-encoded and
+ * carries Arabic path segments. Postgres has no URL-decode, so matching in SQL
+ * would mean maintaining both the decoded and encoded form of every pattern —
+ * two spellings of one rule, guaranteed to drift. Instead one cached query
+ * returns a bounded recent window and the SAME topicOfArticle() the pages and
+ * the sitemap use does the classification. Page and sitemap therefore cannot
+ * disagree about which topic an article belongs to.
+ *
+ * The window is bounded deliberately: a topic hub is a current archive, not
+ * the full 4,583-article history, which stays discoverable through the news
+ * sitemap.
+ */
+const NEWS_WINDOW = 2500;
+
+const _newsWindowCached = unstable_cache(
+    async (): Promise<Array<Record<string, unknown>>> => {
+        const result = await db.query(
+            `SELECT id, headline, published_at, source_section, symbol, image_url
+             FROM market_news
+             ORDER BY published_at DESC
+             LIMIT $1`,
+            [NEWS_WINDOW]
+        );
+        return result.rows as Array<Record<string, unknown>>;
+    },
+    ['seo:news-window'],
+    { revalidate: 900, tags: ['seo-news'] }
+);
+
+export const getNewsWindow = cache((): Promise<Array<Record<string, unknown>>> => _newsWindowCached());
+
+/**
+ * FULL NAV SERIES for a fund, oldest → newest.
+ *
+ * The public API caps at 90 points; the stored series runs to ~4,300 and back
+ * to 2009 (median 711 points, 78% of funds above 100). A NAV history page is
+ * only worth publishing on the full series, so this reads nav_history directly
+ * rather than going through the capped endpoint.
+ */
+export type NavPoint = { date: string; nav: number };
+
+export const getFundNavHistory = cache(async (fundId: number): Promise<NavPoint[]> => {
+    const result = await db.query(
+        `SELECT date, nav FROM nav_history WHERE fund_id = $1 ORDER BY date ASC`,
+        [fundId]
+    );
+    return (result.rows as Array<Record<string, unknown>>)
+        .map((r) => {
+            const d = r.date instanceof Date ? r.date : new Date(String(r.date));
+            const nav = Number(r.nav);
+            if (Number.isNaN(d.getTime()) || !Number.isFinite(nav) || nav <= 0) return null;
+            // Local components, not toISOString: a pg DATE arrives at local
+            // midnight and UTC conversion shifts it a day.
+            const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            return { date: iso, nav };
+        })
+        .filter((p): p is NavPoint => p !== null);
+});
+
 /** All companies for the /companies directory hub. */
 // Cross-request data cache (5 min) for the full ticker list — the hottest read
 // path (powers /companies, every /markets ranking page, the egx30 constituents

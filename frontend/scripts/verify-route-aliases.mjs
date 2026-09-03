@@ -767,7 +767,12 @@ const checks = [
 const DESIGNED_SHELL_HUBS = [
   { route: "app/Funds/route.ts", shell: "marketplace.html", url: "/Funds" },
   { route: "app/ar/Funds/route.ts", shell: "marketplace.html", url: "/ar/Funds" },
-  { route: "app/News/route.ts", shell: "news.html", url: "/News" },
+  // These two delegate to a shared renderer; `via` is where the shell and the
+  // language are actually set. The check follows the delegation rather than
+  // being relaxed — a route that stops serving the designed shell must still
+  // fail, wherever that call now lives.
+  { route: "app/News/route.ts", via: "lib/news-hub.ts", shell: "news.html", url: "/News" },
+  { route: "app/ar/News/route.ts", via: "lib/news-hub.ts", shell: "news.html", url: "/ar/News" },
   { route: "app/Learn/route.ts", shell: "learn.html", url: "/Learn" },
   { route: "app/Market-Pulse/route.ts", shell: "market-pulse.html", url: "/Market-Pulse" },
 ];
@@ -833,6 +838,16 @@ async function assertDesignedShellsIntact() {
       failed = true;
       continue;
     }
+    // Follow a delegation to the module that actually calls renderStaticHub.
+    if (hub.via) {
+      try {
+        text += "\n" + readFileSync(path.join(root, hub.via), "utf8");
+      } catch {
+        console.error(`FAIL: ${hub.route} delegates to ${hub.via}, which is missing.`);
+        failed = true;
+        continue;
+      }
+    }
     if (!text.includes(`'${hub.shell}'`)) {
       console.error(`FAIL: ${hub.route} does not serve ${hub.shell}.`);
       failed = true;
@@ -841,11 +856,15 @@ async function assertDesignedShellsIntact() {
     // language fix never reaches them, so every route that serves one must
     // rewrite it explicitly — otherwise an Arabic URL ships a document that
     // declares itself English, the exact defect that cost the Arabic SERPs.
-    if (!/^\s*lang:\s*(?:'(?:en|ar)'|lang)\s*,/m.test(text)) {
+    // Accepts a literal, a forwarded variable, or a spec field — what matters
+    // is that `lang` reaches renderStaticHub, not how it is spelled.
+    if (!/^\s*lang(?::\s*(?:'(?:en|ar)'|lang|spec\.lang))?\s*,/m.test(text)) {
       console.error(`FAIL: ${hub.route} does not set \`lang\` on renderStaticHub — ${hub.url} would ship the shell's hardcoded <html lang="en">.`);
       failed = true;
     }
-    if (hub.url.startsWith("/ar") && !/^\s*lang:\s*'ar'\s*,/m.test(text)) {
+    // An Arabic route must pass 'ar' — either as the renderStaticHub option or
+    // as the argument it forwards to a shared renderer.
+    if (hub.url.startsWith("/ar") && !/(^\s*lang:\s*'ar'\s*,|\('ar'\)|,\s*'ar'\))/m.test(text)) {
       console.error(`FAIL: ${hub.route} serves an ARABIC URL but does not set lang: 'ar'.`);
       failed = true;
     }

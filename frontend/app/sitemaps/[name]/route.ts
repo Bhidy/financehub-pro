@@ -9,6 +9,8 @@ import { GLOSSARY_TERMS } from '@/content/glossary-terms';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { buildProviders, providerPath } from '@/content/fund-providers';
 import { MARKET_SCREENS, screenPath } from '@/content/market-screens';
+import { NEWS_TOPICS, newsTopicPath } from '@/content/news-topics';
+import { livePublishedTopics } from '@/app/News/renderNewsHubs';
 import { EGX_ONLY } from '@/lib/public-data';
 
 export const dynamic = 'force-dynamic';
@@ -38,6 +40,7 @@ async function coreEntries(): Promise<Entry[]> {
     const hubs: Array<[string, string, string]> = [
         ['/', 'hourly', '1.0'],
         ['/News', 'hourly', '0.9'],
+        ['/ar/News', 'hourly', '0.9'], // the Arabic news hub (previously a 404)
         ['/Funds', 'daily', '0.9'],
         ['/ar/Funds', 'daily', '0.9'], // the Arabic funds hub (was a 308 to /Funds)
         ['/Funds/Compare', 'daily', '0.6'],
@@ -77,6 +80,20 @@ async function coreEntries(): Promise<Entry[]> {
         ['/privacy', 'yearly', '0.2'],
         ['/terms', 'yearly', '0.2'],
     ];
+    // NEWS TOPICS — advertised only where the topic currently clears its own
+    // article threshold, using the same classifier the pages use.
+    try {
+        const live = await livePublishedTopics();
+        for (const slug of live) {
+            const topic = NEWS_TOPICS.find((t) => t.slug === slug);
+            if (!topic) continue;
+            hubs.push([newsTopicPath(topic, 'en'), 'daily', '0.7']);
+            hubs.push([newsTopicPath(topic, 'ar'), 'daily', '0.7']);
+        }
+    } catch (error) {
+        console.error('[sitemap:core] news topics unavailable:', (error as Error).message);
+    }
+
     // MARKET SCREENS — advertised only when the screen currently has enough
     // rows to render. `oversold-stocks` legitimately empties when no EGX stock
     // is below RSI 30, and a sitemap that keeps listing it while the page 404s
@@ -354,27 +371,28 @@ async function fundEntries(): Promise<Entry[]> {
     // funds_view also carries legacy string ids (EGY_NEW_*, EGYAAIB*, ...)
     // whose URLs 404 — the post-deploy audit caught 152 dead URLs here.
     const result = await db.query(
-        `SELECT fund_id, fund_name, fund_name_en, last_nav_date
+        `SELECT fund_id, fund_name, fund_name_en, last_nav_date, nav_points
          FROM funds_view
          WHERE fund_id::text ~ '^[0-9]+$'
          ORDER BY fund_id`
     );
     // EN + AR pairs (reciprocal hreflang lives in the pages' metadata). The AR
     // canonical carries the Arabic slug — absUrl percent-encodes it for <loc>.
-    return result.rows.flatMap((r: any) => [
-        {
-            loc: absUrl(fundPath(r.fund_id, r.fund_name_en, r.fund_name, 'en')),
-            lastmod: r.last_nav_date,
-            changefreq: 'daily',
-            priority: '0.7',
-        },
-        {
-            loc: absUrl(fundPath(r.fund_id, r.fund_name_en, r.fund_name, 'ar')),
-            lastmod: r.last_nav_date,
-            changefreq: 'daily',
-            priority: '0.7',
-        },
-    ]);
+    return result.rows.flatMap((r: any) => {
+        const en = fundPath(r.fund_id, r.fund_name_en, r.fund_name, 'en');
+        const ar = fundPath(r.fund_id, r.fund_name_en, r.fund_name, 'ar');
+        const entries: Entry[] = [
+            { loc: absUrl(en), lastmod: r.last_nav_date, changefreq: 'daily', priority: '0.7' },
+            { loc: absUrl(ar), lastmod: r.last_nav_date, changefreq: 'daily', priority: '0.7' },
+        ];
+        // NAV history is gated at 24 published points by the page; nav_points
+        // is the same count, so the sitemap and the 404 gate agree exactly.
+        if (Number(r.nav_points) >= 24) {
+            entries.push({ loc: absUrl(`${en}/nav-history`), lastmod: r.last_nav_date, changefreq: 'weekly', priority: '0.6' });
+            entries.push({ loc: absUrl(`${ar}/nav-history`), lastmod: r.last_nav_date, changefreq: 'weekly', priority: '0.6' });
+        }
+        return entries;
+    });
 }
 
 async function learnEntries(): Promise<Entry[]> {

@@ -1,0 +1,256 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
+import { getFund, getFundNavHistory, type NavPoint } from '@/lib/public-data';
+import { SITE_URL, absUrl, fundPath, idFromParam, canonicalRedirectTarget, OG_DEFAULTS } from '@/lib/seo';
+import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
+import JsonLd from '@/components/seo/JsonLd';
+import { NAVHIST, t, type Lang } from '@/content/symbol-pages-i18n';
+
+/**
+ * /Funds/{id}-{slug}/nav-history and the Arabic twin.
+ *
+ * The fund profile shows a NAV chart; a chart is not crawlable and not
+ * quotable. This publishes the SERIES — annual closes with the change between
+ * them, plus the most recent published values — from nav_history directly
+ * (the public API caps at 90 points; the stored series reaches ~4,300 and back
+ * to 2009).
+ *
+ * Nothing is interpolated. A fund does not publish a NAV every calendar day,
+ * so a year is shown only where the manager actually published within it, and
+ * the page says so.
+ */
+
+const MIN_POINTS = 24;
+
+const fmtNav = (v: number, lang: Lang): string =>
+    v.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-EG', { maximumFractionDigits: 4 });
+
+const fmtPct = (v: number | null): string =>
+    v === null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
+
+const humanDate = (iso: string, lang: Lang): string => {
+    const d = new Date(`${iso}T00:00:00Z`);
+    return Number.isNaN(d.getTime())
+        ? iso
+        : d.toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB', {
+              day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+          });
+};
+
+/** Last published value in each calendar year, with year-over-year change. */
+function annualCloses(points: NavPoint[]): Array<{ year: string; date: string; nav: number; change: number | null }> {
+    const byYear = new Map<string, NavPoint>();
+    for (const p of points) byYear.set(p.date.slice(0, 4), p); // ascending → last wins
+    const years = [...byYear.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    return years.map(([year, p], i) => {
+        const prev = i > 0 ? years[i - 1][1].nav : null;
+        return {
+            year,
+            date: p.date,
+            nav: p.nav,
+            change: prev !== null && prev > 0 ? ((p.nav - prev) / prev) * 100 : null,
+        };
+    });
+}
+
+async function load(id: string) {
+    const fundId = idFromParam(id);
+    if (fundId === null) notFound();
+    const fund = (await getFund(fundId)) as unknown as Record<string, unknown> | null;
+    if (!fund) notFound();
+    return { fundId, fund };
+}
+
+const nameFor = (fund: Record<string, unknown>, lang: Lang): string => {
+    const ar = typeof fund.fund_name === 'string' ? fund.fund_name.trim() : '';
+    const en = typeof fund.fund_name_en === 'string' ? fund.fund_name_en.trim() : '';
+    return (lang === 'ar' ? ar || en : en || ar) || `Fund ${fund.fund_id}`;
+};
+
+const basePath = (fund: Record<string, unknown>, lang: Lang): string =>
+    fundPath(
+        fund.fund_id as number,
+        (fund.fund_name_en as string) || null,
+        (fund.fund_name as string) || null,
+        lang
+    );
+
+export async function navHistoryMetadata(id: string, lang: Lang): Promise<Metadata> {
+    const fundId = idFromParam(id);
+    if (fundId === null) return {};
+    let fund: Record<string, unknown> | null = null;
+    try {
+        fund = (await getFund(fundId)) as unknown as Record<string, unknown> | null;
+    } catch {
+        return {};
+    }
+    if (!fund) return {};
+
+    const points = await getFundNavHistory(fundId).catch(() => [] as NavPoint[]);
+    if (points.length < MIN_POINTS) return { robots: { index: false, follow: true } };
+
+    const name = nameFor(fund, lang);
+    const from = humanDate(points[0].date, lang);
+    const to = humanDate(points[points.length - 1].date, lang);
+    const pathEn = encodeURI(`${basePath(fund, 'en')}/nav-history`);
+    const pathAr = encodeURI(`${basePath(fund, 'ar')}/nav-history`);
+    const canonical = lang === 'ar' ? pathAr : pathEn;
+
+    const title = t(NAVHIST.title(name), lang);
+    let description = t(NAVHIST.description(name, from, to, points.length), lang);
+    if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
+
+    return {
+        title,
+        description,
+        alternates: { canonical, languages: { en: pathEn, ar: pathAr, 'x-default': pathAr } },
+        openGraph: {
+            ...OG_DEFAULTS,
+            type: 'website',
+            title: `${title} | Starta Markets`,
+            description,
+            url: canonical,
+            locale: lang === 'ar' ? 'ar_EG' : 'en_US',
+        },
+    };
+}
+
+export async function renderNavHistory(id: string, lang: Lang) {
+    const isAr = lang === 'ar';
+    const { fundId, fund } = await load(id);
+
+    const canonicalPath = `${basePath(fund, lang)}/nav-history`;
+    const requestPath = `${isAr ? '/ar' : ''}/Funds/${id}/nav-history`;
+    const target = canonicalRedirectTarget(requestPath, canonicalPath);
+    if (target) redirect(target);
+
+    const points = await getFundNavHistory(fundId);
+    // Quality gate: a couple of dozen points is the floor for a history page.
+    if (points.length < MIN_POINTS) notFound();
+
+    const name = nameFor(fund, lang);
+    const currency = (fund.currency as string) || 'EGP';
+    const annual = annualCloses(points).reverse();
+    const recent = [...points].reverse().slice(0, 24);
+    const first = points[0];
+    const last = points[points.length - 1];
+    const high = points.reduce((m, p) => (p.nav > m.nav ? p : m), points[0]);
+    const low = points.reduce((m, p) => (p.nav < m.nav ? p : m), points[0]);
+
+    const crumbs = [
+        { href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: isAr ? '/ar/Funds' : '/Funds', url: isAr ? '/ar/Funds' : '/Funds', label: isAr ? 'صناديق الاستثمار' : 'Mutual Funds' },
+        { href: encodeURI(basePath(fund, lang)), url: encodeURI(basePath(fund, lang)), label: name },
+        { label: isAr ? 'سجل صافي قيمة الأصول' : 'NAV history' },
+    ];
+
+    const stats: Array<[string, string]> = [
+        [t(NAVHIST.stats.first, lang), `${humanDate(first.date, lang)} · ${currency} ${fmtNav(first.nav, lang)}`],
+        [t(NAVHIST.stats.latest, lang), `${humanDate(last.date, lang)} · ${currency} ${fmtNav(last.nav, lang)}`],
+        [t(NAVHIST.stats.points, lang), points.length.toLocaleString(isAr ? 'ar-EG' : 'en-EG')],
+        [t(NAVHIST.stats.high, lang), `${currency} ${fmtNav(high.nav, lang)} · ${humanDate(high.date, lang)}`],
+        [t(NAVHIST.stats.low, lang), `${currency} ${fmtNav(low.nav, lang)} · ${humanDate(low.date, lang)}`],
+    ];
+
+    const dataset = {
+        '@context': 'https://schema.org',
+        '@type': 'Dataset',
+        name: t(NAVHIST.h1(name), lang),
+        description: t(NAVHIST.description(name, humanDate(first.date, lang), humanDate(last.date, lang), points.length), lang),
+        url: absUrl(canonicalPath),
+        inLanguage: isAr ? 'ar-EG' : 'en',
+        creator: { '@id': `${SITE_URL}/#organization` },
+        temporalCoverage: `${first.date}/${last.date}`,
+        dateModified: last.date,
+        variableMeasured: {
+            '@type': 'PropertyValue',
+            name: isAr ? 'صافي قيمة الأصول للوثيقة' : 'Net asset value per unit',
+            unitText: currency,
+        },
+    };
+
+    const th = `px-4 py-3 ${isAr ? 'text-right' : 'text-left'}`;
+    const thNum = `px-4 py-3 ${isAr ? 'text-left' : 'text-right'}`;
+    const tdNum = `px-4 py-2.5 tabular-nums text-main ${isAr ? 'text-left' : 'text-right'}`;
+
+    return (
+        <PublicPageShell lang={lang} altHref={encodeURI(`${basePath(fund, isAr ? 'en' : 'ar')}/nav-history`)} persistLang>
+            <JsonLd data={dataset} />
+            <JsonLd data={breadcrumbJsonLd(crumbs.map((c) => ({ url: c.url, label: c.label })), SITE_URL)} />
+            <Breadcrumbs items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
+
+            <h1 className="text-2xl font-extrabold tracking-tight text-main sm:text-3xl">{t(NAVHIST.h1(name), lang)}</h1>
+            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+                {t(NAVHIST.lede(name, points.length, humanDate(first.date, lang), humanDate(last.date, lang)), lang)}
+            </p>
+
+            <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                {stats.map(([label, value]) => (
+                    <div key={label} className="rounded-xl border border-border bg-surface p-3.5">
+                        <dt className="text-xs font-bold text-muted">{label}</dt>
+                        <dd dir="ltr" className="mt-1.5 text-sm font-extrabold text-main">{value}</dd>
+                    </div>
+                ))}
+            </dl>
+
+            <section className="mt-8">
+                <h2 className="text-lg font-extrabold tracking-tight text-main">{t(NAVHIST.annual, lang)}</h2>
+                <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface">
+                    <table className="w-full min-w-[520px] text-sm">
+                        <thead>
+                            <tr className="border-b border-border bg-panel/40 text-xs font-bold uppercase tracking-wide text-muted">
+                                <th scope="col" className={th}>{t(NAVHIST.cols.year, lang)}</th>
+                                <th scope="col" className={th}>{t(NAVHIST.cols.date, lang)}</th>
+                                <th scope="col" className={thNum}>{t(NAVHIST.cols.yearEnd, lang)}</th>
+                                <th scope="col" className={thNum}>{t(NAVHIST.cols.change, lang)}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {annual.map((r) => (
+                                <tr key={r.year} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
+                                    <th scope="row" className={`px-4 py-2.5 font-semibold text-main ${isAr ? 'text-right' : 'text-left'}`} dir="ltr">{r.year}</th>
+                                    <td className={`px-4 py-2.5 text-muted ${isAr ? 'text-right' : 'text-left'}`}>{humanDate(r.date, lang)}</td>
+                                    <td className={tdNum}>{fmtNav(r.nav, lang)} <span className="text-xs text-muted">{currency}</span></td>
+                                    <td className={`px-4 py-2.5 font-bold tabular-nums ${isAr ? 'text-left' : 'text-right'} ${r.change === null ? 'text-muted' : r.change >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                        {fmtPct(r.change)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section className="mt-8">
+                <h2 className="text-lg font-extrabold tracking-tight text-main">{t(NAVHIST.recent, lang)}</h2>
+                <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface">
+                    <table className="w-full min-w-[380px] text-sm">
+                        <thead>
+                            <tr className="border-b border-border bg-panel/40 text-xs font-bold uppercase tracking-wide text-muted">
+                                <th scope="col" className={th}>{t(NAVHIST.cols.date, lang)}</th>
+                                <th scope="col" className={thNum}>{t(NAVHIST.cols.nav, lang)}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {recent.map((p) => (
+                                <tr key={p.date} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
+                                    <th scope="row" className={`px-4 py-2.5 font-medium text-main ${isAr ? 'text-right' : 'text-left'}`}>{humanDate(p.date, lang)}</th>
+                                    <td className={tdNum}>{fmtNav(p.nav, lang)} <span className="text-xs text-muted">{currency}</span></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <p className="mt-4 max-w-3xl text-xs leading-relaxed text-muted">{t(NAVHIST.sourceNote, lang)}</p>
+
+            <nav className="mt-8 border-t border-border pt-5">
+                <Link href={encodeURI(basePath(fund, lang))} prefetch={false} className="text-sm font-semibold text-starta-teal hover:underline">
+                    {isAr ? `العودة إلى صفحة ${name}` : `Back to ${name}`}
+                </Link>
+            </nav>
+        </PublicPageShell>
+    );
+}

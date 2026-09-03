@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
-import { getMarketLists } from '@/lib/public-data';
+import { getMarketLists, getSeasonalitySymbols} from '@/lib/public-data';
 import { SITE_URL, absUrl, fundPath, symbolPath, symbolPathAr, slugify, learnPath, glossaryPath, sectorPath } from '@/lib/seo';
 import { canonicalNewsPath } from '@/lib/news-display';
 import { sectorAr } from '@/content/sector-names-ar';
@@ -47,6 +47,8 @@ async function coreEntries(): Promise<Entry[]> {
         // ("أسعار وثائق صناديق الاستثمار اليوم") had no destination at all.
         ['/Funds/prices-today', 'daily', '0.9'],
         ['/ar/Funds/prices-today', 'daily', '0.9'],
+        ['/Funds/fees', 'weekly', '0.8'],
+        ['/ar/Funds/fees', 'weekly', '0.8'],
         ['/Funds/Compare', 'daily', '0.6'],
         ['/Market-Pulse', 'hourly', '0.9'],
         ['/Learn', 'weekly', '0.8'],
@@ -151,6 +153,9 @@ async function companyEntries(): Promise<Entry[]> {
                WHERE b.symbol = REPLACE(t.symbol, '.CA', '') AND b.last_price IS NOT NULL))
          ORDER BY t.symbol`
     );
+    // Seasonality is gated on the SAME set the pages and the tab strip use,
+    // so a URL here can never render "not enough history".
+    const seasonal = await getSeasonalitySymbols();
     return result.rows.flatMap((r: any) => {
         const base = symbolPath(r.symbol);
         const entries: Entry[] = [
@@ -163,6 +168,7 @@ async function companyEntries(): Promise<Entry[]> {
         // Statistics needs enough REPORTED figures to clear the page's own
         // gate; the fiscal-year block is the bulk of it, so the financials
         // signal is the closest available proxy and is a strict subset of it.
+        if (seasonal.has(String(r.symbol).toUpperCase())) entries.push({ loc: absUrl(`${base}/seasonality`), lastmod: r.lastmod, changefreq: 'monthly', priority: '0.5' });
         if (r.has_fin) entries.push({ loc: absUrl(`${base}/statistics`), lastmod: r.lastmod, changefreq: 'weekly', priority: '0.6' });
         return entries;
     });
@@ -216,6 +222,9 @@ async function arCompanyEntries(): Promise<Entry[]> {
     // Arabic company URLs + their sub-pages. DATA-GATED exactly like the
     // English segment: a sub-tab is advertised only where the page will
     // actually render, so the sitemap and the 404 gate provably agree.
+    // Seasonality is gated on the SAME set the pages and the tab strip use,
+    // so a URL here can never render "not enough history".
+    const seasonal = await getSeasonalitySymbols();
     return result.rows.flatMap((r: any) => {
         const base = symbolPathAr(r.symbol, r.name_ar);
         const entries: Entry[] = [
@@ -228,6 +237,7 @@ async function arCompanyEntries(): Promise<Entry[]> {
         // Statistics needs enough REPORTED figures to clear the page's own
         // gate; the fiscal-year block is the bulk of it, so the financials
         // signal is the closest available proxy and is a strict subset of it.
+        if (seasonal.has(String(r.symbol).toUpperCase())) entries.push({ loc: absUrl(`${base}/seasonality`), lastmod: r.lastmod, changefreq: 'monthly', priority: '0.5' });
         if (r.has_fin) entries.push({ loc: absUrl(`${base}/statistics`), lastmod: r.lastmod, changefreq: 'weekly', priority: '0.6' });
         return entries;
     });

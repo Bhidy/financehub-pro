@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { getTicker, getStats } from '@/lib/public-data';
+import { getTicker, getStats, getSeasonalitySymbols} from '@/lib/public-data';
 import { SITE_URL, absUrl, symbolFromArParam, canonicalRedirectTarget, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
@@ -169,7 +169,10 @@ export async function renderStatistics(id: string, lang: Lang) {
     const name = (isAr ? ticker.name_ar || ticker.name_en : ticker.name_en) || symbol;
     const leaf = isAr ? 'أهم الإحصاءات' : 'Key Statistics';
     const crumbs = symbolCrumbs(symbol, name, leaf, lang, ticker.name_ar);
-    const siblings = symbolSiblings(symbol, 'overview', lang, ticker.name_ar);
+    // Seasonality only exists for symbols with enough history; ask the one
+    // cached set rather than probing per page.
+    const hasSeasonality = (await getSeasonalitySymbols()).has(symbol);
+    const siblings = symbolSiblings(symbol, 'statistics', lang, ticker.name_ar, { seasonality: hasSeasonality });
     const pagePath = encodeURI(symbolTabPath(symbol, 'statistics', lang, ticker.name_ar));
 
     const dataset = {

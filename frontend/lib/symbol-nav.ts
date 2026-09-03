@@ -11,7 +11,9 @@ import { NAV, t, type Lang } from '@/content/symbol-pages-i18n';
  * and every tab label comes from here.
  */
 
-export type SymbolTab = 'overview' | 'statistics' | 'financials' | 'dividends' | 'technicals' | 'history';
+export type SymbolTab =
+    | 'overview' | 'statistics' | 'financials' | 'dividends' | 'technicals' | 'history'
+    | 'seasonality';
 
 /** Base company URL for the language. */
 export function symbolBase(symbol: string, lang: Lang, nameAr?: string | null): string {
@@ -33,9 +35,15 @@ export function symbolSiblings(
     symbol: string,
     current: SymbolTab,
     lang: Lang,
-    nameAr?: string | null
+    nameAr?: string | null,
+    opts?: { seasonality?: boolean }
 ): Array<{ href: string; label: string }> {
     const tabs: SymbolTab[] = ['overview', 'statistics', 'financials', 'dividends', 'technicals', 'history'];
+    // Seasonality is OPT-IN, never a default tab: only ~192 of 318 symbols have
+    // the five years of history the page needs, so linking it unconditionally
+    // would point every company at a 404. Callers pass the answer from the one
+    // cached getSeasonalitySymbols() set.
+    if (opts?.seasonality) tabs.push('seasonality');
     return tabs
         .filter((tab) => tab !== current)
         .map((tab) => ({

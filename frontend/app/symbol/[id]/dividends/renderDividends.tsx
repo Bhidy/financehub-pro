@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { getTicker, getDividendHistory, getDividendSummary } from '@/lib/public-data';
+import { getTicker, getDividendHistory, getDividendSummary, getSeasonalitySymbols} from '@/lib/public-data';
 import { SITE_URL, symbolPath, absUrl, symbolFromArParam, canonicalRedirectTarget } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
@@ -192,6 +192,11 @@ export async function renderDividends(id: string, lang: Lang) {
         { label: t(NAV.dividends, lang) },
     ];
 
+    // Seasonality only exists for symbols with enough history; ask the one
+    // cached set rather than probing per page.
+    const hasSeasonality = (await getSeasonalitySymbols()).has(symbol);
+    const siblings = symbolSiblings(symbol, 'dividends', lang, ticker.name_ar, { seasonality: hasSeasonality });
+
     return (
         <PublicPageShell lang={lang} altHref={encodeURI(symbolTabPath(symbol, 'dividends', isAr ? 'en' : 'ar', ticker.name_ar))} persistLang>
             <JsonLd data={breadcrumbJsonLd(breadcrumbItems, SITE_URL)} />
@@ -249,19 +254,16 @@ export async function renderDividends(id: string, lang: Lang) {
                 {t(DIVIDENDS.sourceNote, lang)}
             </p>
 
-            <nav aria-label={`More on ${symbol}`} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-teal-700">
-                <Link href={overviewPath} className="hover:text-starta-teal hover:underline">
-                    {symbol} Overview
-                </Link>
-                <Link href={encodeURI(symbolTabPath(symbol, 'financials', lang, ticker.name_ar))} className="hover:text-starta-teal hover:underline">
-                    Financials
-                </Link>
-                <Link href={encodeURI(symbolTabPath(symbol, 'technicals', lang, ticker.name_ar))} className="hover:text-starta-teal hover:underline">
-                    Technicals
-                </Link>
-                <Link href={encodeURI(symbolTabPath(symbol, 'history', lang, ticker.name_ar))} className="hover:text-starta-teal hover:underline">
-                    Price History
-                </Link>
+            <nav aria-label={t(NAV.companyPages, lang)} className="mt-8 border-t border-border pt-5">
+                <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
+                    {siblings.map((sib) => (
+                        <li key={sib.href}>
+                            <Link href={sib.href} prefetch={false} className="text-starta-teal hover:underline">
+                                {sib.label}
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
             </nav>
         </PublicPageShell>
     );

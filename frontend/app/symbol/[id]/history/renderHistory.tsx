@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { getTicker, getHistoryStats, getRecentHistory } from '@/lib/public-data';
+import { getTicker, getHistoryStats, getRecentHistory, getSeasonalitySymbols} from '@/lib/public-data';
 import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS, symbolFromArParam, canonicalRedirectTarget } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
@@ -157,12 +157,10 @@ export async function renderHistory(id: string, lang: Lang) {
         license: SITE_URL + '/terms',
     };
 
-    const siblings = [
-        { href: overviewPath, label: t(NAV.overview, lang) },
-        { href: `${overviewPath}/financials`, label: t(NAV.financials, lang) },
-        { href: `${overviewPath}/dividends`, label: t(NAV.dividends, lang) },
-        { href: `${overviewPath}/technicals`, label: t(NAV.technicals, lang) },
-    ];
+    // Seasonality only exists for symbols with enough history; ask the one
+    // cached set rather than probing per page.
+    const hasSeasonality = (await getSeasonalitySymbols()).has(symbol);
+    const siblings = symbolSiblings(symbol, 'history', lang, ticker.name_ar, { seasonality: hasSeasonality });
 
     return (
         <PublicPageShell lang={lang} altHref={encodeURI(symbolTabPath(symbol, 'history', isAr ? 'en' : 'ar', ticker.name_ar))} persistLang>

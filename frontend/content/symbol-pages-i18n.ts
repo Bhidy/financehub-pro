@@ -27,6 +27,7 @@ export const NAV = {
     dividends: s('Dividends', 'التوزيعات'),
     technicals: s('Technicals', 'التحليل الفني'),
     history: s('Price History', 'سجل الأسعار'),
+    seasonality: s('Seasonality', 'الموسمية'),
     companyPages: s('Company pages', 'صفحات الشركة'),
 };
 
@@ -428,3 +429,77 @@ export const FUNDVS = {
 
 /** Pick the string for a language. */
 export const t = (v: S, lang: Lang): string => v[lang];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Seasonality — monthly return profile. YMYL note: every string here must frame
+// this as a DESCRIPTION of past months, never a forecast. A page that implies
+// "September is up 4% so buy in September" is exactly the claim we refuse to
+// make, and the disclaimer is not optional decoration.
+export const SEASONALITY = {
+    h1: (name: string, symbol: string): S =>
+        s(`${name} (${symbol}) Seasonality`, `الأداء الشهري الموسمي لسهم ${name} (${symbol})`),
+    title: (name: string, symbol: string, years: number): S =>
+        s(
+            `${name} (${symbol}) Seasonality — Average Return by Month (${years} Years)`,
+            `موسمية سهم ${name} (${symbol}) — متوسط العائد الشهري على مدى ${years} سنوات`
+        ),
+    description: (name: string, symbol: string, years: number, best: string | null): S =>
+        s(
+            `${name} (EGX: ${symbol}) monthly seasonality over ${years} years: average return, share of positive months and observation count for all 12 calendar months.${best ? ` Historically strongest month: ${best}.` : ''}`,
+            `موسمية سهم ${name} (${symbol}) في البورصة المصرية على مدى ${years} سنوات: متوسط العائد ونسبة الشهور الرابحة وعدد الملاحظات لكل شهور السنة.${best ? ` أقوى شهر تاريخياً: ${best}.` : ''}`
+        ),
+    cols: {
+        month: s('Month', 'الشهر'),
+        avg: s('Average return', 'متوسط العائد'),
+        rate: s('Positive months', 'الشهور الرابحة'),
+        years: s('Observations', 'عدد الملاحظات'),
+    },
+    months: {
+        Jan: s('January', 'يناير'),
+        Feb: s('February', 'فبراير'),
+        Mar: s('March', 'مارس'),
+        Apr: s('April', 'أبريل'),
+        May: s('May', 'مايو'),
+        Jun: s('June', 'يونيو'),
+        Jul: s('July', 'يوليو'),
+        Aug: s('August', 'أغسطس'),
+        Sep: s('September', 'سبتمبر'),
+        Oct: s('October', 'أكتوبر'),
+        Nov: s('November', 'نوفمبر'),
+        Dec: s('December', 'ديسمبر'),
+    } as Record<string, S>,
+    windowNote: (years: number): S =>
+        s(
+            `Based on month-end closing prices over the last ${years} years.`,
+            `محسوبة من أسعار إغلاق نهاية الشهر خلال آخر ${years} سنوات.`
+        ),
+    strongest: s('Historically strongest', 'الأقوى تاريخياً'),
+    weakest: s('Historically weakest', 'الأضعف تاريخياً'),
+    mostConsistent: s('Most consistently positive', 'الأكثر ثباتاً في الارتفاع'),
+    summary: (name: string, years: number, best: string, bestVal: string, worst: string, worstVal: string): S =>
+        s(
+            `Across the last ${years} years, ${name} averaged its strongest calendar month in ${best} (${bestVal}) and its weakest in ${worst} (${worstVal}). These are averages of past month-to-month price changes — individual years vary widely around them, and a strong average month still contains losing years.`,
+            `خلال آخر ${years} سنوات، سجّل ${name} أقوى متوسط شهري في ${best} (${bestVal}) وأضعفه في ${worst} (${worstVal}). هذه متوسطات لتغيرات سعرية سابقة من شهر لآخر — وتتباين السنوات الفردية حولها بشكل كبير، وحتى الشهر ذو المتوسط المرتفع يتضمن سنوات خاسرة.`
+        ),
+    howToRead: s(
+        'Read the three columns together, not separately. The average return is the mean month-to-month price change for that calendar month. The positive share is how often that month finished higher — a month can average a gain while finishing higher only half the time, because one exceptional year lifts the mean. The observation count tells you how much data sits behind both figures: with ten observations, a single outlier year moves the average noticeably, so treat months with a high average and a low positive share as unreliable rather than promising.',
+        'اقرأ الأعمدة الثلاثة معاً لا منفصلة. متوسط العائد هو المتوسط الحسابي للتغير السعري من شهر لآخر في ذلك الشهر من السنة. أما نسبة الشهور الرابحة فتوضح كم مرة أغلق ذلك الشهر مرتفعاً — وقد يحقق شهر ما متوسطاً موجباً بينما يرتفع في نصف السنوات فقط، لأن سنة استثنائية واحدة ترفع المتوسط. ويخبرك عدد الملاحظات بحجم البيانات وراء الرقمين: فمع عشر ملاحظات، تكفي سنة شاذة واحدة لتحريك المتوسط بوضوح، لذا تعامل مع الشهور ذات المتوسط المرتفع والنسبة المنخفضة على أنها غير موثوقة لا واعدة.',
+    ),
+    whyPatterns: s(
+        'Recurring monthly patterns on the Egyptian Exchange usually have mundane explanations rather than predictive ones: results season concentrates earnings news in specific months, dividend dates pull prices down mechanically on ex-dividend day, and index reviews shift demand for constituents. Ramadan and the summer holiday period also change trading volumes each year, and because both move on the Hijri calendar their effect drifts across Gregorian months rather than staying fixed. A pattern that survives only because of a single crisis year is not a pattern.',
+        'عادةً ما يكون للأنماط الشهرية المتكررة في البورصة المصرية تفسيرات عادية لا تنبؤية: فموسم النتائج يركّز أخبار الأرباح في شهور بعينها، وتواريخ التوزيعات تخفض الأسعار آلياً في يوم نزول الكوبون، ومراجعات المؤشرات تغيّر الطلب على أسهمها. كما يغيّر شهر رمضان وفترة الإجازة الصيفية أحجام التداول كل عام، ولأن كليهما يتحرك وفق التقويم الهجري فإن أثرهما ينتقل بين الشهور الميلادية بدل أن يثبت فيها. والنمط الذي لا يصمد إلا بسبب سنة أزمة واحدة ليس نمطاً.',
+    ),
+    method: (years: number): S =>
+        s(
+            `Method: we take the last closing price of each calendar month from our own EGX price history, compute the percentage change from the previous month's close, then group those changes by calendar month across the last ${years} years. Months are only shown once at least two observations exist, and this page is published only for symbols with at least five years of history.`,
+            `المنهجية: نأخذ آخر سعر إغلاق في كل شهر من سجل أسعار البورصة المصرية لدينا، ونحسب نسبة التغير عن إغلاق الشهر السابق، ثم نجمّع هذه التغيرات حسب شهر السنة على مدى آخر ${years} سنوات. ولا يُعرض الشهر إلا بوجود ملاحظتين على الأقل، ولا تُنشر هذه الصفحة إلا للأسهم التي يتوفر لها خمس سنوات من التاريخ على الأقل.`
+        ),
+    disclaimer: s(
+        'Seasonality describes what happened in past calendar months. It is not a forecast, not a signal, and not investment advice. Past monthly averages have no reliable power to predict any future month, and nothing on this page should be used on its own to decide when to buy or sell.',
+        'تصف الموسمية ما حدث في شهور سابقة. وهي ليست توقعاً ولا إشارة ولا نصيحة استثمارية. فمتوسطات الشهور الماضية لا تملك قدرة موثوقة على التنبؤ بأي شهر قادم، ولا ينبغي الاعتماد على أي شيء في هذه الصفحة وحده لتحديد توقيت الشراء أو البيع.',
+    ),
+    notEnough: s(
+        'Not enough price history to compute a reliable monthly profile for this symbol.',
+        'لا يتوفر سجل أسعار كافٍ لحساب ملف شهري موثوق لهذا السهم.',
+    ),
+};

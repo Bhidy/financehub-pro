@@ -872,3 +872,173 @@ const _allTickersCached = unstable_cache(
     { revalidate: 300, tags: ['seo-tickers'] }
 );
 export const getAllTickers = cache((): Promise<Ticker[]> => _allTickersCached());
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Seasonality (monthly return profile), computed from our own ohlc_data.
+//
+// ONE implementation, shared by /api/v1/egx/seasonals/[symbol] and the
+// /symbol/[id]/seasonality pages. Two copies of one computation is the exact
+// failure mode that shipped 404ing provider hubs (getAllFundsRanked vs. the
+// sitemap's private query), so the route delegates here rather than repeating
+// the SQL.
+//
+// Method (matches the convention TradingView uses for monthly seasonals):
+//   1. month_close = last close of each calendar month
+//   2. monthly return = (close - prev_month_close) / prev_month_close
+//   3. group by calendar month: mean return, positive rate, N observations
+export type SeasonalMonth = {
+    month: number;          // 1..12
+    label: string;          // 'Jan'
+    avgReturn: number | null;
+    positiveRate: number | null;
+    years: number;
+};
+export type Seasonality = {
+    symbol: string;
+    windowYears: number;    // 0 = all history
+    yearsCovered: number;
+    available: boolean;
+    months: SeasonalMonth[];
+};
+
+const SEASONAL_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const _seasonalityCached = unstable_cache(
+    async (symbol: string, windowYears: number): Promise<Seasonality> => {
+        const sym = symbol.toUpperCase().replace('.CA', '');
+        // windowYears is already coerced to a non-negative integer by the
+        // exported wrapper; re-assert here because this string is interpolated.
+        const w = Number.isSafeInteger(windowYears) && windowYears > 0 ? windowYears : 0;
+        const dateFilter = w > 0
+            ? `AND date::date >= (CURRENT_DATE - INTERVAL '${w} years')`
+            : '';
+
+        const result = await db.query(
+            `WITH monthly AS (
+                 SELECT date_trunc('month', date::date) AS m,
+                        (array_agg(close ORDER BY date DESC))[1] AS month_close
+                 FROM ohlc_data
+                 WHERE (symbol = $1 OR symbol = $2) AND close > 0 ${dateFilter}
+                 GROUP BY 1
+             ),
+             ret AS (
+                 SELECT m, month_close, LAG(month_close) OVER (ORDER BY m) AS prev_close
+                 FROM monthly
+             )
+             SELECT EXTRACT(MONTH FROM m)::int AS month,
+                    ROUND(AVG((month_close - prev_close) / prev_close * 100)::numeric, 2) AS avg_return,
+                    ROUND((AVG(CASE WHEN month_close > prev_close THEN 1.0 ELSE 0.0 END) * 100)::numeric, 0) AS positive_rate,
+                    COUNT(*) AS years
+             FROM ret
+             WHERE prev_close IS NOT NULL AND prev_close > 0
+             GROUP BY 1
+             ORDER BY 1`,
+            [sym, `${sym}.CA`]
+        );
+
+        const byMonth = new Map<number, Record<string, unknown>>();
+        for (const r of result.rows as Array<Record<string, unknown>>) {
+            byMonth.set(Number(r.month), r);
+        }
+
+        const months: SeasonalMonth[] = SEASONAL_LABELS.map((label, i) => {
+            const r = byMonth.get(i + 1);
+            return {
+                month: i + 1,
+                label,
+                avgReturn: r ? Number(r.avg_return) : null,
+                positiveRate: r ? Number(r.positive_rate) : null,
+                years: r ? Number(r.years) : 0,
+            };
+        });
+
+        const withData = months.filter((m) => m.avgReturn != null);
+        const yearsCovered = months.reduce((mx, m) => Math.max(mx, m.years), 0);
+
+        return {
+            symbol: sym,
+            windowYears: w,
+            yearsCovered,
+            available: withData.length >= 6 && yearsCovered >= 2,
+            months,
+        };
+    },
+    ['seo:seasonality'],
+    // Monthly closes only change once a month; 6h is plenty fresh and keeps
+    // this 318-symbol computation off the DB on every crawl.
+    { revalidate: 21600, tags: ['seo-seasonality'] }
+);
+
+export const getSeasonality = cache(
+    (symbol: string, windowYears = 10): Promise<Seasonality> => {
+        const w = Number.isFinite(windowYears) && windowYears > 0 ? Math.floor(windowYears) : 0;
+        return _seasonalityCached(symbol, w);
+    }
+);
+
+/**
+ * Page-worthiness gate. A seasonality page is only honest with enough
+ * observations behind each monthly average — 5 years is the floor we publish
+ * at, and it is the SAME predicate the sitemap uses, so we never link a page
+ * that renders "not enough history".
+ */
+export const SEASONALITY_MIN_YEARS = 5;
+export function seasonalityIsPublishable(s: Seasonality | null | undefined): boolean {
+    return !!s && s.available && s.yearsCovered >= SEASONALITY_MIN_YEARS;
+}
+
+/**
+ * The set of EGX symbols whose seasonality page is worth publishing — ONE
+ * query for all of them, not a per-symbol probe.
+ *
+ * Every company page renders a sibling tab strip, so if seasonality were an
+ * unconditional tab all 318 symbols would link to it and the ~126 without
+ * enough history would answer 404. Pages ask this set instead. The sitemap
+ * uses the SAME set, so we can never link or submit a URL that renders
+ * "not enough history".
+ *
+ * Predicate matches seasonalityIsPublishable(): >= 6 calendar months with data
+ * and >= SEASONALITY_MIN_YEARS observations in the deepest month.
+ */
+const _seasonalitySymbolsCached = unstable_cache(
+    async (): Promise<string[]> => {
+        const result = await db.query(
+            `WITH monthly AS (
+                 SELECT regexp_replace(symbol, '\\.CA$', '') AS sym,
+                        date_trunc('month', date::date) AS m,
+                        (array_agg(close ORDER BY date DESC))[1] AS month_close
+                 FROM ohlc_data
+                 WHERE close > 0 AND date::date >= (CURRENT_DATE - INTERVAL '10 years')
+                 GROUP BY 1, 2
+             ),
+             ret AS (
+                 SELECT sym, m, month_close,
+                        LAG(month_close) OVER (PARTITION BY sym ORDER BY m) AS prev_close
+                 FROM monthly
+             ),
+             per_month AS (
+                 SELECT sym, EXTRACT(MONTH FROM m)::int AS month, COUNT(*) AS years
+                 FROM ret
+                 WHERE prev_close IS NOT NULL AND prev_close > 0
+                 GROUP BY 1, 2
+             ),
+             eligible AS (
+                 SELECT sym FROM per_month
+                 GROUP BY sym
+                 HAVING COUNT(*) >= 6 AND MAX(years) >= ${SEASONALITY_MIN_YEARS}
+             )
+             SELECT e.sym FROM eligible e
+             JOIN market_tickers mt ON mt.symbol = e.sym
+             WHERE ${EGX_ONLY}
+             ORDER BY e.sym`
+        );
+        return (result.rows as Array<Record<string, unknown>>).map((r) => String(r.sym).toUpperCase());
+    },
+    ['seo:seasonality-symbols'],
+    { revalidate: 21600, tags: ['seo-seasonality'] }
+);
+
+export const getSeasonalitySymbols = cache(
+    async (): Promise<Set<string>> => new Set(await _seasonalitySymbolsCached())
+);

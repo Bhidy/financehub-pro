@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { getTicker, getTechnicals } from '@/lib/public-data';
+import { getTicker, getTechnicals, getSeasonalitySymbols} from '@/lib/public-data';
 import { SITE_URL, symbolFromArParam, canonicalRedirectTarget, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
@@ -141,7 +141,10 @@ export async function renderTechnicals(id: string, lang: Lang) {
     const name = (isAr ? ticker.name_ar || ticker.name_en : ticker.name_en) || symbol;
     const leaf = t(NAV.technicals, lang);
     const crumbs = symbolCrumbs(symbol, name, leaf, lang, ticker.name_ar);
-    const siblings = symbolSiblings(symbol, 'technicals', lang, ticker.name_ar);
+    // Seasonality only exists for symbols with enough history; ask the one
+    // cached set rather than probing per page.
+    const hasSeasonality = (await getSeasonalitySymbols()).has(symbol);
+    const siblings = symbolSiblings(symbol, 'technicals', lang, ticker.name_ar, { seasonality: hasSeasonality });
 
     const asOf = rows.reduce<Date | null>((mx, r) => {
         const d = toDate(r['updated_at']);

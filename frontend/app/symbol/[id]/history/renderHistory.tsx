@@ -84,7 +84,9 @@ export async function historyMetadata(id: string, lang: Lang): Promise<Metadata>
     if (!stats) return {};
 
     const name = (lang === 'ar' ? ticker.name_ar || ticker.name_en : ticker.name_en) || symbol;
-    const path = `${symbolPath(symbol)}/history`;
+    const pathEn = encodeURI(symbolTabPath(symbol, 'history', 'en'));
+    const pathAr = encodeURI(symbolTabPath(symbol, 'history', 'ar', ticker.name_ar));
+    const path = lang === 'ar' ? pathAr : pathEn;
     const firstYear = isoDate(stats['first_date'])?.slice(0, 4) ?? null;
     const rowCount = num(stats, 'rows');
 
@@ -99,7 +101,12 @@ export async function historyMetadata(id: string, lang: Lang): Promise<Metadata>
     return {
         title,
         description,
-        alternates: { canonical: path },
+        alternates: {
+            // Language-aware — the Arabic page emitting the English
+            // canonical would de-index itself in favour of its twin.
+            canonical: path,
+            languages: { en: pathEn, ar: pathAr, 'x-default': pathAr },
+        },
         openGraph: {
             ...OG_DEFAULTS,
             type: 'website',

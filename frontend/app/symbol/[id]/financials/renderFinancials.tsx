@@ -85,7 +85,17 @@ export async function financialsMetadata(id: string, lang: Lang): Promise<Metada
     return {
         title: `${t(FINANCIALS.title(name, symbol), lang)}${range}`,
         description: buildDescription(name, symbol, years.length, minYear, maxYear, lang),
-        alternates: { canonical: `${symbolPath(symbol)}/financials` },
+        alternates: {
+            // Language-aware. Emitting the English canonical from the ARABIC
+            // page made every Arabic sub-page de-index itself in favour of its
+            // English twin — caught by the SEO audit, not by review.
+            canonical: encodeURI(symbolTabPath(symbol, 'financials', lang, ticker.name_ar)),
+            languages: {
+                en: encodeURI(symbolTabPath(symbol, 'financials', 'en')),
+                ar: encodeURI(symbolTabPath(symbol, 'financials', 'ar', ticker.name_ar)),
+                'x-default': encodeURI(symbolTabPath(symbol, 'financials', 'ar', ticker.name_ar)),
+            },
+        },
     };
 }
 
@@ -100,7 +110,8 @@ export async function renderFinancials(id: string, lang: Lang) {
 
     const name = (lang === 'ar' ? ticker.name_ar || ticker.name_en : ticker.name_en) || symbol;
     const { minYear, maxYear } = yearRange(years);
-    const pagePath = `${symbolPath(symbol)}/financials`;
+    const pagePath = encodeURI(symbolTabPath(symbol, 'financials', lang, ticker.name_ar));
+    const overviewPath = encodeURI(symbolTabPath(symbol, 'overview', lang, ticker.name_ar));
 
     const datasetJsonLd = {
         '@context': 'https://schema.org',
@@ -120,7 +131,7 @@ export async function renderFinancials(id: string, lang: Lang) {
     const breadcrumbItems = [
         { href: '/', url: '/', label: t(NAV.home, lang) },
         { href: '/companies', url: '/companies', label: t(NAV.companies, lang) },
-        { href: symbolPath(symbol), url: symbolPath(symbol), label: name },
+        { href: overviewPath, url: overviewPath, label: name },
         { label: t(NAV.financials, lang) },
     ];
 
@@ -178,16 +189,16 @@ export async function renderFinancials(id: string, lang: Lang) {
             </p>
 
             <nav aria-label={`More on ${symbol}`} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-teal-700">
-                <Link href={symbolPath(symbol)} className="hover:text-starta-teal hover:underline">
+                <Link href={overviewPath} className="hover:text-starta-teal hover:underline">
                     {symbol} Overview
                 </Link>
-                <Link href={`${symbolPath(symbol)}/dividends`} className="hover:text-starta-teal hover:underline">
+                <Link href={encodeURI(symbolTabPath(symbol, 'dividends', lang, ticker.name_ar))} className="hover:text-starta-teal hover:underline">
                     Dividends
                 </Link>
-                <Link href={`${symbolPath(symbol)}/technicals`} className="hover:text-starta-teal hover:underline">
+                <Link href={encodeURI(symbolTabPath(symbol, 'technicals', lang, ticker.name_ar))} className="hover:text-starta-teal hover:underline">
                     Technicals
                 </Link>
-                <Link href={`${symbolPath(symbol)}/history`} className="hover:text-starta-teal hover:underline">
+                <Link href={encodeURI(symbolTabPath(symbol, 'history', lang, ticker.name_ar))} className="hover:text-starta-teal hover:underline">
                     Price History
                 </Link>
             </nav>

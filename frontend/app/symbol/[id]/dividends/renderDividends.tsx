@@ -96,7 +96,17 @@ export async function dividendsMetadata(id: string, lang: Lang): Promise<Metadat
     return {
         title: `${name} (${symbol}) Dividends & Yield`,
         description: buildDescription(name, symbol, divYield, lang),
-        alternates: { canonical: `${symbolPath(symbol)}/dividends` },
+        alternates: {
+            // Language-aware. Emitting the English canonical from the ARABIC
+            // page made every Arabic sub-page de-index itself in favour of its
+            // English twin — caught by the SEO audit, not by review.
+            canonical: encodeURI(symbolTabPath(symbol, 'dividends', lang, ticker.name_ar)),
+            languages: {
+                en: encodeURI(symbolTabPath(symbol, 'dividends', 'en')),
+                ar: encodeURI(symbolTabPath(symbol, 'dividends', 'ar', ticker.name_ar)),
+                'x-default': encodeURI(symbolTabPath(symbol, 'dividends', 'ar', ticker.name_ar)),
+            },
+        },
     };
 }
 
@@ -121,7 +131,8 @@ export async function renderDividends(id: string, lang: Lang) {
     if (history.length === 0 && !(divYield !== null && divYield > 0) && recentAmount === null && upcomingAmount === null) notFound();
 
     const name = (lang === 'ar' ? ticker.name_ar || ticker.name_en : ticker.name_en) || symbol;
-    const pagePath = `${symbolPath(symbol)}/dividends`;
+    const pagePath = encodeURI(symbolTabPath(symbol, 'dividends', lang, ticker.name_ar));
+    const overviewPath = encodeURI(symbolTabPath(symbol, 'overview', lang, ticker.name_ar));
 
     // Summary cards — render only what exists; a missing metric is omitted,
     // never shown as 0 (financial accuracy: fabricated zeros are Critical).
@@ -177,7 +188,7 @@ export async function renderDividends(id: string, lang: Lang) {
     const breadcrumbItems = [
         { href: '/', url: '/', label: t(NAV.home, lang) },
         { href: '/companies', url: '/companies', label: t(NAV.companies, lang) },
-        { href: symbolPath(symbol), url: symbolPath(symbol), label: name },
+        { href: overviewPath, url: overviewPath, label: name },
         { label: t(NAV.dividends, lang) },
     ];
 
@@ -239,16 +250,16 @@ export async function renderDividends(id: string, lang: Lang) {
             </p>
 
             <nav aria-label={`More on ${symbol}`} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-teal-700">
-                <Link href={symbolPath(symbol)} className="hover:text-starta-teal hover:underline">
+                <Link href={overviewPath} className="hover:text-starta-teal hover:underline">
                     {symbol} Overview
                 </Link>
-                <Link href={`${symbolPath(symbol)}/financials`} className="hover:text-starta-teal hover:underline">
+                <Link href={encodeURI(symbolTabPath(symbol, 'financials', lang, ticker.name_ar))} className="hover:text-starta-teal hover:underline">
                     Financials
                 </Link>
-                <Link href={`${symbolPath(symbol)}/technicals`} className="hover:text-starta-teal hover:underline">
+                <Link href={encodeURI(symbolTabPath(symbol, 'technicals', lang, ticker.name_ar))} className="hover:text-starta-teal hover:underline">
                     Technicals
                 </Link>
-                <Link href={`${symbolPath(symbol)}/history`} className="hover:text-starta-teal hover:underline">
+                <Link href={encodeURI(symbolTabPath(symbol, 'history', lang, ticker.name_ar))} className="hover:text-starta-teal hover:underline">
                     Price History
                 </Link>
             </nav>

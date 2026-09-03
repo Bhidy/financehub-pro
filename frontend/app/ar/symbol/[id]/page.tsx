@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import { getTicker, getStats, getCompanyProfile, getSectorPeers } from '@/lib/public-data';
 import type { Ticker } from '@/lib/public-data';
 import { SITE_URL, symbolPath, absUrl } from '@/lib/seo';
-import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
+import { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
+import SymbolPageClient from '@/app/symbol/[id]/SymbolPageClient';
 import JsonLd from '@/components/seo/JsonLd';
 import { sectorAr } from '@/content/sector-names-ar';
 
@@ -156,15 +157,44 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 }
 
+/** The lang seed + the premium app on their own — the DB-outage fallback and
+ *  the top of the full page. One definition so the two cannot drift. */
+function ArabicSymbolAppOnly() {
+    return (
+        <>
+            <script
+                dangerouslySetInnerHTML={{
+                    __html:
+                        "try{localStorage.setItem('starta-lang','ar');localStorage.setItem('lang','ar');" +
+                        "document.cookie='starta-lang=ar;path=/;max-age=31536000;samesite=lax';}catch(e){}",
+                }}
+            />
+            <SymbolPageClient />
+        </>
+    );
+}
+
 export default async function ArabicSymbolPage({ params }: Props) {
     const { id } = await params;
     const symbol = (id || '').toUpperCase();
     if (!symbol) notFound();
 
-    // No try/catch on getTicker: a DB outage must surface as a 5xx (temporary),
-    // never as a 404 — unknown symbols are the only 404.
-    const ticker = await getTicker(symbol);
-    if (!ticker) notFound();
+    // DB-outage resilience, matching the English /symbol/{SYMBOL} exactly:
+    // SymbolPageClient fetches its own data over the API, so when the database
+    // is unreachable we still serve the full interactive page rather than a
+    // 500. 'unavailable' is not 'unknown symbol' — only the latter is a 404,
+    // so a DB outage can never de-index a real company page.
+    let ticker: Awaited<ReturnType<typeof getTicker>> = null;
+    let dbOk = true;
+    try {
+        ticker = await getTicker(symbol);
+    } catch {
+        dbOk = false;
+    }
+    if (!ticker) {
+        if (!dbOk) return <ArabicSymbolAppOnly />;
+        notFound();
+    }
 
     const [stats, profile, peers] = await Promise.all([
         getStats(symbol).catch(() => null),
@@ -225,7 +255,18 @@ export default async function ArabicSymbolPage({ params }: Props) {
     };
 
     return (
-        <PublicPageShell lang="ar" altHref={symbolPath(symbol)}>
+        <>
+            {/* THE PREMIUM COMPANY PAGE. Identical in structure to the English
+                /symbol/{SYMBOL}: the same interactive app, then the SEO layer
+                beneath it. This page previously rendered ONLY the SEO layer
+                inside PublicPageShell, so Arabic visitors — the site's DEFAULT
+                audience — got a static summary where English visitors got the
+                full product. SymbolPageClient has been bilingual all along
+                (1,500+ lines of `lang === "ar"` branches); it was simply never
+                mounted here. */}
+            <ArabicSymbolAppOnly />
+            <section dir="rtl" lang="ar" className="seo-shell bg-page text-main font-arabic">
+              <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
             <JsonLd data={corporationJsonLd} />
             <JsonLd data={faqJsonLd} />
             <JsonLd
@@ -347,6 +388,8 @@ export default async function ArabicSymbolPage({ params }: Props) {
                     المصدر: البورصة المصرية عبر TradingView. الأسعار تتحدث كل 15 دقيقة خلال ساعات التداول (الأحد–الخميس).
                 </p>
             </div>
-        </PublicPageShell>
+              </div>
+            </section>
+        </>
     );
 }

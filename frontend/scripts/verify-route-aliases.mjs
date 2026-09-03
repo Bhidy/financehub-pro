@@ -772,6 +772,46 @@ const DESIGNED_SHELL_HUBS = [
   { route: "app/Market-Pulse/route.ts", shell: "market-pulse.html", url: "/Market-Pulse" },
 ];
 
+/**
+ * PREMIUM-COMPONENT PARITY. Some content types have ONE premium implementation
+ * and an SEO layer that sits beneath it. Both language trees must mount the
+ * premium component — an Arabic URL that renders only the SEO layer gives the
+ * site's DEFAULT audience a downgraded product, which is what happened to
+ * /ar/symbol/{SYMBOL} for months.
+ */
+const PREMIUM_PARITY = [
+  {
+    en: "app/symbol/[id]/page.tsx",
+    ar: "app/ar/symbol/[id]/page.tsx",
+    component: "SymbolPageClient",
+    url: "/ar/symbol/{SYMBOL}",
+  },
+];
+
+async function assertPremiumParity() {
+  let failed = false;
+  for (const pair of PREMIUM_PARITY) {
+    for (const [label, file] of [["EN", pair.en], ["AR", pair.ar]]) {
+      let text = "";
+      try {
+        text = readFileSync(path.join(root, file), "utf8");
+      } catch {
+        console.error(`FAIL: ${file} is missing — ${pair.url} parity cannot be checked.`);
+        failed = true;
+        continue;
+      }
+      if (!new RegExp(`<${pair.component}\\s*/>`).test(text)) {
+        console.error(
+          `FAIL: ${file} (${label}) does not mount <${pair.component} /> — ${pair.url} would serve the SEO layer only, not the premium page.`
+        );
+        failed = true;
+      }
+    }
+  }
+  if (failed) process.exit(1);
+  console.log("OK: premium components mount in BOTH language trees.");
+}
+
 async function assertDesignedShellsIntact() {
   let failed = false;
   for (const hub of DESIGNED_SHELL_HUBS) {
@@ -820,6 +860,7 @@ async function assertDesignedShellsIntact() {
 
 async function run() {
   await assertDesignedShellsIntact();
+  await assertPremiumParity();
 
   // /home must be served by rewrite to /home.html, not by a competing app route.
   try {

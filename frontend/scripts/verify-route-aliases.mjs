@@ -1219,6 +1219,50 @@ async function run() {
     // index.html is optional outside local monorepo usage
   }
 
+
+  // ── SIGNED FIGURES MUST BE BIDI-ISOLATED ON BILINGUAL SURFACES ──────────
+  // A string like "-2.55%" is a neutral sign + European digits. Inside an RTL
+  // paragraph the bidi algorithm moves the sign to the VISUAL RIGHT, so Arabic
+  // readers saw "2.55%-" — on /ar/Funds/prices-today every return rendered with
+  // its sign on the wrong end. The dedicated app/ar/** pages guard with
+  // dir="ltr"; the SHARED bilingual renderers had no guard at all, which is how
+  // the defect survived. Any of these files that formats a signed percentage
+  // must route it through ltrNum().
+  {
+    const bilingualNumericRenderers = [
+      "app/Funds/prices-today/renderPricesToday.tsx",
+      "app/Funds/vs/renderFundVs.tsx",
+      "app/Funds/[id]/fund-format.ts",
+      "app/Funds/fees/renderFundFees.tsx",
+      "app/markets/renderMarketScreen.tsx",
+      "app/symbol/[id]/seasonality/renderSeasonality.tsx",
+      "lib/funds-hub-render.ts",
+    ];
+    for (const rel of bilingualNumericRenderers) {
+      let text;
+      try {
+        text = await readFile(path.join(root, rel), "utf8");
+      } catch {
+        console.error(`FAIL: ${rel} is missing — the bidi gate cannot verify it.`);
+        process.exit(1);
+      }
+      // Lines that BUILD a percentage string from a number.
+      const numericLines = text
+        .split("\n")
+        .filter((l) => /toFixed\(2\)\}%|maximumFractionDigits: 2 \}\)\}%|Math\.round\([^)]*\)\}%/.test(l));
+      if (numericLines.length === 0) continue;
+      const unguarded = numericLines.filter((l) => !l.includes("ltrNum"));
+      if (unguarded.length > 0) {
+        console.error(
+          `FAIL: ${rel} formats a percentage without ltrNum() — the sign will render on the wrong side in Arabic.`
+        );
+        console.error(`       ${unguarded[0].trim().slice(0, 120)}`);
+        process.exit(1);
+      }
+    }
+    console.log("OK: signed figures are bidi-isolated on every bilingual renderer.");
+  }
+
   console.log("PASS: Route alias guard checks succeeded.");
 }
 

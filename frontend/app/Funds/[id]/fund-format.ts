@@ -4,8 +4,10 @@
  * return formatting in renderFundPage), so numeric output uses 'en-EG' regardless
  * of UI language — deterministic across SSR and client (no hydration drift).
  */
-export const pct = (v: number): string => `${v.toFixed(2)}%`;
-export const signedPct = (v: number): string => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`;
+
+import { ltrNum } from '@/lib/bidi';
+export const pct = (v: number): string => ltrNum(`${v.toFixed(2)}%`);
+export const signedPct = (v: number): string => ltrNum(`${v > 0 ? '+' : ''}${v.toFixed(2)}%`);
 export const int = (v: number): string => Math.round(v).toLocaleString('en-EG');
 export const money = (v: number, currency: string): string =>
     `${Math.round(v).toLocaleString('en-EG')} ${currency}`;

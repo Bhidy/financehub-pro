@@ -1,6 +1,7 @@
 import { esc, escUrl } from '@/lib/static-hub';
 import { fundPath, absUrl, SITE_URL } from '@/lib/seo';
 import { categoryOfFund } from '@/content/fund-categories';
+import { ltrNum } from '@/lib/bidi';
 
 /**
  * The ONE server-side pre-render of a fund list.
@@ -18,7 +19,7 @@ const num = (r: Row, k: string): number | null =>
     typeof r[k] === 'number' && Number.isFinite(r[k] as number) ? (r[k] as number) : null;
 const str = (r: Row, k: string): string | null =>
     typeof r[k] === 'string' && (r[k] as string).trim() ? (r[k] as string).trim() : null;
-const pct = (v: number | null): string => (v === null ? '—' : `${v.toFixed(2)}%`);
+const pct = (v: number | null): string => (v === null ? '—' : ltrNum(`${v.toFixed(2)}%`));
 const navFmt = (v: number | null, lang: 'en' | 'ar'): string =>
     v === null ? '—' : v.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-EG', { maximumFractionDigits: 4 });
 

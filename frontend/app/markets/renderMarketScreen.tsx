@@ -6,6 +6,7 @@ import { SITE_URL, symbolPath, symbolPathAr, absUrl, OG_DEFAULTS } from '@/lib/s
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { findScreen, screenPath, MARKET_SCREENS, type MarketScreen } from '@/content/market-screens';
+import { ltrNum } from '@/lib/bidi';
 
 /**
  * MARKET SCREEN PAGES — /markets/{screen} and /ar/markets/{screen}.
@@ -34,7 +35,7 @@ const fmtNum = (n: unknown, d = 2, lang: 'en' | 'ar' = 'en'): string =>
 
 const fmtChange = (n: unknown): string =>
     typeof n === 'number' && Number.isFinite(n)
-        ? `${n >= 0 ? '+' : ''}${n.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%`
+        ? ltrNum(`${n >= 0 ? '+' : ''}${n.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%`)
         : '—';
 
 const metricValue = (r: Row, s: MarketScreen, lang: 'en' | 'ar'): string => {

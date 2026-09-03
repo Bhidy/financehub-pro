@@ -938,7 +938,7 @@ export default function SymbolDetailPage() {
                                     <div className="flex items-center justify-between mb-3 px-2">
                                         <span className="text-xs text-slate-400 font-bold">{t.price_chart}</span>
                                         <button type="button" onClick={() => setChartFullscreen(true)}
-                                            title={lang === "ar" ? "تكبير الرسم البياني" : "Enlarge chart"} aria-label="Enlarge chart"
+                                            title={lang === "ar" ? "تكبير الرسم البياني" : "Enlarge chart"} aria-label={lang === "ar" ? "تكبير الرسم البياني" : "Enlarge chart"}
                                             className="p-1.5 rounded-lg text-slate-400 hover:text-[#14b8a6] hover:bg-[#14b8a6]/10 transition-colors">
                                             <Maximize2 className="w-4 h-4" />
                                         </button>

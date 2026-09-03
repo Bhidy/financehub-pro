@@ -6,6 +6,7 @@ import { SITE_URL, fundPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { FUNDVS, t, type Lang } from '@/content/symbol-pages-i18n';
+import { ltrNum } from '@/lib/bidi';
 
 /**
  * /Funds/vs/{idA}-vs-{idB} — side-by-side comparison of two Egyptian mutual
@@ -105,11 +106,11 @@ function fmtNav(v: number): string {
 }
 
 function fmtPct(v: number): string {
-    return `${v.toFixed(2)}%`;
+    return ltrNum(`${v.toFixed(2)}%`);
 }
 
 function fmtSignedPct(v: number): string {
-    return `${v > 0 ? '+' : ''}${v.toFixed(2)}%`;
+    return ltrNum(`${v > 0 ? '+' : ''}${v.toFixed(2)}%`);
 }
 
 /** Shared derivations for generateMetadata + the page body. */
@@ -358,7 +359,7 @@ export async function renderFundVs(pair: string, lang: Lang) {
                 figure. Source: fund manager disclosures.
             </p>
 
-            <nav aria-label="Fund profiles" className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-teal-700">
+            <nav aria-label={isAr ? 'صفحات الصناديق' : 'Fund profiles'} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-teal-700">
                 <Link href={A.path} className="hover:text-starta-teal hover:underline">{A.name} profile →</Link>
                 <Link href={B.path} className="hover:text-starta-teal hover:underline">{B.name} profile →</Link>
                 <Link href="/Funds" className="hover:text-starta-teal hover:underline">{t(FUNDVS.allFunds, lang)} →</Link>

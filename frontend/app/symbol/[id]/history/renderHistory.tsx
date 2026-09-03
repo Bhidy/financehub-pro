@@ -249,7 +249,7 @@ export async function renderHistory(id: string, lang: Lang) {
                 Egyptian pounds.
             </p>
 
-            <nav aria-label="Company pages" className="mt-8 border-t border-border pt-5">
+            <nav aria-label={t(NAV.companyPages, lang)} className="mt-8 border-t border-border pt-5">
                 <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
                     {siblings.map((s) => (
                         <li key={s.href}>

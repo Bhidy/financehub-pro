@@ -14,6 +14,7 @@ import {
 } from '@/content/fund-categories';
 import { fundName } from '@/lib/funds-hub-render';
 import { FEES, t, type Lang } from '@/content/fund-fees';
+import { ltrNum } from '@/lib/bidi';
 
 /**
  * /Funds/fees and /ar/Funds/fees
@@ -49,13 +50,13 @@ const managerOf = (f: Row, lang: Lang): string | null =>
         ? str(f, 'manager_name') || str(f, 'owner_name') || str(f, 'manager_name_en') || str(f, 'owner_name_en')
         : str(f, 'manager_name_en') || str(f, 'owner_name_en') || str(f, 'manager_name') || str(f, 'owner_name');
 
-const pctFee = (n: number): string => `${n.toFixed(2)}%`;
+const pctFee = (n: number): string => ltrNum(`${n.toFixed(2)}%`);
 
 /** Difference in percentage POINTS — a fee gap is not a percentage change. */
 const vsMedian = (fee: number, median: number): string => {
     const d = fee - median;
     if (Math.abs(d) < 0.005) return '—';
-    return `${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(2)} pp`;
+    return ltrNum(`${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(2)} pp`);
 };
 
 function median(values: number[]): number {

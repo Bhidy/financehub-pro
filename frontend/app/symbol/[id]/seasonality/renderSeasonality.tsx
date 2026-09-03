@@ -14,6 +14,7 @@ import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo
 import JsonLd from '@/components/seo/JsonLd';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
 import { SEASONALITY, COMMON, NAV, t, type Lang } from '@/content/symbol-pages-i18n';
+import { ltrNum } from '@/lib/bidi';
 
 /**
  * /symbol/{SYM}/seasonality and /ar/symbol/{SYM}-{slug}/seasonality —
@@ -30,9 +31,9 @@ import { SEASONALITY, COMMON, NAV, t, type Lang } from '@/content/symbol-pages-i
  */
 
 const pct = (n: number | null): string =>
-    n === null ? '—' : `${n > 0 ? '+' : ''}${n.toFixed(2)}%`;
+    n === null ? '—' : ltrNum(`${n > 0 ? '+' : ''}${n.toFixed(2)}%`);
 
-const rate = (n: number | null): string => (n === null ? '—' : `${Math.round(n)}%`);
+const rate = (n: number | null): string => (n === null ? '—' : ltrNum(`${Math.round(n)}%`));
 
 const toneClass = (n: number | null): string =>
     n === null ? 'text-muted' : n > 0 ? 'text-emerald-600' : n < 0 ? 'text-red-600' : 'text-muted';

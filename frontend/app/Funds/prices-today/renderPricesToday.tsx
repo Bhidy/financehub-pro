@@ -8,6 +8,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { buildProviders, providerPath } from '@/content/fund-providers';
 import { fundName, fundsAsOf } from '@/lib/funds-hub-render';
+import { ltrNum } from '@/lib/bidi';
 
 /**
  * /Funds/prices-today and /ar/Funds/أسعار-الوثائق-اليوم
@@ -95,7 +96,7 @@ export async function renderPricesToday(lang: 'en' | 'ar') {
 
     const fmtNav = (v: number | null) =>
         v === null ? '—' : v.toLocaleString(isAr ? 'ar-EG' : 'en-EG', { maximumFractionDigits: 4 });
-    const fmtPct = (v: number | null) => (v === null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`);
+    const fmtPct = (v: number | null) => (v === null ? '—' : ltrNum(`${v >= 0 ? '+' : ''}${v.toFixed(2)}%`));
     const dayOf = (v: unknown): { iso: string; human: string } => {
         const t = v ? Date.parse(String(v)) : NaN;
         if (!Number.isFinite(t)) return { iso: '', human: '—' };

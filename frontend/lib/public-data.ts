@@ -669,7 +669,13 @@ const _allFundsRankedCached = unstable_cache(
     async (): Promise<Array<Record<string, unknown>>> => {
     const result = await db.query(
         `SELECT fund_id, fund_name, fund_name_en, fund_type, fund_type_en,
-                classification_en, issuer_en, manager_name_en, currency, is_shariah,
+                classification_en, issuer_en, currency, is_shariah,
+                -- Provider identity, BOTH languages. Omitting owner_name* and
+                -- manager_name here made buildProviders() see managers only,
+                -- so every bank hub 404'd while the sitemap (which queries its
+                -- own column set) advertised them — a page/sitemap
+                -- disagreement that only a live check catches.
+                manager_name, manager_name_en, owner_name, owner_name_en,
                 latest_nav, live_latest_nav, last_nav_date,
                 return_ytd, return_1m, return_3m, return_1y, return_3y, return_5y,
                 returns_ytd, ytd_return, returns_1m, returns_3m, returns_1y, one_year_return,

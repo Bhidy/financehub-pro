@@ -630,7 +630,19 @@ export const getDividendCalendar = cache(async (): Promise<{ upcoming: Array<Rec
 });
 
 /** All funds with the fields the rankings/comparison pages need. */
-export const getAllFundsRanked = cache(async (): Promise<Array<Record<string, unknown>>> => {
+// Cross-request data cache (15 min), matching the pattern used for tickers
+// above. This is the hottest fund read: it powers /ar/Funds, every fund
+// category page, the EN + AR money pages and each fund detail page's peer
+// block. Those routes are force-dynamic and Vercel does not CDN-cache a
+// dynamic function response (measured 2026-09-03: middleware and next.config
+// Cache-Control are both overridden by the platform's no-store), so the DATA
+// cache is the only lever that removes the per-request round trip — the audit
+// measured 1.29-1.9s TTFB on exactly these pages.
+// 15 min is far shorter than the NAV publication cadence (twice daily) and
+// every page carries an as-of stamp, so the cache can never show a figure the
+// origin would not have shown.
+const _allFundsRankedCached = unstable_cache(
+    async (): Promise<Array<Record<string, unknown>>> => {
     const result = await db.query(
         `SELECT fund_id, fund_name, fund_name_en, fund_type, fund_type_en,
                 classification_en, issuer_en, manager_name_en, currency, is_shariah,
@@ -651,7 +663,13 @@ export const getAllFundsRanked = cache(async (): Promise<Array<Record<string, un
     // so an SQL ORDER BY on it would be meaningless).
     rows.sort((a, b) => ((b.return_1y as number | null) ?? -Infinity) - ((a.return_1y as number | null) ?? -Infinity));
     return rows;
-});
+    },
+    ['seo:all-funds-ranked'],
+    { revalidate: 900, tags: ['seo-funds'] }
+);
+// React.cache() still dedups within a single request; unstable_cache dedups
+// ACROSS requests.
+export const getAllFundsRanked = cache((): Promise<Array<Record<string, unknown>>> => _allFundsRankedCached());
 
 /** All companies for the /companies directory hub. */
 // Cross-request data cache (5 min) for the full ticker list — the hottest read

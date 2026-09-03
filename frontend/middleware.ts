@@ -152,13 +152,20 @@ export function isArabicPath(pathname: string): boolean {
  * Edge TTL (seconds) for a public page, or null to leave the route's own
  * caching alone.
  *
- * WHY MIDDLEWARE AND NOT next.config headers(): every public page here is a
- * `force-dynamic` App Router route, and Next.js stamps those with
- * `private, no-cache, no-store` at render time, which WINS over a
- * next.config `headers()` entry. Measured on production 2026-09-03: `/` and
- * `/Market-Pulse` (static-file rewrites) honoured their configured s-maxage
- * while every dynamic route ignored it and shipped no-store. Middleware sets
- * the response header on the way out, which is the layer that survives.
+ * SCOPE — READ THIS BEFORE TRUSTING IT (measured on production 2026-09-03):
+ * this header IS applied to static-file rewrites (`/`, `/Market-Pulse`) and to
+ * any route that is not a dynamic server render. It is NOT applied to
+ * `force-dynamic` App Router pages on Vercel: the platform stamps those with
+ * `private, no-cache, no-store` at render time and that wins over both this
+ * header and a next.config `headers()` entry. (`next start` locally DOES
+ * honour it, which is exactly why this needed verifying against production
+ * rather than a dev box.)
+ *
+ * So: keep this — it is correct, it works today for the static surfaces, and
+ * it applies automatically to any route that later stops being force-dynamic —
+ * but do NOT treat it as "the dynamic pages are edge-cached". The lever that
+ * actually removes per-request latency on those pages is the cross-request
+ * DATA cache (`unstable_cache` in lib/public-data.ts).
  *
  * TTLs are shorter than each dataset's own refresh cadence, so the edge can
  * never serve a number the origin would not have served:

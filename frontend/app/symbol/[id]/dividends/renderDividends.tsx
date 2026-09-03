@@ -74,9 +74,9 @@ function fmtAmount(n: number | null): string {
     return n.toLocaleString('en-EG', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 }
 
-function buildDescription(name: string, symbol: string, divYield: number | null): string {
+function buildDescription(name: string, symbol: string, divYield: number | null, lang: Lang): string {
     const yieldBit = divYield !== null ? ` Trailing yield ${divYield.toFixed(2)}%.` : '';
-    let description = `${name} (${symbol}) dividend history on the Egyptian Exchange: per-share payouts in EGP, ex-dates and payment dates.${yieldBit} Source: EGX via TradingView.`;
+    let description = t(DIVIDENDS.description(name, symbol, yieldBit.trim() || null), lang);
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
     return description;
 }
@@ -95,7 +95,7 @@ export async function dividendsMetadata(id: string, lang: Lang): Promise<Metadat
     const name = (lang === 'ar' ? ticker.name_ar || ticker.name_en : ticker.name_en) || symbol;
     return {
         title: `${name} (${symbol}) Dividends & Yield`,
-        description: buildDescription(name, symbol, divYield),
+        description: buildDescription(name, symbol, divYield, lang),
         alternates: { canonical: `${symbolPath(symbol)}/dividends` },
     };
 }
@@ -164,7 +164,7 @@ export async function renderDividends(id: string, lang: Lang) {
         '@context': 'https://schema.org',
         '@type': 'Dataset',
         name: `${name} dividend history`,
-        description: buildDescription(name, symbol, divYield),
+        description: buildDescription(name, symbol, divYield, lang),
         url: absUrl(pagePath),
         creator: {
             '@id': `${SITE_URL}/#organization`,
@@ -188,7 +188,7 @@ export async function renderDividends(id: string, lang: Lang) {
             <Breadcrumbs items={breadcrumbItems} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
-                {name} ({symbol}) Dividend History
+                {t(DIVIDENDS.h1(name, symbol), lang)}
             </h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">
                 Cash dividends paid by {name} on the Egyptian Exchange — per-share amounts in Egyptian

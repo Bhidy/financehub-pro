@@ -59,9 +59,16 @@ function NumCell({ v, text }: { v: number | null; text: string }) {
     );
 }
 
-function buildDescription(name: string, minYear: number | null, maxYear: number | null): string {
+function buildDescription(
+    name: string,
+    symbol: string,
+    yearCount: number,
+    minYear: number | null,
+    maxYear: number | null,
+    lang: Lang
+): string {
     const range = minYear !== null && maxYear !== null ? `, ${minYear}–${maxYear}` : '';
-    let description = `Annual income statement highlights for ${name}: revenue, net income, EPS, free cash flow, assets and debt${range}. Source: EGX filings via TradingView.`;
+    let description = t(FINANCIALS.description(name, symbol, yearCount), lang) + range;
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
     return description;
 }
@@ -76,8 +83,8 @@ export async function financialsMetadata(id: string, lang: Lang): Promise<Metada
     const { minYear, maxYear } = yearRange(years);
     const range = minYear !== null && maxYear !== null ? ` ${minYear}–${maxYear}` : '';
     return {
-        title: `${name} (${symbol}) Financial Statements${range}`,
-        description: buildDescription(name, minYear, maxYear),
+        title: `${t(FINANCIALS.title(name, symbol), lang)}${range}`,
+        description: buildDescription(name, symbol, years.length, minYear, maxYear, lang),
         alternates: { canonical: `${symbolPath(symbol)}/financials` },
     };
 }
@@ -99,7 +106,7 @@ export async function renderFinancials(id: string, lang: Lang) {
         '@context': 'https://schema.org',
         '@type': 'Dataset',
         name: `${name} (${symbol}) annual financial statements`,
-        description: buildDescription(name, minYear, maxYear),
+        description: buildDescription(name, symbol, years.length, minYear, maxYear, lang),
         url: absUrl(pagePath),
         creator: {
             '@id': `${SITE_URL}/#organization`,
@@ -124,7 +131,7 @@ export async function renderFinancials(id: string, lang: Lang) {
             <Breadcrumbs items={breadcrumbItems} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
-                {name} ({symbol}) Financial Statements
+                {t(FINANCIALS.h1(name, symbol), lang)}
             </h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">
                 Annual financial statement highlights for {name}, in Egyptian pounds (EGP)

@@ -181,7 +181,7 @@ export async function renderHistory(id: string, lang: Lang) {
             />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
-                {name} ({symbol}) Stock Price History
+                {t(HISTORY.h1(name, symbol), lang)}
             </h1>
 
             {cards.length > 0 && (

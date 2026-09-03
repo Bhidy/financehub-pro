@@ -257,16 +257,49 @@ export function makeFindings() {
 }
 
 /**
- * SEO Health Score, 0-100. Deterministic weights so the number is comparable
- * across runs — a drop is a real regression, never a re-weighting artefact.
- * Deliberately harsh on critical/high: this is a gate, not a vanity metric.
+ * SEO Health Score, 0-100.
+ *
+ * RATE-BASED, not absolute. An earlier version summed raw finding counts,
+ * which made the score depend on how many URLs were sampled: the same healthy
+ * site scored 74 on a 28-URL quick run and 0 on a 158-URL full run, purely
+ * because a bigger sample finds proportionally more of everything. A score
+ * that moves when the sample size moves cannot be trended, and trending it is
+ * the entire point.
+ *
+ * So per-page findings are scored as a RATE (findings per audited URL) and
+ * site-level findings (robots, sitemap integrity) keep an absolute weight —
+ * there is only ever one robots.txt, so "2 broken" is not 2/158 of anything.
+ *
+ * Weights stay fixed so a drop between two runs is a real regression and never
+ * a re-weighting artefact.
  */
-export function healthScore(counts) {
-    const penalty =
-        (counts.critical || 0) * 25 +
-        (counts.high || 0) * 6 +
-        (counts.medium || 0) * 1.5 +
-        (counts.low || 0) * 0.3;
+const SITE_LEVEL_CODES = new Set([
+    'ROBOTS_UNREACHABLE', 'ROBOTS_BLOCKS_SITE', 'ROBOTS_NO_SITEMAP', 'ROBOTS_BLOCKS_RESOURCES',
+    'ROBOTS_AI_BOT_MISSING', 'SITEMAP_INDEX_DOWN', 'SITEMAP_INDEX_MALFORMED', 'SITEMAP_INDEX_EMPTY',
+    'SITEMAP_SEGMENT_DOWN', 'SITEMAP_SEGMENT_EMPTY', 'SITEMAP_LASTMOD_UNTRUSTWORTHY',
+    'SITEMAP_FOREIGN_HOST', 'SITEMAP_QUERY_URL',
+]);
+
+const WEIGHT = { critical: 100, high: 25, medium: 6, low: 1 };
+
+export function healthScore(counts, findings = [], urlsAudited = 0) {
+    // Backwards-compatible: with no findings list, fall back to the absolute
+    // model so an old report still produces a number.
+    if (!findings.length) {
+        const penalty =
+            (counts.critical || 0) * 25 + (counts.high || 0) * 6 +
+            (counts.medium || 0) * 1.5 + (counts.low || 0) * 0.3;
+        return Math.max(0, Math.round((100 - penalty) * 10) / 10);
+    }
+
+    const n = Math.max(urlsAudited, 1);
+    let penalty = 0;
+    for (const f of findings) {
+        const w = WEIGHT[f.severity];
+        if (w === undefined) continue;
+        // Site-level: full weight, once. Per-page: weight × share of pages hit.
+        penalty += SITE_LEVEL_CODES.has(f.code) ? w : w / n;
+    }
     return Math.max(0, Math.round((100 - penalty) * 10) / 10);
 }
 

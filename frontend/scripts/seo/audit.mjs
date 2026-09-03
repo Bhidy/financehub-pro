@@ -67,6 +67,8 @@ const REQUIRED_SCHEMA = [
 
 const f = makeFindings();
 const pages = [];
+/** Paths served with no-store — reported once, in aggregate (see auditPage). */
+const uncacheable = [];
 
 /* ── crawl-policy layer ──────────────────────────────────────────────────── */
 
@@ -293,9 +295,14 @@ function auditPage(url, res) {
         f.add('medium', 'PAGE_FEW_INTERNAL_LINKS', `${path} has only ${facts.internalLinks} internal links`, { url, links: facts.internalLinks });
     }
 
-    // Uncacheable HTML is a permanent TTFB tax on Core Web Vitals.
+    // Uncacheable HTML is a TTFB tax, but on this stack it is a PLATFORM
+    // constraint, not a per-page defect: Vercel stamps every force-dynamic App
+    // Router route with no-store and overrides both middleware and
+    // next.config headers (verified 2026-09-03). Emitting it per URL produced
+    // 153 identical medium findings in one run, which is how monitoring gets
+    // ignored. It is counted here and reported ONCE, in aggregate, below.
     if (record.cacheControl && /no-store|private/.test(record.cacheControl)) {
-        f.add('medium', 'PAGE_UNCACHEABLE', `${path} sends Cache-Control: ${record.cacheControl} (0% CDN hit rate)`, { url, cacheControl: record.cacheControl });
+        uncacheable.push(path);
     }
 
     return record;
@@ -304,6 +311,14 @@ function auditPage(url, res) {
 /* ── cross-page defects ──────────────────────────────────────────────────── */
 
 function auditCrossPage() {
+    // One aggregate finding for the whole uncacheable set.
+    if (uncacheable.length) {
+        const pct = Math.round((uncacheable.length / Math.max(pages.length, 1)) * 100);
+        f.add('medium', 'PAGES_UNCACHEABLE',
+            `${uncacheable.length} of ${pages.length} audited pages (${pct}%) are served with no-store, so they get 0% CDN hits and pay a full origin render on every crawl`,
+            { count: uncacheable.length, examples: uncacheable.slice(0, 10) });
+    }
+
     const byTitle = new Map();
     const byDescription = new Map();
     for (const p of pages) {
@@ -377,7 +392,7 @@ async function main() {
     auditCrossPage();
 
     const counts = f.countBy();
-    const score = healthScore(counts);
+    const score = healthScore(counts, f.all(), pages.length);
     const report = {
         generatedAt: nowIso(),
         site: SITE_URL,

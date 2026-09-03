@@ -71,7 +71,7 @@ const ACTION_FOR = {
     PAGE_THIN: 'Server-render the page content: a client-rendered list is invisible to the indexing pass.',
     PAGE_NO_H1: 'Add a single descriptive H1 carrying the page’s target term.',
     PAGE_NO_CANONICAL: 'Add a self-referencing canonical.',
-    PAGE_UNCACHEABLE: 'Add a Cache-Control s-maxage in next.config.ts — no-store means 0% CDN hits and a slow TTFB on every crawl.',
+    PAGES_UNCACHEABLE: 'Vercel stamps force-dynamic App Router routes with no-store and overrides both middleware and next.config headers, so this is not fixable per page. The working lever is the cross-request data cache (unstable_cache in lib/public-data.ts) — extend it to any hot read still hitting Postgres per request.',
     PAGE_FEW_INTERNAL_LINKS: 'Add contextual internal links — a page with no outbound links is a PageRank dead end.',
     HREFLANG_NO_SELF_REFERENCE: 'hreflang clusters must include a self-reference or Google discards the whole cluster.',
     ROBOTS_AI_BOT_MISSING: 'Add an explicit allow stanza for this answer-engine crawler.',

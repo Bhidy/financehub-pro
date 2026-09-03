@@ -488,9 +488,24 @@ const checks = [
     assert: (text) => !/tracking-\[0\.2[0-9]em\][^"]*text-starta-darkTeal/.test(text),
   },
   {
-    name: "static Home page asset exists with expected title",
+    // Pins the homepage title so a legacy home.html cannot be restored over it
+    // (the original reason for this check) AND so the title cannot regress to
+    // something short and untargeted. "Starta | Master the EGX" was 23
+    // characters matching no query anyone types, on the domain's most
+    // authoritative page.
+    name: "static Home page carries a substantive, targeted title",
     file: "public/home.html",
-    assert: (text) => /<title>\s*Starta\s*\|\s*Master the EGX\s*<\/title>/i.test(text),
+    assert: (text) => {
+      const m = /<title>([\s\S]*?)<\/title>/i.exec(text);
+      if (!m) return false;
+      const title = m[1].replace(/&amp;/g, "&").trim();
+      return (
+        title.length >= 40 &&
+        /Starta Markets/i.test(title) &&
+        /EGX/i.test(title) &&
+        /fund/i.test(title)
+      );
+    },
   },
   {
     name: "home page keeps latest roadmap/trust copy (prevents legacy text regression)",

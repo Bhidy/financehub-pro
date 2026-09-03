@@ -137,6 +137,18 @@ export type StaticHubOptions = {
     /** Exact-match head/hero edits (title, canonical, H1). */
     replacements?: Replacement[];
     /**
+     * Replace the TEXT of an element carrying `data-key="…"`, and remove that
+     * attribute so the page's own i18n pass cannot overwrite it on load.
+     *
+     * Whitespace-agnostic BY DESIGN. The first version matched exact bytes and
+     * silently did nothing, because the designed file wraps the hero across
+     * three lines while the pattern assumed single spaces — the category pages
+     * shipped with the generic "Mutual Funds" heading and only a browser check
+     * caught it. Anchors inside hand-formatted HTML must never be matched by
+     * exact whitespace.
+     */
+    heroText?: Array<{ dataKey: string; text: string }>;
+    /**
      * Rewrite the shell's <html lang>/<dir>.
      *
      * The designed shells are static files with `lang="en" dir="ltr"` baked in.
@@ -181,6 +193,16 @@ export async function renderStaticHub(opts: StaticHubOptions): Promise<Response>
         );
         if (html === before) {
             console.error(`[static-hub] ${opts.file}: could not rewrite <html lang>`);
+        }
+    }
+    for (const h of opts.heroText ?? []) {
+        const re = new RegExp(`(<(\\w+)[^>]*?)\\s*data-key="${h.dataKey}"([^>]*>)([\\s\\S]*?)(</\\2>)`);
+        const before = html;
+        html = html.replace(re, (_m, open: string, _tag: string, rest: string, _inner: string, close: string) =>
+            `${open}${rest}${esc(h.text)}${close}`
+        );
+        if (html === before) {
+            console.error(`[static-hub] ${opts.file}: no element with data-key="${h.dataKey}" — heading not localized`);
         }
     }
     for (const r of opts.replacements ?? []) {

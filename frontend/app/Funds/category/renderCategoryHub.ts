@@ -76,18 +76,14 @@ export async function renderCategoryHub(slug: string, lang: 'en' | 'ar'): Promis
                 find: '<meta name="description"\n        content="Explore the full Egypt mutual funds universe with Starta. Filter by manager, performance, risk, and Shariah status with a premium research-grade interface.">',
                 replace: `<meta name="description" content="${esc(description)}">`,
             },
-            // The hero heading. `data-key` is REMOVED with it, otherwise the
-            // page's own i18n pass would overwrite the category name with the
-            // generic "Mutual Funds" the moment the client boots — leaving the
-            // crawler and the visitor looking at different headings.
-            {
-                find: 'data-key="marketplace_title"> Mutual Funds ',
-                replace: `>${esc(heading)}`,
-            },
-            {
-                find: 'data-key="marketplace_subline"> Accurate, up-to-date data to help you compare funds and make better decisions. ',
-                replace: `>${esc(intro)}`,
-            },
+        ],
+        // The hero. `data-key` is stripped along with the text, or the page's
+        // own i18n pass would overwrite the category name with the generic
+        // "Mutual Funds" the moment the client boots — leaving the crawler and
+        // the visitor looking at different headings.
+        heroText: [
+            { dataKey: 'marketplace_title', text: heading },
+            { dataKey: 'marketplace_subline', text: intro },
         ],
         injections: [
             {

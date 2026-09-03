@@ -856,6 +856,42 @@ async function assertDesignedShellsIntact() {
       failed = true;
     }
   }
+  // ANCHOR INTEGRITY. The shell-serving routes edit the designed files by
+  // matching literal strings (a <title>, a canonical, a data-key). If a
+  // designer reformats the shell, those anchors stop matching and the route
+  // ships the WRONG heading or the WRONG canonical with no error — that is
+  // exactly how the category pages went out with the generic "Mutual Funds"
+  // heading. Assert every anchor still exists in the file it targets.
+  const SHELL_ANCHORS = [
+    ["public/marketplace.html", '<title>Funds Marketplace | Starta Markets</title>'],
+    ["public/marketplace.html", '<link rel="canonical" href="https://startamarkets.com/Funds">'],
+    ["public/marketplace.html", '<meta property="og:url" content="https://startamarkets.com/Funds">'],
+    ["public/marketplace.html", '<meta property="og:title" content="Funds Marketplace | Starta Markets">'],
+    ["public/marketplace.html", '<meta property="og:locale" content="en_US">'],
+    ["public/marketplace.html", 'data-key="marketplace_title"'],
+    ["public/marketplace.html", 'data-key="marketplace_subline"'],
+    ["public/marketplace.html", 'id="fundsGrid"'],
+    ["public/news.html", 'id="newsGrid"'],
+    ["public/news.html", 'id="featuredStory"'],
+    ["public/learn.html", 'id="topicsGrid"'],
+    ["public/market-pulse.html", 'id="indexValue"'],
+    ["public/market-pulse.html", 'id="overviewIndex"'],
+  ];
+  for (const [file, anchor] of SHELL_ANCHORS) {
+    let text = "";
+    try {
+      text = readFileSync(path.join(root, file), "utf8");
+    } catch {
+      console.error(`FAIL: ${file} is missing — its Route Handler cannot serve it.`);
+      failed = true;
+      continue;
+    }
+    if (!text.includes(anchor)) {
+      console.error(`FAIL: ${file} no longer contains the anchor \`${anchor}\` that its Route Handler edits — the route would ship unlocalized/incorrect output silently.`);
+      failed = true;
+    }
+  }
+
   // The rewrites these routes replaced must stay gone, or they would shadow
   // the routes and silently revert the server rendering.
   const cfg = readFileSync(path.join(root, "next.config.ts"), "utf8");

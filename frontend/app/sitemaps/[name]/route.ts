@@ -443,6 +443,56 @@ async function newsEntries(): Promise<Entry[]> {
     }));
 }
 
+
+/**
+ * Stock-vs-stock comparison pages, gated to match renderStockVs()'s own rules:
+ * SAME sector, a real market cap, never the index row. Top 8 by market cap per
+ * sector gives C(8,2) = 28 pairs for a large sector — the same shape as the
+ * fund comparisons above, and for the same reason: 318 symbols is 50,403
+ * unordered pairs, and advertising all of them would be a crawl trap made of
+ * comparisons nobody is making. URLs are canonical-ordered (alphabetical) so
+ * the sitemap can never advertise a URL that 308s.
+ */
+async function stockComparisonEntries(): Promise<Entry[]> {
+    const result = await db.query(
+        `SELECT symbol, sector_name, market_cap
+         FROM market_tickers
+         WHERE last_price IS NOT NULL
+           AND ${EGX_ONLY}
+           AND market_cap IS NOT NULL AND market_cap > 0
+           AND sector_name IS NOT NULL AND sector_name <> '' AND sector_name <> 'Index'
+           AND NOT (symbol LIKE '%.CA' AND EXISTS (
+               SELECT 1 FROM market_tickers b
+               WHERE b.symbol = REPLACE(market_tickers.symbol, '.CA', '') AND b.last_price IS NOT NULL))
+         ORDER BY sector_name, market_cap DESC`
+    );
+
+    const bySector = new Map<string, string[]>();
+    for (const r of result.rows as Array<Record<string, unknown>>) {
+        const sector = String(r.sector_name);
+        const list = bySector.get(sector);
+        if (list) {
+            if (list.length < 8) list.push(String(r.symbol).toUpperCase());
+        } else {
+            bySector.set(sector, [String(r.symbol).toUpperCase()]);
+        }
+    }
+
+    const entries: Entry[] = [];
+    for (const syms of bySector.values()) {
+        if (syms.length < 2) continue;
+        for (let i = 0; i < syms.length; i++) {
+            for (let j = i + 1; j < syms.length; j++) {
+                const [a, b] = syms[i] < syms[j] ? [syms[i], syms[j]] : [syms[j], syms[i]];
+                const pair = `${a}-vs-${b}`;
+                entries.push({ loc: absUrl(`/companies/vs/${pair}`), changefreq: 'weekly', priority: '0.4' });
+                entries.push({ loc: absUrl(`/ar/companies/vs/${pair}`), changefreq: 'weekly', priority: '0.4' });
+            }
+        }
+    }
+    return entries;
+}
+
 const BUILDERS: Record<string, () => Promise<Entry[]>> = {
     core: coreEntries,
     companies: companyEntries,
@@ -453,6 +503,7 @@ const BUILDERS: Record<string, () => Promise<Entry[]>> = {
     'fund-categories': fundCategoryEntries,
     'fund-providers': fundProviderEntries,
     comparisons: comparisonEntries,
+    'stock-comparisons': stockComparisonEntries,
     learn: learnEntries,
     glossary: glossaryEntries,
     news: newsEntries,

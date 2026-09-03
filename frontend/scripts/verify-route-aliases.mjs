@@ -591,7 +591,7 @@ const checks = [
     name: "segmented sitemap route exists with all eleven segments",
     file: "app/sitemaps/[name]/route.ts",
     assert: (text) =>
-      ["core", "companies", "ar-companies", "metrics", "sectors", "funds", "fund-categories", "comparisons", "learn", "glossary", "news"].every((seg) => text.includes(seg)),
+      ["core", "companies", "ar-companies", "metrics", "sectors", "funds", "fund-categories", "comparisons", "stock-comparisons", "learn", "glossary", "news"].every((seg) => text.includes(seg)),
   },
   {
     // The sitemap index and the segment router must list the SAME segments. A

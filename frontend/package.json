@@ -15,7 +15,7 @@
     "verify:routes": "node scripts/verify-route-aliases.mjs",
     "verify:i18n": "node scripts/verify-i18n-coverage.mjs",
     "verify:inputs": "node scripts/verify-build-inputs.mjs",
-    "verify:all": "npm run verify:inputs && npm run verify:routes && npm run verify:i18n && npm run verify:nav && npm run verify:auth && npm run verify:funds && npm run verify:providers",
+    "verify:all": "npm run verify:inputs && npm run verify:routes && npm run verify:i18n && npm run verify:nav && npm run verify:auth && npm run verify:funds && npm run verify:providers && npm run verify:pairs",
     "verify:deploy": "node scripts/verify-deploy.mjs",
     "seo:audit": "node scripts/seo/audit.mjs",
     "seo:audit:quick": "node scripts/seo/audit.mjs --quick --fail-on critical",
@@ -27,7 +27,8 @@
     "verify:nav": "npx tsx scripts/test-nav-gaps.ts && npx tsx scripts/test-range-integrity.ts scripts/fixtures/nav-dates-all.json",
     "verify:auth": "npx tsx scripts/test-auth-session.ts",
     "verify:funds": "npx tsx scripts/test-fund-categories.ts",
-    "verify:providers": "npx tsx scripts/test-fund-providers.ts"
+    "verify:providers": "npx tsx scripts/test-fund-providers.ts",
+    "verify:pairs": "node scripts/test-stock-pairs.mjs"
   },
   "dependencies": {
     "@capacitor/app": "8.1.0",

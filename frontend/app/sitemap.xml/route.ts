@@ -60,6 +60,7 @@ export async function GET() {
         ['sectors', clamp(tickerTs)],
         ['funds', clamp(fundTs)],
         ['fund-categories', clamp(fundTs)],
+        ['fund-providers', clamp(fundTs)],
         ['comparisons', clamp(fundTs)],
         ['learn', DEPLOY_TIME],
         ['glossary', DEPLOY_TIME],

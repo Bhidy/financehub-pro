@@ -6,6 +6,7 @@ import { sectorAr } from '@/content/sector-names-ar';
 import learnTopics from '@/content/learn-topics.generated';
 import { GLOSSARY_TERMS } from '@/content/glossary-terms';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
+import { buildProviders, providerPath } from '@/content/fund-providers';
 import { EGX_ONLY } from '@/lib/public-data';
 
 export const dynamic = 'force-dynamic';
@@ -280,6 +281,28 @@ async function fundCategoryEntries(): Promise<Entry[]> {
     return entries;
 }
 
+async function fundProviderEntries(): Promise<Entry[]> {
+    // Providers are derived from the fund rows, so this segment self-updates:
+    // a newly listed bank is advertised as soon as its funds appear, and one
+    // that falls below the publish threshold stops being advertised. The SAME
+    // buildProviders() the pages use, so the sitemap and the 404 gate agree.
+    const result = await db.query(
+        `SELECT owner_name, owner_name_en, manager_name, manager_name_en, last_nav_date
+         FROM funds_view
+         WHERE fund_id::text ~ '^[0-9]+$'`
+    );
+    const rows = result.rows as Array<Record<string, unknown>>;
+    const lastmod = rows.reduce<number | null>((mx, r) => {
+        const t = r.last_nav_date ? Date.parse(String(r.last_nav_date)) : NaN;
+        return Number.isFinite(t) && (mx === null || t > mx) ? t : mx;
+    }, null);
+    const iso = lastmod ? new Date(lastmod).toISOString() : null;
+    return buildProviders(rows).flatMap((p) => [
+        { loc: absUrl(providerPath(p, 'en')), lastmod: iso, changefreq: 'daily', priority: '0.8' },
+        { loc: absUrl(providerPath(p, 'ar')), lastmod: iso, changefreq: 'daily', priority: '0.8' },
+    ]);
+}
+
 async function fundEntries(): Promise<Entry[]> {
     // Numeric fund_ids only: the /Funds/[id] route resolves numeric ids, but
     // funds_view also carries legacy string ids (EGY_NEW_*, EGYAAIB*, ...)
@@ -344,6 +367,7 @@ const BUILDERS: Record<string, () => Promise<Entry[]>> = {
     sectors: sectorEntries,
     funds: fundEntries,
     'fund-categories': fundCategoryEntries,
+    'fund-providers': fundProviderEntries,
     comparisons: comparisonEntries,
     learn: learnEntries,
     glossary: glossaryEntries,

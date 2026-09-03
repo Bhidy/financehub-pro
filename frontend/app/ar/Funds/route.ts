@@ -2,6 +2,7 @@ import { renderStaticHub, esc, escUrl, jsonLdScript, langSeedScript } from '@/li
 import { getAllFundsRanked } from '@/lib/public-data';
 import { fundPath, absUrl, SITE_URL } from '@/lib/seo';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
+import { buildProviders, providerPath } from '@/content/fund-providers';
 import { fundsHubRows, fundsHubItemList, breadcrumbJson } from '@/lib/funds-hub-render';
 
 /**
@@ -61,6 +62,18 @@ export async function GET() {
           `</nav>`
         : '';
 
+    // Provider links: the crawl path into the bank and asset-manager hubs, and
+    // the internal signal that ties "صناديق بنك مصر" to this hub.
+    const providers = buildProviders(funds);
+    const providerNav = providers.length
+        ? `<nav aria-label="صناديق البنوك ومديري الأصول" dir="rtl" style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:.5rem;margin:.5rem 0">` +
+          providers
+              .slice(0, 24)
+              .map((p) => `<a href="${escUrl(providerPath(p, 'ar'))}">${esc(p.nameAr)} (${esc(String(p.fundCount))})</a>`)
+              .join('') +
+          `</nav>`
+        : '';
+
     return renderStaticHub({
         file: 'marketplace.html',
         lang: 'ar',
@@ -84,7 +97,7 @@ export async function GET() {
                 replace: `<meta name="description" content="${esc(AR_DESC)}">`,
             },
         ],
-        injections: [{ id: 'fundsGrid', html: categoryNav + fundsHubRows(funds, 'ar') }],
+        injections: [{ id: 'fundsGrid', html: categoryNav + providerNav + fundsHubRows(funds, 'ar') }],
         head:
             langSeedScript('ar') +
             (funds.length ? jsonLdScript(fundsHubItemList(funds, 'ar', PATH_AR)) : '') +

@@ -1,6 +1,7 @@
 import { renderStaticHub, esc, escUrl, jsonLdScript } from '@/lib/static-hub';
 import { getAllFundsRanked } from '@/lib/public-data';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
+import { buildProviders, providerPath } from '@/content/fund-providers';
 import { fundsHubRows, fundsHubItemList, breadcrumbJson } from '@/lib/funds-hub-render';
 
 /**
@@ -40,10 +41,22 @@ export async function GET() {
           `</nav>`
         : '';
 
+    // Provider links: the crawl path into the bank and asset-manager hubs, and
+    // the internal signal that ties "Banque Misr funds" to this hub.
+    const providers = buildProviders(funds);
+    const providerNav = providers.length
+        ? `<nav aria-label="Funds by bank and asset manager" style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:.5rem;margin:.5rem 0">` +
+          providers
+              .slice(0, 24)
+              .map((p) => `<a href="${escUrl(providerPath(p, 'en'))}">${esc(p.nameEn)} (${esc(String(p.fundCount))})</a>`)
+              .join('') +
+          `</nav>`
+        : '';
+
     return renderStaticHub({
         file: 'marketplace.html',
         lang: 'en',
-        injections: [{ id: 'fundsGrid', html: categoryNav + fundsHubRows(funds, 'en') }],
+        injections: [{ id: 'fundsGrid', html: categoryNav + providerNav + fundsHubRows(funds, 'en') }],
         // hreflang already ships inside marketplace.html (injected by
         // scripts/inject-seo-heads.mjs) — re-adding it here would duplicate it.
         head:

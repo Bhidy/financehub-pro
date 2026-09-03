@@ -1,0 +1,117 @@
+name: SEO Daily Intelligence
+
+# ============================================================
+# The scheduled half of the SEO operating system.
+#
+# Runs the FULL forensic crawl (money pages + a deterministic sample of every
+# sitemap segment), pulls Search Console performance when a credential is
+# configured, and posts one prioritised brief to the ops Discord channel.
+#
+# It does NOT fail on medium/low findings — a daily red run that nobody can
+# action is how monitoring gets ignored. It fails only on CRITICAL, which is
+# the class that costs indexation.
+#
+# EXTERNAL CONFIGURATION (optional, degrades honestly without it):
+#   GSC_SERVICE_ACCOUNT_JSON — a Google Cloud service-account key (raw JSON or
+#   base64) for a service account added as a user on the Search Console
+#   property. Without it, the report states that search-performance
+#   intelligence is unavailable and shows no estimated figures in its place.
+# ============================================================
+
+on:
+  schedule:
+    # 06:15 UTC = 08:15 Cairo, before the EGX opens and after the overnight
+    # NAV + news pipelines have run, so the crawl sees the day's real state.
+    - cron: '15 6 * * *'
+  workflow_dispatch:
+    inputs:
+      sample:
+        description: 'URLs sampled per sitemap segment'
+        required: false
+        default: '25'
+
+concurrency:
+  group: seo-daily
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  intelligence:
+    name: Full audit · search intelligence · report
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Full SEO forensic audit
+        working-directory: frontend
+        # continue-on-error: a critical finding must still produce a REPORT.
+        # Failing the step here would skip the notification and hide the very
+        # thing that needs escalating.
+        continue-on-error: true
+        id: audit
+        run: |
+          node scripts/seo/audit.mjs \
+            --sample "${{ github.event.inputs.sample || '25' }}" \
+            --out /tmp/seo-audit.json \
+            --fail-on critical
+
+      - name: Search Console intelligence
+        working-directory: frontend
+        continue-on-error: true
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/seo/gsc.mjs --days 28 --out /tmp/seo-gsc.json
+
+      - name: Compose and send the intelligence report
+        working-directory: frontend
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          node scripts/seo/report.mjs \
+            --audit /tmp/seo-audit.json \
+            --gsc /tmp/seo-gsc.json \
+            --out /tmp/seo-report.md \
+            --notify
+          echo "## SEO Intelligence Report" >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/seo-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Archive the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-daily-${{ github.run_id }}
+          path: |
+            /tmp/seo-audit.json
+            /tmp/seo-gsc.json
+            /tmp/seo-report.md
+          if-no-files-found: warn
+          retention-days: 90
+
+      - name: Refresh IndexNow (full resubmit on Mondays, delta otherwise)
+        # Gated on the AUDIT's own outcome, not on success(), which would
+        # silently depend on this step's position relative to the failure gate
+        # below. Deliberately skipped when the audit found a critical
+        # regression: asking search engines to recrawl a site we know is
+        # currently broken makes the regression propagate faster.
+        if: github.event_name == 'schedule' && steps.audit.outcome == 'success'
+        working-directory: frontend
+        run: |
+          if [ "$(date -u +%u)" = "1" ]; then
+            node scripts/seo/indexnow.mjs --all
+          else
+            node scripts/seo/indexnow.mjs --since 24h
+          fi
+
+      - name: Fail the run if the audit found a critical regression
+        # Deliberately LAST: the report has already been composed, sent to
+        # Discord and archived, so the escalation carries its evidence.
+        if: steps.audit.outcome == 'failure'
+        run: |
+          echo "::error::SEO audit reported a CRITICAL finding — see the report above."
+          exit 1

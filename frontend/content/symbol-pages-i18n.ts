@@ -403,6 +403,23 @@ export const FUNDVS = {
         shariah: s('Shariah-compliant', 'متوافق مع الشريعة'),
         inception: s('Inception year', 'سنة التأسيس'),
     },
+    summary: {
+        bothReturns: (a: string, ra: string, b: string, rb: string, asOf: string): S =>
+            s(
+                `Over the last year, ${a} returned ${ra} against ${rb} for ${b}${asOf ? ` (data as of ${asOf})` : ''}`,
+                `خلال آخر سنة، حقق ${a} عائداً قدره ${ra} مقابل ${rb} لصندوق ${b}${asOf ? ` (البيانات كما في ${asOf})` : ''}`
+            ),
+        oneReturn: (withName: string, r: string, withoutName: string): S =>
+            s(
+                `Over the last year, ${withName} returned ${r}; a one-year figure for ${withoutName} is not published`,
+                `خلال آخر سنة، حقق ${withName} عائداً قدره ${r}؛ ولا يتوفر رقم سنة كاملة لصندوق ${withoutName}`
+            ),
+        navs: (a: string, na: string, ca: string, da: string, b: string, nb: string, cb: string, db: string): S =>
+            s(
+                `The latest reported NAV is ${na} ${ca} for ${a}${da ? ` (as of ${da})` : ''} and ${nb} ${cb} for ${b}${db ? ` (as of ${db})` : ''}`,
+                `أحدث صافي قيمة أصول معلن هو ${na} ${ca} لصندوق ${a}${da ? ` (كما في ${da})` : ''} و${nb} ${cb} لصندوق ${b}${db ? ` (كما في ${db})` : ''}`
+            ),
+    },
     note: s(
         'Both funds are compared on figures their managers publish. A difference in one field does not make either fund better suited to you — the categories, horizons and fee structures differ, and nothing here is a recommendation.',
         'تُقارن الصناديق بالأرقام التي ينشرها مديروها. واختلاف حقل واحد لا يجعل أياً منهما أنسب لك — فالفئات والآفاق الزمنية وهياكل الرسوم مختلفة، ولا شيء هنا يمثل توصية.'

@@ -145,15 +145,15 @@ export async function fundVsMetadata(pair: string, lang: Lang): Promise<Metadata
 
     let description =
         r1yA !== null && r1yB !== null
-            ? `Compare ${A.name} vs ${B.name}: 1-year returns ${fmtSignedPct(r1yA)} vs ${fmtSignedPct(r1yB)}, latest NAV, fees and key facts side by side.`
-            : `Compare ${A.name} vs ${B.name}: latest NAV, returns, fees and key facts of both Egyptian mutual funds side by side.`;
+        ? `${t(FUNDVS.description(A.name, B.name), lang)}`
+        : `${t(FUNDVS.description(A.name, B.name), lang)}`;
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 
     const pairSlug = `${a.fund_id}-vs-${b.fund_id}`;
     const pathEn = `/Funds/vs/${pairSlug}`;
     const pathAr = `/ar/Funds/vs/${pairSlug}`;
     const canonicalPath = lang === 'ar' ? pathAr : pathEn;
-    const title = `${A.name} vs ${B.name} — NAV & Returns Comparison`;
+    const title = t(FUNDVS.title(A.name, B.name), lang);
     return {
         title,
         description,
@@ -269,20 +269,16 @@ export async function renderFundVs(pair: string, lang: Lang) {
     const latestNavDate = [A.navDateIso, B.navDateIso].filter((d): d is string => d !== null).sort().pop() ?? null;
     if (r1yA !== null && r1yB !== null) {
         summaryBits.push(
-            `Over the last year, ${A.name} returned ${fmtSignedPct(r1yA)} vs ${B.name}'s ${fmtSignedPct(r1yB)}${
-                latestNavDate ? ` (data as of ${humanDate(latestNavDate)})` : ''
-            }`
+            t(FUNDVS.summary.bothReturns(A.name, fmtSignedPct(r1yA), B.name, fmtSignedPct(r1yB), latestNavDate ? humanDate(latestNavDate) : ''), lang)
         );
     } else if (r1yA !== null) {
-        summaryBits.push(`Over the last year, ${A.name} returned ${fmtSignedPct(r1yA)}; 1-year data for ${B.name} is not available`);
+        summaryBits.push(t(FUNDVS.summary.oneReturn(A.name, fmtSignedPct(r1yA), B.name), lang));
     } else if (r1yB !== null) {
-        summaryBits.push(`Over the last year, ${B.name} returned ${fmtSignedPct(r1yB)}; 1-year data for ${A.name} is not available`);
+        summaryBits.push(t(FUNDVS.summary.oneReturn(B.name, fmtSignedPct(r1yB), A.name), lang));
     }
     if (A.nav !== null && B.nav !== null) {
         summaryBits.push(
-            `The latest reported NAV is ${fmtNav(A.nav)} ${currencyA} for ${A.name}${
-                A.navDateIso ? ` (as of ${A.navDateIso})` : ''
-            } and ${fmtNav(B.nav)} ${currencyB} for ${B.name}${B.navDateIso ? ` (as of ${B.navDateIso})` : ''}`
+            t(FUNDVS.summary.navs(A.name, fmtNav(A.nav), currencyA, A.navDateIso || '', B.name, fmtNav(B.nav), currencyB, B.navDateIso || ''), lang)
         );
     }
     const feeA = num(a, 'fee_management');
@@ -293,9 +289,9 @@ export async function renderFundVs(pair: string, lang: Lang) {
     const summary = summaryBits.length > 0 ? `${summaryBits.join('. ')}.` : null;
 
     const breadcrumbItems = [
-        { href: '/', url: '/', label: 'Home' },
-        { href: '/Funds', url: '/Funds', label: t(FUNDVS.crumb, lang) },
-        { label: `${A.name} vs ${B.name}` },
+        { href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: isAr ? '/ar/Funds' : '/Funds', url: isAr ? '/ar/Funds' : '/Funds', label: t(FUNDVS.crumb, lang) },
+        { label: t(FUNDVS.h1(A.name, B.name), lang) },
     ];
 
     return (
@@ -305,7 +301,7 @@ export async function renderFundVs(pair: string, lang: Lang) {
                 data={{
                     '@context': 'https://schema.org',
                     '@type': 'ItemList',
-                    name: `${A.name} vs ${B.name}`,
+                    name: t(FUNDVS.h1(A.name, B.name), lang),
                     url: absUrl(canonicalPath),
                     numberOfItems: 2,
                     itemListElement: [
@@ -317,7 +313,7 @@ export async function renderFundVs(pair: string, lang: Lang) {
             <Breadcrumbs items={breadcrumbItems} />
 
             <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">
-                {A.name} vs {B.name}
+                {t(FUNDVS.h1(A.name, B.name), lang)}
             </h1>
             <p className="mt-2 text-lg text-muted">{t(FUNDVS.heading, lang)}</p>
 

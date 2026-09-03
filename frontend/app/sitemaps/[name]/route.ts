@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
-import { SITE_URL, absUrl, fundPath, symbolPath, slugify, learnPath, glossaryPath, sectorPath } from '@/lib/seo';
+import { SITE_URL, absUrl, fundPath, symbolPath, symbolPathAr, slugify, learnPath, glossaryPath, sectorPath } from '@/lib/seo';
 import { canonicalNewsPath } from '@/lib/news-display';
 import { sectorAr } from '@/content/sector-names-ar';
 import learnTopics from '@/content/learn-topics.generated';
@@ -138,7 +138,7 @@ async function sectorEntries(): Promise<Entry[]> {
 async function arCompanyEntries(): Promise<Entry[]> {
     // Arabic twins of the company pages (/ar/symbol/{SYM}).
     const result = await db.query(
-        `SELECT t.symbol,
+        `SELECT t.symbol, t.name_ar,
                 GREATEST(
                     COALESCE(t.last_updated, 'epoch'::timestamptz),
                     COALESCE(t.updated_at, 'epoch'::timestamptz)
@@ -151,8 +151,11 @@ async function arCompanyEntries(): Promise<Entry[]> {
                WHERE b.symbol = REPLACE(t.symbol, '.CA', '') AND b.last_price IS NOT NULL))
          ORDER BY t.symbol`
     );
+    // Arabic canonical carries the Arabic company slug where one exists —
+    // built by the SAME helper the page canonicalises with, so the sitemap can
+    // never advertise a URL that redirects.
     return result.rows.map((r: any) => ({
-        loc: absUrl(`/ar${symbolPath(r.symbol)}`),
+        loc: absUrl(symbolPathAr(r.symbol, r.name_ar)),
         lastmod: r.lastmod,
         changefreq: 'daily',
         priority: '0.7',

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getTicker, getStats, getCompanyProfile, getSectorPeers } from '@/lib/public-data';
 import type { Ticker } from '@/lib/public-data';
-import { SITE_URL, symbolPath, absUrl } from '@/lib/seo';
+import { SITE_URL, symbolPath, symbolPathAr, symbolFromArParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
 import { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import SymbolPageClient from '@/app/symbol/[id]/SymbolPageClient';
 import JsonLd from '@/components/seo/JsonLd';
@@ -109,7 +109,7 @@ function buildArabicFaq(ticker: Ticker, stats: Stats | null, asOf: string | null
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { id } = await params;
-    const symbol = (id || '').toUpperCase();
+    const symbol = symbolFromArParam(id || '');
     let ticker: Ticker | null = null;
     let dbOk = true;
     try {
@@ -123,6 +123,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             return {
                 title: `سعر سهم ${symbol} اليوم — البورصة المصرية`,
                 alternates: { canonical: `/ar/symbol/${symbol}` },
+                robots: { index: false }, // degraded render: don't index a stub
             };
         }
         return { title: 'الشركة غير موجودة', robots: { index: false } };
@@ -139,11 +140,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title,
         description,
         alternates: {
-            canonical: `/ar/symbol/${symbol}`,
+            // Arabic canonical carries the Arabic company slug (built by the
+            // same helper the page redirects to, so metadata and route agree).
+            canonical: encodeURI(symbolPathAr(symbol, ticker.name_ar)),
             languages: {
-                en: `/symbol/${symbol}`,
-                ar: `/ar/symbol/${symbol}`,
-                'x-default': `/ar/symbol/${symbol}`,
+                en: symbolPath(symbol),
+                ar: encodeURI(symbolPathAr(symbol, ticker.name_ar)),
+                'x-default': encodeURI(symbolPathAr(symbol, ticker.name_ar)),
             },
         },
         openGraph: {
@@ -151,7 +154,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             locale: 'ar_EG',
             title,
             description,
-            url: `/ar/symbol/${symbol}`,
+            url: encodeURI(symbolPathAr(symbol, ticker.name_ar)),
             images: ['/og-default.png'],
         },
     };
@@ -176,7 +179,9 @@ function ArabicSymbolAppOnly() {
 
 export default async function ArabicSymbolPage({ params }: Props) {
     const { id } = await params;
-    const symbol = (id || '').toUpperCase();
+    // The param may be a bare ticker (/ar/symbol/COMI — the legacy form, still
+    // indexed) or the canonical slugged form (/ar/symbol/COMI-البنك-التجاري-الدولي).
+    const symbol = symbolFromArParam(id || '');
     if (!symbol) notFound();
 
     // DB-outage resilience, matching the English /symbol/{SYMBOL} exactly:
@@ -195,6 +200,15 @@ export default async function ArabicSymbolPage({ params }: Props) {
         if (!dbOk) return <ArabicSymbolAppOnly />;
         notFound();
     }
+
+    // Canonicalise: the bare-ticker form and any stale slug 308 to the current
+    // Arabic canonical, so a renamed company self-heals every indexed URL.
+    // canonicalRedirectTarget handles the percent-encoding — route params
+    // arrive encoded while our canonical paths carry raw Arabic, and a raw
+    // unicode Location header 500s.
+    const canonicalPath = symbolPathAr(symbol, ticker.name_ar);
+    const redirectTarget = canonicalRedirectTarget(`/ar/symbol/${id}`, canonicalPath);
+    if (redirectTarget) redirect(redirectTarget);
 
     const [stats, profile, peers] = await Promise.all([
         getStats(symbol).catch(() => null),
@@ -229,6 +243,34 @@ export default async function ArabicSymbolPage({ params }: Props) {
     ];
     const presentRows = statRows.filter((r): r is [string, string] => r[1] !== null);
 
+    /**
+     * Language-neutral company facts for the Arabic page. Only values that
+     * carry no language are included — a year, a headcount, a currency code, a
+     * URL — plus the sector, which we hold in Arabic. English prose fields
+     * (description, headquarters, industry, ceo) are deliberately excluded:
+     * showing them would put English copy on a page declared lang="ar".
+     */
+    const companyFacts: Array<[string, string, boolean]> = [];
+    const sectorArName = ticker.sector_name ? sectorAr(ticker.sector_name) : null;
+    if (sectorArName) companyFacts.push(['القطاع', sectorArName, false]);
+    companyFacts.push(['السوق', 'البورصة المصرية (EGX)', false]);
+    companyFacts.push(['رمز السهم', symbol, true]);
+    if (ticker.currency) companyFacts.push(['عملة التداول', ticker.currency, true]);
+    if (ticker.isin) companyFacts.push(['رقم الأيزين (ISIN)', ticker.isin, true]);
+    if (profile?.founded) companyFacts.push(['سنة التأسيس', String(profile.founded), true]);
+    if (typeof profile?.employees === 'number' && Number.isFinite(profile.employees)) {
+        companyFacts.push(['عدد الموظفين', profile.employees.toLocaleString('en-EG'), true]);
+    }
+    if (profile?.website) {
+        let host = String(profile.website);
+        try {
+            host = new URL(host.startsWith('http') ? host : `https://${host}`).host.replace(/^www\./, '');
+        } catch {
+            // keep the raw value if it is not a parseable URL
+        }
+        companyFacts.push(['الموقع الإلكتروني', host, true]);
+    }
+
     const crumbs = [
         { href: '/', label: 'الرئيسية' },
         { href: '/companies', label: 'الشركات المدرجة' },
@@ -238,7 +280,7 @@ export default async function ArabicSymbolPage({ params }: Props) {
     const corporationJsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Corporation',
-        name: ticker.name_en || symbol,
+        name: ticker.name_ar || ticker.name_en || symbol,
         ...(ticker.name_ar ? { alternateName: ticker.name_ar } : {}),
         tickerSymbol: symbol,
         url: absUrl(`/ar/symbol/${symbol}`),
@@ -319,14 +361,35 @@ export default async function ArabicSymbolPage({ params }: Props) {
                     </section>
                 )}
 
-                {profile?.description && (
+                {/* COMPANY FACTS, IN ARABIC.
+                    This section used to render the data provider's ENGLISH prose
+                    description inside an RTL page: a wall of dir="ltr" text that
+                    read as a foreign-language block to an Arabic visitor AND broke
+                    the layout (a max-w paragraph pinned to the right edge of an RTL
+                    flow, leaving half the row empty).
+                    Machine-translating a company disclosure is not an option on a
+                    financial page, and no Arabic disclosure exists upstream. So the
+                    section now presents only facts that carry NO language — a code,
+                    a year, a headcount, a domain — under Arabic labels, plus the
+                    sector, which we do hold in Arabic. Nothing is translated and
+                    nothing is invented; the English prose simply is not shown on an
+                    Arabic page. */}
+                {companyFacts.length > 0 && (
                     <section className="mt-8">
                         <h2 className="text-xl font-bold text-main">نبذة عن الشركة</h2>
-                        {/* English disclosure kept as-is: no Arabic descriptions exist and
-                            financial text is never machine-translated. */}
-                        <p dir="ltr" lang="en" className="mt-3 max-w-3xl leading-relaxed text-muted">
-                            {profile.description}
-                        </p>
+                        <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                            {companyFacts.map(([label, value, ltr]) => (
+                                <div key={label} className="rounded-xl border border-border bg-surface p-3.5">
+                                    <dt className="text-xs font-bold text-muted">{label}</dt>
+                                    <dd
+                                        {...(ltr ? { dir: 'ltr' as const } : {})}
+                                        className="mt-1.5 text-[15px] font-extrabold text-main"
+                                    >
+                                        {value}
+                                    </dd>
+                                </div>
+                            ))}
+                        </dl>
                     </section>
                 )}
 

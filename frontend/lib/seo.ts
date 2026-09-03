@@ -113,9 +113,56 @@ export function assertUniqueSlugs(family: string, slugs: string[]): void {
     }
 }
 
-/** Canonical symbol path: /symbol/{SYMBOL} (uppercase enforced by middleware). */
+/** Canonical symbol path: /symbol/{SYMBOL} (uppercase enforced by middleware).
+ *  The ENGLISH contract, frozen — thousands of indexed URLs depend on it. */
 export function symbolPath(symbol: string): string {
     return `/symbol/${(symbol || '').toUpperCase()}`;
+}
+
+/** True when a string actually contains Arabic script (not merely non-empty).
+ *  Three rows in market_tickers carry an ENGLISH company name in name_ar; a
+ *  slug built from those would be Latin, and the middleware's ticker
+ *  upper-casing would then fight the page's lower-case canonical forever. */
+export function hasArabicScript(value: string | null | undefined): boolean {
+    return !!value && /[\u0600-\u06FF]/.test(value);
+}
+
+/**
+ * Canonical ARABIC symbol path: /ar/symbol/{SYMBOL}-{arabic-slug}.
+ *
+ * Completes the Arabic-first URL contract — funds, learn, glossary and sectors
+ * already carry Arabic slugs; company pages were the last tree still keyed on
+ * a bare Latin ticker, which reads as an English URL to an Arabic searcher.
+ *
+ * The slug is appended ONLY when the company genuinely has an Arabic name
+ * (38% of tickers do today). Everything else stays at /ar/symbol/{SYMBOL},
+ * which remains a valid canonical — an empty or transliterated slug would be
+ * worse than none.
+ */
+export function symbolPathAr(symbol: string, nameAr?: string | null): string {
+    const sym = (symbol || '').toUpperCase();
+    const slug = hasArabicScript(nameAr) ? arabicSlug(nameAr) : '';
+    return slug ? `/ar/symbol/${sym}-${slug}` : `/ar/symbol/${sym}`;
+}
+
+/**
+ * Recover the ticker from an /ar/symbol route param.
+ *
+ * Splits at the first dash IMMEDIATELY FOLLOWED BY AN ARABIC LETTER, because
+ * a ticker may legitimately contain a dash (EGS48271C018-EGP) while a
+ * generated Arabic slug always begins with Arabic script. That makes the split
+ * exact rather than heuristic: "COMI-البنك-التجاري" -> "COMI",
+ * "EGS48271C018-EGP" -> "EGS48271C018-EGP".
+ */
+export function symbolFromArParam(param: string): string {
+    let decoded = param || '';
+    try {
+        decoded = decodeURIComponent(decoded);
+    } catch {
+        // malformed escapes: fall through and split the raw value
+    }
+    const m = /^(.+?)-(?=[\u0600-\u06FF])/.exec(decoded);
+    return (m ? m[1] : decoded).toUpperCase();
 }
 
 /** Extract the leading numeric id from an "{id}-{slug}" route param. */

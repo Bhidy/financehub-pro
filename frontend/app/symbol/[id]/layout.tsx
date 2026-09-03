@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTicker } from "@/lib/public-data";
-import { symbolPath } from "@/lib/seo";
+import { symbolPath, symbolPathAr } from "@/lib/seo";
 
 /**
  * Server layer shared by the symbol overview AND its sub-tab pages
@@ -40,7 +40,9 @@ export async function generateMetadata(
                 title: `${symbol} — EGX Stock Price, Financials & News`,
                 alternates: {
             canonical: symbolPath(symbol),
-            // Arabic twin page (306 AR company pages, reciprocal hreflang).
+            // Degraded render (DB unreachable): the Arabic name is unknown, so
+            // point at the bare Arabic URL. That form always resolves and 308s
+            // to the slugged canonical once the DB is back.
             languages: {
                 en: symbolPath(symbol),
                 ar: `/ar${symbolPath(symbol)}`,
@@ -68,8 +70,8 @@ export async function generateMetadata(
             // Arabic twin page (306 AR company pages, reciprocal hreflang).
             languages: {
                 en: symbolPath(symbol),
-                ar: `/ar${symbolPath(symbol)}`,
-                'x-default': `/ar${symbolPath(symbol)}`,
+                ar: encodeURI(symbolPathAr(symbol, ticker?.name_ar)),
+                'x-default': encodeURI(symbolPathAr(symbol, ticker?.name_ar)),
             },
         },
         openGraph: {

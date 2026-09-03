@@ -91,9 +91,19 @@ export function middleware(request: NextRequest) {
             changed = true;
         }
         // Symbols are uppercase by contract: /symbol/comi -> /symbol/COMI.
+        // ONLY the ticker is upper-cased. Arabic company URLs carry a slug
+        // (/ar/symbol/COMI-البنك-التجاري-الدولي) and upper-casing the whole
+        // segment would fight the page's own lower-case canonical forever —
+        // an infinite redirect. Arabic script has no case, so the split is at
+        // the first dash immediately followed by an Arabic letter, matching
+        // symbolFromArParam() exactly.
         if (canonicalFirst === 'symbol' && segments[base + 1]) {
-            const upper = segments[base + 1].toUpperCase();
-            if (segments[base + 1] !== upper) {
+            const seg = segments[base + 1];
+            const arCut = /-(?=[\u0600-\u06FF])/.exec(seg);
+            const ticker = arCut ? seg.slice(0, arCut.index) : seg;
+            const rest = arCut ? seg.slice(arCut.index) : '';
+            const upper = ticker.toUpperCase() + rest;
+            if (seg !== upper) {
                 segments[base + 1] = upper;
                 changed = true;
             }

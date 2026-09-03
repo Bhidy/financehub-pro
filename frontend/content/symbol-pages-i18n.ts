@@ -369,5 +369,45 @@ export const NAVHIST = {
     ),
 };
 
+/* ── fund comparison ─────────────────────────────────────────────────────── */
+
+export const FUNDVS = {
+    h1: (a: string, b: string): S => s(`${a} vs ${b}`, `${a} مقابل ${b}`),
+    title: (a: string, b: string): S =>
+        s(
+            `${a} vs ${b} — NAV, Returns & Fees Compared`,
+            `${a} مقابل ${b} — مقارنة صافي قيمة الأصول والعوائد والرسوم`
+        ),
+    description: (a: string, b: string): S =>
+        s(
+            `Side-by-side comparison of ${a} and ${b}: latest NAV, trailing returns, management fee, minimum subscription and risk level.`,
+            `مقارنة جنباً إلى جنب بين ${a} و${b}: صافي قيمة الأصول والعوائد التاريخية ورسوم الإدارة والحد الأدنى للاشتراك ومستوى المخاطر.`
+        ),
+    intro: (a: string, b: string): S =>
+        s(
+            `Every reported figure for ${a} and ${b} side by side. Both funds are shown with the same fields from the same source, so the comparison is like-for-like; a field neither manager publishes is omitted rather than shown as zero.`,
+            `كل رقم معلن عن ${a} و${b} جنباً إلى جنب. يُعرض الصندوقان بالحقول نفسها ومن المصدر نفسه لتكون المقارنة متكافئة، ويُحذف أي حقل لا ينشره أي من المديرين بدلاً من عرضه كصفر.`
+        ),
+    heading: s('Egyptian mutual fund comparison', 'مقارنة صناديق الاستثمار المصرية'),
+    metric: s('Metric', 'البند'),
+    allFunds: s('All Egyptian mutual funds', 'كل صناديق الاستثمار المصرية'),
+    crumb: s('Mutual Funds', 'صناديق الاستثمار'),
+    rows: {
+        latestNav: s('Latest NAV', 'صافي قيمة الأصول'),
+        fundType: s('Fund type', 'نوع الصندوق'),
+        classification: s('Classification', 'التصنيف'),
+        riskLevel: s('Risk level', 'مستوى المخاطر'),
+        managementFee: s('Management fee', 'رسوم الإدارة'),
+        expenseRatio: s('Expense ratio', 'نسبة المصروفات'),
+        minSubscription: s('Minimum subscription', 'الحد الأدنى للاشتراك'),
+        shariah: s('Shariah-compliant', 'متوافق مع الشريعة'),
+        inception: s('Inception year', 'سنة التأسيس'),
+    },
+    note: s(
+        'Both funds are compared on figures their managers publish. A difference in one field does not make either fund better suited to you — the categories, horizons and fee structures differ, and nothing here is a recommendation.',
+        'تُقارن الصناديق بالأرقام التي ينشرها مديروها. واختلاف حقل واحد لا يجعل أياً منهما أنسب لك — فالفئات والآفاق الزمنية وهياكل الرسوم مختلفة، ولا شيء هنا يمثل توصية.'
+    ),
+};
+
 /** Pick the string for a language. */
 export const t = (v: S, lang: Lang): string => v[lang];

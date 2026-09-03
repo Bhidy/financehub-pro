@@ -43,6 +43,10 @@ async function coreEntries(): Promise<Entry[]> {
         ['/ar/News', 'hourly', '0.9'], // the Arabic news hub (previously a 404)
         ['/Funds', 'daily', '0.9'],
         ['/ar/Funds', 'daily', '0.9'], // the Arabic funds hub (was a 308 to /Funds)
+        // The price-intent page — the highest-intent fund query in this market
+        // ("أسعار وثائق صناديق الاستثمار اليوم") had no destination at all.
+        ['/Funds/prices-today', 'daily', '0.9'],
+        ['/ar/Funds/prices-today', 'daily', '0.9'],
         ['/Funds/Compare', 'daily', '0.6'],
         ['/Market-Pulse', 'hourly', '0.9'],
         ['/Learn', 'weekly', '0.8'],
@@ -296,12 +300,17 @@ async function comparisonEntries(): Promise<Entry[]> {
         })
         .filter((r) => Number.isFinite(r.r1y))
         .sort((a, b) => (a.fund_type_en === b.fund_type_en ? b.r1y - a.r1y : a.fund_type_en.localeCompare(b.fund_type_en)));
+    // Top 8 per fund type: C(8,2) = 28 pairs per type instead of 10, and BOTH
+    // languages — the comparison pages were English-only, so the Arabic tree
+    // had no fund-comparison surface at all. Within-type only, because
+    // comparing a money market fund with an equity fund is a comparison
+    // nobody is making.
     const byType = new Map<string, number[]>();
     for (const r of ranked) {
         const t = r.fund_type_en;
         if (!byType.has(t)) byType.set(t, []);
         const arr = byType.get(t) as number[];
-        if (arr.length < 5) arr.push(r.fund_id);
+        if (arr.length < 8) arr.push(r.fund_id);
     }
     const entries: Entry[] = [];
     for (const ids of byType.values()) {
@@ -309,6 +318,7 @@ async function comparisonEntries(): Promise<Entry[]> {
             for (let j = i + 1; j < ids.length; j++) {
                 const [a, b] = ids[i] < ids[j] ? [ids[i], ids[j]] : [ids[j], ids[i]];
                 entries.push({ loc: absUrl(`/Funds/vs/${a}-vs-${b}`), changefreq: 'weekly', priority: '0.4' });
+                entries.push({ loc: absUrl(`/ar/Funds/vs/${a}-vs-${b}`), changefreq: 'weekly', priority: '0.4' });
             }
         }
     }

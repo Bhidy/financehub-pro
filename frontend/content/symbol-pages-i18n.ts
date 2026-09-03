@@ -139,6 +139,10 @@ export const HISTORY = {
             `أسعار الافتتاح والأعلى والأدنى والإغلاق وأحجام التداول اليومية لسهم ${name} (${symbol}) في البورصة المصرية${range ? `، ${range}` : ''}. الأداء من أسبوع حتى خمس سنوات.`
         ),
     perf: s('Performance', 'الأداء'),
+    sourceNote: s(
+        'Daily OHLC from the Egyptian Exchange.',
+        'أسعار الافتتاح والأعلى والأدنى والإغلاق اليومية من البورصة المصرية.'
+    ),
     recent: s('Recent daily prices', 'أحدث الأسعار اليومية'),
     cols: {
         date: s('Date', 'التاريخ'),
@@ -148,6 +152,12 @@ export const HISTORY = {
         close: s('Close', 'الإغلاق'),
         volume: s('Volume', 'حجم التداول'),
         change: s('Change', 'التغير'),
+    },
+    stats: {
+        allTimeHigh: s('All-time high', 'أعلى سعر تاريخي'),
+        allTimeLow: s('All-time low', 'أدنى سعر تاريخي'),
+        dataSince: s('Data since', 'البيانات منذ'),
+        tradingDays: s('Trading days recorded', 'عدد جلسات التداول المسجلة'),
     },
     periods: {
         '1W': s('1 week', 'أسبوع'),
@@ -182,6 +192,22 @@ export const DIVIDENDS = {
         payDate: s('Payment date', 'تاريخ الصرف'),
     },
     yieldLabel: s('Dividend yield', 'عائد التوزيعات'),
+    stats: {
+        trailingYield: s('Trailing dividend yield', 'عائد التوزيعات التاريخي'),
+        mostRecent: s('Most recent dividend', 'أحدث توزيع'),
+        upcoming: s('Upcoming dividend', 'التوزيع القادم'),
+        payout: s('Payout ratio (TTM)', 'نسبة التوزيع (آخر ١٢ شهراً)'),
+        growthYears: s('Consecutive growth years', 'سنوات النمو المتتالية'),
+    },
+    perShare: s('Dividend per share (EGP)', 'التوزيع للسهم (جنيه مصري)'),
+    sourceNote: s(
+        'Source: Egyptian Exchange corporate actions; dividend summary via TradingView.',
+        'المصدر: إجراءات الشركات بالبورصة المصرية، وملخص التوزيعات عبر TradingView.'
+    ),
+    noRecords: s(
+        'Individual payment records are not yet available for this company.',
+        'لا تتوفر بعد سجلات التوزيعات الفردية لهذه الشركة.'
+    ),
     noneYet: s('No dividend payments recorded.', 'لا توجد توزيعات مسجلة.'),
 };
 
@@ -212,6 +238,10 @@ export const FINANCIALS = {
         debt: s('Total debt', 'إجمالي الديون'),
         dps: s('Dividend per share', 'التوزيع للسهم'),
     },
+    sourceNote: s(
+        'All figures in EGP. Source: company disclosures to the Egyptian Exchange via TradingView; updated weekly.',
+        'كل الأرقام بالجنيه المصري. المصدر: إفصاحات الشركة للبورصة المصرية عبر TradingView، ويتم التحديث أسبوعياً.'
+    ),
     reportedIn: s(
         'Reported in Egyptian pounds as filed by the company.',
         'معروضة بالجنيه المصري كما أفصحت عنها الشركة.'

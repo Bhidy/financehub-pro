@@ -141,9 +141,17 @@ async function sectorEntries(): Promise<Entry[]> {
 async function arCompanyEntries(): Promise<Entry[]> {
     // Arabic twins of the company pages (/ar/symbol/{SYM}).
     const result = await db.query(
-        `WITH tech AS (SELECT DISTINCT UPPER(symbol) AS s FROM egx_technicals)
+        `WITH tech AS (SELECT DISTINCT UPPER(symbol) AS s FROM egx_technicals),
+              fin  AS (SELECT DISTINCT UPPER(symbol) AS s FROM egx_financials),
+              div1 AS (SELECT DISTINCT UPPER(symbol) AS s FROM dividend_history),
+              div2 AS (SELECT DISTINCT UPPER(symbol) AS s FROM egx_dividends
+                       WHERE div_yield > 0 OR amount_recent IS NOT NULL OR amount_upcoming IS NOT NULL),
+              hist AS (SELECT DISTINCT UPPER(symbol) AS s FROM ohlc_data)
          SELECT t.symbol, t.name_ar,
                 (t.symbol IN (SELECT s FROM tech)) AS has_tech,
+                (t.symbol IN (SELECT s FROM fin)) AS has_fin,
+                (t.symbol IN (SELECT s FROM div1) OR t.symbol IN (SELECT s FROM div2)) AS has_div,
+                (t.symbol IN (SELECT s FROM hist)) AS has_hist,
                 GREATEST(
                     COALESCE(t.last_updated, 'epoch'::timestamptz),
                     COALESCE(t.updated_at, 'epoch'::timestamptz)
@@ -168,9 +176,10 @@ async function arCompanyEntries(): Promise<Entry[]> {
         const entries: Entry[] = [
             { loc: absUrl(base), lastmod: r.lastmod, changefreq: 'daily', priority: '0.7' },
         ];
-        if (r.has_tech) {
-            entries.push({ loc: absUrl(`${base}/technicals`), lastmod: r.lastmod, changefreq: 'daily', priority: '0.5' });
-        }
+        if (r.has_fin) entries.push({ loc: absUrl(`${base}/financials`), lastmod: r.lastmod, changefreq: 'weekly', priority: '0.6' });
+        if (r.has_div) entries.push({ loc: absUrl(`${base}/dividends`), lastmod: r.lastmod, changefreq: 'weekly', priority: '0.6' });
+        if (r.has_tech) entries.push({ loc: absUrl(`${base}/technicals`), lastmod: r.lastmod, changefreq: 'daily', priority: '0.5' });
+        if (r.has_hist) entries.push({ loc: absUrl(`${base}/history`), lastmod: r.lastmod, changefreq: 'daily', priority: '0.5' });
         return entries;
     });
 }

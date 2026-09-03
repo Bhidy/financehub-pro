@@ -5,6 +5,7 @@ import { getAllFundsRanked } from '@/lib/public-data';
 import { SITE_URL, fundPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import FundsGuide from '@/components/seo/FundsGuide';
 
 /**
  * /Funds/best-mutual-funds-egypt-2026 — the master plan's first editorial
@@ -310,6 +311,7 @@ export default async function BestFundsPage() {
                     <Link href="/Learn/glossary/nav" className="font-semibold text-starta-teal hover:underline">What is NAV?</Link>
                 </p>
             </section>
+            <FundsGuide lang="en" />
         </PublicPageShell>
     );
 }

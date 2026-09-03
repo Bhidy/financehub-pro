@@ -22,9 +22,19 @@ export type NewsArticleRow = {
     symbol?: string | null;
 };
 
+export type NewsPaging = {
+    /** 1-based. */
+    page: number;
+    totalPages: number;
+    /** Builds the URL for a page number; page 1 must be the clean path. */
+    hrefFor: (page: number) => string;
+};
+
 export type NewsHubSpec = {
     lang: 'en' | 'ar';
     canonical: string;
+    /** Omit for an unpaginated hub. */
+    paging?: NewsPaging;
     /** hreflang twin. */
     altPath: string;
     title: string;
@@ -50,6 +60,40 @@ const humanDate = (v: unknown, lang: 'en' | 'ar'): string => {
           })
         : '';
 };
+
+/**
+ * Numbered pager. Shows first/last plus a window around the current page so a
+ * crawler can walk the whole archive in a bounded number of hops rather than
+ * following a single "next" chain 77 links deep.
+ */
+function buildPager(p: NewsPaging, lang: 'en' | 'ar'): string {
+    const isAr = lang === 'ar';
+    const pages = new Set<number>([1, p.totalPages]);
+    for (let i = p.page - 2; i <= p.page + 2; i++) if (i >= 1 && i <= p.totalPages) pages.add(i);
+    const ordered = [...pages].sort((a, b) => a - b);
+
+    const link = (n: number, label?: string) =>
+        n === p.page
+            ? `<span aria-current="page">${esc(String(n))}</span>`
+            : `<a href="${escUrl(p.hrefFor(n))}"${n === p.page - 1 ? ' rel="prev"' : n === p.page + 1 ? ' rel="next"' : ''}>${esc(label ?? String(n))}</a>`;
+
+    const parts: string[] = [];
+    if (p.page > 1) parts.push(link(p.page - 1, isAr ? 'السابق' : 'Previous'));
+    let last = 0;
+    for (const n of ordered) {
+        if (last && n - last > 1) parts.push('<span aria-hidden="true">…</span>');
+        parts.push(link(n));
+        last = n;
+    }
+    if (p.page < p.totalPages) parts.push(link(p.page + 1, isAr ? 'التالي' : 'Next'));
+
+    return (
+        `<nav aria-label="${esc(isAr ? 'صفحات الأخبار' : 'News pages')}"${isAr ? ' dir="rtl"' : ''} ` +
+        `style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:1.5rem">` +
+        parts.join('') +
+        `</nav>`
+    );
+}
 
 export function renderNewsHub(spec: NewsHubSpec): Promise<Response> {
     const isAr = spec.lang === 'ar';
@@ -85,6 +129,11 @@ export function renderNewsHub(spec: NewsHubSpec): Promise<Response> {
           `</nav>`
         : '';
 
+    // CRAWLABLE PAGER. Without it the archive is capped at one page: 4,543 of
+    // 4,583 articles were reachable only from the sitemap, which discovers
+    // URLs but passes no internal link equity to them.
+    const pager = spec.paging && spec.paging.totalPages > 1 ? buildPager(spec.paging, spec.lang) : '';
+
     const gridHtml =
         siblingNav +
         rest
@@ -97,7 +146,8 @@ export function renderNewsHub(spec: NewsHubSpec): Promise<Response> {
                     `<a class="read-more" href="${escUrl(a.href)}">${esc(readMore)}<span>${arrow}</span></a></div>` +
                     `</div></article>`
             )
-            .join('');
+            .join('') +
+        pager;
 
     // CollectionPage + ItemList describes what the page IS. Individual
     // NewsArticle nodes belong on the article pages, which already carry them;
@@ -144,7 +194,17 @@ export function renderNewsHub(spec: NewsHubSpec): Promise<Response> {
             {
                 find: '<link rel="canonical" href="https://startamarkets.com/News">',
                 replace:
+                    // SELF-canonical on every page. Pointing page 2 at page 1
+                    // would tell Google page 2 should not rank, which on an
+                    // archive means the deeper pages never get crawled — the
+                    // opposite of why pagination exists.
                     `<link rel="canonical" href="https://startamarkets.com${encodeURI(spec.canonical)}">` +
+                    (spec.paging && spec.paging.page > 1
+                        ? `<link rel="prev" href="https://startamarkets.com${encodeURI(spec.paging.hrefFor(spec.paging.page - 1))}">`
+                        : '') +
+                    (spec.paging && spec.paging.page < spec.paging.totalPages
+                        ? `<link rel="next" href="https://startamarkets.com${encodeURI(spec.paging.hrefFor(spec.paging.page + 1))}">`
+                        : '') +
                     `<link rel="alternate" hreflang="${isAr ? 'ar' : 'en'}" href="https://startamarkets.com${encodeURI(spec.canonical)}">` +
                     `<link rel="alternate" hreflang="${isAr ? 'en' : 'ar'}" href="https://startamarkets.com${encodeURI(spec.altPath)}">` +
                     `<link rel="alternate" hreflang="x-default" href="https://startamarkets.com${encodeURI(isAr ? spec.canonical : spec.altPath)}">`,

@@ -845,15 +845,20 @@ async function assertDesignedShellsIntact() {
     } catch {
       // expected: no page.tsx
     }
-    let text = "";
+    // TWO scopes, deliberately. `routeText` is the route file ALONE — the
+    // Arabic check must run against it, because a shared renderer legitimately
+    // contains the literal 'ar' everywhere and would make that check pass for
+    // any route. `text` additionally includes the delegated module, where the
+    // shell and the language option actually live.
+    let routeText = "";
     try {
-      text = readFileSync(path.join(root, hub.route), "utf8");
+      routeText = readFileSync(path.join(root, hub.route), "utf8");
     } catch {
       console.error(`FAIL: ${hub.url} has no ${hub.route} — the designed shell would not be served.`);
       failed = true;
       continue;
     }
-    // Follow a delegation to the module that actually calls renderStaticHub.
+    let text = routeText;
     if (hub.via) {
       try {
         text += "\n" + readFileSync(path.join(root, hub.via), "utf8");
@@ -879,7 +884,9 @@ async function assertDesignedShellsIntact() {
     }
     // An Arabic route must pass 'ar' — either as the renderStaticHub option or
     // as the argument it forwards to a shared renderer.
-    if (hub.url.startsWith("/ar") && !/(^\s*lang:\s*'ar'\s*,|\('ar'\)|,\s*'ar'\))/m.test(text)) {
+    // An Arabic route must pass 'ar' — as the renderStaticHub option, or as an
+    // argument to the shared renderer in any position.
+    if (hub.url.startsWith("/ar") && !/(^\s*lang:\s*'ar'\s*,|\B'ar'\s*[,)])/m.test(routeText)) {
       console.error(`FAIL: ${hub.route} serves an ARABIC URL but does not set lang: 'ar'.`);
       failed = true;
     }

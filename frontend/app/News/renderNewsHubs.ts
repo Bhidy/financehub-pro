@@ -16,6 +16,9 @@ import {
 
 const PER_HUB = 40;
 
+/** Bounded so a crawler walks the archive rather than a 100-deep next-chain. */
+const MAX_PAGES = 120;
+
 const toRow = (a: Record<string, unknown>): NewsArticleRow => ({
     id: a.id as number,
     headline: (a.headline as string) || '',
@@ -41,7 +44,7 @@ const topicLinks = (lang: 'en' | 'ar', exclude?: string) =>
     }));
 
 /** The front news hub for a language. */
-export async function renderNewsFront(lang: 'en' | 'ar') {
+export async function renderNewsFront(lang: 'en' | 'ar', page = 1) {
     const isAr = lang === 'ar';
     let rows: Array<Record<string, unknown>> = [];
     try {
@@ -49,12 +52,19 @@ export async function renderNewsFront(lang: 'en' | 'ar') {
     } catch (error) {
         console.error('[hub:news] query failed:', (error as Error).message);
     }
-    const articles = forLang(rows, lang).slice(0, PER_HUB).map(toRow);
+    const pool = forLang(rows, lang);
+    const totalPages = Math.min(Math.max(Math.ceil(pool.length / PER_HUB), 1), MAX_PAGES);
+    const current = Math.min(Math.max(page, 1), totalPages);
+    const articles = pool.slice((current - 1) * PER_HUB, current * PER_HUB).map(toRow);
+    const base = isAr ? '/ar/News' : '/News';
 
     return renderNewsHub({
         lang,
-        canonical: isAr ? '/ar/News' : '/News',
+        // Page 1 keeps the clean URL; deeper pages self-canonical so they are
+        // crawled and can rank rather than being collapsed into page 1.
+        canonical: current === 1 ? base : `${base}?page=${current}`,
         altPath: isAr ? '/News' : '/ar/News',
+        paging: { page: current, totalPages, hrefFor: (n) => (n === 1 ? base : `${base}?page=${n}`) },
         title: isAr
             ? 'أخبار البورصة المصرية والاقتصاد — تحديث مستمر | Starta Markets'
             : 'Egyptian Market News — EGX & Economy | Starta Markets',
@@ -75,7 +85,7 @@ export async function renderNewsFront(lang: 'en' | 'ar') {
 }
 
 /** A topic archive. */
-export async function renderNewsTopic(slug: string, lang: 'en' | 'ar') {
+export async function renderNewsTopic(slug: string, lang: 'en' | 'ar', page = 1) {
     const topic = findNewsTopic(slug);
     if (!topic) notFound();
     const isAr = lang === 'ar';
@@ -90,11 +100,16 @@ export async function renderNewsTopic(slug: string, lang: 'en' | 'ar') {
     // Data gate: a topic with too few articles is a thin archive, not a page.
     if (inTopic.length < MIN_ARTICLES_PER_TOPIC) notFound();
 
-    const articles = forLang(inTopic, lang).slice(0, PER_HUB).map(toRow);
+    const pool = forLang(inTopic, lang);
+    const totalPages = Math.min(Math.max(Math.ceil(pool.length / PER_HUB), 1), MAX_PAGES);
+    const current = Math.min(Math.max(page, 1), totalPages);
+    const articles = pool.slice((current - 1) * PER_HUB, current * PER_HUB).map(toRow);
+    const base = newsTopicPath(topic, lang);
 
     return renderNewsHub({
         lang,
-        canonical: newsTopicPath(topic, lang),
+        canonical: current === 1 ? base : `${base}?page=${current}`,
+        paging: { page: current, totalPages, hrefFor: (n) => (n === 1 ? base : `${base}?page=${n}`) },
         altPath: newsTopicPath(topic, isAr ? 'en' : 'ar'),
         title: `${isAr ? topic.titleAr : topic.titleEn} | Starta Markets`,
         description: isAr ? topic.descAr : topic.descEn,

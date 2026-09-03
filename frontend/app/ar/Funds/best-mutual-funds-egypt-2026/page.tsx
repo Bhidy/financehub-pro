@@ -5,6 +5,7 @@ import { getAllFundsRanked } from '@/lib/public-data';
 import { SITE_URL, fundPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import FundsGuide from '@/components/seo/FundsGuide';
 
 /**
  * Arabic twin of /Funds/best-mutual-funds-egypt-2026 — "أفضل صناديق الاستثمار
@@ -239,6 +240,7 @@ export default async function BestFundsArPage() {
                 <Link href="/ar/companies" className="text-muted hover:text-starta-teal">أسهم البورصة المصرية</Link>
                 <a href="/Funds/best-mutual-funds-egypt-2026" hrefLang="en" className="text-muted hover:text-starta-teal">Best funds in English</a>
             </nav>
+            <FundsGuide lang="ar" />
         </PublicPageShell>
     );
 }

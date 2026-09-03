@@ -11,6 +11,7 @@ import { renderNewsFront } from './renderNewsHubs';
  */
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
-    return renderNewsFront('en');
+export async function GET(req: Request) {
+    const page = Number(new URL(req.url).searchParams.get('page')) || 1;
+    return renderNewsFront('en', page);
 }

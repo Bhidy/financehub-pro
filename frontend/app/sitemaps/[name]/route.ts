@@ -141,7 +141,9 @@ async function sectorEntries(): Promise<Entry[]> {
 async function arCompanyEntries(): Promise<Entry[]> {
     // Arabic twins of the company pages (/ar/symbol/{SYM}).
     const result = await db.query(
-        `SELECT t.symbol, t.name_ar,
+        `WITH tech AS (SELECT DISTINCT UPPER(symbol) AS s FROM egx_technicals)
+         SELECT t.symbol, t.name_ar,
+                (t.symbol IN (SELECT s FROM tech)) AS has_tech,
                 GREATEST(
                     COALESCE(t.last_updated, 'epoch'::timestamptz),
                     COALESCE(t.updated_at, 'epoch'::timestamptz)
@@ -158,12 +160,19 @@ async function arCompanyEntries(): Promise<Entry[]> {
     // Arabic canonical carries the Arabic company slug where one exists —
     // built by the SAME helper the page canonicalises with, so the sitemap can
     // never advertise a URL that redirects.
-    return result.rows.map((r: any) => ({
-        loc: absUrl(symbolPathAr(r.symbol, r.name_ar)),
-        lastmod: r.lastmod,
-        changefreq: 'daily',
-        priority: '0.7',
-    }));
+    // Arabic company URLs + their sub-pages. DATA-GATED exactly like the
+    // English segment: a sub-tab is advertised only where the page will
+    // actually render, so the sitemap and the 404 gate provably agree.
+    return result.rows.flatMap((r: any) => {
+        const base = symbolPathAr(r.symbol, r.name_ar);
+        const entries: Entry[] = [
+            { loc: absUrl(base), lastmod: r.lastmod, changefreq: 'daily', priority: '0.7' },
+        ];
+        if (r.has_tech) {
+            entries.push({ loc: absUrl(`${base}/technicals`), lastmod: r.lastmod, changefreq: 'daily', priority: '0.5' });
+        }
+        return entries;
+    });
 }
 
 async function metricEntries(): Promise<Entry[]> {

@@ -856,6 +856,34 @@ async function assertDesignedShellsIntact() {
       failed = true;
     }
   }
+  // MARKET PURITY. market_tickers holds a legacy Saudi (Tadawul) universe
+  // alongside the Egyptian one — identifiable because Saudi rows carry
+  // market_code IS NULL while every EGX row carries market_code='EGX'.
+  // Unfiltered, 827 Saudi companies were published and sitemapped as Egyptian
+  // Exchange listings (ar-companies.xml was 57% Saudi). Every PUBLIC query
+  // against that table must carry the EGX_ONLY gate.
+  for (const file of ["lib/public-data.ts", "app/sitemaps/[name]/route.ts"]) {
+    let text = "";
+    try {
+      text = readFileSync(path.join(root, file), "utf8");
+    } catch {
+      console.error(`FAIL: ${file} is missing.`);
+      failed = true;
+      continue;
+    }
+    const queries = [...text.matchAll(/`([^`]*FROM market_tickers[^`]*)`/g)].map((m) => m[1]);
+    const ungated = queries.filter((q) => !q.includes("EGX_ONLY"));
+    if (ungated.length > 0) {
+      console.error(
+        `FAIL: ${file} has ${ungated.length} market_tickers quer${ungated.length === 1 ? "y" : "ies"} without the EGX_ONLY gate — Saudi rows would publish as EGX companies.`
+      );
+      for (const q of ungated.slice(0, 2)) {
+        console.error(`       ${q.replace(/\s+/g, " ").trim().slice(0, 110)}`);
+      }
+      failed = true;
+    }
+  }
+
   // ANCHOR INTEGRITY. The shell-serving routes edit the designed files by
   // matching literal strings (a <title>, a canonical, a data-key). If a
   // designer reformats the shell, those anchors stop matching and the route

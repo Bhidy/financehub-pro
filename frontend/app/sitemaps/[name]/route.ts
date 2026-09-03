@@ -6,6 +6,7 @@ import { sectorAr } from '@/content/sector-names-ar';
 import learnTopics from '@/content/learn-topics.generated';
 import { GLOSSARY_TERMS } from '@/content/glossary-terms';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
+import { EGX_ONLY } from '@/lib/public-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,6 +102,7 @@ async function companyEntries(): Promise<Entry[]> {
                 (t.symbol IN (SELECT s FROM hist)) AS has_hist
          FROM market_tickers t
          WHERE t.last_price IS NOT NULL
+           AND t.${EGX_ONLY}
            AND COALESCE(t.sector_name,'') <> 'Index' -- EGX30 index row is not a company page
            AND NOT (t.symbol LIKE '%.CA' AND EXISTS (
                SELECT 1 FROM market_tickers b
@@ -124,7 +126,7 @@ async function sectorEntries(): Promise<Entry[]> {
     const result = await db.query(
         `SELECT sector_name
          FROM market_tickers
-         WHERE last_price IS NOT NULL AND sector_name IS NOT NULL AND sector_name <> ''
+         WHERE last_price IS NOT NULL AND ${EGX_ONLY} AND sector_name IS NOT NULL AND sector_name <> ''
            AND sector_name <> 'Index'
          GROUP BY sector_name
          ORDER BY sector_name`
@@ -145,6 +147,7 @@ async function arCompanyEntries(): Promise<Entry[]> {
                 ) AS lastmod
          FROM market_tickers t
          WHERE t.last_price IS NOT NULL
+           AND t.${EGX_ONLY}
            AND COALESCE(t.sector_name,'') <> 'Index'
            AND NOT (t.symbol LIKE '%.CA' AND EXISTS (
                SELECT 1 FROM market_tickers b
@@ -178,6 +181,7 @@ async function metricEntries(): Promise<Entry[]> {
                 EXISTS(SELECT 1 FROM egx_financials f WHERE UPPER(f.symbol) = t.symbol AND f.eps_diluted IS NOT NULL) AS m_eps
          FROM market_tickers t
          WHERE t.last_price IS NOT NULL
+           AND t.${EGX_ONLY}
            AND COALESCE(t.sector_name,'') <> 'Index'
            AND NOT (t.symbol LIKE '%.CA' AND EXISTS (
                SELECT 1 FROM market_tickers b

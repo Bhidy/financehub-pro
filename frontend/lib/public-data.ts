@@ -4,6 +4,27 @@ import { db } from '@/lib/db-server';
 import { matchAssetManager } from './asset-managers';
 
 /**
+ * EGX-ONLY GATE for every PUBLIC / indexable surface.
+ *
+ * market_tickers carries a legacy Tadawul (Saudi) universe alongside the
+ * Egyptian one: 273 of 500 rows sampled on 2026-09-03 were Saudi, identifiable
+ * with certainty because they carry `market_code IS NULL` and `currency='SAR'`
+ * while every EGX row carries `market_code='EGX'`.
+ *
+ * Unfiltered, those rows were published as Egyptian Exchange companies:
+ * 414 of 1,673 URLs in companies.xml and 413 of 729 in ar-companies.xml —
+ * so the Arabic page titled "أسهم البورصة المصرية" was 57% Saudi. On a
+ * financial site that is a correctness failure before it is an SEO one, and as
+ * SEO it is 827 wrong-market URLs diluting topical authority.
+ *
+ * This gate is applied to the PUBLIC layer only. No data is deleted and the
+ * internal app/API are untouched — the owner deferred the wider Saudi cleanup,
+ * and this does not pre-empt that decision.
+ */
+export const EGX_ONLY = `market_code = 'EGX'`;
+
+
+/**
  * Server-side data access for the SEO/public pages (news articles, symbol
  * pages, fund pages, hubs). Every helper is React.cache()-wrapped so
  * generateMetadata + the page body share one query per request.
@@ -103,7 +124,7 @@ export const getTicker = cache(async (symbol: string): Promise<Ticker | null> =>
         `SELECT symbol, name_en, name_ar, last_price, change_percent, volume,
                 sector_name, market_cap, pe_ratio, pb_ratio, dividend_yield,
                 currency, isin, logo_url, last_updated
-         FROM market_tickers WHERE symbol = $1`,
+         FROM market_tickers WHERE symbol = $1 AND ${EGX_ONLY}`,
         [symbol.toUpperCase()]
     );
     const row = result.rows[0] ? cleanName(result.rows[0]) : null;
@@ -151,6 +172,7 @@ export const getSectorPeers = cache(async (sector: string, excludeSymbol: string
                 isin, logo_url, last_updated
          FROM market_tickers
          WHERE sector_name = $1 AND symbol <> $2 AND last_price IS NOT NULL
+           AND ${EGX_ONLY}
          ORDER BY market_cap::numeric DESC NULLS LAST
          LIMIT $3`,
         [sector, excludeSymbol.toUpperCase(), limit]
@@ -517,6 +539,7 @@ export const getEgx30Constituents = cache(async (): Promise<Ticker[]> => {
                 isin, logo_url, last_updated
          FROM market_tickers
          WHERE market_cap IS NOT NULL AND last_price IS NOT NULL
+           AND ${EGX_ONLY}
            AND symbol NOT IN ('EGX30','^EGX30')
          ORDER BY market_cap::numeric DESC NULLS LAST LIMIT 30`
     );
@@ -556,7 +579,8 @@ const _sectorsCached = unstable_cache(
         const result = await db.query(
             `SELECT sector_name, COUNT(*)::int AS companies, SUM(market_cap::numeric) AS market_cap
              FROM market_tickers
-             WHERE last_price IS NOT NULL AND sector_name IS NOT NULL AND sector_name <> ''
+             WHERE last_price IS NOT NULL AND sector_name IS NOT NULL
+               AND ${EGX_ONLY} AND sector_name <> ''
                AND sector_name <> 'Index' -- the EGX30 index row is not a company sector
              GROUP BY sector_name
              ORDER BY SUM(market_cap::numeric) DESC NULLS LAST`
@@ -576,9 +600,9 @@ export const getMovers = cache(async (limit = 10): Promise<{ gainers: Ticker[]; 
                   sector_name, market_cap, pe_ratio, pb_ratio, dividend_yield,
                   currency, isin, logo_url, last_updated`;
     const [gainers, losers, active] = await Promise.all([
-        db.query(`SELECT ${cols} FROM market_tickers WHERE last_price IS NOT NULL AND change_percent IS NOT NULL AND COALESCE(sector_name,'') <> 'Index' ORDER BY change_percent::numeric DESC LIMIT $1`, [limit]),
-        db.query(`SELECT ${cols} FROM market_tickers WHERE last_price IS NOT NULL AND change_percent IS NOT NULL AND COALESCE(sector_name,'') <> 'Index' ORDER BY change_percent::numeric ASC LIMIT $1`, [limit]),
-        db.query(`SELECT ${cols} FROM market_tickers WHERE last_price IS NOT NULL AND COALESCE(sector_name,'') <> 'Index' ORDER BY volume::numeric DESC NULLS LAST LIMIT $1`, [limit]),
+        db.query(`SELECT ${cols} FROM market_tickers WHERE last_price IS NOT NULL AND ${EGX_ONLY} AND change_percent IS NOT NULL AND COALESCE(sector_name,'') <> 'Index' ORDER BY change_percent::numeric DESC LIMIT $1`, [limit]),
+        db.query(`SELECT ${cols} FROM market_tickers WHERE last_price IS NOT NULL AND ${EGX_ONLY} AND change_percent IS NOT NULL AND COALESCE(sector_name,'') <> 'Index' ORDER BY change_percent::numeric ASC LIMIT $1`, [limit]),
+        db.query(`SELECT ${cols} FROM market_tickers WHERE last_price IS NOT NULL AND ${EGX_ONLY} AND COALESCE(sector_name,'') <> 'Index' ORDER BY volume::numeric DESC NULLS LAST LIMIT $1`, [limit]),
     ]);
     const numify = (rows: Array<Record<string, unknown>>) => rows.map((r) => toNum(cleanName(r), TICKER_NUM)) as Ticker[];
     return { gainers: numify(gainers.rows), losers: numify(losers.rows), active: numify(active.rows) };
@@ -687,6 +711,7 @@ const _allTickersCached = unstable_cache(
                     currency, isin, logo_url, last_updated
              FROM market_tickers t
              WHERE last_price IS NOT NULL
+               AND ${EGX_ONLY}
                AND COALESCE(sector_name,'') <> 'Index' -- EGX30 is an index, not a listed company
                -- .CA duplicate listings: keep only the primary ticker when both exist
                AND NOT (t.symbol LIKE '%.CA' AND EXISTS (

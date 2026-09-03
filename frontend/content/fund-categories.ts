@@ -114,6 +114,23 @@ export const FUND_CATEGORIES: FundCategory[] = [
         match: (t) => /balanced|mixed|asset\s*alloc|متوازن/.test(t),
     },
     {
+        key: 'gold',
+        nameEn: 'Gold Funds',
+        nameAr: 'صناديق الذهب',
+        slugSourceAr: 'صناديق الذهب',
+        titleEn: 'Gold Funds in Egypt — NAVs, Returns & Fees',
+        titleAr: 'صناديق الذهب في مصر — الأسعار والعوائد والرسوم',
+        descriptionEn:
+            'Egyptian gold and commodity funds with live NAVs, trailing returns, management fees and minimum subscriptions. Updated twice daily from manager disclosures.',
+        descriptionAr:
+            'صناديق الذهب والسلع في مصر مع صافي قيمة الأصول والعوائد التاريخية ورسوم الإدارة والحد الأدنى للاشتراك. يتم التحديث مرتين يومياً من إفصاحات مديري الصناديق.',
+        introEn:
+            'Gold funds track the price of gold, either by holding bullion or through gold-linked instruments, so their net asset value moves with the international gold price and with the Egyptian pound exchange rate rather than with the local equity market. Every gold or commodity fund covered on this site is listed below with its reported NAV and trailing returns.',
+        introAr:
+            'تتبع صناديق الذهب سعر الذهب، إما بالاحتفاظ بالسبائك أو عبر أدوات مرتبطة بالذهب، لذا تتحرك صافي قيمة أصولها مع سعر الذهب العالمي ومع سعر صرف الجنيه المصري وليس مع سوق الأسهم المحلي. كل صناديق الذهب والسلع المغطاة على هذا الموقع مدرجة أدناه بصافي قيمة الأصول المعلنة والعوائد التاريخية.',
+        match: (t) => /gold|commodit|ذهب|سلع|معادن/.test(t),
+    },
+    {
         key: 'shariah',
         nameEn: 'Shariah-Compliant Funds',
         nameAr: 'الصناديق المتوافقة مع الشريعة',
@@ -167,10 +184,21 @@ export function categoryOfFund(row: {
     classification_en?: unknown;
     is_shariah?: unknown;
 }): FundCategory | null {
+    // NORMALISE SEPARATORS FIRST. The source values are snake_case
+    // ("money_market", "fixed_income", "fixed_income_usd"), and a matcher
+    // written as /money\s*market/ does NOT match an underscore — \s matches
+    // whitespace only. That silently dropped every money-market and
+    // fixed-income fund into "no category", which 404'd the two largest
+    // category pages in the Egyptian market (verified against production:
+    // 26 money-market and 20 fixed-income funds were being discarded).
+    // Underscores, hyphens and dots all become spaces before any matcher runs.
     const text = [row.fund_type_en, row.fund_type, row.classification_en]
         .map((v) => (typeof v === 'string' ? v : ''))
         .join(' ')
-        .toLowerCase();
+        .toLowerCase()
+        .replace(/[_\-.]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
     const isShariah = row.is_shariah === true || row.is_shariah === 'true' || row.is_shariah === 1;
     const shariah = FUND_CATEGORIES.find((c) => c.key === 'shariah') as FundCategory;
     if (shariah.match(text, isShariah)) return shariah;

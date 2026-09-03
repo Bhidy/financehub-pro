@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { symbolFromArParam } from "@/lib/seo";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo, useRef, useEffect } from "react";
@@ -504,7 +505,13 @@ function SeasonalChart({ months }: {
 export default function SymbolDetailPage() {
     const params = useParams();
     const router = useRouter();
-    const symbol = (params.id as string).toUpperCase();
+    // The Arabic route is slugged (/ar/symbol/COMI-البنك-التجاري-الدولي) and the
+    // param arrives PERCENT-ENCODED, so the raw value is not a ticker. Recover
+    // it exactly the way the server route does — split at the first dash
+    // followed by Arabic script — or this component asks the API for a symbol
+    // called "COMI-%D8%A7…" and renders "Symbol Not Found" on a page the
+    // server rendered successfully.
+    const symbol = symbolFromArParam(params.id as string);
     const [svgElement, setSvgElement] = useState<SVGSVGElement | null>(null);
 
     const isEgx = useMemo(() => symbol.match(/^[a-zA-Z]/) !== null, [symbol]);

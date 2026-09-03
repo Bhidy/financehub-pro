@@ -19,7 +19,7 @@
 import { writeFileSync } from 'node:fs';
 import {
     SITE_URL, httpGet, mapLimit, extractHtmlFacts, jsonLdTypes, parseLocs, parseUrlEntries,
-    makeFindings, healthScore, nowIso, sevRank,
+    makeFindings, healthScore, nowIso, sevRank, sleep,
 } from './lib.mjs';
 
 const args = process.argv.slice(2);
@@ -385,7 +385,17 @@ async function main() {
                 { url, status: head.status, location: head.headers.location || null });
             return;
         }
-        const res = await httpGet(url, { redirect: 'follow' });
+        let res = await httpGet(url, { redirect: 'follow' });
+        // A network abort under OUR OWN concurrency is not "the page is
+        // unreachable". Six URLs were reported CRITICAL in one run and every
+        // one of them answered 200 in under two seconds when probed on its
+        // own. Confirm serially, with a longer budget, before declaring a
+        // page down — a false critical in a self-healing system trains people
+        // to ignore the real ones.
+        if (res.status === 0) {
+            await sleep(1500);
+            res = await httpGet(url, { redirect: 'follow', timeoutMs: 45000, retries: 2 });
+        }
         auditPage(url, res);
     });
 

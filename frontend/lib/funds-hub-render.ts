@@ -1,0 +1,143 @@
+import { esc, escUrl } from '@/lib/static-hub';
+import { fundPath, absUrl, SITE_URL } from '@/lib/seo';
+import { categoryOfFund } from '@/content/fund-categories';
+
+/**
+ * The ONE server-side pre-render of a fund list.
+ *
+ * Shared by every route that serves the designed marketplace shell — the
+ * English hub, the Arabic hub and the six category pages in both languages —
+ * so the crawler-facing markup, the escaping and the schema can never diverge
+ * between them. This is the module that keeps a second, drifting "SEO version"
+ * of the fund list from ever existing again.
+ */
+
+type Row = Record<string, unknown>;
+
+const num = (r: Row, k: string): number | null =>
+    typeof r[k] === 'number' && Number.isFinite(r[k] as number) ? (r[k] as number) : null;
+const str = (r: Row, k: string): string | null =>
+    typeof r[k] === 'string' && (r[k] as string).trim() ? (r[k] as string).trim() : null;
+const pct = (v: number | null): string => (v === null ? '—' : `${v.toFixed(2)}%`);
+const navFmt = (v: number | null, lang: 'en' | 'ar'): string =>
+    v === null ? '—' : v.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-EG', { maximumFractionDigits: 4 });
+
+export const fundName = (f: Row, lang: 'en' | 'ar'): string => {
+    const ar = str(f, 'fund_name');
+    const en = str(f, 'fund_name_en');
+    return (lang === 'ar' ? ar || en : en || ar) || `Fund ${f.fund_id}`;
+};
+
+/** Latest NAV date across a set, compared as TIMESTAMPS (String(Date) sorts
+ *  alphabetically — the bug that once produced a stale "as of" line). */
+export function fundsAsOf(funds: Row[], lang: 'en' | 'ar'): { iso: string; human: string } {
+    const maxMs = funds.reduce<number | null>((mx, f) => {
+        const t = f.last_nav_date ? Date.parse(String(f.last_nav_date)) : NaN;
+        return Number.isFinite(t) && (mx === null || t > mx) ? t : mx;
+    }, null);
+    if (maxMs === null) return { iso: '', human: '' };
+    const d = new Date(maxMs);
+    return {
+        iso: d.toISOString().slice(0, 10),
+        human: d.toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+    };
+}
+
+/**
+ * Crawler-facing fund rows, injected into the marketplace's empty #fundsGrid.
+ * The marketplace's own renderGrid() replaces this wholesale on load, so it is
+ * a pre-render of the same content — never a second design.
+ */
+export function fundsHubRows(funds: Row[], lang: 'en' | 'ar'): string {
+    if (!funds.length) return '';
+    const isAr = lang === 'ar';
+    const { iso, human } = fundsAsOf(funds, lang);
+    const t = isAr
+        ? { cat: 'الفئة', r1y: 'عائد سنة', ytd: 'من بداية العام', nav: 'صافي قيمة الأصول', asOf: 'البيانات كما في' }
+        : { cat: 'Category', r1y: '1Y return', ytd: 'YTD', nav: 'Latest NAV', asOf: 'Data as of' };
+
+    const intro =
+        `<p style="grid-column:1/-1;margin:0 0 .25rem;font-size:.85rem" ${isAr ? 'dir="rtl" lang="ar"' : ''}>` +
+        (isAr
+            ? `${esc(String(funds.length))} صندوق استثمار مصري مع صافي قيمة الأصول والعوائد التاريخية ورسوم الإدارة، من الإفصاحات الرسمية لمديري الصناديق. الترتيب آلي حسب عائد سنة وليس توصية.`
+            : `${esc(String(funds.length))} Egyptian mutual funds with net asset values, trailing returns and fees from official fund-manager disclosures. Ordering is mechanical by trailing one-year return and is not a recommendation.`) +
+        (iso ? ` ${esc(t.asOf)} <time datetime="${esc(iso)}">${esc(human)}</time>.` : '') +
+        `</p>`;
+
+    const rows = funds
+        .map((f) => {
+            const name = fundName(f, lang);
+            const href = fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), lang);
+            const cat = categoryOfFund(f);
+            const manager = str(f, 'manager_name_en') || str(f, 'issuer_en') || '';
+            const other = isAr ? str(f, 'fund_name_en') : str(f, 'fund_name');
+            return (
+                `<article ${isAr ? 'dir="rtl" lang="ar"' : ''}>` +
+                `<h3><a href="${escUrl(href)}">${esc(name)}</a></h3>` +
+                (other ? `<p>${esc(other)}</p>` : '') +
+                (manager ? `<p>${esc(manager)}</p>` : '') +
+                `<dl>` +
+                (cat ? `<dt>${esc(t.cat)}</dt><dd>${esc(isAr ? cat.nameAr : cat.nameEn)}</dd>` : '') +
+                `<dt>${esc(t.r1y)}</dt><dd>${esc(pct(num(f, 'return_1y')))}</dd>` +
+                `<dt>${esc(t.ytd)}</dt><dd>${esc(pct(num(f, 'return_ytd')))}</dd>` +
+                `<dt>${esc(t.nav)}</dt><dd>${esc(navFmt(num(f, 'latest_nav'), lang))} ${esc(str(f, 'currency') || 'EGP')}</dd>` +
+                `</dl></article>`
+            );
+        })
+        .join('');
+
+    return intro + rows;
+}
+
+/**
+ * CollectionPage + ItemList of InvestmentFund entities WITH numeric NAV.
+ * Competing Egyptian fund sites publish name-only lists, so machine-readable
+ * fund performance is the uncontested schema surface — but a value is emitted
+ * only when it is real, never to make the markup look richer.
+ */
+export function fundsHubItemList(funds: Row[], lang: 'en' | 'ar', path: string, name?: string) {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        '@id': `${SITE_URL}${path}`,
+        name: name || (lang === 'ar' ? 'صناديق الاستثمار في مصر' : 'Egyptian mutual funds'),
+        inLanguage: lang === 'ar' ? 'ar-EG' : 'en',
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        mainEntity: {
+            '@type': 'ItemList',
+            numberOfItems: funds.length,
+            itemListOrder: 'https://schema.org/ItemListOrderDescending',
+            itemListElement: funds.map((f, i) => {
+                const navValue = num(f, 'latest_nav');
+                const currency = str(f, 'currency') || 'EGP';
+                const item: Record<string, unknown> = {
+                    '@type': 'InvestmentFund',
+                    name: fundName(f, lang),
+                    url: absUrl(fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), lang)),
+                };
+                const provider = str(f, 'manager_name_en') || str(f, 'issuer_en');
+                if (provider) item.provider = { '@type': 'Organization', name: provider };
+                if (navValue !== null) {
+                    item.currency = currency;
+                    item.amount = { '@type': 'MonetaryAmount', currency, value: navValue };
+                }
+                const fee = num(f, 'fee_management');
+                if (fee !== null) item.annualPercentageRate = fee;
+                return { '@type': 'ListItem', position: i + 1, item };
+            }),
+        },
+    };
+}
+
+export function breadcrumbJson(items: Array<{ name: string; url?: string }>) {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: items.map((x, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            name: x.name,
+            ...(x.url ? { item: SITE_URL + x.url } : {}),
+        })),
+    };
+}

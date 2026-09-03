@@ -613,10 +613,26 @@ const checks = [
     assert: (text) => !/source:\s*'\/ar\/Funds'/.test(text),
   },
   {
-    name: "the Arabic funds hub page exists and declares Arabic metadata",
-    file: "app/ar/Funds/page.tsx",
+    // THE DESIGN CONTRACT — the one that has now been broken three times
+    // (#123, #130, and the plain /ar/Funds hub the owner rejected).
+    //
+    // /Funds and /ar/Funds are the SAME premium marketplace. Both are served
+    // by a Route Handler that returns public/marketplace.html itself, with
+    // content pre-rendered into its empty grid. Neither may ever be served by
+    // a PublicPageShell page: that is a different, plainer design system, and
+    // pointing a user-navigable funds URL at it is a product regression no
+    // amount of SEO gain justifies.
+    name: "/ar/Funds is served by the PREMIUM marketplace shell, not a plain page",
+    file: "app/ar/Funds/route.ts",
     assert: (text) =>
-      /canonical:\s*PATH_AR/.test(text) && /lang="ar"/.test(text) && /صناديق الاستثمار في مصر/.test(text),
+      /file:\s*'marketplace\.html'/.test(text) &&
+      /langSeedScript\('ar'\)/.test(text) &&
+      /fundsHubRows\(funds, 'ar'\)/.test(text),
+  },
+  {
+    name: "/Funds is served by the PREMIUM marketplace shell, not a plain page",
+    file: "app/Funds/route.ts",
+    assert: (text) => /file:\s*'marketplace\.html'/.test(text) && /fundsHubRows\(funds, 'en'\)/.test(text),
   },
   {
     // THE LANGUAGE CONTRACT. A single root layout serves both language trees,
@@ -739,7 +755,72 @@ const checks = [
   })),
 ];
 
+/**
+ * THE DESIGNED-SHELL FAMILIES. Each of these URL trees is owned by a
+ * hand-designed page in public/, and every user-navigable route inside it must
+ * render THAT design. A plain PublicPageShell page anywhere in one of these
+ * trees is the exact regression the owner has rejected three times: SEO work
+ * quietly introduces a second, flatter design system at a URL people actually
+ * click. Detail pages (/Funds/{id}) are excluded — they have their own premium
+ * template and are not the marketplace.
+ */
+const DESIGNED_SHELL_HUBS = [
+  { route: "app/Funds/route.ts", shell: "marketplace.html", url: "/Funds" },
+  { route: "app/ar/Funds/route.ts", shell: "marketplace.html", url: "/ar/Funds" },
+  { route: "app/News/route.ts", shell: "news.html", url: "/News" },
+  { route: "app/Learn/route.ts", shell: "learn.html", url: "/Learn" },
+  { route: "app/Market-Pulse/route.ts", shell: "market-pulse.html", url: "/Market-Pulse" },
+];
+
+async function assertDesignedShellsIntact() {
+  let failed = false;
+  for (const hub of DESIGNED_SHELL_HUBS) {
+    // A page.tsx at the same segment would both conflict with the route and
+    // signal someone re-introducing a plain page for a designed URL.
+    const pagePath = path.join(root, hub.route.replace(/route\.ts$/, "page.tsx"));
+    try {
+      await access(pagePath, constants.F_OK);
+      console.error(`FAIL: ${hub.url} has a page.tsx alongside its route.ts — the designed shell (${hub.shell}) must own this URL.`);
+      failed = true;
+    } catch {
+      // expected: no page.tsx
+    }
+    let text = "";
+    try {
+      text = readFileSync(path.join(root, hub.route), "utf8");
+    } catch {
+      console.error(`FAIL: ${hub.url} has no ${hub.route} — the designed shell would not be served.`);
+      failed = true;
+      continue;
+    }
+    if (!text.includes(`'${hub.shell}'`)) {
+      console.error(`FAIL: ${hub.route} does not serve ${hub.shell}.`);
+      failed = true;
+    }
+    // An IMPORT, not a mention: these files legitimately name PublicPageShell
+    // in their comments to explain why they must not use it.
+    if (/^\s*import[^;]*PublicPageShell/m.test(text)) {
+      console.error(`FAIL: ${hub.route} imports PublicPageShell — that is the PLAIN design system, not ${hub.shell}.`);
+      failed = true;
+    }
+  }
+  // The rewrites these routes replaced must stay gone, or they would shadow
+  // the routes and silently revert the server rendering.
+  const cfg = readFileSync(path.join(root, "next.config.ts"), "utf8");
+  for (const shell of ["marketplace.html", "news.html", "learn.html", "market-pulse.html"]) {
+    const re = new RegExp(`destination:\\s*'/${shell.replace(/\./g, "\\.")}'`);
+    if (re.test(cfg)) {
+      console.error(`FAIL: next.config.ts still rewrites to /${shell} — that shadows the Route Handler.`);
+      failed = true;
+    }
+  }
+  if (failed) process.exit(1);
+  console.log("OK: designed shells own their URLs (no plain-page regression).");
+}
+
 async function run() {
+  await assertDesignedShellsIntact();
+
   // /home must be served by rewrite to /home.html, not by a competing app route.
   try {
     await access(path.join(root, "app/home/page.tsx"), constants.F_OK);

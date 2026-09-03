@@ -185,6 +185,15 @@ export function isArabicPath(pathname: string): boolean {
 export function edgeTtlFor(pathname: string): number | null {
     const p = pathname.startsWith('/ar/') ? pathname.slice(3) : pathname === '/ar' ? '/' : pathname;
 
+    // ONE OWNER PER ROUTE. The four designed hubs are served by Route Handlers
+    // (app/{Funds,News,Learn,Market-Pulse}/route.ts) that build their own
+    // Response and set their own Cache-Control. Unlike a page, a Route
+    // Handler's header is honoured by Vercel — so the handler is the right
+    // owner, and middleware must not overwrite it here. Setting it in both
+    // places is not "belt and braces": it is two sources of truth that will
+    // disagree the first time one is edited.
+    if (/^\/(Funds|News|Learn|Market-Pulse)$/.test(p)) return null;
+
     // Never cache authenticated or interactive surfaces.
     if (/^\/(api|admin|settings|login|register|forgot-password|AiChat|Portfolio|shared)(\/|$)/.test(p)) return null;
 

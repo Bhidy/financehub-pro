@@ -38,6 +38,14 @@ export type FundCategory = {
     introAr: string;
     /** Mechanical matcher over the fund's own classification fields. */
     match: (typeText: string, isShariah: boolean) => boolean;
+    /**
+     * The raw `fund_type` value the designed marketplace's own type filter
+     * uses, so a category URL can pre-select that filter and show the visitor
+     * the same set the page claims. '' means "no single upstream type maps to
+     * this category" (Shariah is a flag, not a type) — the filter stays on
+     * "all" and the pre-rendered rows still describe the category.
+     */
+    marketplaceType: string;
 };
 
 /** A category with fewer funds than this is not a page — it would be thin and
@@ -61,6 +69,7 @@ export const FUND_CATEGORIES: FundCategory[] = [
         introAr:
             'صناديق أسواق النقد — وتُعرف أيضاً بصناديق السيولة النقدية — تستثمر في أدوات قصيرة الأجل مثل أذون الخزانة والودائع لأجل وأدوات الدين قصيرة الأجل. وهي الفئة الأقل تقلباً في السوق المصري وتُستخدم عادةً للأموال المحتفظ بها لفترات قصيرة. يعرض الجدول كل صناديق أسواق النقد المغطاة على هذا الموقع بصافي قيمة الأصول المعلنة والعوائد التاريخية.',
         match: (t) => /money\s*market|liquidity|cash|نقد|سيول/.test(t),
+        marketplaceType: 'money_market',
     },
     {
         key: 'fixed-income',
@@ -78,6 +87,7 @@ export const FUND_CATEGORIES: FundCategory[] = [
         introAr:
             'تحتفظ صناديق الدخل الثابت بأدوات دين — سندات حكومية وأذون خزانة وسندات شركات — وتوزّع أو تراكم العائد الذي تدفعه هذه الأدوات. تتحرك عوائدها مع أسعار الفائدة في مصر ومع الجودة الائتمانية لما تحتفظ به. كل صناديق الدخل الثابت المغطاة على هذا الموقع مدرجة أدناه بصافي قيمة الأصول المعلنة والعوائد التاريخية.',
         match: (t) => /fixed\s*income|bond|debt|دخل\s*ثابت|سندات/.test(t),
+        marketplaceType: 'fixed_income',
     },
     {
         key: 'equity',
@@ -95,6 +105,7 @@ export const FUND_CATEGORIES: FundCategory[] = [
         introAr:
             'تستثمر صناديق الأسهم بشكل أساسي في الأسهم المقيدة بالبورصة المصرية (EGX). تتحرك صافي قيمة أصولها مع السوق، لذا فهي تحمل أعلى تقلب قصير الأجل بين الفئات المعروضة على هذا الموقع، وتتفاوت عوائدها التاريخية بشكل كبير بين صندوق وآخر وبين فترة وأخرى. كل صناديق الأسهم المغطاة هنا مدرجة أدناه بصافي قيمة الأصول المعلنة والعوائد التاريخية.',
         match: (t) => /equit|stock|share|أسهم/.test(t),
+        marketplaceType: 'equity',
     },
     {
         key: 'balanced',
@@ -112,6 +123,7 @@ export const FUND_CATEGORIES: FundCategory[] = [
         introAr:
             'تحتفظ الصناديق المتوازنة بمزيج من الأسهم وأدوات الدين في محفظة واحدة، لذا تتحرك صافي قيمة أصولها أقل من صندوق أسهم بالكامل وأكثر من صندوق أسواق النقد. يحدد كل صندوق نسبة التوزيع بين فئات الأصول وفقاً للائحته الخاصة وتختلف بين مدير وآخر. كل الصناديق المتوازنة المغطاة على هذا الموقع مدرجة أدناه.',
         match: (t) => /balanced|mixed|asset\s*alloc|متوازن/.test(t),
+        marketplaceType: 'balanced',
     },
     {
         key: 'gold',
@@ -129,6 +141,7 @@ export const FUND_CATEGORIES: FundCategory[] = [
         introAr:
             'تتبع صناديق الذهب سعر الذهب، إما بالاحتفاظ بالسبائك أو عبر أدوات مرتبطة بالذهب، لذا تتحرك صافي قيمة أصولها مع سعر الذهب العالمي ومع سعر صرف الجنيه المصري وليس مع سوق الأسهم المحلي. كل صناديق الذهب والسلع المغطاة على هذا الموقع مدرجة أدناه بصافي قيمة الأصول المعلنة والعوائد التاريخية.',
         match: (t) => /gold|commodit|ذهب|سلع|معادن/.test(t),
+        marketplaceType: 'gold',
     },
     {
         key: 'shariah',
@@ -146,6 +159,7 @@ export const FUND_CATEGORIES: FundCategory[] = [
         introAr:
             'تتبع الصناديق المتوافقة مع الشريعة لائحة استثمار مفحوصة وفق قواعد التمويل الإسلامي — دون أدوات قائمة على الفائدة ودون أنشطة محظورة — تحت إشراف هيئة الرقابة الشرعية الخاصة بالصندوق. التوافق كما يعلنه مدير كل صندوق؛ ويعرض هذا الموقع ذلك الإعلان دون التحقق منه بشكل مستقل. كل صندوق مُصنّف في إفصاحاته كمتوافق مع الشريعة مدرج أدناه.',
         match: (t, isShariah) => isShariah || /shariah|sharia|islamic|إسلام|شريعة/.test(t),
+        marketplaceType: '',
     },
 ];
 

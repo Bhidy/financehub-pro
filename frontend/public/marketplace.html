@@ -2302,7 +2302,11 @@
         // lets other pages (e.g. the Risk Assessment results) land pre-filtered.
         function applyUrlFilters() {
             const params = new URLSearchParams(window.location.search);
-            const type = (params.get('type') || '').toLowerCase();
+            // A category URL (/Funds/category/{slug}) serves THIS page with the
+            // category pre-seeded by the server, so the interactive view a
+            // visitor sees matches the category the URL promised. The query
+            // param still wins if both are present.
+            const type = (params.get('type') || window.__STARTA_FUND_TYPE__ || '').toLowerCase();
             if (type && [...typeFilter.options].some((option) => option.value === type)) {
                 typeFilter.value = type;
             }

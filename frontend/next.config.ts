@@ -58,6 +58,19 @@ const nextConfig = {
   },
 
   // Experimental features for performance
+  // The static hub routes (app/{Funds,News,Learn,Market-Pulse}/route.ts) read
+  // their designed shell out of public/ at request time. public/ is served as
+  // static assets and is NOT part of a serverless function's bundle by
+  // default, so each of those functions must be told to include the file it
+  // needs. Without this the routes fall back to redirecting at the static
+  // asset (safe, but the server-rendered content is lost).
+  outputFileTracingIncludes: {
+    '/Funds': ['./public/marketplace.html'],
+    '/News': ['./public/news.html'],
+    '/Learn': ['./public/learn.html'],
+    '/Market-Pulse': ['./public/market-pulse.html'],
+  },
+
   experimental: {
     optimizeCss: true,
   },
@@ -89,30 +102,28 @@ const nextConfig = {
           source: '/terms',
           destination: '/terms.html',
         },
-        {
-          source: '/Funds',
-          destination: '/marketplace.html',
-        },
+        // /Funds is served by app/Funds/route.ts, which returns THIS SAME
+        // designed marketplace with its fund grid rendered server-side.
+        // Re-adding a rewrite here would shadow that route and take the head
+        // term back to 179 crawlable words with no fund names.
         {
           source: '/Fund',
           destination: '/fund-details.html',
         },
-        {
-          source: '/Learn',
-          destination: '/learn.html',
-        },
-        {
-          // The DESIGNED news hub (news.html). A server-rendered replacement
-          // shipped briefly in #130 and was rolled back 2026-07-03: the owner's
-          // premium design is canonical — never swap a designed page for a
-          // plain server page. Article pages (/News/{id}) stay server-rendered.
-          source: '/News',
-          destination: '/news.html',
-        },
-        {
-          source: '/Market-Pulse',
-          destination: '/market-pulse.html',
-        },
+        // /Learn is served by app/Learn/route.ts, which returns THIS SAME
+        // designed file with its topic grid rendered server-side. Re-adding a
+        // rewrite here would shadow that route and take the hub back to 151
+        // crawlable words with no link to any topic page.
+        // /News is served by app/News/route.ts. THIS IS NOT THE #130 MISTAKE:
+        // that rolled-back change REPLACED the designed news hub with a plain
+        // server page. This route returns news.html ITSELF — the identical
+        // designed file — with the (empty) story containers filled in before
+        // it leaves the server. The page's own script overwrites them on load,
+        // so a visitor sees exactly what they saw before. Never swap a
+        // designed page for a plain server page; do this instead.
+        // /Market-Pulse is served by app/Market-Pulse/route.ts — the same
+        // designed tool with its EGX 30 quote rendered server-side instead of
+        // shipping `--` to every crawler.
         {
           source: '/Portfolio',
           destination: '/portfolio.html',

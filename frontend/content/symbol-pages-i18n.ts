@@ -139,6 +139,11 @@ export const HISTORY = {
             `أسعار الافتتاح والأعلى والأدنى والإغلاق وأحجام التداول اليومية لسهم ${name} (${symbol}) في البورصة المصرية${range ? `، ${range}` : ''}. الأداء من أسبوع حتى خمس سنوات.`
         ),
     perf: s('Performance', 'الأداء'),
+    titleWithYear: (name: string, symbol: string, since: string): S =>
+        s(
+            `${name} (${symbol}) Price History — Daily OHLC since ${since}`,
+            `سجل أسعار سهم ${name} (${symbol}) — بيانات يومية منذ ${since}`
+        ),
     sourceNote: s(
         'Daily OHLC from the Egyptian Exchange.',
         'أسعار الافتتاح والأعلى والأدنى والإغلاق اليومية من البورصة المصرية.'
@@ -209,6 +214,11 @@ export const DIVIDENDS = {
         'لا تتوفر بعد سجلات التوزيعات الفردية لهذه الشركة.'
     ),
     noneYet: s('No dividend payments recorded.', 'لا توجد توزيعات مسجلة.'),
+    lede: (name: string, symbol: string): S =>
+        s(
+            `Dividend history for ${name} (${symbol}) on the Egyptian Exchange — per-share amounts in Egyptian pounds (EGP) with ex-dates, record dates and payment dates, alongside the trailing yield.`,
+            `سجل توزيعات أرباح سهم ${name} (${symbol}) في البورصة المصرية — قيمة التوزيع للسهم بالجنيه المصري مع تواريخ نزول الحق والقيد والصرف، إلى جانب العائد التاريخي.`
+        ),
 };
 
 /* ── financials ──────────────────────────────────────────────────────────── */
@@ -242,6 +252,11 @@ export const FINANCIALS = {
         'All figures in EGP. Source: company disclosures to the Egyptian Exchange via TradingView; updated weekly.',
         'كل الأرقام بالجنيه المصري. المصدر: إفصاحات الشركة للبورصة المصرية عبر TradingView، ويتم التحديث أسبوعياً.'
     ),
+    lede: (name: string, range: string): S =>
+        s(
+            `Annual financial statement highlights for ${name}${range}. Figures are updated weekly from EGX filings via TradingView.`,
+            `أبرز بنود القوائم المالية السنوية لشركة ${name}${range}. يتم تحديث الأرقام أسبوعياً من إفصاحات البورصة المصرية عبر TradingView.`
+        ),
     reportedIn: s(
         'Reported in Egyptian pounds as filed by the company.',
         'معروضة بالجنيه المصري كما أفصحت عنها الشركة.'

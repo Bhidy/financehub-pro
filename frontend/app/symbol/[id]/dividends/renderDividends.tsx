@@ -190,11 +190,7 @@ export async function renderDividends(id: string, lang: Lang) {
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 {t(DIVIDENDS.h1(name, symbol), lang)}
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
-                Cash dividends paid by {name} on the Egyptian Exchange — per-share amounts in Egyptian
-                pounds (EGP) with ex-dates, record dates and payment dates, alongside the current trailing
-                yield and payout summary.
-            </p>
+            <p className="mt-3 max-w-3xl leading-relaxed text-muted">{t(DIVIDENDS.lede(name, symbol), lang)}</p>
 
             {cards.length > 0 && (
                 <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">

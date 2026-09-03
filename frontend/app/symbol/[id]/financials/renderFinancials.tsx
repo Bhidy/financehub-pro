@@ -124,6 +124,11 @@ export async function renderFinancials(id: string, lang: Lang) {
         { label: t(NAV.financials, lang) },
     ];
 
+    // Fiscal-year span for the lede, computed here because the metadata
+    // helpers own their own copy of it.
+    const { minYear: ledeMin, maxYear: ledeMax } = yearRange(years);
+    const ledeRange = ledeMin !== null && ledeMax !== null ? (isAr ? ` تغطي السنوات المالية ${ledeMin}–${ledeMax}` : ` covering fiscal years ${ledeMin}–${ledeMax}`) : '';
+
     return (
         <PublicPageShell lang={lang} altHref={encodeURI(symbolTabPath(symbol, 'financials', isAr ? 'en' : 'ar', ticker.name_ar))} persistLang>
             <JsonLd data={breadcrumbJsonLd(breadcrumbItems, SITE_URL)} />
@@ -133,11 +138,7 @@ export async function renderFinancials(id: string, lang: Lang) {
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 {t(FINANCIALS.h1(name, symbol), lang)}
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
-                Annual financial statement highlights for {name}, in Egyptian pounds (EGP)
-                {minYear !== null && maxYear !== null ? ` covering fiscal years ${minYear}–${maxYear}` : ''}.
-                Figures are updated weekly from EGX filings via TradingView.
-            </p>
+            <p className="mt-3 max-w-3xl leading-relaxed text-muted">{t(FINANCIALS.lede(name, ledeRange), lang)}</p>
 
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[760px] text-sm">

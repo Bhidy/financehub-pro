@@ -22,6 +22,7 @@ export const NAV = {
     home: s('Home', 'الرئيسية'),
     companies: s('EGX Companies', 'شركات البورصة المصرية'),
     overview: s('Overview', 'نظرة عامة'),
+    statistics: s('Key Statistics', 'أهم الإحصاءات'),
     financials: s('Financials', 'القوائم المالية'),
     dividends: s('Dividends', 'التوزيعات'),
     technicals: s('Technicals', 'التحليل الفني'),
@@ -260,6 +261,70 @@ export const FINANCIALS = {
     reportedIn: s(
         'Reported in Egyptian pounds as filed by the company.',
         'معروضة بالجنيه المصري كما أفصحت عنها الشركة.'
+    ),
+};
+
+/* ── key statistics ──────────────────────────────────────────────────────── */
+
+export const STATISTICS = {
+    h1: (name: string, symbol: string): S =>
+        s(`${name} (${symbol}) Key Statistics`, `أهم إحصاءات سهم ${name} (${symbol})`),
+    title: (name: string, symbol: string): S =>
+        s(
+            `${name} (${symbol}) Key Statistics — Valuation, Financials & Ratios`,
+            `أهم إحصاءات سهم ${name} (${symbol}) — التقييم والقوائم المالية والنسب`
+        ),
+    description: (name: string, symbol: string): S =>
+        s(
+            `${name} (EGX: ${symbol}) key statistics: valuation multiples, fiscal-year revenue and profit, balance-sheet totals, growth rates and technical readings.`,
+            `أهم إحصاءات سهم ${name} (${symbol}) في البورصة المصرية: مضاعفات التقييم وإيرادات وأرباح السنة المالية وإجماليات المركز المالي ومعدلات النمو والقراءات الفنية.`
+        ),
+    groups: {
+        valuation: s('Valuation', 'التقييم'),
+        income: s('Income (latest fiscal year)', 'الأداء (آخر سنة مالية)'),
+        balance: s('Balance sheet', 'المركز المالي'),
+        growth: s('Growth', 'النمو'),
+        perShare: s('Per share', 'لكل سهم'),
+        technical: s('Technical', 'مؤشرات فنية'),
+        shares: s('Shares', 'الأسهم'),
+    },
+    rows: {
+        marketCap: s('Market cap', 'القيمة السوقية'),
+        pe: s('P/E (trailing)', 'مكرر الربحية'),
+        forwardPe: s('Forward P/E', 'مكرر الربحية المتوقع'),
+        pb: s('P/B', 'مكرر القيمة الدفترية'),
+        divYield: s('Dividend yield', 'عائد التوزيعات'),
+        revenueFy: s('Revenue', 'الإيرادات'),
+        netIncomeFy: s('Net income', 'صافي الدخل'),
+        ebitdaFy: s('EBITDA', 'الأرباح قبل الفوائد والضرائب والإهلاك'),
+        fcfFy: s('Free cash flow', 'التدفق النقدي الحر'),
+        profitMargin: s('Profit margin', 'هامش الربح'),
+        totalAssets: s('Total assets', 'إجمالي الأصول'),
+        totalDebt: s('Total debt', 'إجمالي الديون'),
+        bookValue: s('Book value', 'القيمة الدفترية'),
+        revenueGrowth: s('Revenue growth', 'نمو الإيرادات'),
+        profitGrowth: s('Profit growth', 'نمو الأرباح'),
+        epsGrowth: s('EPS growth', 'نمو ربحية السهم'),
+        epsFy: s('EPS (fiscal year)', 'ربحية السهم (السنة المالية)'),
+        bvps: s('Book value per share', 'القيمة الدفترية للسهم'),
+        dps: s('Dividend per share', 'التوزيع للسهم'),
+        roe: s('Return on equity', 'العائد على حقوق الملكية'),
+        roa: s('Return on assets', 'العائد على الأصول'),
+        rsi: s('RSI (14)', 'مؤشر القوة النسبية (١٤)'),
+        ma50: s('50-day moving average', 'المتوسط المتحرك ٥٠ يوماً'),
+        ma200: s('200-day moving average', 'المتوسط المتحرك ٢٠٠ يوم'),
+        beta: s('Beta (1Y)', 'معامل بيتا (سنة)'),
+        shares: s('Shares outstanding', 'الأسهم المصدرة'),
+        float: s('Free float', 'الأسهم الحرة'),
+    },
+    lede: (name: string, n: number): S =>
+        s(
+            `${n} reported figures for ${name} — valuation multiples, the latest fiscal year's income statement, balance-sheet totals, growth rates and technical readings. Figures with no reported value are omitted rather than shown as zero.`,
+            `${n} رقماً معلناً لسهم ${name} — مضاعفات التقييم وقائمة الدخل لآخر سنة مالية وإجماليات المركز المالي ومعدلات النمو والقراءات الفنية. تُحذف البنود غير المعلنة بدلاً من عرضها كصفر.`
+        ),
+    sourceNote: s(
+        'Source: company disclosures to the Egyptian Exchange via TradingView. Fiscal-year figures are as last reported; technical readings refresh with market data.',
+        'المصدر: إفصاحات الشركة للبورصة المصرية عبر TradingView. أرقام السنة المالية كما وردت في آخر إفصاح، وتتحدث القراءات الفنية مع بيانات السوق.'
     ),
 };
 

@@ -140,6 +140,16 @@ export const getStats = cache(async (symbol: string): Promise<Record<string, num
               'last_price', 'pe_ratio', 'forward_pe', 'pb_ratio', 'dividend_yield', 'market_cap',
               'beta_1y', 'rsi_14', 'ma_50d', 'ma_200d', 'eps_ttm', 'revenue_ttm', 'net_income_ttm',
               'roe', 'roa', 'bvps', 'shares_outstanding', 'dps',
+              // FISCAL-YEAR + balance-sheet + growth columns. The view exposes
+              // these (migration 0009) and they are far better populated than
+              // their TTM siblings — revenue_fy ~78% vs revenue_ttm ~24% — but
+              // they were never coerced here, so a statistics page could not
+              // use them. The overview shows the TTM set; these are what make a
+              // dedicated statistics page additive rather than a re-grouping.
+              'revenue_fy', 'net_income_fy', 'eps_fy', 'ebitda_fy', 'fcf_fy', 'fcf_ttm',
+              'total_assets', 'total_debt', 'book_value',
+              'revenue_growth', 'profit_growth', 'eps_growth', 'profit_margin',
+              'float_shares_percent',
           ]) as Record<string, number | string | null>)
         : null;
 });
@@ -700,6 +710,75 @@ const _allFundsRankedCached = unstable_cache(
 // React.cache() still dedups within a single request; unstable_cache dedups
 // ACROSS requests.
 export const getAllFundsRanked = cache((): Promise<Array<Record<string, unknown>>> => _allFundsRankedCached());
+
+/**
+ * MARKET SCREENER LISTS — one query, six ranked slices.
+ *
+ * Each slice answers a DIFFERENT search intent, so each gets its own page:
+ * top gainers, top losers, most active, oversold, overbought and most
+ * volatile. Running six separate queries would be six table scans per crawl;
+ * one gated scan feeds them all.
+ *
+ * EGX-ONLY by construction (the gate lives in the WHERE clause), and
+ * stock_stats_view is joined rather than read alone so the market filter on
+ * market_tickers governs the result.
+ *
+ * RSI thresholds are the standard Wilder bands (>=70 overbought, <=30
+ * oversold) — stated on the page, not invented, and applied to the daily RSI
+ * that ~93% of EGX symbols carry.
+ */
+export type MarketListKey = 'gainers' | 'losers' | 'active' | 'oversold' | 'overbought' | 'volatile';
+
+const _marketListsCached = unstable_cache(
+    async (limit: number): Promise<Record<MarketListKey, Ticker[]>> => {
+        const result = await db.query(
+            `SELECT t.symbol, t.name_en, t.name_ar, t.last_price, t.change_percent, t.volume,
+                    t.sector_name, t.market_cap, t.pe_ratio, t.pb_ratio, t.dividend_yield,
+                    t.currency, t.isin, t.logo_url, t.last_updated,
+                    s.rsi_14, s.beta_1y
+             FROM market_tickers t
+             LEFT JOIN stock_stats_view s ON s.symbol = t.symbol
+             WHERE t.last_price IS NOT NULL
+               AND t.${EGX_ONLY}
+               AND COALESCE(t.sector_name,'') <> 'Index'
+               AND NOT (t.symbol LIKE '%.CA' AND EXISTS (
+                   SELECT 1 FROM market_tickers b
+                   WHERE b.symbol = REPLACE(t.symbol, '.CA', '') AND b.last_price IS NOT NULL))`
+        );
+        const rows = result.rows.map((r: Record<string, unknown>) =>
+            toNum(cleanName(r), [...TICKER_NUM, 'rsi_14', 'beta_1y'])
+        ) as Array<Ticker & { rsi_14: number | null; beta_1y: number | null }>;
+
+        const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+        const byDesc = <T,>(arr: T[], key: (x: T) => number | null) =>
+            arr.filter((x) => finite(key(x))).sort((a, b) => (key(b) as number) - (key(a) as number));
+        const byAsc = <T,>(arr: T[], key: (x: T) => number | null) =>
+            arr.filter((x) => finite(key(x))).sort((a, b) => (key(a) as number) - (key(b) as number));
+
+        // Volume needs a real trade behind it — a zero-volume line is not
+        // "most active", it is a stale quote.
+        const traded = rows.filter((r) => finite(r.volume) && (r.volume as number) > 0);
+
+        return {
+            gainers: byDesc(rows, (r) => r.change_percent).slice(0, limit),
+            losers: byAsc(rows, (r) => r.change_percent).slice(0, limit),
+            active: byDesc(traded, (r) => r.volume).slice(0, limit),
+            oversold: byAsc(
+                rows.filter((r) => finite(r.rsi_14) && (r.rsi_14 as number) <= 30),
+                (r) => r.rsi_14
+            ).slice(0, limit),
+            overbought: byDesc(
+                rows.filter((r) => finite(r.rsi_14) && (r.rsi_14 as number) >= 70),
+                (r) => r.rsi_14
+            ).slice(0, limit),
+            volatile: byDesc(rows, (r) => r.beta_1y).slice(0, limit),
+        };
+    },
+    ['seo:market-lists'],
+    { revalidate: 300, tags: ['seo-tickers'] }
+);
+
+export const getMarketLists = cache((limit = 30): Promise<Record<MarketListKey, Ticker[]>> => _marketListsCached(limit));
 
 /** All companies for the /companies directory hub. */
 // Cross-request data cache (5 min) for the full ticker list — the hottest read

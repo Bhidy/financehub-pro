@@ -11,7 +11,7 @@ import { NAV, t, type Lang } from '@/content/symbol-pages-i18n';
  * and every tab label comes from here.
  */
 
-export type SymbolTab = 'overview' | 'financials' | 'dividends' | 'technicals' | 'history';
+export type SymbolTab = 'overview' | 'statistics' | 'financials' | 'dividends' | 'technicals' | 'history';
 
 /** Base company URL for the language. */
 export function symbolBase(symbol: string, lang: Lang, nameAr?: string | null): string {
@@ -35,7 +35,7 @@ export function symbolSiblings(
     lang: Lang,
     nameAr?: string | null
 ): Array<{ href: string; label: string }> {
-    const tabs: SymbolTab[] = ['overview', 'financials', 'dividends', 'technicals', 'history'];
+    const tabs: SymbolTab[] = ['overview', 'statistics', 'financials', 'dividends', 'technicals', 'history'];
     return tabs
         .filter((tab) => tab !== current)
         .map((tab) => ({

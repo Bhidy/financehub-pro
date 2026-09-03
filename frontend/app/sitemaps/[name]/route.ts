@@ -7,6 +7,7 @@ import learnTopics from '@/content/learn-topics.generated';
 import { GLOSSARY_TERMS } from '@/content/glossary-terms';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { buildProviders, providerPath } from '@/content/fund-providers';
+import { MARKET_SCREENS, screenPath } from '@/content/market-screens';
 import { EGX_ONLY } from '@/lib/public-data';
 
 export const dynamic = 'force-dynamic';
@@ -44,6 +45,12 @@ async function coreEntries(): Promise<Entry[]> {
         ['/companies', 'daily', '0.9'],
         ['/sectors', 'daily', '0.7'],
         ['/markets/movers', 'hourly', '0.7'],
+        // Market screens — one URL per intent (gainers, losers, most active,
+        // oversold, overbought, most volatile), in both languages.
+        ...MARKET_SCREENS.flatMap((sc) => [
+            [screenPath(sc, 'en'), 'hourly', '0.7'] as [string, string, string],
+            [screenPath(sc, 'ar'), 'hourly', '0.7'] as [string, string, string],
+        ]),
         ['/markets/dividend-calendar', 'daily', '0.7'],
         ['/markets/egx30', 'hourly', '0.8'],
         ['/markets/top-dividend-yield', 'daily', '0.7'],
@@ -119,6 +126,10 @@ async function companyEntries(): Promise<Entry[]> {
         if (r.has_div) entries.push({ loc: absUrl(`${base}/dividends`), lastmod: r.lastmod, changefreq: 'weekly', priority: '0.6' });
         if (r.has_tech) entries.push({ loc: absUrl(`${base}/technicals`), lastmod: r.lastmod, changefreq: 'daily', priority: '0.5' });
         if (r.has_hist) entries.push({ loc: absUrl(`${base}/history`), lastmod: r.lastmod, changefreq: 'daily', priority: '0.5' });
+        // Statistics needs enough REPORTED figures to clear the page's own
+        // gate; the fiscal-year block is the bulk of it, so the financials
+        // signal is the closest available proxy and is a strict subset of it.
+        if (r.has_fin) entries.push({ loc: absUrl(`${base}/statistics`), lastmod: r.lastmod, changefreq: 'weekly', priority: '0.6' });
         return entries;
     });
 }
@@ -180,6 +191,10 @@ async function arCompanyEntries(): Promise<Entry[]> {
         if (r.has_div) entries.push({ loc: absUrl(`${base}/dividends`), lastmod: r.lastmod, changefreq: 'weekly', priority: '0.6' });
         if (r.has_tech) entries.push({ loc: absUrl(`${base}/technicals`), lastmod: r.lastmod, changefreq: 'daily', priority: '0.5' });
         if (r.has_hist) entries.push({ loc: absUrl(`${base}/history`), lastmod: r.lastmod, changefreq: 'daily', priority: '0.5' });
+        // Statistics needs enough REPORTED figures to clear the page's own
+        // gate; the fiscal-year block is the bulk of it, so the financials
+        // signal is the closest available proxy and is a strict subset of it.
+        if (r.has_fin) entries.push({ loc: absUrl(`${base}/statistics`), lastmod: r.lastmod, changefreq: 'weekly', priority: '0.6' });
         return entries;
     });
 }

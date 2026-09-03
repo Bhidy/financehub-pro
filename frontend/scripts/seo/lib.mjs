@@ -1,0 +1,290 @@
+/**
+ * Shared primitives for the SEO operating system (scripts/seo/*).
+ *
+ * Design rules for everything in this directory:
+ *  - IDEMPOTENT: a job may run twice with no side effect beyond the second read.
+ *  - HONEST: a missing credential or a failed upstream produces a "skipped" /
+ *    "error" status, never a fabricated number. Nothing here invents metrics.
+ *  - DETERMINISTIC: same input HTML → same findings, so a diff between two runs
+ *    is a real regression, not sampling noise.
+ *  - NO WRITES TO THE SITE: these jobs observe production and report. The only
+ *    outbound write is the IndexNow submission, which is a crawl hint.
+ */
+
+export const SITE_URL = process.env.SEO_SITE_URL || 'https://startamarkets.com';
+export const USER_AGENT = 'StartaMarkets-SEO-Bot/1.0 (+https://startamarkets.com/about)';
+
+/** Severity ladder. Order matters: index = rank, used for sorting and gating. */
+export const SEVERITY = ['critical', 'high', 'medium', 'low', 'info'];
+export const sevRank = (s) => {
+    const i = SEVERITY.indexOf(s);
+    return i === -1 ? SEVERITY.length : i;
+};
+
+/* ── HTTP ────────────────────────────────────────────────────────────────── */
+
+/**
+ * fetch with timeout + bounded retry. Retries only on network errors and 5xx —
+ * a 404 is an ANSWER, not a failure, and retrying it would mask the finding.
+ */
+export async function httpGet(url, { timeoutMs = 25000, retries = 2, redirect = 'follow' } = {}) {
+    let lastErr = null;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        const ctl = new AbortController();
+        const timer = setTimeout(() => ctl.abort(), timeoutMs);
+        const started = Date.now();
+        try {
+            const res = await fetch(url, {
+                redirect,
+                signal: ctl.signal,
+                headers: { 'user-agent': USER_AGENT, accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' },
+            });
+            const body = await res.text();
+            clearTimeout(timer);
+            if (res.status >= 500 && attempt < retries) {
+                await sleep(1000 * (attempt + 1));
+                continue;
+            }
+            return {
+                ok: true,
+                status: res.status,
+                url: res.url,
+                headers: Object.fromEntries(res.headers.entries()),
+                body,
+                ms: Date.now() - started,
+                redirected: res.redirected,
+            };
+        } catch (err) {
+            clearTimeout(timer);
+            lastErr = err;
+            if (attempt < retries) await sleep(1000 * (attempt + 1));
+        }
+    }
+    return { ok: false, status: 0, url, headers: {}, body: '', ms: 0, error: String(lastErr && lastErr.message) };
+}
+
+export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Bounded-concurrency map. Production is a live site — an unbounded fan-out
+ * would be a self-inflicted load test, and Vercel would rate-limit us into
+ * false "site is down" findings.
+ */
+export async function mapLimit(items, limit, fn) {
+    const out = new Array(items.length);
+    let cursor = 0;
+    const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+        for (;;) {
+            const i = cursor++;
+            if (i >= items.length) return;
+            out[i] = await fn(items[i], i);
+        }
+    });
+    await Promise.all(workers);
+    return out;
+}
+
+/* ── HTML field extraction ───────────────────────────────────────────────── */
+// Regex, not a DOM parser: zero dependencies, and we only need a fixed set of
+// head-level fields whose shape Next.js controls. Every extractor is tolerant
+// of attribute order and quote style, and returns null (never throws) so one
+// malformed page cannot abort a crawl.
+
+const attr = (tag, name) => {
+    const m = new RegExp(`${name}\\s*=\\s*["']([^"']*)["']`, 'i').exec(tag);
+    return m ? m[1] : null;
+};
+
+export function extractHtmlFacts(html) {
+    const facts = {
+        title: null,
+        titleLength: 0,
+        description: null,
+        descriptionLength: 0,
+        canonical: null,
+        robotsMeta: null,
+        htmlLang: null,
+        htmlDir: null,
+        h1: [],
+        h2Count: 0,
+        hreflang: {},
+        ogTitle: null,
+        ogImage: null,
+        jsonLd: [],
+        jsonLdErrors: [],
+        wordCount: 0,
+        internalLinks: 0,
+        maxImagePreview: null,
+    };
+    if (!html) return facts;
+
+    const title = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html);
+    if (title) {
+        facts.title = decodeEntities(title[1].trim());
+        facts.titleLength = facts.title.length;
+    }
+
+    for (const m of html.matchAll(/<meta\b[^>]*>/gi)) {
+        const tag = m[0];
+        const nameAttr = (attr(tag, 'name') || attr(tag, 'property') || '').toLowerCase();
+        const content = attr(tag, 'content');
+        if (nameAttr === 'description' && content !== null && facts.description === null) {
+            facts.description = decodeEntities(content.trim());
+            facts.descriptionLength = facts.description.length;
+        } else if (nameAttr === 'robots' && content !== null) {
+            facts.robotsMeta = content.toLowerCase();
+            const mip = /max-image-preview\s*:\s*([a-z]+)/.exec(facts.robotsMeta);
+            if (mip) facts.maxImagePreview = mip[1];
+        } else if (nameAttr === 'og:title' && content !== null) {
+            facts.ogTitle = decodeEntities(content.trim());
+        } else if (nameAttr === 'og:image' && content !== null) {
+            facts.ogImage = content.trim();
+        }
+    }
+
+    for (const m of html.matchAll(/<link\b[^>]*>/gi)) {
+        const tag = m[0];
+        const rel = (attr(tag, 'rel') || '').toLowerCase();
+        const href = attr(tag, 'href');
+        if (!href) continue;
+        if (rel === 'canonical' && facts.canonical === null) {
+            facts.canonical = href.trim();
+        } else if (rel === 'alternate') {
+            // Next.js emits `hrefLang` (React camelCase survives into the HTML);
+            // hand-written tags use `hreflang`. Accept both or we would report a
+            // false "missing hreflang" on every App Router page.
+            const hl = attr(tag, 'hreflang') || attr(tag, 'hrefLang');
+            if (hl) facts.hreflang[hl.toLowerCase()] = href.trim();
+        }
+    }
+
+    const htmlTag = /<html\b[^>]*>/i.exec(html);
+    if (htmlTag) {
+        facts.htmlLang = attr(htmlTag[0], 'lang');
+        facts.htmlDir = attr(htmlTag[0], 'dir');
+    }
+
+    for (const m of html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)) {
+        const text = stripTags(m[1]).trim();
+        if (text) facts.h1.push(text);
+    }
+    facts.h2Count = (html.match(/<h2\b/gi) || []).length;
+
+    for (const m of html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+        const raw = m[1].trim();
+        try {
+            facts.jsonLd.push(JSON.parse(raw));
+        } catch (e) {
+            facts.jsonLdErrors.push(String(e.message).slice(0, 160));
+        }
+    }
+
+    facts.wordCount = stripTags(
+        html
+            .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+            .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    )
+        .split(/\s+/)
+        .filter(Boolean).length;
+
+    facts.internalLinks = [...html.matchAll(/<a\b[^>]*href=["']([^"']+)["']/gi)].filter(
+        ([, href]) => href.startsWith('/') || href.startsWith(SITE_URL)
+    ).length;
+
+    return facts;
+}
+
+export const stripTags = (s) => decodeEntities(String(s).replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ');
+
+export function decodeEntities(s) {
+    return String(s)
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#0?39;/g, "'")
+        .replace(/&apos;/g, "'")
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&#x27;/gi, "'");
+}
+
+/** Flatten every @type in a JSON-LD graph (handles @graph, arrays, nesting). */
+export function jsonLdTypes(node, acc = new Set()) {
+    if (!node || typeof node !== 'object') return acc;
+    if (Array.isArray(node)) {
+        for (const n of node) jsonLdTypes(n, acc);
+        return acc;
+    }
+    const t = node['@type'];
+    if (typeof t === 'string') acc.add(t);
+    else if (Array.isArray(t)) t.forEach((x) => typeof x === 'string' && acc.add(x));
+    for (const v of Object.values(node)) {
+        if (v && typeof v === 'object') jsonLdTypes(v, acc);
+    }
+    return acc;
+}
+
+/* ── sitemap parsing ─────────────────────────────────────────────────────── */
+
+export function parseLocs(xml) {
+    return [...String(xml).matchAll(/<loc>\s*([^<]+?)\s*<\/loc>/g)].map((m) => decodeEntities(m[1]));
+}
+
+export function parseUrlEntries(xml) {
+    return [...String(xml).matchAll(/<url>([\s\S]*?)<\/url>/g)].map((m) => {
+        const block = m[1];
+        const loc = /<loc>\s*([^<]+?)\s*<\/loc>/.exec(block);
+        const lastmod = /<lastmod>\s*([^<]+?)\s*<\/lastmod>/.exec(block);
+        return { loc: loc ? decodeEntities(loc[1]) : null, lastmod: lastmod ? lastmod[1] : null };
+    }).filter((e) => e.loc);
+}
+
+/* ── findings ────────────────────────────────────────────────────────────── */
+
+export function makeFindings() {
+    const findings = [];
+    return {
+        add(severity, code, message, evidence) {
+            findings.push({ severity, code, message, evidence: evidence ?? null });
+        },
+        all: () => findings.slice().sort((a, b) => sevRank(a.severity) - sevRank(b.severity)),
+        countBy() {
+            const c = Object.fromEntries(SEVERITY.map((s) => [s, 0]));
+            for (const f of findings) c[f.severity] = (c[f.severity] || 0) + 1;
+            return c;
+        },
+    };
+}
+
+/**
+ * SEO Health Score, 0-100. Deterministic weights so the number is comparable
+ * across runs — a drop is a real regression, never a re-weighting artefact.
+ * Deliberately harsh on critical/high: this is a gate, not a vanity metric.
+ */
+export function healthScore(counts) {
+    const penalty =
+        (counts.critical || 0) * 25 +
+        (counts.high || 0) * 6 +
+        (counts.medium || 0) * 1.5 +
+        (counts.low || 0) * 0.3;
+    return Math.max(0, Math.round((100 - penalty) * 10) / 10);
+}
+
+/** Discord webhook post. Never throws — an alerting failure must not fail the job. */
+export async function notifyDiscord(content) {
+    const hook = process.env.DISCORD_WEBHOOK_URL;
+    if (!hook) return { sent: false, reason: 'DISCORD_WEBHOOK_URL not set' };
+    try {
+        const res = await fetch(hook, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            // Discord hard-caps message content at 2000 chars.
+            body: JSON.stringify({ content: content.slice(0, 1990) }),
+        });
+        return { sent: res.ok, status: res.status };
+    } catch (e) {
+        return { sent: false, reason: String(e.message) };
+    }
+}
+
+export const nowIso = () => new Date().toISOString();

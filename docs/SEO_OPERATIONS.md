@@ -1,8 +1,78 @@
 # SEO Operations Runbook
 
-The living checklist that keeps the 2026-07 SEO foundation healthy. Owner column: Dev / Content / Marketing / Leadership.
+How the search-visibility system runs itself, what it checks, and the small
+number of things a human still has to do.
 
-## Weekly (30 min, Monday)
+## The automated system (2026-09)
+
+SEO used to be a manual checklist here. It is now a running system; the manual
+sections further down are what remains AFTER automation, not the primary loop.
+
+| Job | Trigger | What it does | Fails on |
+|---|---|---|---|
+| `.github/workflows/seo-guard.yml` | every push to `main`, after the Vercel deploy goes live | waits for the commit to be live (`/api/version`), audits the money pages, submits URLs changed in the last 6h to IndexNow | a **critical** finding — Discord alert + red run |
+| `.github/workflows/seo-daily.yml` | 06:15 UTC daily | full forensic crawl (money pages + deterministic sample of every sitemap segment), Search Console pull, composed intelligence report to Discord, weekly full IndexNow resubmit on Mondays | a **critical** finding (report is still sent first) |
+| `npm run verify:all` → `verify:routes` | every build, local and CI | offline SEO contracts: canonical/OG on every static template, sitemap index ⇄ segment-router parity, the language contract, news-URL chokepoint, category-slug uniqueness, data-gate parity | any broken contract — blocks the build |
+
+### The scripts (`frontend/scripts/seo/`)
+
+| File | Purpose |
+|---|---|
+| `lib.mjs` | shared fetch/extract/scoring primitives. No dependencies. |
+| `audit.mjs` | the forensic crawler. Checks crawl policy, sitemap integrity + `lastmod` credibility, status/redirects, canonical self-reference and host, title/description/H1, **language integrity on every `/ar/*` URL**, hreflang self-reference, JSON-LD parse + per-template required types, thin content, internal-link dead ends, cacheability, and cross-page duplicate titles/descriptions. Emits a JSON report and an SEO Health Score. |
+| `indexnow.mjs` | delta submitter. Verifies the key file first, then submits only URLs whose sitemap `lastmod` falls inside a window. Stateless and idempotent. |
+| `gsc.mjs` | Search Console intelligence: winners/losers, striking distance (pos 4-20), CTR gaps vs position, cannibalisation, content decay. |
+| `report.mjs` | composes the audit + GSC into one prioritised brief with a concrete action per defect class, and posts a digest to Discord. |
+
+Run any of them by hand:
+
+```bash
+cd frontend
+npm run seo:audit:quick     # money pages, fails on critical
+npm run seo:audit           # full crawl
+npm run seo:indexnow        # submit what changed in 24h
+npm run seo:report          # audit + GSC + composed report
+node scripts/seo/indexnow.mjs --since 6h --dry-run
+```
+
+### Honesty contract
+
+`gsc.mjs` returns `{ configured: false }` when `GSC_SERVICE_ACCOUNT_JSON` is
+absent and the report says so explicitly. **No metric is ever estimated,
+back-filled or synthesised.** A fabricated impressions number would be worse
+than no number because it would be acted on.
+
+### External configuration still required
+
+| Secret | Enables | Without it |
+|---|---|---|
+| `GSC_SERVICE_ACCOUNT_JSON` | the search-performance half of the daily report (rankings, CTR gaps, cannibalisation, decay) | the audit half runs fully; the report states that search intelligence is unavailable |
+
+To enable: create a Google Cloud service account, enable the Search Console
+API, add the service-account email as a user on the `https://startamarkets.com/`
+property in Search Console, then store the JSON key as that repo secret.
+
+## Invariants the gates now hold (do not break these)
+
+- **`/ar/Funds` is a real Arabic hub, not a redirect.** It 308'd to the English
+  `/Funds` until 2026-09, so the site had no Arabic funds URL at all — the
+  single largest cause of losing the Arabic funds SERP. `verify:routes` fails
+  if the redirect is reinstated.
+- **`<html lang>`/`dir` come from the middleware header `x-starta-lang`.** One
+  root layout serves both trees, so this is the only server-side source. If
+  either half is removed, every `/ar/*` URL reverts to declaring itself
+  English. Gated on both files.
+- **News URLs are built ONLY through `canonicalNewsPath()`** (`lib/news-display.ts`),
+  which sanitises the headline exactly as the article page does. Slugifying the
+  raw headline put ~510 redirecting URLs in the news sitemap. Gated.
+- **Fund category pages are data-gated** at `MIN_FUNDS_TO_PUBLISH`, and the
+  sitemap applies the same threshold — the page's 404 gate and the sitemap must
+  provably agree.
+- **Sitemap `lastmod` is observed, not generated.** The index reports the real
+  max data timestamp per segment. Reverting it to `new Date()` makes every
+  child claim to change on every fetch, which search engines discount.
+
+## Weekly (Monday) — what automation does NOT cover
 | Check | How | Owner |
 |---|---|---|
 | GSC coverage delta | Search Console → Pages: indexed count vs last week; investigate anything new under "Why pages aren't indexed" | Marketing |

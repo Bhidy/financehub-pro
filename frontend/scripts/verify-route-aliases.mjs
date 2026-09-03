@@ -1,4 +1,4 @@
-import { constants } from "node:fs";
+import { constants, readFileSync } from "node:fs";
 import { access, readFile, readdir } from "node:fs/promises";
 import { assetHashes } from "./sync-asset-versions.mjs";
 import { deriveArRoutes } from "./sync-ar-routes.mjs";
@@ -573,10 +573,92 @@ const checks = [
     assert: (text) => /sitemap/.test(text) && /Disallow|disallow/.test(text),
   },
   {
-    name: "segmented sitemap route exists with all ten segments",
+    name: "segmented sitemap route exists with all eleven segments",
     file: "app/sitemaps/[name]/route.ts",
     assert: (text) =>
-      ["core", "companies", "ar-companies", "metrics", "sectors", "funds", "comparisons", "learn", "glossary", "news"].every((seg) => text.includes(seg)),
+      ["core", "companies", "ar-companies", "metrics", "sectors", "funds", "fund-categories", "comparisons", "learn", "glossary", "news"].every((seg) => text.includes(seg)),
+  },
+  {
+    // The sitemap index and the segment router must list the SAME segments. A
+    // segment present in one and absent from the other is either an
+    // undiscoverable sitemap or a 404 advertised in the index.
+    name: "sitemap index and segment router agree on the segment list",
+    file: "app/sitemap.xml/route.ts",
+    assert: (text) => {
+      const inIndex = [...text.matchAll(/\['([a-z-]+)',\s*(?:clamp\(|DEPLOY_TIME)/g)].map((m) => m[1]);
+      const router = readFileSync(path.join(root, "app/sitemaps/[name]/route.ts"), "utf8");
+      const inRouter = [...router.matchAll(/^\s{4}'?([a-z-]+)'?:\s*\w+Entries,/gm)].map((m) => m[1]);
+      if (inIndex.length < 10 || inRouter.length < 10) return false;
+      return inIndex.every((s) => inRouter.includes(s)) && inRouter.every((s) => inIndex.includes(s));
+    },
+  },
+  {
+    // News URLs must be built through canonicalNewsPath (which strips dateline
+    // prefixes exactly as the article page does). Slugifying the RAW headline
+    // put ~510 redirecting URLs into the news sitemap.
+    name: "news sitemap builds URLs through canonicalNewsPath (not the raw headline)",
+    file: "app/sitemaps/[name]/route.ts",
+    assert: (text) => /canonicalNewsPath\(r\.id, r\.headline\)/.test(text) && !/newsPath\(r\.id, r\.headline\)/.test(text),
+  },
+  {
+    name: "news-sitemap.xml and feed.xml also use canonicalNewsPath",
+    file: "app/news-sitemap.xml/route.ts",
+    assert: (text) => /canonicalNewsPath\(/.test(text) && !/newsPath\(r\.id, r\.headline\)/.test(text),
+  },
+  {
+    // /ar/Funds is a real Arabic hub, not a redirect. Reinstating the 308
+    // would delete the site's only Arabic funds URL.
+    name: "/ar/Funds is a server page, not a redirect to the English hub",
+    file: "next.config.ts",
+    assert: (text) => !/source:\s*'\/ar\/Funds'/.test(text),
+  },
+  {
+    name: "the Arabic funds hub page exists and declares Arabic metadata",
+    file: "app/ar/Funds/page.tsx",
+    assert: (text) =>
+      /canonical:\s*PATH_AR/.test(text) && /lang="ar"/.test(text) && /صناديق الاستثمار في مصر/.test(text),
+  },
+  {
+    // THE LANGUAGE CONTRACT. A single root layout serves both language trees,
+    // so <html lang>/<dir> can only come from the middleware-stamped header.
+    // If either half is removed, every /ar/* URL silently reverts to
+    // declaring itself English — the defect that cost the Arabic SERPs.
+    name: "middleware stamps the URL-derived language header",
+    file: "middleware.ts",
+    assert: (text) =>
+      /x-starta-lang/.test(text) &&
+      /isArabicPath\(/.test(text) &&
+      /NextResponse\.next\(\{\s*request:\s*\{\s*headers/.test(text),
+  },
+  {
+    name: "root layout derives <html lang>/<dir> from the language header",
+    file: "app/layout.tsx",
+    assert: (text) =>
+      /headers\(\)/.test(text) &&
+      /x-starta-lang/.test(text) &&
+      /<html lang=\{lang\}/.test(text) &&
+      /dir=\{lang === "ar" \? "rtl" : "ltr"\}/.test(text),
+  },
+  {
+    // Fund category slugs mint URLs in both languages. A collision would make
+    // two categories claim one URL; an empty Arabic slug would mint /ar/Funds/category/.
+    name: "fund category slugs are unique and non-empty across EN + AR",
+    file: "content/fund-categories.ts",
+    assert: (text) => {
+      const keys = [...text.matchAll(/^\s{8}key: '([^']+)',/gm)].map((m) => m[1]);
+      const arSources = [...text.matchAll(/^\s{8}slugSourceAr: '([^']+)',/gm)].map((m) => m[1]);
+      if (keys.length < 4 || keys.length !== arSources.length) return false;
+      if (new Set(keys).size !== keys.length) return false;
+      if (new Set(arSources).size !== arSources.length) return false;
+      return keys.every(Boolean) && arSources.every((v) => v.trim().length > 0);
+    },
+  },
+  {
+    // Category pages must stay data-gated: the sitemap and the page must apply
+    // the SAME minimum, or the sitemap advertises URLs that 404.
+    name: "fund category pages and their sitemap share one publish threshold",
+    file: "app/sitemaps/[name]/route.ts",
+    assert: (text) => /MIN_FUNDS_TO_PUBLISH/.test(text) && /categoryOfFund\(/.test(text),
   },
   {
     name: "llms.txt exists and points at the canonical host",

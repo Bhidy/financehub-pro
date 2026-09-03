@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
-import { SITE_URL, absUrl, newsPath, fundPath, symbolPath, slugify, learnPath, glossaryPath, sectorPath } from '@/lib/seo';
+import { SITE_URL, absUrl, fundPath, symbolPath, slugify, learnPath, glossaryPath, sectorPath } from '@/lib/seo';
+import { canonicalNewsPath } from '@/lib/news-display';
 import { sectorAr } from '@/content/sector-names-ar';
 import learnTopics from '@/content/learn-topics.generated';
 import { GLOSSARY_TERMS } from '@/content/glossary-terms';
+import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +35,7 @@ async function coreEntries(): Promise<Entry[]> {
         ['/', 'hourly', '1.0'],
         ['/News', 'hourly', '0.9'],
         ['/Funds', 'daily', '0.9'],
+        ['/ar/Funds', 'daily', '0.9'], // the Arabic funds hub (was a 308 to /Funds)
         ['/Funds/Compare', 'daily', '0.6'],
         ['/Market-Pulse', 'hourly', '0.9'],
         ['/Learn', 'weekly', '0.8'],
@@ -241,6 +244,35 @@ async function comparisonEntries(): Promise<Entry[]> {
     return entries;
 }
 
+async function fundCategoryEntries(): Promise<Entry[]> {
+    // DATA-GATED to mirror the page gate: renderFundCategory() 404s a category
+    // with fewer than MIN_FUNDS_TO_PUBLISH funds, so the sitemap must apply
+    // the same threshold or it advertises dead URLs.
+    const result = await db.query(
+        `SELECT fund_id, fund_type, fund_type_en, classification_en, is_shariah, last_nav_date
+         FROM funds_view
+         WHERE fund_id::text ~ '^[0-9]+$'`
+    );
+    const counts = new Map<string, number>();
+    const lastmods = new Map<string, number>();
+    for (const r of result.rows as Array<Record<string, unknown>>) {
+        const c = categoryOfFund(r);
+        if (!c) continue;
+        counts.set(c.key, (counts.get(c.key) ?? 0) + 1);
+        const t = r.last_nav_date ? Date.parse(String(r.last_nav_date)) : NaN;
+        if (Number.isFinite(t) && t > (lastmods.get(c.key) ?? 0)) lastmods.set(c.key, t);
+    }
+    const entries: Entry[] = [];
+    for (const c of FUND_CATEGORIES) {
+        if ((counts.get(c.key) ?? 0) < MIN_FUNDS_TO_PUBLISH) continue;
+        const lm = lastmods.get(c.key);
+        const lastmod = lm ? new Date(lm).toISOString() : null;
+        entries.push({ loc: absUrl(categoryPath(c, 'en')), lastmod, changefreq: 'daily', priority: '0.8' });
+        entries.push({ loc: absUrl(categoryPath(c, 'ar')), lastmod, changefreq: 'daily', priority: '0.8' });
+    }
+    return entries;
+}
+
 async function fundEntries(): Promise<Entry[]> {
     // Numeric fund_ids only: the /Funds/[id] route resolves numeric ids, but
     // funds_view also carries legacy string ids (EGY_NEW_*, EGYAAIB*, ...)
@@ -287,7 +319,10 @@ async function newsEntries(): Promise<Entry[]> {
          LIMIT 45000`
     );
     return result.rows.map((r: any) => ({
-        loc: absUrl(newsPath(r.id, r.headline)),
+        // canonicalNewsPath, NOT newsPath(raw): the article page strips
+        // dateline prefixes before slugifying, so the raw headline produces a
+        // URL that 308s — ~510 sitemap entries were advertising redirects.
+        loc: absUrl(canonicalNewsPath(r.id, r.headline)),
         lastmod: r.published_at,
         changefreq: 'never',
         priority: '0.5',
@@ -301,6 +336,7 @@ const BUILDERS: Record<string, () => Promise<Entry[]>> = {
     metrics: metricEntries,
     sectors: sectorEntries,
     funds: fundEntries,
+    'fund-categories': fundCategoryEntries,
     comparisons: comparisonEntries,
     learn: learnEntries,
     glossary: glossaryEntries,

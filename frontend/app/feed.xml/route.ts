@@ -1,5 +1,6 @@
 import { getLatestNews } from '@/lib/public-data';
-import { SITE_URL, newsPath, absUrl, xmlEscape } from '@/lib/seo';
+import { SITE_URL, absUrl, xmlEscape } from '@/lib/seo';
+import { canonicalNewsPath, sanitizeNewsText } from '@/lib/news-display';
 
 /**
  * /feed.xml — RSS 2.0 feed of the latest EGX market news. Prerequisite for
@@ -15,8 +16,8 @@ export async function GET() {
         const articles = await getLatestNews(50);
         items = articles
             .map((a) => {
-                const link = absUrl(newsPath(a.id, a.headline));
-                const title = xmlEscape((a.headline || 'Egypt market update').trim());
+                const link = absUrl(canonicalNewsPath(a.id, a.headline));
+                const title = xmlEscape((sanitizeNewsText(a.headline) || 'Egypt market update').trim());
                 const body = (a.article_body || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 400);
                 const pub = a.published_at ? new Date(a.published_at).toUTCString() : new Date().toUTCString();
                 return `    <item>

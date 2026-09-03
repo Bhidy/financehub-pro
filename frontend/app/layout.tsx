@@ -107,21 +107,28 @@ export const metadata: Metadata = {
 };
 
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import { BuildInfo } from "@/components/BuildInfo";
 
 // ... existing imports
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // URL-derived document language, stamped by middleware (x-starta-lang).
+  // A single root layout serves BOTH language trees, so the language cannot
+  // come from a route param — the request header is the only source available
+  // before <html> is emitted. Falls back to "en" when the header is absent
+  // (direct render paths that bypass middleware, e.g. error pages).
+  const lang = (await headers()).get("x-starta-lang") === "ar" ? "ar" : "en";
   return (
     // data-theme + class mirror the static pages' SSR default (LIGHT). The boot
     // script below corrects them from storage before first paint; hydration
     // warnings are suppressed because that mutation is intentional and happens
     // before React attaches (the standard theme-script pattern).
-    <html lang="en" data-theme="light" className="light" suppressHydrationWarning>
+    <html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"} data-theme="light" className="light" suppressHydrationWarning>
       <head>
         {/* THEME BOOT — must be the first thing that runs, before any paint.
             Single source of truth for the React side of the theme, mirroring

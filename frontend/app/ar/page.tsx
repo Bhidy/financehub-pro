@@ -19,7 +19,16 @@ export const metadata: Metadata = {
         'تابع البورصة المصرية (EGX) اليوم: مؤشر EGX30 المباشر، أسعار الأسهم، الأكثر ارتفاعًا وانخفاضًا، صناديق الاستثمار، وأخبار السوق — بالعربية، محدَّث كل 15 دقيقة.',
     alternates: {
         canonical: '/ar',
-        languages: { en: '/', ar: '/ar', 'x-default': '/' },
+        // ABSOLUTE, with the trailing slash: Next.js resolves the relative '/'
+        // against metadataBase down to the bare origin ("https://startamarkets.com"),
+        // while the static home page emits "https://startamarkets.com/". Two
+        // different strings are two different URLs to a crawler, so the pair
+        // was not reciprocal and the whole hreflang cluster could be ignored.
+        languages: {
+            en: 'https://startamarkets.com/',
+            ar: 'https://startamarkets.com/ar',
+            'x-default': 'https://startamarkets.com/',
+        },
     },
     openGraph: {
         type: 'website',

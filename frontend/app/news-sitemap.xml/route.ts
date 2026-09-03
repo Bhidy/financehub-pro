@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
-import { absUrl, newsPath, xmlEscape } from '@/lib/seo';
+import { absUrl, xmlEscape } from '@/lib/seo';
+import { canonicalNewsPath, sanitizeNewsText } from '@/lib/news-display';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,14 +22,14 @@ export async function GET() {
             .map((r: any) => {
                 const lang = (r.source_section || '').endsWith('/ar') ? 'ar' : 'en';
                 return `  <url>
-    <loc>${absUrl(newsPath(r.id, r.headline))}</loc>
+    <loc>${absUrl(canonicalNewsPath(r.id, r.headline))}</loc>
     <news:news>
       <news:publication>
         <news:name>Starta Markets</news:name>
         <news:language>${lang}</news:language>
       </news:publication>
       <news:publication_date>${new Date(r.published_at).toISOString()}</news:publication_date>
-      <news:title>${xmlEscape(r.headline || 'Egypt Market Update')}</news:title>
+      <news:title>${xmlEscape(sanitizeNewsText(r.headline) || 'Egypt Market Update')}</news:title>
     </news:news>
   </url>`;
             })

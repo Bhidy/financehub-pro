@@ -1,3 +1,5 @@
+import { newsPath } from "./seo";
+
 const LEADING_CITY_RE = /^\s*(?:cairo|egypt|dubai|riyadh|abu\s+dhabi|kuwait)\s*[-–—:]\s*/i;
 const LEADING_SOURCE_RE = /^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya|enterprise(?:am)?)\s*[-–—:]\s*/i;
 const BLOCKED_SOURCE_RE = /\b(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya|enterprise(?:am)?)\b/gi;
@@ -38,6 +40,26 @@ export function sanitizeNewsText(value?: string | null): string {
         .replace(/[ \t]{2,}/g, " ")
         .replace(/\n[ \t]+/g, "\n")
         .trim();
+}
+
+/**
+ * THE canonical URL for a news article — the single chokepoint every emitter
+ * must use (page metadata, sitemaps, RSS, internal links).
+ *
+ * WHY THIS EXISTS: the article page derives its canonical from the SANITIZED
+ * headline (dateline prefixes like "Egypt - " are stripped by
+ * stripBlockedSources), while the sitemaps and the RSS feed used to slugify
+ * the RAW headline. The two disagreed for every article whose headline carried
+ * a dateline — roughly 11% of the archive (~510 URLs) — so the sitemap
+ * advertised `/News/271720-egypt-egx-ends-...` while the page 308'd to
+ * `/News/271720-egx-ends-...`. Sitemap-advertised redirects burn crawl budget
+ * and devalue the sitemap as a signal.
+ *
+ * Any new place that needs a news URL must call THIS, never newsPath() with a
+ * raw headline. `verify:seo` enforces that.
+ */
+export function canonicalNewsPath(id: number | string, headline?: string | null): string {
+    return newsPath(id, sanitizeNewsText(headline) || null);
 }
 
 export function formatNewsDate(value?: string | null): string {

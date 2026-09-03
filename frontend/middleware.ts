@@ -118,7 +118,29 @@ export function middleware(request: NextRequest) {
         }
     }
 
-    return NextResponse.next();
+    // 5) LANGUAGE HEADER — the root layout renders exactly one <html> tag for
+    // both language trees, so it cannot know the request's language from a
+    // route param. Middleware is the only place that sees the path before the
+    // layout renders, so it stamps the URL-derived language here and the root
+    // layout reads it back with headers().
+    //
+    // Why this matters: every /ar/* URL (funds, symbols, markets, learn,
+    // glossary, the Arabic money pages) previously shipped <html lang="en">
+    // with no dir="rtl" to crawlers — Arabic documents declaring themselves
+    // English, contradicting their own hreflang="ar". Correcting it in
+    // client JS (the previous approach) is invisible to the crawl-time
+    // language signal.
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-starta-lang', isArabicPath(url.pathname) ? 'ar' : 'en');
+    return NextResponse.next({ request: { headers: requestHeaders } });
+}
+
+/**
+ * The Arabic tree is the `/ar` path prefix and nothing else — segment-exact so
+ * `/article`, `/archive` etc. can never be mistaken for it.
+ */
+export function isArabicPath(pathname: string): boolean {
+    return pathname === '/ar' || pathname.startsWith('/ar/');
 }
 
 export const config = {

@@ -110,6 +110,17 @@ for (const [file, route] of Object.entries(FILES)) {
         `    <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');</script>`,
     ].filter(Boolean);
 
+    if (file === 'marketplace.html') {
+        // /Funds now has a real Arabic twin at /ar/Funds (a server-rendered
+        // Arabic funds hub, not a redirect). Pair them, x-default -> Arabic to
+        // match every other bilingual pair on the site.
+        lines.push(
+            `    <link rel="alternate" hreflang="en" href="${SITE}/Funds">`,
+            `    <link rel="alternate" hreflang="ar" href="${SITE}/ar/Funds">`,
+            `    <link rel="alternate" hreflang="x-default" href="${SITE}/ar/Funds">`
+        );
+    }
+
     if (file === 'home.html') {
         // The home is the one static template with an Arabic twin (/ar). Declare
         // reciprocal hreflang so crawlers pair the two locales.

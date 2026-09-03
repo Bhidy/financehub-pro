@@ -837,6 +837,18 @@ async function assertDesignedShellsIntact() {
       console.error(`FAIL: ${hub.route} does not serve ${hub.shell}.`);
       failed = true;
     }
+    // The designed shells hardcode <html lang="en" dir="ltr">. The App Router
+    // language fix never reaches them, so every route that serves one must
+    // rewrite it explicitly — otherwise an Arabic URL ships a document that
+    // declares itself English, the exact defect that cost the Arabic SERPs.
+    if (!/^\s*lang:\s*(?:'(?:en|ar)'|lang)\s*,/m.test(text)) {
+      console.error(`FAIL: ${hub.route} does not set \`lang\` on renderStaticHub — ${hub.url} would ship the shell's hardcoded <html lang="en">.`);
+      failed = true;
+    }
+    if (hub.url.startsWith("/ar") && !/^\s*lang:\s*'ar'\s*,/m.test(text)) {
+      console.error(`FAIL: ${hub.route} serves an ARABIC URL but does not set lang: 'ar'.`);
+      failed = true;
+    }
     // An IMPORT, not a mention: these files legitimately name PublicPageShell
     // in their comments to explain why they must not use it.
     if (/^\s*import[^;]*PublicPageShell/m.test(text)) {

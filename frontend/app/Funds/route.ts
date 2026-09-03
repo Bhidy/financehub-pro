@@ -42,6 +42,7 @@ export async function GET() {
 
     return renderStaticHub({
         file: 'marketplace.html',
+        lang: 'en',
         injections: [{ id: 'fundsGrid', html: categoryNav + fundsHubRows(funds, 'en') }],
         // hreflang already ships inside marketplace.html (injected by
         // scripts/inject-seo-heads.mjs) — re-adding it here would duplicate it.

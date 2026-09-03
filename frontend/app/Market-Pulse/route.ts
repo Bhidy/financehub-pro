@@ -94,6 +94,7 @@ export async function GET() {
 
     return renderStaticHub({
         file: 'market-pulse.html',
+        lang: 'en',
         injections,
         head: (dataset ? jsonLdScript(dataset) : '') + jsonLdScript(breadcrumb),
         // Intraday index data; 5 minutes matches the upstream refresh cadence.

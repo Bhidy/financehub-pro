@@ -72,6 +72,7 @@ export async function GET() {
 
     return renderStaticHub({
         file: 'learn.html',
+        lang: 'en',
         injections: [{ id: 'topicsGrid', html: cards }],
         // /Learn is a single-URL page whose language follows the stored
         // preference, so both hreflang values point at it — a self-referencing

@@ -115,6 +115,7 @@ export async function GET() {
 
     return renderStaticHub({
         file: 'news.html',
+        lang: 'en',
         injections: [
             { id: 'featuredStory', html: featuredHtml },
             { id: 'newsGrid', html: gridHtml },

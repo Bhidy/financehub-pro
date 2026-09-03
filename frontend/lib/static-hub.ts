@@ -136,6 +136,18 @@ export type StaticHubOptions = {
     injections: Injection[];
     /** Exact-match head/hero edits (title, canonical, H1). */
     replacements?: Replacement[];
+    /**
+     * Rewrite the shell's <html lang>/<dir>.
+     *
+     * The designed shells are static files with `lang="en" dir="ltr"` baked in.
+     * The App Router fix for this (middleware stamps x-starta-lang, the root
+     * layout reads it) does NOT reach them — they never pass through that
+     * layout. So serving one of them at an Arabic URL silently ships an
+     * Arabic document declaring itself English, which is the exact defect that
+     * cost the Arabic rankings in the first place. The SEO audit catches it,
+     * but it should never be shipped: set this on every Arabic route.
+     */
+    lang?: 'en' | 'ar';
     /** Extra <head> markup — hreflang alternates, JSON-LD. Pre-escaped. */
     head?: string;
     /**
@@ -157,6 +169,20 @@ export async function renderStaticHub(opts: StaticHubOptions): Promise<Response>
     }
 
     let html = shell;
+    if (opts.lang) {
+        const dir = opts.lang === 'ar' ? 'rtl' : 'ltr';
+        const before = html;
+        html = html.replace(
+            /<html([^>]*)>/i,
+            (_m, attrs: string) =>
+                `<html${attrs
+                    .replace(/\slang="[^"]*"/i, '')
+                    .replace(/\sdir="[^"]*"/i, '')} lang="${opts.lang}" dir="${dir}">`
+        );
+        if (html === before) {
+            console.error(`[static-hub] ${opts.file}: could not rewrite <html lang>`);
+        }
+    }
     for (const r of opts.replacements ?? []) {
         if (!html.includes(r.find)) {
             // Loud, not silent: a missed replacement means the shell changed

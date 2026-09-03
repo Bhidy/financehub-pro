@@ -50,6 +50,7 @@ export async function renderCategoryHub(slug: string, lang: 'en' | 'ar'): Promis
 
     return renderStaticHub({
         file: 'marketplace.html',
+        lang,
         replacements: [
             { find: '<title>Funds Marketplace | Starta Markets</title>', replace: `<title>${esc(title)}</title>` },
             {

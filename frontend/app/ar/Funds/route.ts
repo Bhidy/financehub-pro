@@ -63,6 +63,7 @@ export async function GET() {
 
     return renderStaticHub({
         file: 'marketplace.html',
+        lang: 'ar',
         replacements: [
             { find: '<title>Funds Marketplace | Starta Markets</title>', replace: `<title>${esc(AR_TITLE)}</title>` },
             {

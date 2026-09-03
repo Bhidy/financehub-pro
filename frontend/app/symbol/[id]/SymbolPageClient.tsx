@@ -28,6 +28,7 @@ import { TradingViewChartModal } from "@/components/TradingViewChartModal";
 import { TradingViewInlineChart } from "@/components/TradingViewInlineChart";
 import { useTheme } from "@/components/ThemeProvider";
 import ThemeToggle from "@/components/ThemeToggle";
+import { sectorAr } from '@/content/sector-names-ar';
 
 // ─── BILINGUAL TRANSLATIONS ────────────────────────────────────────────────
 const TRANSLATIONS = {
@@ -671,7 +672,13 @@ export default function SymbolDetailPage() {
     // description / officers / HQ / employees / founded / website / phone fields
     // (stale stockanalysis snapshot + Yahoo proxy) were removed — TradingView does
     // not provide them for EGX, so they are not shown.
-    const sectorName = useMemo(() => (stockData as any)?.sector_name || localProfile?.profile?.sector || "", [stockData, localProfile]);
+    // sector_name is stored in English; the label beside it is Arabic, so the
+    // raw value produced "القطاع: Finance". sectorAr() is a pure lookup and
+    // falls back to the original for an unmapped sector.
+    const sectorName = useMemo(() => {
+        const raw = (stockData as any)?.sector_name || localProfile?.profile?.sector || "";
+        return (lang === "ar" ? sectorAr(raw) : raw) || "";
+    }, [stockData, localProfile, lang]);
     const isinCode = useMemo(() => (stockData as any)?.isin || "", [stockData]);
 
     // ─── DISPLAYED METRICS — TradingView-sourced ONLY (June-2026 audit) ─────

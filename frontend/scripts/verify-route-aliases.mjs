@@ -1263,6 +1263,39 @@ async function run() {
     console.log("OK: signed figures are bidi-isolated on every bilingual renderer.");
   }
 
+
+  // ── ENGLISH SECTOR NAMES MUST NOT LEAK INTO ARABIC COPY ─────────────────
+  // market_tickers.sector_name is English ("Finance", "Process Industries").
+  // A 2026-07-03 audit already fixed one round of this — it left strings like
+  // "قطاع Finance" on the /ar/symbol pages — and content/sector-names-ar.ts
+  // exists for exactly this. It then regressed onto the market screens and the
+  // premium overview, and shipped again on the new comparison pages. Any
+  // BILINGUAL renderer that puts sector_name in front of a reader must route
+  // it through sectorAr().
+  {
+    const sectorSurfaces = [
+      "app/markets/renderMarketScreen.tsx",
+      "app/symbol/[id]/SymbolPageClient.tsx",
+      "app/companies/vs/[pair]/renderStockVs.tsx",
+    ];
+    for (const rel of sectorSurfaces) {
+      let text;
+      try {
+        text = await readFile(path.join(root, rel), "utf8");
+      } catch {
+        console.error(`FAIL: ${rel} is missing — the sector-localisation gate cannot verify it.`);
+        process.exit(1);
+      }
+      if (!/sectorAr\(/.test(text)) {
+        console.error(
+          `FAIL: ${rel} renders sector_name but never calls sectorAr() — English sector names will appear in Arabic copy.`
+        );
+        process.exit(1);
+      }
+    }
+    console.log("OK: sector names are localised on every bilingual surface that shows them.");
+  }
+
   console.log("PASS: Route alias guard checks succeeded.");
 }
 

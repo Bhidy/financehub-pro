@@ -7,6 +7,7 @@ import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo
 import JsonLd from '@/components/seo/JsonLd';
 import { findScreen, screenPath, MARKET_SCREENS, type MarketScreen } from '@/content/market-screens';
 import { ltrNum } from '@/lib/bidi';
+import { sectorAr } from '@/content/sector-names-ar';
 
 /**
  * MARKET SCREEN PAGES — /markets/{screen} and /ar/markets/{screen}.
@@ -170,7 +171,7 @@ export async function renderMarketScreen(slug: string, lang: 'en' | 'ar') {
                                         </Link>
                                         <span className="ms-2 text-xs text-muted" dir="ltr">{r.symbol}</span>
                                     </td>
-                                    <td className="px-4 py-2.5 text-muted">{r.sector_name || '—'}</td>
+                                    <td className="px-4 py-2.5 text-muted">{(isAr ? sectorAr(r.sector_name) : r.sector_name) || '—'}</td>
                                     <td className={`px-4 py-2.5 tabular-nums text-main ${isAr ? 'text-left' : 'text-right'}`}>
                                         {fmtNum(r.last_price, 2, lang)} <span className="text-xs text-muted">{r.currency || 'EGP'}</span>
                                     </td>

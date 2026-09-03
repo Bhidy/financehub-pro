@@ -7,6 +7,7 @@ import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo
 import JsonLd from '@/components/seo/JsonLd';
 import { ltrNum } from '@/lib/bidi';
 import { METRIC_GROUPS, STOCKVS, t, type Lang, type Fmt, type Metric } from '@/content/stock-vs';
+import { sectorAr } from '@/content/sector-names-ar';
 
 /**
  * /companies/vs/{A}-vs-{B} and /ar/companies/vs/{A}-vs-{B}
@@ -123,7 +124,12 @@ function fmtDiff(
         const d = Math.abs(a - b);
         if (d < 0.005) return null;
         const higher = a > b ? symA : symB;
-        return `${higher} ${ltrNum(`+${d.toFixed(2)} pp`)}`;
+        // "pp" means PERCENTAGE POINTS and belongs only to metrics expressed as
+        // a percentage. Beta, P/E and P/B are multiples: the gap between a P/E
+        // of 6.78 and 4.31 is 2.47, not "2.47 percentage points". Labelling a
+        // multiple with a percentage unit misstates what the number is.
+        const unit = metric.fmt === 'pct' ? ' pp' : '';
+        return `${higher} ${ltrNum(`+${d.toFixed(2)}${unit}`)}`;
     }
     // ratio: both must be positive for a multiple to mean anything
     if (a <= 0 || b <= 0) return null;
@@ -233,6 +239,9 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
 
     const { A, B, sector, rowCount } = loaded;
     const currency = A.ticker.currency || B.ticker.currency || 'EGP';
+    // sector_name is stored in English. Interpolating it raw put "Finance" in
+    // the middle of an Arabic sentence on every /ar comparison page.
+    const sectorLabel = (isAr ? sectorAr(sector) : null) || sector;
 
     // Sector peers for the related-pairs block, biggest first, excluding these two.
     let peers: Ticker[] = [];
@@ -262,7 +271,7 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
         { label: `${A.symbol} ${isAr ? 'مقابل' : 'vs'} ${B.symbol}` },
     ];
 
-    const faq = STOCKVS.faq(A.name, B.name, sector);
+    const faq = STOCKVS.faq(A.name, B.name, sectorLabel);
     const headCls = `border-b border-border bg-panel/40 text-xs font-bold uppercase tracking-wide text-muted ${isAr ? 'text-right' : 'text-left'}`;
     const valCls = `px-4 py-2.5 tabular-nums ${isAr ? 'text-left' : 'text-right'}`;
 
@@ -315,7 +324,7 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
             <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">
                 {t(STOCKVS.h1(A.name, B.name), lang)}
             </h1>
-            <p className="mt-2 text-sm text-muted">{t(STOCKVS.subhead(sector), lang)}</p>
+            <p className="mt-2 text-sm text-muted">{t(STOCKVS.subhead(sectorLabel), lang)}</p>
 
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                 {sideHead(A)}
@@ -323,7 +332,7 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
             </div>
 
             <p className="mt-5 max-w-3xl text-sm leading-relaxed text-muted">
-                {t(STOCKVS.intro(A.name, B.name, sector, rowCount), lang)}
+                {t(STOCKVS.intro(A.name, B.name, sectorLabel, rowCount), lang)}
             </p>
 
             {METRIC_GROUPS.map((g) => {

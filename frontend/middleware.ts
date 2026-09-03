@@ -132,7 +132,12 @@ export function middleware(request: NextRequest) {
     // language signal.
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-starta-lang', isArabicPath(url.pathname) ? 'ar' : 'en');
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
+    const ttl = edgeTtlFor(url.pathname);
+    if (ttl !== null) {
+        response.headers.set('Cache-Control', `public, max-age=0, s-maxage=${ttl}, stale-while-revalidate=${ttl * 4}`);
+    }
+    return response;
 }
 
 /**
@@ -141,6 +146,48 @@ export function middleware(request: NextRequest) {
  */
 export function isArabicPath(pathname: string): boolean {
     return pathname === '/ar' || pathname.startsWith('/ar/');
+}
+
+/**
+ * Edge TTL (seconds) for a public page, or null to leave the route's own
+ * caching alone.
+ *
+ * WHY MIDDLEWARE AND NOT next.config headers(): every public page here is a
+ * `force-dynamic` App Router route, and Next.js stamps those with
+ * `private, no-cache, no-store` at render time, which WINS over a
+ * next.config `headers()` entry. Measured on production 2026-09-03: `/` and
+ * `/Market-Pulse` (static-file rewrites) honoured their configured s-maxage
+ * while every dynamic route ignored it and shipped no-store. Middleware sets
+ * the response header on the way out, which is the layer that survives.
+ *
+ * TTLs are shorter than each dataset's own refresh cadence, so the edge can
+ * never serve a number the origin would not have served:
+ *   market data  — refreshed intraday, 5 min
+ *   fund NAVs    — published twice daily, 15 min
+ *   news article — immutable once published, 1 h
+ *   reference    — changes only on deploy, 1 day (deploys purge the CDN)
+ *
+ * Safe to cache PUBLICLY: none of these render per-user content. The nav's
+ * auth state is a client component that hydrates from localStorage, so the
+ * server-rendered HTML is identical for every visitor.
+ *
+ * Anything not listed keeps no-store — private surfaces (/admin, /settings,
+ * /login, /register, /AiChat, /Portfolio), the API, and anything unrecognised.
+ * The default is deliberately "do not cache".
+ */
+export function edgeTtlFor(pathname: string): number | null {
+    const p = pathname.startsWith('/ar/') ? pathname.slice(3) : pathname === '/ar' ? '/' : pathname;
+
+    // Never cache authenticated or interactive surfaces.
+    if (/^\/(api|admin|settings|login|register|forgot-password|AiChat|Portfolio|shared)(\/|$)/.test(p)) return null;
+
+    if (p === '/News' || /^\/News\//.test(p)) return 3600;
+    if (/^\/Funds(\/|$)/.test(p)) return 900;
+    if (p === '/' || p === '/companies' || /^\/(sectors|markets|symbol)(\/|$)/.test(p)) return 300;
+    if (/^\/(about|contact|editorial-policy|corrections|privacy|terms|Calculators|RiskAssessment|Learn|Market-Pulse)(\/|$)/.test(p)) {
+        return 86400;
+    }
+    return null;
 }
 
 export const config = {

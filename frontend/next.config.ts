@@ -199,100 +199,13 @@ const nextConfig = {
           },
         ],
       })),
-      // MARKET-DATA PAGES — every one of these previously shipped
-      // `private, no-cache, no-store` (Next.js's default for a dynamic route),
-      // so the CDN hit rate was 0% and every crawl and every visitor paid a
-      // full origin render: the audit measured 0.9-1.9s TTFB on exactly this
-      // set. A short s-maxage with stale-while-revalidate serves them from the
-      // edge while keeping the data fresh — the underlying data refreshes on a
-      // schedule (prices intraday, NAVs twice daily), never per request, so a
-      // 5-minute edge TTL cannot show a number the origin would not have shown.
-      // Safe to cache publicly: these pages render no per-user content (the
-      // nav's auth state is a client component that hydrates from localStorage).
-      ...[
-        '/ar',
-        '/companies',
-        '/ar/companies',
-        '/sectors',
-        '/ar/sectors',
-        '/sectors/:slug',
-        '/ar/sectors/:slug',
-        '/markets/:path*',
-        '/ar/markets/:path*',
-        '/symbol/:path*',
-        '/ar/symbol/:path*',
-      ].map((source) => ({
-        source,
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, s-maxage=300, stale-while-revalidate=900',
-          },
-        ],
-      })),
-      // FUND PAGES — NAVs publish twice daily, so a 15-minute edge TTL is far
-      // shorter than the data's own update cadence.
-      ...[
-        '/Funds/best-mutual-funds-egypt-2026',
-        '/ar/Funds/best-mutual-funds-egypt-2026',
-        '/ar/Funds',
-        '/Funds/category/:slug',
-        '/ar/Funds/category/:slug',
-        '/Funds/:id',
-        '/ar/Funds/:id',
-        '/Funds/vs/:pair',
-      ].map((source) => ({
-        source,
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, s-maxage=900, stale-while-revalidate=3600',
-          },
-        ],
-      })),
-      // NEWS ARTICLES — immutable once published; only the surrounding data
-      // block changes, so an hour at the edge is conservative.
-      {
-        source: '/News/:id',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400',
-          },
-        ],
-      },
-      // Editorial / reference pages that used to be prerendered at build time.
-      // They became dynamic when the root layout started deriving <html lang>
-      // from the request (middleware x-starta-lang) — the correct trade, but a
-      // dynamic render must not cost TTFB. Their content changes only on
-      // deploy, so a long CDN TTL restores static-equivalent edge latency and
-      // deploys purge the CDN automatically.
-      ...[
-        '/about',
-        '/contact',
-        '/editorial-policy',
-        '/ar/editorial-policy',
-        '/corrections',
-        '/ar/corrections',
-        '/Calculators',
-        '/ar/Calculators',
-        '/RiskAssessment',
-        '/ar/RiskAssessment',
-        '/Learn/:slug',
-        '/ar/Learn/:slug',
-        '/Learn/glossary',
-        '/ar/Learn/glossary',
-        '/Learn/glossary/:slug',
-        '/ar/Learn/glossary/:slug',
-      ].map((source) => ({
-        source,
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800',
-          },
-        ],
-      })),
+      // NOTE: page Cache-Control is set in middleware.ts (edgeTtlFor), NOT
+      // here. Every public page is a force-dynamic App Router route, and
+      // Next.js stamps those with `private, no-cache, no-store` at render
+      // time, which OVERRIDES a next.config headers() entry — measured on
+      // production 2026-09-03. Only static-file rewrites (/ , /Market-Pulse)
+      // honour a configured s-maxage, which is why the two entries above work.
+      // Do not re-add page caching here; it silently does nothing.
       // Versioned static assets (?v= cache-busting is already in use): give
       // the CDN and browsers a real TTL — these previously shipped no
       // long-lived Cache-Control at all.

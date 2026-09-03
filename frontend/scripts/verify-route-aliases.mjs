@@ -640,6 +640,19 @@ const checks = [
       /dir=\{lang === "ar" \? "rtl" : "ltr"\}/.test(text),
   },
   {
+    // Page Cache-Control MUST live in middleware. Next.js stamps
+    // force-dynamic App Router routes with `private, no-cache, no-store` at
+    // render time, which overrides next.config headers() — a caching entry
+    // added there silently does nothing (measured on production 2026-09-03).
+    name: "page edge-caching is set in middleware (not dead next.config headers)",
+    file: "middleware.ts",
+    assert: (text) =>
+      /export function edgeTtlFor\(/.test(text) &&
+      /response\.headers\.set\('Cache-Control'/.test(text) &&
+      // Private surfaces must never be publicly cached.
+      /admin\|settings\|login\|register/.test(text),
+  },
+  {
     // Fund category slugs mint URLs in both languages. A collision would make
     // two categories claim one URL; an empty Arabic slug would mint /ar/Funds/category/.
     name: "fund category slugs are unique and non-empty across EN + AR",

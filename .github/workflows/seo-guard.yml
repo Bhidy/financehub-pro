@@ -1,0 +1,105 @@
+name: SEO Guard (post-deploy)
+
+# ============================================================
+# EVENT-DRIVEN SEO layer. Runs after every push to main, once Vercel's
+# auto-deploy has had time to go live.
+#
+# Why this exists: `verify:routes` gates the SOURCE at build time, but nothing
+# checked the RENDERED SITE afterwards. Every SEO regression this repo has
+# suffered (Arabic pages declaring lang="en", a sitemap advertising ~510
+# redirecting news URLs, money pages shipping no-store) was invisible to the
+# build and was only ever found by a human running curl by hand, weeks later.
+#
+# Two jobs, deliberately separate:
+#   audit    — fails the run on a CRITICAL regression, so it pages the owner
+#   indexnow — tells Bing/Yandex what changed; never blocks on the audit
+# ============================================================
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why this run was dispatched'
+        required: false
+        default: 'manual check'
+
+concurrency:
+  group: seo-guard
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Audit production SEO
+    # Same-repo only: this runs on the self-hosted production box, which holds
+    # the pipeline secrets. Never execute fork code here.
+    if: >-
+      github.event_name != 'push' ||
+      github.repository == 'Bhidy/financehub-pro'
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Wait for the Vercel deploy to go live
+        # Poll the build id rather than sleeping a fixed amount: a slow deploy
+        # would otherwise make this audit report the PREVIOUS build's defects
+        # and blame this commit for them.
+        run: |
+          for i in $(seq 1 30); do
+            LIVE=$(curl -s --max-time 15 https://startamarkets.com/api/version | tr -d '\n' || echo '')
+            echo "attempt $i: $LIVE"
+            if echo "$LIVE" | grep -q "${GITHUB_SHA:0:7}"; then
+              echo "✅ deploy live"; exit 0
+            fi
+            sleep 20
+          done
+          echo "⚠️  could not confirm the commit is live after 10 min — auditing whatever is deployed."
+
+      - name: SEO audit (money pages)
+        working-directory: frontend
+        run: node scripts/seo/audit.mjs --quick --out /tmp/seo-audit.json --fail-on critical
+
+      - name: Report the regression
+        if: failure()
+        working-directory: frontend
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: node scripts/seo/report.mjs --audit /tmp/seo-audit.json --notify
+
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-audit-${{ github.sha }}
+          path: /tmp/seo-audit.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  indexnow:
+    name: Submit changed URLs to IndexNow
+    # Runs even when the audit fails: a page with a medium finding still wants
+    # to be recrawled, and gating discovery on a cosmetic defect helps nobody.
+    if: >-
+      always() && (
+        github.event_name != 'push' ||
+        github.repository == 'Bhidy/financehub-pro'
+      )
+    needs: audit
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Submit URLs changed in the last 6 hours
+        working-directory: frontend
+        run: node scripts/seo/indexnow.mjs --since 6h

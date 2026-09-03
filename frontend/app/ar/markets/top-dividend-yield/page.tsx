@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllTickers } from '@/lib/public-data';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -18,6 +18,7 @@ export const metadata: Metadata = {
         languages: { en: '/markets/top-dividend-yield', ar: '/ar/markets/top-dividend-yield', 'x-default': '/ar/markets/top-dividend-yield' },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'أعلى الأسهم توزيعًا للأرباح في البورصة المصرية | ستارتا ماركتس',
         description: 'أسهم البورصة المصرية مرتبة حسب عائد التوزيع، محدَّثة يوميًا.',

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { SITE_URL, absUrl, glossaryPath } from '@/lib/seo';
+import { SITE_URL, absUrl, glossaryPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { GLOSSARY_TERMS, firstSentence } from '@/content/glossary-terms';
@@ -26,6 +26,7 @@ export const metadata: Metadata = {
         },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'قاموس المصطلحات المالية',
         description: 'تعريفات لثلاثين مصطلحًا أساسيًا في سوق الأسهم والاستثمار بزاوية على البورصة المصرية.',

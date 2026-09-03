@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getSectors } from '@/lib/public-data';
-import { SITE_URL, absUrl, slugify } from '@/lib/seo';
+import { SITE_URL, absUrl, slugify, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -22,6 +22,7 @@ export const metadata: Metadata = {
         'Browse Egyptian Exchange (EGX) companies by sector — company counts and aggregate market caps for every EGX sector, updated daily. قطاعات البورصة المصرية.',
     alternates: { canonical: '/sectors', languages: { en: '/sectors', ar: '/ar/sectors', 'x-default': '/ar/sectors' } },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'EGX Sectors — Egyptian Exchange Companies by Sector | Starta Markets',
         description:

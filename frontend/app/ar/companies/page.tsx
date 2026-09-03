@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllTickers } from '@/lib/public-data';
-import { SITE_URL, symbolPath } from '@/lib/seo';
+import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { sectorAr } from '@/content/sector-names-ar';
@@ -19,6 +19,7 @@ export const metadata: Metadata = {
         languages: { en: '/companies', ar: '/ar/companies', 'x-default': '/ar/companies' },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'أسهم البورصة المصرية — أسعار جميع الشركات المدرجة | ستارتا ماركتس',
         description: 'دليل كامل لأسهم البورصة المصرية مع الأسعار المباشرة والقطاعات والقيمة السوقية.',

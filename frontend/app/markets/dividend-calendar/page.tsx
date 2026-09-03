@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getDividendCalendar } from '@/lib/public-data';
-import { SITE_URL, symbolPath } from '@/lib/seo';
+import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -27,6 +27,7 @@ export const metadata: Metadata = {
         'Upcoming and recent dividends on the Egyptian Exchange: ex-dividend dates, per-share amounts and payment dates for EGX companies. Updated with market data.',
     alternates: { canonical: '/markets/dividend-calendar', languages: { en: '/markets/dividend-calendar', ar: '/ar/markets/dividend-calendar', 'x-default': '/ar/markets/dividend-calendar' } },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'EGX Dividend Calendar — Ex-Dates & Payouts | Starta Markets',
         description:

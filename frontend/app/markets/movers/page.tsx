@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getMovers, type Ticker } from '@/lib/public-data';
-import { SITE_URL, symbolPath } from '@/lib/seo';
+import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -23,6 +23,7 @@ export const metadata: Metadata = {
         'The biggest EGX movers today — top gainers, losers and most active Egyptian Exchange stocks by volume. Refreshed every 15 minutes during trading hours.',
     alternates: { canonical: '/markets/movers', languages: { en: '/markets/movers', ar: '/ar/markets/movers', 'x-default': '/ar/markets/movers' } },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'EGX Movers Today — Top Gainers, Losers & Most Active Stocks | Starta Markets',
         description:

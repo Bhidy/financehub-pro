@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getMovers, type Ticker } from '@/lib/public-data';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -18,6 +18,7 @@ export const metadata: Metadata = {
         languages: { en: '/markets/movers', ar: '/ar/markets/movers', 'x-default': '/ar/markets/movers' },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'الأكثر ارتفاعًا وانخفاضًا في البورصة المصرية | ستارتا ماركتس',
         description: 'أكبر الرابحين والخاسرين والأكثر نشاطًا في البورصة المصرية اليوم.',

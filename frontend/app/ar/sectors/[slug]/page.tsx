@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getAllTickers, getSectors } from '@/lib/public-data';
-import { SITE_URL, canonicalRedirectTarget, sectorPath, slugify } from '@/lib/seo';
+import { SITE_URL, canonicalRedirectTarget, sectorPath, slugify, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { sectorAr } from '@/content/sector-names-ar';
@@ -51,7 +51,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
             canonical,
             languages: { en: `/sectors/${slugify(match.sector_name)}`, ar: canonical, 'x-default': canonical },
         },
-        openGraph: { type: 'website', title: `أسهم قطاع ${ar} في البورصة المصرية | ستارتا ماركتس`, description, url: canonical, locale: 'ar_EG' },
+        openGraph: {
+            ...OG_DEFAULTS, type: 'website', title: `أسهم قطاع ${ar} في البورصة المصرية | ستارتا ماركتس`, description, url: canonical, locale: 'ar_EG' },
     };
 }
 

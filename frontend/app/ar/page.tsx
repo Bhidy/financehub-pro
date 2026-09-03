@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getEgx30Index, getMovers, type Ticker } from '@/lib/public-data';
-import { SITE_URL, absUrl } from '@/lib/seo';
+import { SITE_URL, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -31,6 +31,7 @@ export const metadata: Metadata = {
         },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'البورصة المصرية اليوم — ستارتا ماركتس',
         description: 'مؤشر EGX30 المباشر وأسعار الأسهم والأكثر نشاطًا وأخبار البورصة المصرية بالعربية.',

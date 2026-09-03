@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
-import { SITE_URL, absUrl } from '@/lib/seo';
+import { SITE_URL, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import RiskAssessmentClient from './RiskAssessmentClient';
 import { RISK_I18N, type Lang } from './risk-i18n';
 
@@ -42,6 +42,7 @@ export function riskMetadata(lang: Lang): Metadata {
             languages: { en: PATH_EN, ar: PATH_AR, 'x-default': PATH_AR },
         },
         openGraph: {
+            ...OG_DEFAULTS,
             type: 'website',
             locale: lang === 'ar' ? 'ar_EG' : 'en_US',
             title,

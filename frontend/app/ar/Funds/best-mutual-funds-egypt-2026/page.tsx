@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getAllFundsRanked } from '@/lib/public-data';
-import { SITE_URL, fundPath, absUrl } from '@/lib/seo';
+import { SITE_URL, fundPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -27,6 +27,7 @@ export const metadata: Metadata = {
         },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'article',
         title: 'أفضل صناديق الاستثمار في مصر 2026 | ستارتا ماركتس',
         description: 'ترتيب حسب عائد آخر 12 شهرًا مع صافي قيمة الأصول والرسوم والحد الأدنى للاشتراك.',

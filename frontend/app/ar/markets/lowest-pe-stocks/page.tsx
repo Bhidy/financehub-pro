@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllTickers } from '@/lib/public-data';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -18,6 +18,7 @@ export const metadata: Metadata = {
         languages: { en: '/markets/lowest-pe-stocks', ar: '/ar/markets/lowest-pe-stocks', 'x-default': '/ar/markets/lowest-pe-stocks' },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'أرخص أسهم البورصة المصرية حسب مكرر الربحية | ستارتا ماركتس',
         description: 'أسهم البورصة المصرية مرتبة حسب أقل مكرر ربحية، فلترة قيمة آلية محدَّثة يوميًا.',

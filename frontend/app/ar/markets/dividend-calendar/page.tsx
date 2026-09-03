@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getDividendCalendar } from '@/lib/public-data';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -18,6 +18,7 @@ export const metadata: Metadata = {
         languages: { en: '/markets/dividend-calendar', ar: '/ar/markets/dividend-calendar', 'x-default': '/ar/markets/dividend-calendar' },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'مواعيد توزيعات الأرباح في البورصة المصرية | ستارتا ماركتس',
         description: 'توزيعات الأرباح القادمة والأخيرة في البورصة المصرية بتواريخ عدم الأحقية والمبالغ.',

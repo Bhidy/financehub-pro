@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getAllTickers, getSectors } from '@/lib/public-data';
-import { SITE_URL, sectorPath, slugify, symbolPath } from '@/lib/seo';
+import { SITE_URL, sectorPath, slugify, symbolPath, OG_DEFAULTS } from '@/lib/seo';
 import { sectorAr } from '@/content/sector-names-ar';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
@@ -89,6 +89,7 @@ export async function generateMetadata({
             },
         },
         openGraph: {
+            ...OG_DEFAULTS,
             type: 'website',
             title: `${match.sector_name} Stocks on the EGX — Prices & Market Caps | Starta Markets`,
             description,

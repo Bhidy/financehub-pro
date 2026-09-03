@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllTickers } from '@/lib/public-data';
-import { SITE_URL, symbolPath } from '@/lib/seo';
+import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -23,6 +23,7 @@ export const metadata: Metadata = {
         languages: { en: '/markets/lowest-pe-stocks', ar: '/ar/markets/lowest-pe-stocks', 'x-default': '/ar/markets/lowest-pe-stocks' },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'Lowest P/E Stocks on the EGX — Value Screen | Starta Markets',
         description: 'EGX shares ranked by lowest trailing P/E ratio, a mechanical value screen updated daily.',

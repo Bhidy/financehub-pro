@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
-import { SITE_URL, absUrl } from '@/lib/seo';
+import { SITE_URL, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import CalculatorsClient from './CalculatorsClient';
 import { calcLabels, type Lang } from './calculators-i18n';
 
@@ -38,6 +38,7 @@ export function calculatorsMetadata(lang: Lang): Metadata {
             languages: { en: PATH_EN, ar: PATH_AR, 'x-default': PATH_AR },
         },
         openGraph: {
+            ...OG_DEFAULTS,
             type: 'website',
             locale: lang === 'ar' ? 'ar_EG' : 'en_US',
             title,

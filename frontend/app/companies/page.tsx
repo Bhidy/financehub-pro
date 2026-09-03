@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllTickers } from '@/lib/public-data';
-import { SITE_URL, symbolPath } from '@/lib/seo';
+import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -22,6 +22,7 @@ export const metadata: Metadata = {
         'Complete directory of companies listed on the Egyptian Exchange (EGX), sorted by market capitalization — live prices, sectors and market caps, updated daily.',
     alternates: { canonical: '/companies', languages: { en: '/companies', ar: '/ar/companies', 'x-default': '/ar/companies' } },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'EGX Listed Companies — All Egyptian Exchange Stocks | Starta Markets',
         description:

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getSectors } from '@/lib/public-data';
-import { SITE_URL, absUrl, sectorPath } from '@/lib/seo';
+import { SITE_URL, absUrl, sectorPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { sectorAr } from '@/content/sector-names-ar';
@@ -19,6 +19,7 @@ export const metadata: Metadata = {
         languages: { en: '/sectors', ar: '/ar/sectors', 'x-default': '/ar/sectors' },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'قطاعات البورصة المصرية — الشركات حسب القطاع | ستارتا ماركتس',
         description: 'شركات البورصة المصرية حسب القطاع مع عدد الشركات والقيمة السوقية.',

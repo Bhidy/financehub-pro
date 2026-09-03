@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getAllTickers } from '@/lib/public-data';
-import { SITE_URL, symbolPath, absUrl } from '@/lib/seo';
+import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -23,6 +23,7 @@ export const metadata: Metadata = {
         languages: { en: '/markets/largest-companies', ar: '/ar/markets/largest-companies', 'x-default': '/ar/markets/largest-companies' },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'Largest Companies on the EGX by Market Cap | Starta Markets',
         description: 'The biggest Egyptian Exchange stocks ranked by market capitalisation, updated daily.',

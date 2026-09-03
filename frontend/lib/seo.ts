@@ -9,6 +9,26 @@ export const SITE_URL = 'https://startamarkets.com';
 export const SITE_NAME = 'Starta Markets';
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.png`;
 
+/**
+ * SHARED OPEN GRAPH DEFAULTS — spread into every page-level `openGraph` block.
+ *
+ * In Next.js a page's `openGraph` object REPLACES the layout's rather than
+ * merging with it. 29 of 39 templates declared their own block without an
+ * `images` key, so each of them shipped no social/SERP thumbnail at all while
+ * the root layout's default sat unused. Spreading this first makes the image
+ * and site name impossible to drop, and keeps the values in ONE place.
+ *
+ * Segments that render a data-rich card of their own (a fund's NAV, a stock's
+ * quote) use the `opengraph-image` file convention instead and must NOT spread
+ * this — see lib/og.tsx.
+ */
+// Not `as const`: Next's OGImage[] is mutable, and a readonly tuple fails to
+// assign to it.
+export const OG_DEFAULTS = {
+    siteName: SITE_NAME,
+    images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630, alt: SITE_NAME }],
+};
+
 /** The two public site languages. Arabic is the site's default language:
  *  x-default hreflang points at the Arabic twin, and the static pages fall
  *  back to Arabic when no stored preference exists. */

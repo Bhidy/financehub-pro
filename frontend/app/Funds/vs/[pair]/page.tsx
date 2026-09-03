@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getFund, type Fund } from '@/lib/public-data';
-import { SITE_URL, fundPath, absUrl } from '@/lib/seo';
+import { SITE_URL, fundPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -154,7 +154,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title,
         description,
         alternates: { canonical: canonicalPath },
-        openGraph: { type: 'website', title, description, url: canonicalPath },
+        openGraph: {
+            ...OG_DEFAULTS, type: 'website', title, description, url: canonicalPath },
     };
 }
 

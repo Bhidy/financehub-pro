@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getEgx30Index, getEgx30Constituents, type Ticker } from '@/lib/public-data';
-import { SITE_URL, symbolPath, absUrl } from '@/lib/seo';
+import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -27,6 +27,7 @@ export const metadata: Metadata = {
         languages: { en: '/markets/egx30', ar: '/ar/markets/egx30', 'x-default': '/ar/markets/egx30' },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'EGX 30 Index Today — Live Value & Constituents | Starta Markets',
         description: 'Live EGX 30 benchmark value, daily change and its 30 constituent Egyptian stocks.',

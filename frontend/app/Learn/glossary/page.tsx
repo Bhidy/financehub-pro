@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { SITE_URL, absUrl } from '@/lib/seo';
+import { SITE_URL, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { GLOSSARY_TERMS, firstSentence } from '@/content/glossary-terms';
@@ -27,6 +27,7 @@ export const metadata: Metadata = {
         },
     },
     openGraph: {
+            ...OG_DEFAULTS,
         type: 'website',
         title: 'Financial Glossary — EGX & Investing Terms',
         description:

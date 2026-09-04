@@ -790,6 +790,8 @@ const DESIGNED_SHELL_HUBS = [
   { route: "app/ar/News/route.ts", via: "lib/news-hub.ts", shell: "news.html", url: "/ar/News" },
   { route: "app/Learn/route.ts", shell: "learn.html", url: "/Learn" },
   { route: "app/ar/Learn/route.ts", shell: "learn.html", url: "/ar/Learn" },
+  { route: "app/Funds/Compare/route.ts", via: "lib/compare-hub.ts", shell: "fund-compare.html", url: "/Funds/Compare" },
+  { route: "app/ar/Funds/Compare/route.ts", via: "lib/compare-hub.ts", shell: "fund-compare.html", url: "/ar/Funds/Compare" },
   { route: "app/Market-Pulse/route.ts", shell: "market-pulse.html", url: "/Market-Pulse" },
   { route: "app/ar/Market-Pulse/route.ts", via: "app/Market-Pulse/route.ts", shell: "market-pulse.html", url: "/ar/Market-Pulse" },
 ];
@@ -1008,6 +1010,16 @@ async function assertDesignedShellsIntact() {
     ["public/learn.html", 'id="topicsGrid"'],
     ["public/market-pulse.html", 'id="indexValue"'],
     ["public/market-pulse.html", 'id="overviewIndex"'],
+    // lib/compare-hub.ts edits each of these literally. The empty-state class
+    // string matters most: the route strips `hidden` from it so the served HTML
+    // matches the state every first-time visitor sees, and a reformat here
+    // would silently ship a comparison hub with no visible content again.
+    ["public/fund-compare.html", '<title>Fund Comparison | Starta Markets</title>'],
+    ["public/fund-compare.html", '<link rel="canonical" href="https://startamarkets.com/Funds/Compare">'],
+    ["public/fund-compare.html", '<section id="emptyState" class="hidden mt-8'],
+    ["public/fund-compare.html", 'data-key="empty_cta">Go back to Funds</a>'],
+    ["public/fund-compare.html", '<a href="/Funds" class="btn-primary'],
+    ["public/fund-compare.html", 'data-key="hero_title"'],
   ];
   for (const [file, anchor] of SHELL_ANCHORS) {
     let text = "";
@@ -1090,21 +1102,54 @@ async function run() {
   // /markets/* and /symbol/{id} flipped an Arabic reader to English.
   {
     const derived = await deriveArRoutes();
-    const checked = JSON.parse(await readFile(path.join(root, "lib/ar-twin-routes.json"), "utf8")).routes;
-    if (JSON.stringify(derived) !== JSON.stringify(checked)) {
+    const checkedFile = JSON.parse(await readFile(path.join(root, "lib/ar-twin-routes.json"), "utf8"));
+    if (JSON.stringify(derived.routes) !== JSON.stringify(checkedFile.routes) ||
+        JSON.stringify(derived.patterns) !== JSON.stringify(checkedFile.patterns ?? [])) {
       console.error(
         "FAIL: lib/ar-twin-routes.json is stale.\n" +
-        `       on disk: ${derived.join(", ")}\n` +
-        `       checked in: ${checked.join(", ")}\n` +
+        `       on disk: ${derived.patterns.length} patterns\n` +
+        `       checked in: ${(checkedFile.patterns ?? []).length} patterns\n` +
         "       Run: node scripts/sync-ar-routes.mjs"
       );
       process.exit(1);
     }
     const boot = await readFile(path.join(root, "public/assets/starta-lang-boot.js"), "utf8");
-    if (!derived.every((r) => boot.includes(`"${r}"`))) {
-      console.error("FAIL: starta-lang-boot.js twin-route mirror is stale. Run: node scripts/sync-ar-routes.mjs");
+    if (!derived.patterns.every((r) => boot.includes(JSON.stringify(r)))) {
+      console.error("FAIL: starta-lang-boot.js twin-pattern mirror is stale. Run: node scripts/sync-ar-routes.mjs");
       process.exit(1);
     }
+
+    // ── THE /ar LINK HELPERS MUST MATCH EXACT PATTERNS, NEVER PARENT PREFIXES ──
+    // Prefix matching asserts that an Arabic twin of a parent covers every
+    // child. It does not: app/ar/News/route.ts exists while app/ar/News/[id]
+    // does not, so `startaLocalizedHref` rewrote every article link to
+    // /ar/News/{id} — a 404 on all 4,584 articles, and the same on
+    // /ar/symbol/{id}/{metric}. Both copies of the helper (the static boot
+    // script and PublicPageShell's inline script) must test the derived
+    // patterns.
+    const shell = await readFile(path.join(root, "components/seo/PublicPageShell.tsx"), "utf8");
+    for (const [label, text] of [["starta-lang-boot.js", boot], ["PublicPageShell.tsx", shell]]) {
+      if (!/AR_TWIN_PATTERNS|arTwinRoutes\.patterns/.test(text)) {
+        console.error(`FAIL: ${label} does not use the derived /ar patterns — parent-prefix matching invents URLs that 404.`);
+        process.exit(1);
+      }
+      if (/indexOf\(\s*(?:r|route)\s*\+\s*"\/"\s*\)\s*===?\s*0/.test(text)) {
+        console.error(`FAIL: ${label} still prefix-matches /ar twin routes (route + "/") — that is the 404 bug.`);
+        process.exit(1);
+      }
+    }
+
+    // Every generated pattern must correspond to a real app/ar route file, and
+    // no EN path may be rewritten unless its own Arabic twin exists.
+    const mustStayEnglish = ["/News/838616-x", "/symbol/COMI/pe-ratio", "/symbol/COMI/revenue"];
+    const compiled = derived.patterns.map((s) => new RegExp(s));
+    for (const p of mustStayEnglish) {
+      if (compiled.some((re) => re.test(p))) {
+        console.error(`FAIL: ${p} would be rewritten to /ar${p}, which has no Arabic route (404).`);
+        process.exit(1);
+      }
+    }
+    console.log(`OK: /ar link helpers match ${derived.patterns.length} exact route patterns (no parent-prefix 404s).`);
   }
 
   // The homepage academy cards carry their own copy of the Learn topic list.

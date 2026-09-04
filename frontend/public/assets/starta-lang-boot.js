@@ -37,14 +37,24 @@
      * time, so a language toggle re-targets every CTA without a re-render.
      */
     var AR_TWIN_ROUTES = ["/Calculators","/Funds","/Learn","/Market-Pulse","/News","/RiskAssessment","/companies","/corrections","/editorial-policy","/markets","/sectors","/symbol"];
+    var AR_TWIN_PATTERNS = ["^/Calculators$","^/Funds$","^/Funds/Compare$","^/Funds/[^/]+$","^/Funds/[^/]+/nav-history$","^/Funds/best-mutual-funds-egypt-2026$","^/Funds/category/[^/]+$","^/Funds/fees$","^/Funds/prices-today$","^/Funds/provider/[^/]+$","^/Funds/vs/[^/]+$","^/Learn$","^/Learn/[^/]+$","^/Learn/glossary$","^/Learn/glossary/[^/]+$","^/Market-Pulse$","^/News$","^/News/category/[^/]+$","^/RiskAssessment$","^/companies$","^/companies/vs/[^/]+$","^/corrections$","^/editorial-policy$","^/markets/[^/]+$","^/markets/dividend-calendar$","^/markets/egx30$","^/markets/largest-companies$","^/markets/lowest-pe-stocks$","^/markets/movers$","^/markets/top-dividend-yield$","^/sectors$","^/sectors/[^/]+$","^/symbol/[^/]+$","^/symbol/[^/]+/dividends$","^/symbol/[^/]+/financials$","^/symbol/[^/]+/history$","^/symbol/[^/]+/seasonality$","^/symbol/[^/]+/statistics$","^/symbol/[^/]+/technicals$"];
     window.startaLocalizedHref = function (path) {
         var current = document.documentElement.lang === "en" ? "en" : "ar";
         if (current !== "ar") return path;
-        for (var i = 0; i < AR_TWIN_ROUTES.length; i++) {
-            var route = AR_TWIN_ROUTES[i];
-            if (path === route || path.indexOf(route + "/") === 0 || path.indexOf(route + "?") === 0) {
-                return "/ar" + path;
-            }
+        // EXACT PATTERNS, not prefix matching. Prefix matching asserted that an
+        // Arabic twin of a parent covers every child: /ar/News exists but
+        // /ar/News/[id] does not, so every article link became /ar/News/{id}
+        // and 404'd — all 4,584 of them — and the same held for
+        // /ar/symbol/{id}/{metric}. A path is now rewritten only when its OWN
+        // Arabic route exists, and sync-ar-routes.mjs re-derives the list from
+        // app/ar/** so adding a twin re-enables prefixing automatically.
+        var rest = "";
+        var bare = String(path || "");
+        var cut = bare.search(/[?#]/);
+        if (cut >= 0) { rest = bare.slice(cut); bare = bare.slice(0, cut); }
+        if (bare.length > 1 && bare.charAt(bare.length - 1) === "/") bare = bare.slice(0, -1);
+        for (var i = 0; i < AR_TWIN_PATTERNS.length; i++) {
+            if (new RegExp(AR_TWIN_PATTERNS[i]).test(bare)) return "/ar" + bare + rest;
         }
         // Not a twinned route (static single-URL pages keep language via
         // storage) — never invent an /ar URL that might 404.

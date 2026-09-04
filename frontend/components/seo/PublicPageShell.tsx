@@ -82,7 +82,10 @@ const SHELL_CSS = `
 [data-theme="light"] .seo-shell .light-icon{opacity:1}
 `;
 
-/** Routes that have real /ar twins (server-rendered, language-in-URL). */
+/** Route PATTERNS that have real /ar twins (server-rendered, language-in-URL).
+ *  Exact per-route patterns, not parent prefixes: /ar/News exists while
+ *  /ar/News/[id] does not, and prefix matching turned every article link
+ *  into a 404. See scripts/sync-ar-routes.mjs. */
 /**
  * Derived from app/ar/** by scripts/sync-ar-routes.mjs — never hand-written.
  * The hand-written version listed 2 routes while 15 existed, so every link to
@@ -163,10 +166,12 @@ export default function PublicPageShell({
             <script
                 dangerouslySetInnerHTML={{
                     __html:
-                        `(function(){var L=${JSON.stringify(lang)},R=${JSON.stringify(arTwinRoutes.routes)};` +
+                        `(function(){var L=${JSON.stringify(lang)},P=${JSON.stringify(arTwinRoutes.patterns)};` +
                         `window.startaLocalizedHref=function(p){if(L!=="ar")return p;` +
-                        `for(var i=0;i<R.length;i++){var r=R[i];` +
-                        `if(p===r||p.indexOf(r+"/")===0||p.indexOf(r+"?")===0)return "/ar"+p;}return p;};})();`,
+                        `var s=String(p||""),q="",c=s.search(/[?#]/);` +
+                        `if(c>=0){q=s.slice(c);s=s.slice(0,c);}` +
+                        `if(s.length>1&&s.charAt(s.length-1)==="/")s=s.slice(0,-1);` +
+                        `for(var i=0;i<P.length;i++){if(new RegExp(P[i]).test(s))return "/ar"+s+q;}return p;};})();`,
                 }}
             />
             {/* Canonical nav appearance, the SAME file the static pages load.

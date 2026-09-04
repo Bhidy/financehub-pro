@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
-import { getMarketLists, getSeasonalitySymbols} from '@/lib/public-data';
+import { getMarketLists, getSeasonalitySymbols, getAllFundsRanked } from '@/lib/public-data';
+import { rankFundPairs } from '@/lib/fund-pairs';
 import { SITE_URL, absUrl, fundPath, symbolPath, symbolPathAr, slugify, learnPath, glossaryPath, sectorPath } from '@/lib/seo';
 import { canonicalNewsPath } from '@/lib/news-display';
 import { sectorAr } from '@/content/sector-names-ar';
@@ -50,6 +51,7 @@ async function coreEntries(): Promise<Entry[]> {
         ['/Funds/fees', 'weekly', '0.8'],
         ['/ar/Funds/fees', 'weekly', '0.8'],
         ['/Funds/Compare', 'daily', '0.6'],
+        ['/ar/Funds/Compare', 'daily', '0.6'], // Arabic twin (previously had no URL at all)
         ['/Market-Pulse', 'hourly', '0.9'],
         ['/ar/Market-Pulse', 'daily', '0.7'], // Arabic twin (previously a hard 404)
         ['/Learn', 'weekly', '0.8'],
@@ -294,45 +296,21 @@ async function glossaryEntries(): Promise<Entry[]> {
 }
 
 async function comparisonEntries(): Promise<Entry[]> {
-    // Top fund pairs within each fund type (numeric ids, ranked by 1Y return):
-    // C(top5, 2) = 10 pairs per type — every URL resolves by construction.
-    // return_1y itself is all-NULL in funds_view; the populated columns are
-    // returns_1y / one_year_return (2026-07-03 audit: this gate emptied the
-    // whole segment). Coalesce + rank in JS.
-    const result = await db.query(
-        `SELECT fund_id, fund_type_en, return_1y, returns_1y, one_year_return
-         FROM funds_view
-         WHERE fund_id::text ~ '^[0-9]+$'`
-    );
-    const ranked = (result.rows as Array<Record<string, unknown>>)
-        .map((r) => {
-            const raw = r.return_1y ?? r.returns_1y ?? r.one_year_return;
-            const r1y = raw === null || raw === undefined ? NaN : Number(raw);
-            return { fund_id: Number(r.fund_id), fund_type_en: (r.fund_type_en as string | null) || 'other', r1y };
-        })
-        .filter((r) => Number.isFinite(r.r1y))
-        .sort((a, b) => (a.fund_type_en === b.fund_type_en ? b.r1y - a.r1y : a.fund_type_en.localeCompare(b.fund_type_en)));
-    // Top 8 per fund type: C(8,2) = 28 pairs per type instead of 10, and BOTH
-    // languages — the comparison pages were English-only, so the Arabic tree
-    // had no fund-comparison surface at all. Within-type only, because
-    // comparing a money market fund with an equity fund is a comparison
-    // nobody is making.
-    const byType = new Map<string, number[]>();
-    for (const r of ranked) {
-        const t = r.fund_type_en;
-        if (!byType.has(t)) byType.set(t, []);
-        const arr = byType.get(t) as number[];
-        if (arr.length < 8) arr.push(r.fund_id);
+    // Pairs come from lib/fund-pairs.ts, the SAME function the comparison hub
+    // links from. This used to run its own funds_view query here, which is how
+    // a sitemap starts advertising URLs a page cannot produce — the exact
+    // failure that shipped 404ing provider hubs.
+    let funds: Array<Record<string, unknown>> = [];
+    try {
+        funds = await getAllFundsRanked();
+    } catch (error) {
+        console.error('[sitemap:comparisons] query failed:', (error as Error).message);
+        return [];
     }
     const entries: Entry[] = [];
-    for (const ids of byType.values()) {
-        for (let i = 0; i < ids.length; i++) {
-            for (let j = i + 1; j < ids.length; j++) {
-                const [a, b] = ids[i] < ids[j] ? [ids[i], ids[j]] : [ids[j], ids[i]];
-                entries.push({ loc: absUrl(`/Funds/vs/${a}-vs-${b}`), changefreq: 'weekly', priority: '0.4' });
-                entries.push({ loc: absUrl(`/ar/Funds/vs/${a}-vs-${b}`), changefreq: 'weekly', priority: '0.4' });
-            }
-        }
+    for (const pair of rankFundPairs(funds)) {
+        entries.push({ loc: absUrl(`/Funds/vs/${pair.slug}`), changefreq: 'weekly', priority: '0.4' });
+        entries.push({ loc: absUrl(`/ar/Funds/vs/${pair.slug}`), changefreq: 'weekly', priority: '0.4' });
     }
     return entries;
 }

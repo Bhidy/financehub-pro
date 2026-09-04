@@ -80,15 +80,15 @@ const nextConfig = {
   //
   // /News/:id and /Learn/:slug rewrites are GONE: those are now real
   // server-rendered App Router routes (app/News/[id], app/Learn/[slug]).
-  // /Funds/Compare must run beforeFiles so it wins over app/Funds/[id].
+  //
+  // /Funds/Compare's rewrite is GONE TOO. It served the raw static file, so the
+  // comparison hub was the only fund surface with no server render: no
+  // structured data, and no crawl path into the /Funds/vs/{pair} cluster its
+  // own sitemap advertises. It is now app/Funds/Compare/route.ts (plus an
+  // Arabic twin), which the App Router resolves ahead of app/Funds/[id]
+  // because a static segment outranks a dynamic one. Do not reinstate it.
   async rewrites() {
     return {
-      beforeFiles: [
-        {
-          source: '/Funds/Compare',
-          destination: '/fund-compare.html',
-        },
-      ],
       afterFiles: [
         {
           source: '/',

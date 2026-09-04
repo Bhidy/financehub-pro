@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { SITE_URL, learnPath } from '@/lib/seo';
+import { SITE_URL, learnPath, DEFAULT_OG_IMAGE} from '@/lib/seo';
 import LearnTopicArticle, { learnTopics } from '@/components/seo/LearnTopicArticle';
 
 /**
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description: topic.en.summary,
             url: `/Learn/${slug}`,
             locale: 'en_US',
-            images: [{ url: SITE_URL + topic.coverImageEn }],
+            images: [{ url: topic.coverImageEn ? SITE_URL + topic.coverImageEn : DEFAULT_OG_IMAGE }],
         },
         twitter: {
             card: 'summary_large_image',

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { SITE_URL, arabicSlug, assertUniqueSlugs, canonicalRedirectTarget, learnPath } from '@/lib/seo';
+import { SITE_URL, arabicSlug, assertUniqueSlugs, canonicalRedirectTarget, learnPath, DEFAULT_OG_IMAGE} from '@/lib/seo';
 import LearnTopicArticle, { learnTopics } from '@/components/seo/LearnTopicArticle';
 
 /**
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description: topic.ar.summary,
             url: encodeURI(arPath),
             locale: 'ar_EG',
-            images: [{ url: SITE_URL + topic.coverImageAr }],
+            images: [{ url: topic.coverImageAr ? SITE_URL + topic.coverImageAr : DEFAULT_OG_IMAGE }],
         },
         twitter: {
             card: 'summary_large_image',

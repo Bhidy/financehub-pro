@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { SITE_URL, learnPath } from '@/lib/seo';
+import { SITE_URL, learnPath, DEFAULT_OG_IMAGE} from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import topicsJson from '@/content/learn-topics.generated';
@@ -40,8 +40,8 @@ export type LearnTopic = {
     slug: string;
     accent: string;
     icon: string;
-    coverImageEn: string;
-    coverImageAr: string;
+    coverImageEn?: string;
+    coverImageAr?: string;
     en: LearnTopicContent;
     ar: LearnTopicContent;
 };
@@ -60,7 +60,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
     const content = arabic ? topic.ar : topic.en;
     const coverImage = arabic ? topic.coverImageAr : topic.coverImageEn;
     const imageSizes = learnImageSizes as Record<string, { w: number; h: number }>;
-    const coverSize = imageSizes[coverImage];
+    const coverSize = coverImage ? imageSizes[coverImage] : undefined;
     // Canonical per language: AR URLs carry the Arabic-title slug.
     const path = learnPath(topic.slug, topic.ar.title, lang);
     const related = nextTopics(topic.slug);
@@ -74,7 +74,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
         description: content.summary,
         inLanguage: lang,
         mainEntityOfPage: SITE_URL + encodeURI(path),
-        image: SITE_URL + coverImage,
+        image: coverImage ? SITE_URL + coverImage : DEFAULT_OG_IMAGE,
         publisher: { '@id': `${SITE_URL}/#organization` },
         author: {
             '@type': 'Organization',
@@ -115,6 +115,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
             <Breadcrumbs items={crumbs} />
 
 
+            {coverImage && (
             <div className="learn-cover-wrap">
 
                 {/* Cover. Dimensions come from the file itself (lib/learn-image-sizes.json):
@@ -135,6 +136,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     style={coverSize ? { maxWidth: `min(100%, ${coverSize.w}px)` } : undefined}
                 />
             </div>
+            )}
             <article lang={lang} className="learn-article">
                 <p className="text-sm font-semibold text-starta-teal">
                     {content.category}

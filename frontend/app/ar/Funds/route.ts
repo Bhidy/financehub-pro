@@ -3,7 +3,7 @@ import { getAllFundsRanked } from '@/lib/public-data';
 import { fundPath, absUrl, SITE_URL } from '@/lib/seo';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { buildProviders, providerPath } from '@/content/fund-providers';
-import { fundsHubRows, fundsHubItemList, breadcrumbJson } from '@/lib/funds-hub-render';
+import { fundsHubRows, fundsHubItemList, breadcrumbJson, AR_MARKETPLACE_CLOSING } from '@/lib/funds-hub-render';
 
 /**
  * /ar/Funds — THE ARABIC FUNDS HUB, served by the PREMIUM MARKETPLACE DESIGN.
@@ -108,6 +108,10 @@ export async function GET() {
         // The strings are the shell's OWN Arabic dictionary values, so the
         // rendered result is identical to what the visitor already sees, and
         // `keepKey` leaves the language toggle working in both directions.
+        // Verified live 2026-09-04: production was still serving the shell's
+        // English default here while this exact call renders Arabic locally,
+        // so the route's build output was stale. Touching the file forces a
+        // rebuild; scripts/test-ar-hub-hero.ts now asserts the rendered H1.
         heroText: [
             { dataKey: 'marketplace_title', text: 'الصناديق الاستثمارية', keepKey: true },
             {
@@ -115,6 +119,7 @@ export async function GET() {
                 text: 'بيانات دقيقة ومحدثة تساعدك على مقارنة الصناديق واتخاذ قرارات أفضل.',
                 keepKey: true,
             },
+            ...AR_MARKETPLACE_CLOSING,
         ],
         injections: [{ id: 'fundsGrid', html: categoryNav + providerNav + fundsHubRows(funds, 'ar') }],
         head:

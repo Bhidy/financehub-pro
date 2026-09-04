@@ -15,7 +15,7 @@
     "verify:routes": "node scripts/verify-route-aliases.mjs",
     "verify:i18n": "node scripts/verify-i18n-coverage.mjs",
     "verify:inputs": "node scripts/verify-build-inputs.mjs",
-    "verify:all": "npm run verify:inputs && npm run verify:routes && npm run verify:i18n && npm run verify:nav && npm run verify:auth && npm run verify:funds && npm run verify:providers && npm run verify:pairs && npm run verify:glossary",
+    "verify:all": "npm run verify:inputs && npm run verify:routes && npm run verify:i18n && npm run verify:nav && npm run verify:auth && npm run verify:funds && npm run verify:providers && npm run verify:pairs && npm run verify:glossary && npm run verify:arhub",
     "verify:deploy": "node scripts/verify-deploy.mjs",
     "seo:audit": "node scripts/seo/audit.mjs",
     "seo:audit:quick": "node scripts/seo/audit.mjs --quick --fail-on critical",
@@ -30,7 +30,8 @@
     "verify:funds": "npx tsx scripts/test-fund-categories.ts",
     "verify:providers": "npx tsx scripts/test-fund-providers.ts",
     "verify:pairs": "node scripts/test-stock-pairs.mjs",
-    "verify:glossary": "npx tsx scripts/test-glossary.ts"
+    "verify:glossary": "npx tsx scripts/test-glossary.ts",
+    "verify:arhub": "npx tsx scripts/test-ar-hub-hero.ts"
   },
   "dependencies": {
     "@capacitor/app": "8.1.0",

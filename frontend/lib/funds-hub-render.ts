@@ -23,6 +23,31 @@ const pct = (v: number | null): string => (v === null ? '—' : ltrNum(`${v.toFi
 const navFmt = (v: number | null, lang: 'en' | 'ar'): string =>
     v === null ? '—' : v.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-EG', { maximumFractionDigits: 4 });
 
+/**
+ * The marketplace shell's closing CTA, in the shell's OWN Arabic dictionary
+ * values.
+ *
+ * marketplace.html bakes the English copy into the file and translates it
+ * client-side, so every Arabic route built on this shell (/ar/Funds and each
+ * /ar/Funds/{category,provider}/… hub) served an English <h2> inside an
+ * `<html lang="ar">` document — invisible to the language checks, which only
+ * looked at <html lang>, and invisible to a browser, which runs the i18n pass.
+ * Non-JS answer-engine crawlers saw the English.
+ *
+ * `keepKey` is required: the marketplace toggles language IN PLACE, so
+ * dropping the key would strand this heading in Arabic for a visitor who
+ * switches to English.
+ */
+export const AR_MARKETPLACE_CLOSING = [
+    { dataKey: 'close_title', text: 'ابحث بوضوح ثم تحرك بثقة.', keepKey: true },
+    {
+        dataKey: 'close_text',
+        text: 'تحول ستارتا سوق الصناديق بالكامل إلى تجربة أنظف من الاكتشاف وحتى دراسة كل صندوق.',
+        keepKey: true,
+    },
+    { dataKey: 'close_btn', text: 'اعرف ملف مخاطرك', keepKey: true },
+];
+
 export const fundName = (f: Row, lang: 'en' | 'ar'): string => {
     const ar = str(f, 'fund_name');
     const en = str(f, 'fund_name_en');

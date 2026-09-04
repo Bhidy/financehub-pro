@@ -1,5 +1,5 @@
 import { renderStaticHub, esc, escUrl, jsonLdScript, langSeedScript } from '@/lib/static-hub';
-import { fundsHubRows, fundsHubItemList, breadcrumbJson } from '@/lib/funds-hub-render';
+import { fundsHubRows, fundsHubItemList, breadcrumbJson , AR_MARKETPLACE_CLOSING } from '@/lib/funds-hub-render';
 
 /**
  * THE ONE FUND-HUB RENDERER.
@@ -79,6 +79,9 @@ export function renderFundHub(spec: FundHubSpec): Promise<Response> {
         heroText: [
             { dataKey: 'marketplace_title', text: spec.heading },
             { dataKey: 'marketplace_subline', text: spec.intro },
+            // The hero above is page-specific (so its key is stripped); the
+            // closing CTA is dictionary copy and keeps its key.
+            ...(isAr ? AR_MARKETPLACE_CLOSING : []),
         ],
         injections: [{ id: 'fundsGrid', html: fundsHubRows(spec.funds, spec.lang) + siblingNav }],
         head:

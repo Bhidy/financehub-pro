@@ -68,6 +68,14 @@ jobs:
           GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
         run: node scripts/seo/gsc.mjs --days 28 --out /tmp/seo-gsc.json
 
+      - name: Competitive scorecard (Starta vs snduk)
+        working-directory: frontend
+        # Never fails the run: the competitor is a third party whose
+        # availability we do not control, and a scorecard we cannot fetch is a
+        # missing measurement, not a regression on our side.
+        continue-on-error: true
+        run: node scripts/seo/competitor.mjs --out /tmp/seo-competitor.json
+
       - name: Compose and send the intelligence report
         working-directory: frontend
         env:
@@ -89,6 +97,7 @@ jobs:
           path: |
             /tmp/seo-audit.json
             /tmp/seo-gsc.json
+            /tmp/seo-competitor.json
             /tmp/seo-report.md
           if-no-files-found: warn
           retention-days: 90

@@ -28,7 +28,17 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_JSON = path.join(root, "lib/ar-twin-routes.json");
 const MIRROR = path.join(root, "public/assets/starta-lang-boot.js");
 
-/** Collect every `app/ar/**\/page.tsx` and turn it into its base route. */
+/**
+ * Collect every `app/ar/**\/{page.tsx,route.ts}` and turn it into its base route.
+ *
+ * `route.ts` COUNTS. The designed hubs (/ar/Funds, /ar/News, /ar/Learn,
+ * /ar/Market-Pulse) are Route Handlers, not pages, and scanning only page.tsx
+ * missed them: /News had an Arabic twin for months that this list never knew
+ * about, so `startaLocalizedHref` left every news link un-prefixed and dropped
+ * Arabic readers onto the English hub — the exact failure this file exists to
+ * prevent. /Funds and /Learn were in the list only by accident, because their
+ * `[id]`/`[slug]` children happen to be page.tsx.
+ */
 export async function deriveArRoutes() {
   const base = path.join(root, "app/ar");
   const found = new Set();
@@ -43,7 +53,7 @@ export async function deriveArRoutes() {
     for (const e of entries) {
       if (e.isDirectory()) {
         await walk(path.join(dir, e.name), `${rel}/${e.name}`);
-      } else if (e.name === "page.tsx" && rel) {
+      } else if ((e.name === "page.tsx" || e.name === "route.ts") && rel) {
         // Dynamic segments ([slug]) become prefix matches: the helper already
         // treats "/Learn" as covering "/Learn/anything".
         const route = rel.replace(/\/\[[^\]]+\]/g, "");

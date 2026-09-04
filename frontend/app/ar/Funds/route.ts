@@ -97,6 +97,25 @@ export async function GET() {
                 replace: `<meta name="description" content="${esc(AR_DESC)}">`,
             },
         ],
+        // The hero H1/subline are the ONE thing the head-tag replacements above
+        // never touched: this page served `<h1>Mutual Funds</h1>` inside an
+        // `<html lang="ar">` document. A JS-executing crawler recovered the
+        // Arabic via the page's own i18n pass, but the answer-engine crawlers we
+        // explicitly invite in robots.txt (OAI-SearchBot, PerplexityBot, CCBot)
+        // largely do not run JS — so the site's most valuable Arabic commercial
+        // URL presented an English heading to exactly the systems §27/§31 target.
+        //
+        // The strings are the shell's OWN Arabic dictionary values, so the
+        // rendered result is identical to what the visitor already sees, and
+        // `keepKey` leaves the language toggle working in both directions.
+        heroText: [
+            { dataKey: 'marketplace_title', text: 'الصناديق الاستثمارية', keepKey: true },
+            {
+                dataKey: 'marketplace_subline',
+                text: 'بيانات دقيقة ومحدثة تساعدك على مقارنة الصناديق واتخاذ قرارات أفضل.',
+                keepKey: true,
+            },
+        ],
         injections: [{ id: 'fundsGrid', html: categoryNav + providerNav + fundsHubRows(funds, 'ar') }],
         head:
             langSeedScript('ar') +

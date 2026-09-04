@@ -72,6 +72,10 @@ export async function renderNewsFront(lang: 'en' | 'ar', page = 1) {
             ? 'أحدث أخبار البورصة المصرية والاقتصاد والشركات، مصنّفة حسب الموضوع ومحدثة على مدار اليوم.'
             : 'Latest Egyptian Exchange, economy and company news, grouped by topic and updated through the day.',
         heading: isAr ? 'أخبار السوق' : 'Market news',
+        // The shell's own dictionary value for this language: the served H1 now
+        // matches what the visitor sees instead of leaving English in an
+        // `<html lang="ar">` document.
+        h1: { text: isAr ? 'أخبار السوق بوضوح.' : 'Market stories, clearly told.', pageSpecific: false },
         intro: isAr
             ? 'أحدث تغطية للبورصة المصرية والاقتصاد المصري والشركات المقيدة، مصنّفة حسب الموضوع.'
             : 'The latest coverage of the Egyptian Exchange, the Egyptian economy and listed companies, grouped by topic.',
@@ -114,6 +118,18 @@ export async function renderNewsTopic(slug: string, lang: 'en' | 'ar', page = 1)
         title: `${isAr ? topic.titleAr : topic.titleEn} | Starta Markets`,
         description: isAr ? topic.descAr : topic.descEn,
         heading: isAr ? topic.nameAr : topic.nameEn,
+        // Deliberately the shell's dictionary value, NOT the topic name.
+        //
+        // Naming the topic here would give each archive its own H1 (a real, if
+        // modest, SEO gain) but `pageSpecific` has to drop the data-key to stop
+        // the i18n pass overwriting it — and news.html toggles language IN
+        // PLACE, so the heading would strand in one language when a visitor
+        // switches. That trade could not be verified locally (topic archives
+        // need the article DB, which is not reachable from a dev machine), and
+        // an unverified visible change to fourteen live pages is not worth a
+        // duplicate-H1 fix. The defect actually being fixed here is the English
+        // heading on Arabic URLs; that is language-correct either way.
+        h1: { text: isAr ? 'أخبار السوق بوضوح.' : 'Market stories, clearly told.', pageSpecific: false },
         intro: isAr ? topic.introAr : topic.introEn,
         articles,
         crumbs: [

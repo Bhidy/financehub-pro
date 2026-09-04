@@ -36,7 +36,7 @@
      * static→server links through it; it reads the CURRENT language at call
      * time, so a language toggle re-targets every CTA without a re-render.
      */
-    var AR_TWIN_ROUTES = ["/Calculators","/Funds","/Learn","/RiskAssessment","/companies","/corrections","/editorial-policy","/markets","/sectors","/symbol"];
+    var AR_TWIN_ROUTES = ["/Calculators","/Funds","/Learn","/Market-Pulse","/News","/RiskAssessment","/companies","/corrections","/editorial-policy","/markets","/sectors","/symbol"];
     window.startaLocalizedHref = function (path) {
         var current = document.documentElement.lang === "en" ? "en" : "ar";
         if (current !== "ar") return path;

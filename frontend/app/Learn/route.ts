@@ -74,11 +74,10 @@ export async function GET() {
         file: 'learn.html',
         lang: 'en',
         injections: [{ id: 'topicsGrid', html: cards }],
-        // /Learn is a single-URL page whose language follows the stored
-        // preference, so both hreflang values point at it — a self-referencing
-        // pair, which is valid, rather than a link to an /ar/Learn that 308s
-        // straight back here.
-        head: hreflangLinks('/Learn', '/Learn') + jsonLdScript(itemList) + jsonLdScript(breadcrumb),
+        // /ar/Learn is now a real Arabic hub rather than a 308 back to here,
+        // so this finally declares the true bilingual pair. Pointing both
+        // values at /Learn told search engines no Arabic education hub existed.
+        head: hreflangLinks('/Learn', '/ar/Learn') + jsonLdScript(itemList) + jsonLdScript(breadcrumb),
         cacheSeconds: 86400,
     });
 }

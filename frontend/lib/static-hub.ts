@@ -147,7 +147,27 @@ export type StaticHubOptions = {
      * caught it. Anchors inside hand-formatted HTML must never be matched by
      * exact whitespace.
      */
-    heroText?: Array<{ dataKey: string; text: string }>;
+    heroText?: Array<{
+        dataKey: string;
+        text: string;
+        /**
+         * Keep the `data-key` attribute instead of removing it.
+         *
+         * Removing it is right for a PAGE-SPECIFIC heading that has no entry in
+         * the shell's own dictionary (the category and provider hubs): the
+         * page's i18n pass would otherwise overwrite "صناديق أسواق النقد في مصر"
+         * with the generic dictionary value on load.
+         *
+         * It is WRONG for a hub heading the dictionary already translates
+         * (/ar/Funds, /ar/News, /ar/Learn). Those shells toggle language IN
+         * PLACE — `langToggle` calls `setLanguage()`, it does not navigate — so
+         * a heading with no `data-key` would stay frozen in Arabic when the
+         * visitor switches to English. Keeping the key means the server render
+         * and the client render produce the SAME string, and the toggle still
+         * works both ways.
+         */
+        keepKey?: boolean;
+    }>;
     /**
      * Rewrite the shell's <html lang>/<dir>.
      *
@@ -199,7 +219,9 @@ export async function renderStaticHub(opts: StaticHubOptions): Promise<Response>
         const re = new RegExp(`(<(\\w+)[^>]*?)\\s*data-key="${h.dataKey}"([^>]*>)([\\s\\S]*?)(</\\2>)`);
         const before = html;
         html = html.replace(re, (_m, open: string, _tag: string, rest: string, _inner: string, close: string) =>
-            `${open}${rest}${esc(h.text)}${close}`
+            h.keepKey
+                ? `${open} data-key="${h.dataKey}"${rest}${esc(h.text)}${close}`
+                : `${open}${rest}${esc(h.text)}${close}`
         );
         if (html === before) {
             console.error(`[static-hub] ${opts.file}: no element with data-key="${h.dataKey}" — heading not localized`);

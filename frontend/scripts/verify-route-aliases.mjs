@@ -1,4 +1,4 @@
-import { constants, readFileSync } from "node:fs";
+import { constants, existsSync, readFileSync } from "node:fs";
 import { access, readFile, readdir } from "node:fs/promises";
 import { assetHashes } from "./sync-asset-versions.mjs";
 import { deriveArRoutes } from "./sync-ar-routes.mjs";
@@ -789,7 +789,9 @@ const DESIGNED_SHELL_HUBS = [
   { route: "app/News/route.ts", via: "lib/news-hub.ts", shell: "news.html", url: "/News" },
   { route: "app/ar/News/route.ts", via: "lib/news-hub.ts", shell: "news.html", url: "/ar/News" },
   { route: "app/Learn/route.ts", shell: "learn.html", url: "/Learn" },
+  { route: "app/ar/Learn/route.ts", shell: "learn.html", url: "/ar/Learn" },
   { route: "app/Market-Pulse/route.ts", shell: "market-pulse.html", url: "/Market-Pulse" },
+  { route: "app/ar/Market-Pulse/route.ts", via: "app/Market-Pulse/route.ts", shell: "market-pulse.html", url: "/ar/Market-Pulse" },
 ];
 
 /**
@@ -807,6 +809,67 @@ const PREMIUM_PARITY = [
     url: "/ar/symbol/{SYMBOL}",
   },
 ];
+
+/**
+ * ARABIC HUB PARITY — the gate that WOULD have caught /ar/Learn.
+ *
+ * DESIGNED_SHELL_HUBS is hand-maintained, so /ar/Learn was not merely failing
+ * its checks: it was absent from the list entirely and therefore unfailable,
+ * while next.config.ts quietly 308'd it to the English hub. That is the same
+ * defect that cost the Arabic funds rankings, and the list-based gate could
+ * not see it because the missing thing was the list entry itself.
+ *
+ * This check is DERIVED instead of listed. For every English designed hub it
+ * asserts an Arabic twin route exists, and that no redirect sends /ar/X to /X.
+ * Forgetting to add a new hub to a list can no longer hide a missing Arabic
+ * tree — on a site whose default language is Arabic.
+ */
+async function assertArabicHubParity() {
+  let failed = false;
+  const enHubs = DESIGNED_SHELL_HUBS.filter((h) => !h.url.startsWith("/ar/"));
+
+  for (const hub of enHubs) {
+    const arUrl = `/ar${hub.url}`;
+    const twin = DESIGNED_SHELL_HUBS.find((h) => h.url === arUrl);
+    if (!twin) {
+      console.error(
+        `FAIL: ${hub.url} is a designed hub with no Arabic twin registered (${arUrl}). On an Arabic-default site every hub needs an Arabic URL of its own — see /ar/Funds and /ar/Learn.`
+      );
+      failed = true;
+      continue;
+    }
+    if (!existsSync(path.join(root, twin.route))) {
+      console.error(`FAIL: ${twin.route} is missing — ${arUrl} would fall back to a redirect or a 404.`);
+      failed = true;
+    }
+  }
+
+  // No Arabic hub may redirect to its English twin. Reading next.config.ts as
+  // text keeps this honest without importing the config.
+  let cfg = "";
+  try {
+    cfg = readFileSync(path.join(root, "next.config.ts"), "utf8");
+  } catch {
+    console.error("FAIL: next.config.ts unreadable — cannot verify Arabic hubs are not redirected away.");
+    return true;
+  }
+  for (const hub of enHubs) {
+    const arUrl = `/ar${hub.url}`;
+    // `source: '/ar/Learn'` followed within the same object literal by
+    // `destination: '/Learn'`.
+    const re = new RegExp(
+      `source:\\s*['"]${arUrl.replace(/[/\-]/g, "\\$&")}['"][\\s\\S]{0,200}?destination:\\s*['"]${hub.url.replace(/[/\-]/g, "\\$&")}['"]`
+    );
+    if (re.test(cfg)) {
+      console.error(
+        `FAIL: next.config.ts redirects ${arUrl} -> ${hub.url}. That leaves the Arabic tree with no hub URL and makes ${arUrl} answer <html lang="en">. Serve the designed shell in Arabic instead.`
+      );
+      failed = true;
+    }
+  }
+  if (!failed) console.log("OK: every designed hub has an Arabic twin, and none is redirected to its English URL.");
+  return failed;
+}
 
 async function assertPremiumParity() {
   let failed = false;
@@ -977,6 +1040,7 @@ async function assertDesignedShellsIntact() {
 
 async function run() {
   await assertDesignedShellsIntact();
+  if (await assertArabicHubParity()) process.exitCode = 1;
   await assertPremiumParity();
 
   // /home must be served by rewrite to /home.html, not by a competing app route.

@@ -251,6 +251,35 @@ function auditPage(url, res) {
         f.add('medium', 'EN_PAGE_WRONG_LANG', `${path} is an English URL but <html lang="${facts.htmlLang}">`, { url });
     }
 
+    // HEADING LANGUAGE. `<html lang="ar">` being right is not enough: the
+    // designed static shells bake their English headings into the file and
+    // rely on a client i18n pass to translate them, so /ar/Funds served
+    // `<h1>Mutual Funds</h1>`, /ar/News served `<h1>Market stories, clearly
+    // told.</h1>` and /ar/Learn served `<h1>Starta Academy</h1>` — each inside
+    // a correctly-declared Arabic document, which is why every existing check
+    // passed them.
+    //
+    // A JS-executing crawler recovers the Arabic. The answer-engine crawlers
+    // robots.txt explicitly invites (OAI-SearchBot, PerplexityBot, CCBot)
+    // largely do not, so the H1 they index for the site's most valuable Arabic
+    // URLs was English. Measured as a SHARE of letters, not presence of Latin:
+    // Arabic headings legitimately carry tickers and brand names
+    // ("أسهم البورصة المصرية (EGX)"), and flagging those would be noise.
+    if (isAr && facts.h1.length) {
+        for (const heading of facts.h1) {
+            const arabic = (heading.match(/[\u0600-\u06FF]/g) || []).length;
+            const latin = (heading.match(/[A-Za-z]/g) || []).length;
+            const letters = arabic + latin;
+            // Too few letters to judge (a bare ticker or a number) — skip.
+            if (letters < 8) continue;
+            if (arabic / letters < 0.3) {
+                f.add(sev('high', 'medium'), 'AR_PAGE_ENGLISH_HEADING',
+                    `${path} is Arabic but its <h1> is English: "${heading.slice(0, 70)}"`,
+                    { url, h1: heading, arabicShare: Number((arabic / letters).toFixed(2)) });
+            }
+        }
+    }
+
     // hreflang reciprocity: a declared alternate must exist, be canonical, and
     // point back. A one-way hreflang is ignored entirely by Google.
     const hl = facts.hreflang;

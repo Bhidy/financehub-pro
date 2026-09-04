@@ -41,6 +41,21 @@ export type NewsHubSpec = {
     description: string;
     /** Rendered as the lead story's eyebrow — the hub's own name. */
     heading: string;
+    /**
+     * The shell's `<h1 data-key="news_title">`.
+     *
+     * news.html bakes in the English "Market stories, clearly told." and relies
+     * on its client i18n pass to translate it, so every Arabic news URL served
+     * an English H1 to any crawler that does not execute JS — including the
+     * answer engines robots.txt explicitly invites.
+     *
+     * `pageSpecific` distinguishes the two cases: a topic archive gets its own
+     * topic name (so the seven archives stop sharing one H1) and must drop the
+     * data-key or the i18n pass would overwrite it, exactly as the fund
+     * category hubs already do. A front hub keeps the dictionary line and its
+     * key, so the language toggle still works in place.
+     */
+    h1: { text: string; pageSpecific: boolean };
     intro: string;
     articles: NewsArticleRow[];
     crumbs: Array<{ name: string; url?: string }>;
@@ -189,6 +204,7 @@ export function renderNewsHub(spec: NewsHubSpec): Promise<Response> {
     return renderStaticHub({
         file: 'news.html',
         lang: spec.lang,
+        heroText: [{ dataKey: 'news_title', text: spec.h1.text, keepKey: !spec.h1.pageSpecific }],
         replacements: [
             { find: '<title>News | Starta Markets</title>', replace: `<title>${esc(spec.title)}</title>` },
             {

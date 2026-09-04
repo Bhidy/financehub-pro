@@ -183,15 +183,13 @@ const nextConfig = {
       // document with no fund names in its HTML, which is why competitors
       // owned that SERP. Do not reinstate this redirect.
       //
-      // /ar/Learn still redirects: the Learn hub is a single-URL designed
-      // static page whose language follows the stored preference, and there is
-      // no separate Arabic Learn hub document to point at. Detail routes
-      // (/ar/Learn/{slug}) are deeper paths and are not matched here.
-      {
-        source: '/ar/Learn',
-        destination: '/Learn',
-        permanent: true,
-      },
+      // /ar/Learn NO LONGER REDIRECTS either, for the same reasons: it is now a
+      // real Arabic hub (app/ar/Learn/route.ts) serving the same designed
+      // learn.html in Arabic. While the 308 existed the Arabic education
+      // cluster had no hub of its own — /ar/Learn answered `<html lang="en">`,
+      // and /ar/Learn/glossary plus the 20 /ar/Learn/{slug} topic pages were
+      // sitemapped with no crawlable parent in their own language tree.
+      // Do not reinstate this redirect.
     ];
   },
 

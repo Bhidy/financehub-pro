@@ -51,7 +51,9 @@ async function coreEntries(): Promise<Entry[]> {
         ['/ar/Funds/fees', 'weekly', '0.8'],
         ['/Funds/Compare', 'daily', '0.6'],
         ['/Market-Pulse', 'hourly', '0.9'],
+        ['/ar/Market-Pulse', 'daily', '0.7'], // Arabic twin (previously a hard 404)
         ['/Learn', 'weekly', '0.8'],
+        ['/ar/Learn', 'weekly', '0.8'], // the Arabic Learn hub (was a 308 to /Learn)
         ['/companies', 'daily', '0.9'],
         ['/sectors', 'daily', '0.7'],
         ['/markets/movers', 'hourly', '0.7'],

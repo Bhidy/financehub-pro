@@ -21,6 +21,7 @@
     "seo:audit:quick": "node scripts/seo/audit.mjs --quick --fail-on critical",
     "seo:indexnow": "node scripts/seo/indexnow.mjs --since 24h",
     "seo:gsc": "node scripts/seo/gsc.mjs --days 28",
+    "seo:competitor": "node scripts/seo/competitor.mjs",
     "seo:report": "node scripts/seo/audit.mjs --out /tmp/seo-audit.json; node scripts/seo/gsc.mjs --out /tmp/seo-gsc.json; node scripts/seo/report.mjs --audit /tmp/seo-audit.json --gsc /tmp/seo-gsc.json",
     "sync:mobile-public": "node scripts/sync-mobile-public.mjs",
     "build:mobile": "node scripts/sync-mobile-public.mjs && vite build --config vite.mobile.config.ts",

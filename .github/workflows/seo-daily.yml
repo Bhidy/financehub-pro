@@ -11,11 +11,19 @@ name: SEO Daily Intelligence
 # action is how monitoring gets ignored. It fails only on CRITICAL, which is
 # the class that costs indexation.
 #
-# EXTERNAL CONFIGURATION (optional, degrades honestly without it):
-#   GSC_SERVICE_ACCOUNT_JSON — a Google Cloud service-account key (raw JSON or
-#   base64) for a service account added as a user on the Search Console
-#   property. Without it, the report states that search-performance
-#   intelligence is unavailable and shows no estimated figures in its place.
+# EXTERNAL CONFIGURATION (all optional; every one degrades honestly without it,
+# reporting `configured: false` rather than an estimated figure):
+#   GSC_SERVICE_ACCOUNT_JSON  Google Cloud service-account key (raw JSON or
+#     base64) for a service account added as a user on the Search Console
+#     property. Powers scripts/seo/gsc.mjs.
+#   SERP_PROVIDER + SERP_API_KEY  a licensed SERP provider (dataforseo |
+#     serpapi). Competitor rankings are not available from Search Console and
+#     are never estimated. Powers scripts/seo/serp.mjs.
+#   BING_WEBMASTER_API_KEY  Bing Webmaster Tools → Settings → API access.
+#     Covers SEARCH performance only: Bing's AI Performance report (citations,
+#     grounding queries, citation share) is dashboard-only with no documented
+#     API, so AI citations are ingested from its CSV export via
+#     `node scripts/seo/bing.mjs --import-ai <file>`.
 # ============================================================
 
 on:
@@ -41,7 +49,7 @@ jobs:
   intelligence:
     name: Full audit · search intelligence · report
     runs-on: [self-hosted, linux, x64, hetzner]
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v6
@@ -76,6 +84,30 @@ jobs:
         continue-on-error: true
         run: node scripts/seo/competitor.mjs --out /tmp/seo-competitor.json
 
+      - name: Duplicate and same-intent detection (news)
+        working-directory: frontend
+        # Reports only. Consolidating editorial content is a human decision:
+        # an automated merge of two financial stories can destroy a correction.
+        continue-on-error: true
+        run: node scripts/seo/duplicates.mjs --segment news --sample 300 --out /tmp/seo-duplicates.json
+
+      - name: Competitor rank tracking
+        working-directory: frontend
+        # Reports `configured: false` and NO rankings without a licensed
+        # provider. It never estimates a position.
+        continue-on-error: true
+        env:
+          SERP_PROVIDER: ${{ secrets.SERP_PROVIDER }}
+          SERP_API_KEY: ${{ secrets.SERP_API_KEY }}
+        run: node scripts/seo/serp.mjs --out /tmp/seo-serp.json
+
+      - name: Bing search + AI citation intelligence
+        working-directory: frontend
+        continue-on-error: true
+        env:
+          BING_WEBMASTER_API_KEY: ${{ secrets.BING_WEBMASTER_API_KEY }}
+        run: node scripts/seo/bing.mjs --days 30 --out /tmp/seo-bing.json
+
       - name: Compose and send the intelligence report
         working-directory: frontend
         env:
@@ -89,6 +121,19 @@ jobs:
           echo "## SEO Intelligence Report" >> "$GITHUB_STEP_SUMMARY"
           cat /tmp/seo-report.md >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Experiments due for measurement
+        working-directory: frontend
+        # Mondays only: the ledger's default review window is 28 days, so a
+        # daily "nothing is due" line would be noise 27 days out of 28.
+        if: github.event_name == 'workflow_dispatch' || fromJSON('["1"]')[0] == ''
+        continue-on-error: true
+        run: |
+          if [ "$(date -u +%u)" = "1" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            node scripts/seo/experiments.mjs due | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "not Monday — experiment review skipped"
+          fi
+
       - name: Archive the report
         if: always()
         uses: actions/upload-artifact@v4
@@ -98,6 +143,9 @@ jobs:
             /tmp/seo-audit.json
             /tmp/seo-gsc.json
             /tmp/seo-competitor.json
+            /tmp/seo-duplicates.json
+            /tmp/seo-serp.json
+            /tmp/seo-bing.json
             /tmp/seo-report.md
           if-no-files-found: warn
           retention-days: 90

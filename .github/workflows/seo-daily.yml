@@ -123,9 +123,10 @@ jobs:
 
       - name: Experiments due for measurement
         working-directory: frontend
-        # Mondays only: the ledger's default review window is 28 days, so a
-        # daily "nothing is due" line would be noise 27 days out of 28.
-        if: github.event_name == 'workflow_dispatch' || fromJSON('["1"]')[0] == ''
+        # No `if:` — the script below decides. An earlier version guarded this
+        # with an expression whose second clause was always false, so the step
+        # was skipped on every scheduled run and the weekly review never
+        # happened at all.
         continue-on-error: true
         run: |
           if [ "$(date -u +%u)" = "1" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then

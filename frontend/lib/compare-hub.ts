@@ -146,6 +146,23 @@ function pairGroups(funds: Row[], lang: Lang) {
     return [...groups.values()].filter((g) => g.items.length > 0);
 }
 
+/**
+ * Rebind #langToggle to NAVIGATE to the twin URL.
+ *
+ * Capture phase + stopImmediatePropagation: for one element, capture listeners
+ * run before bubble listeners regardless of registration order, so this wins
+ * over the shell's own `setLanguage()` handler without touching the file.
+ * Degrades to the shell's in-place toggle if the element is missing.
+ */
+function twinToggleScript(twinPath: string): string {
+    return (
+        `<script>document.addEventListener('DOMContentLoaded',function(){` +
+        `var t=document.getElementById('langToggle');if(!t)return;` +
+        `t.addEventListener('click',function(e){e.stopImmediatePropagation();e.preventDefault();` +
+        `location.assign(${JSON.stringify(twinPath)});},true);});</script>`
+    );
+}
+
 export async function renderCompareHub(lang: Lang) {
     const isAr = lang === 'ar';
     const t = COPY[lang];
@@ -293,7 +310,23 @@ export async function renderCompareHub(lang: Lang) {
         ],
         injections: [],
         head:
-            (isAr ? langSeedScript('ar') : '') +
+            // Seed from the URL on BOTH routes, and make the toggle navigate.
+            //
+            // WHY, and it is specific to this page: the other designed hubs
+            // inject content their own script OVERWRITES on load, so a language
+            // toggle can never disagree with it. The blocks below are different
+            // — nothing overwrites them, so they keep whatever language the
+            // server chose. With a stored Arabic preference, /Funds/Compare
+            // rendered Arabic chrome (the shell's i18n follows localStorage)
+            // around an English FAQ. Verified in a browser, not reasoned about.
+            //
+            // The fix makes the URL authoritative here: each route seeds its own
+            // language, and #langToggle navigates to the twin URL instead of
+            // swapping dictionaries in place. A capture-phase listener on the
+            // same element runs before the shell's bubble-phase handler, so this
+            // preempts it without editing the designed file.
+            langSeedScript(lang) +
+            twinToggleScript(isAr ? PATH_EN : PATH_AR) +
             hreflangLinks(PATH_EN, PATH_AR) +
             (itemList ? jsonLdScript(itemList) : '') +
             jsonLdScript(faq) +

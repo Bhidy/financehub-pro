@@ -145,7 +145,69 @@ const sampleEvenly = (arr, n) => {
     return Array.from({ length: n }, (_, i) => arr[Math.floor(i * step)]);
 };
 
+/**
+ * SELF-TEST — proof the detector can actually fire.
+ *
+ * The first real runs reported zero duplicates across news and learn. That is
+ * either a clean archive or a broken detector, and the two look identical from
+ * the outside. This exercises the classifier on constructed inputs whose answer
+ * is known, so "no duplicates found" becomes a measurement instead of a guess.
+ * Wired into verify:all; exits non-zero on any wrong verdict.
+ */
+function selfTest() {
+    const base =
+        'الشركة المصرية للاتصالات تعلن نتائج الربع الثالث بارتفاع الأرباح إلى مليار جنيه ' +
+        'مدفوعة بنمو قاعدة المشتركين وزيادة إيرادات خدمات البيانات خلال الفترة الحالية للسوق';
+    const cases = [
+        { name: 'identical text', a: base, b: base, expect: 'EXACT' },
+        {
+            name: 're-filed wire copy (one clause changed)',
+            a: base,
+            b: base.replace('خلال الفترة الحالية للسوق', 'خلال الفترة الماضية للسوق'),
+            expect: 'NEAR_DUPLICATE',
+        },
+        {
+            name: 'unrelated story',
+            a: base,
+            b: 'البنك المركزي المصري يثبت أسعار الفائدة في اجتماع لجنة السياسة النقدية اليوم ' +
+               'وسط توقعات المحللين باستمرار الضغوط التضخمية على الاقتصاد المحلي حتى نهاية العام',
+            expect: null,
+        },
+    ];
+
+    const classify = (ta, tb) => {
+        const mk = (t) => {
+            const toks = tokenize(t);
+            const sh = new Set();
+            for (let i = 0; i + SHINGLE <= toks.length; i++) sh.add(toks.slice(i, i + SHINGLE).join(' '));
+            return { sh, sim: simhash(sh), norm: toks.join(' ') };
+        };
+        const A = mk(ta);
+        const B = mk(tb);
+        if (hamming(A.sim, B.sim) > HAMMING_MAX) return null;
+        const j = jaccard(A.sh, B.sh);
+        if (A.norm === B.norm) return 'EXACT';
+        if (j >= NEAR_JACCARD) return 'NEAR_DUPLICATE';
+        if (j >= INTENT_JACCARD) return 'SAME_INTENT';
+        return null;
+    };
+
+    let failed = 0;
+    for (const c of cases) {
+        const got = classify(c.a, c.b);
+        const ok = got === c.expect;
+        if (!ok) failed++;
+        console.log(`  ${ok ? 'ok  ' : 'FAIL'} ${c.name}: expected ${c.expect ?? 'no match'}, got ${got ?? 'no match'}`);
+    }
+    if (failed) {
+        console.error(`\nFAIL: duplicate detector — ${failed} wrong verdict(s). "0 duplicates found" cannot be trusted.`);
+        process.exit(1);
+    }
+    console.log('\nPASS: duplicate detector fires on known duplicates and ignores unrelated text');
+}
+
 async function main() {
+    if (has('selftest')) return selfTest();
     const started = Date.now();
     let urls;
     try {

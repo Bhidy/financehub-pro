@@ -120,7 +120,10 @@ async function measurePage(url) {
     const words = text.split(/\s+/).filter(Boolean).length;
     const arabic = (text.match(/[؀-ۿ]/g) || []).length;
     const latin = (text.match(/[A-Za-z]/g) || []).length;
-    const headings = (body.match(/<h[1-3][^>]*>/gi) || []).length;
+    // h1-h4, not h1-h3. The narrower count under-measured our own comparison
+    // hub, whose grouped and FAQ headings are h4 — a scorecard that cannot see
+    // half the structure it is scoring produces a gap that does not exist.
+    const headings = (body.match(/<h[1-4][^>]*>/gi) || []).length;
     const internal = (body.match(/href="(\/[^"]*|https?:\/\/[^"]*)"/gi) || []).filter((h) => {
         const m = h.match(/href="([^"]+)"/i);
         if (!m) return false;

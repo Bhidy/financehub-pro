@@ -124,7 +124,11 @@ function pairGroups(funds: Row[], lang: Lang) {
     }
     const groups = new Map<string, { label: string; href: string; items: Array<{ href: string; a: string; b: string }> }>();
 
-    for (const pair of featuredFundPairs(funds, 12)) {
+    // 18, not 12: these are the hub's only crawl paths into a ~150-page
+    // comparison cluster, and 12 reached barely a third of the fund types'
+    // top pairs. Still round-robin across categories and still curated — the
+    // full set would be a link dump, which is a different failure.
+    for (const pair of featuredFundPairs(funds, 18)) {
         const fa = byId.get(pair.a);
         const fb = byId.get(pair.b);
         if (!fa || !fb) continue; // never link a pair we cannot name

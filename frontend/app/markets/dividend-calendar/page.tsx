@@ -207,7 +207,7 @@ export default async function DividendCalendarPage() {
     });
 
     return (
-        <PublicPageShell>
+        <PublicPageShell altHref="/ar/markets/dividend-calendar">
             <JsonLd
                 data={breadcrumbJsonLd(
                     [{ url: '/', label: 'Home' }, { label: 'Dividend Calendar' }],

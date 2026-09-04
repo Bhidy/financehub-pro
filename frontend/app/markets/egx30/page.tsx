@@ -93,7 +93,7 @@ export default async function Egx30Page() {
     };
 
     return (
-        <PublicPageShell>
+        <PublicPageShell altHref="/ar/markets/egx30">
             <JsonLd data={datasetJsonLd} />
             <JsonLd data={faqJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/Market-Pulse', label: 'Markets' }, { label: 'EGX 30' }], SITE_URL)} />

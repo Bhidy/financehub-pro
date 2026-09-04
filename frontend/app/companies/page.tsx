@@ -64,7 +64,7 @@ export default async function CompaniesPage() {
     };
 
     return (
-        <PublicPageShell>
+        <PublicPageShell altHref="/ar/companies">
             <JsonLd data={itemListJsonLd} />
             <JsonLd
                 data={breadcrumbJsonLd(

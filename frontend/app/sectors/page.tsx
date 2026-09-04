@@ -57,7 +57,7 @@ export default async function SectorsPage() {
     };
 
     return (
-        <PublicPageShell>
+        <PublicPageShell altHref="/ar/sectors">
             <JsonLd data={itemListJsonLd} />
             <JsonLd
                 data={breadcrumbJsonLd(

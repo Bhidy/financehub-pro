@@ -126,7 +126,7 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
     };
 
     return (
-        <PublicPageShell>
+        <PublicPageShell altHref={encodeURI(sectorPath(match.sector_name, sectorAr(match.sector_name), 'ar'))}>
             <JsonLd data={itemListJsonLd} />
             <JsonLd
                 data={breadcrumbJsonLd(

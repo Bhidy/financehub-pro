@@ -54,7 +54,7 @@ const SECTIONS: Array<{ h: string; p: string }> = [
 
 export default function EditorialPolicyPage() {
     return (
-        <PublicPageShell>
+        <PublicPageShell altHref="/ar/editorial-policy">
             <JsonLd
                 data={{
                     '@context': 'https://schema.org',

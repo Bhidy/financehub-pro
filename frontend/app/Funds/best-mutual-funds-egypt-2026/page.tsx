@@ -143,7 +143,7 @@ export default async function BestFundsPage() {
     };
 
     return (
-        <PublicPageShell>
+        <PublicPageShell altHref="/ar/Funds/best-mutual-funds-egypt-2026">
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/Funds', label: 'Mutual Funds' }, { label: 'Best Funds in Egypt 2026' }], SITE_URL)} />

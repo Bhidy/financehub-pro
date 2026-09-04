@@ -100,7 +100,7 @@ export default async function MoversPage() {
         : null;
 
     return (
-        <PublicPageShell>
+        <PublicPageShell altHref="/ar/markets/movers">
             <JsonLd
                 data={breadcrumbJsonLd(
                     [{ url: '/', label: 'Home' }, { label: 'EGX Movers' }],

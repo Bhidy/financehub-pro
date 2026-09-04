@@ -64,7 +64,7 @@ export default async function TopDividendYieldPage() {
     };
 
     return (
-        <PublicPageShell>
+        <PublicPageShell altHref="/ar/markets/top-dividend-yield">
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { label: 'Top Dividend Yield' }], SITE_URL)} />

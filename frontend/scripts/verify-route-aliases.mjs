@@ -1405,6 +1405,49 @@ async function run() {
     console.log("OK: sector names are localised on every bilingual surface that shows them.");
   }
 
+
+  // ── EVERY PAGE WITH AN /ar TWIN MUST OFFER THE LANGUAGE TOGGLE ──────────
+  // PublicPageShell renders the AR/EN switch only when `altHref` is passed.
+  // Every app/ar/** page passed one (back to English) while ten English pages
+  // passed none, so the toggle was one-directional: Arabic readers could reach
+  // English, English readers could not reach Arabic — on /companies, /sectors,
+  // /markets/* and more. Arabic is the site's default language, so that is
+  // backwards.
+  {
+    const { readdirSync } = await import("node:fs");
+    const patterns = JSON.parse(
+      await readFile(path.join(root, "lib/ar-twin-routes.json"), "utf8")
+    ).patterns.map((s) => new RegExp(s));
+
+    const pages = [];
+    const walk = (dir, rel) => {
+      let entries;
+      try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+      for (const e of entries) {
+        if (e.isDirectory()) walk(path.join(dir, e.name), `${rel}/${e.name}`);
+        else if (e.name === "page.tsx") pages.push({ file: path.join(dir, e.name), route: rel || "/" });
+      }
+    };
+    walk(path.join(root, "app"), "");
+
+    const missing = [];
+    for (const { file, route } of pages) {
+      if (route.startsWith("/ar/") || route === "/ar") continue;
+      const text = await readFile(file, "utf8");
+      if (!text.includes("<PublicPageShell")) continue;
+      const sample = route.replace(/\/\[[^\]]+\]/g, "/X");
+      if (patterns.some((re) => re.test(sample)) && !/altHref/.test(text)) missing.push(route);
+    }
+    if (missing.length > 0) {
+      console.error(
+        "FAIL: these pages have an /ar twin but pass no altHref, so they render NO language toggle:\n" +
+        missing.map((r) => `       ${r}`).join("\n")
+      );
+      process.exit(1);
+    }
+    console.log("OK: every page with an /ar twin offers the language toggle.");
+  }
+
   console.log("PASS: Route alias guard checks succeeded.");
 }
 

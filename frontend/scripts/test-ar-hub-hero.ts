@@ -32,6 +32,9 @@ const ok = (cond: boolean, label: string, got?: unknown) => {
         lang: 'ar',
         heroText: [{ dataKey: 'marketplace_title', text: HERO_AR, keepKey: true }],
         injections: [{ id: 'fundsGrid', html: '<div></div>' }],
+        // Required by StaticHubOptions; irrelevant to what this asserts, but
+        // omitting it fails `tsc --noEmit` and therefore the production build.
+        cacheSeconds: 0,
     });
     const html = await res.text();
     const m = /<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html);

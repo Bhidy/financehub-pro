@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getTicker, getTechnicals, getSeasonalitySymbols} from '@/lib/public-data';
 import { SITE_URL, symbolFromArParam, canonicalRedirectTarget, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -132,7 +132,7 @@ export async function renderTechnicals(id: string, lang: Lang) {
     if (isAr) {
         const canonicalPath = symbolTabPath(symbol, 'technicals', 'ar', ticker.name_ar);
         const target = canonicalRedirectTarget(`/ar/symbol/${id}/technicals`, canonicalPath);
-        if (target) redirect(target);
+        if (target) permanentRedirect(target);
     }
 
     const rows = await getTechnicals(symbol);

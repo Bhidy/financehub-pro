@@ -1448,6 +1448,45 @@ async function run() {
     console.log("OK: every page with an /ar twin offers the language toggle.");
   }
 
+
+  // ── CANONICAL REDIRECTS MUST BE PERMANENT (308, not 307) ────────────────
+  // canonicalRedirectTarget() normalises a bare/stale URL onto the canonical
+  // one (bare ticker -> Arabic-slugged company URL, wrong news slug -> right
+  // one). That is a PERMANENT fact about the URL, so it must use
+  // permanentRedirect(). Half the call sites used redirect() (307), which
+  // tells Google the original may return and keeps both URLs in play instead
+  // of consolidating them. A live crawl found 210 such 307s on /ar/symbol.
+  {
+    const { readdirSync } = await import("node:fs");
+    const files = [];
+    const walk = (dir) => {
+      let entries;
+      try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+      for (const e of entries) {
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) walk(full);
+        else if (/\.(tsx|ts)$/.test(e.name)) files.push(full);
+      }
+    };
+    walk(path.join(root, "app"));
+    const offenders = [];
+    for (const f of files) {
+      const text = await readFile(f, "utf8");
+      if (!text.includes("canonicalRedirectTarget")) continue;
+      if (/(?<![A-Za-z])redirect\(/.test(text.replace(/permanentRedirect\(/g, "PERM("))) {
+        offenders.push(path.relative(root, f));
+      }
+    }
+    if (offenders.length > 0) {
+      console.error(
+        "FAIL: canonical redirects must use permanentRedirect() (308), not redirect() (307):\n" +
+        offenders.map((f) => `       ${f}`).join("\n")
+      );
+      process.exit(1);
+    }
+    console.log("OK: every canonical redirect is permanent (308).");
+  }
+
   console.log("PASS: Route alias guard checks succeeded.");
 }
 

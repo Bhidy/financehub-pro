@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getFund, getFundNavHistory, type NavPoint } from '@/lib/public-data';
 import { SITE_URL, absUrl, fundPath, idFromParam, canonicalRedirectTarget, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -123,7 +123,7 @@ export async function renderNavHistory(id: string, lang: Lang) {
     const canonicalPath = `${basePath(fund, lang)}/nav-history`;
     const requestPath = `${isAr ? '/ar' : ''}/Funds/${id}/nav-history`;
     const target = canonicalRedirectTarget(requestPath, canonicalPath);
-    if (target) redirect(target);
+    if (target) permanentRedirect(target);
 
     const points = await getFundNavHistory(fundId);
     // Quality gate: a couple of dozen points is the floor for a history page.

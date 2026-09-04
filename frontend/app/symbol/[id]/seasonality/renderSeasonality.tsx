@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import {
     getTicker,
     getSeasonality,
@@ -119,7 +119,7 @@ export async function renderSeasonality(id: string, lang: Lang) {
     if (isAr) {
         const canonicalPath = symbolTabPath(symbol, 'seasonality', 'ar', ticker.name_ar);
         const target = canonicalRedirectTarget(`/ar/symbol/${id}/seasonality`, canonicalPath);
-        if (target) redirect(target);
+        if (target) permanentRedirect(target);
     }
 
     const seasonality = await getSeasonality(symbol);

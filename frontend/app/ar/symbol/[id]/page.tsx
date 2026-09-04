@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getTicker, getStats, getCompanyProfile, getSectorPeers } from '@/lib/public-data';
 import type { Ticker } from '@/lib/public-data';
 import { SITE_URL, symbolPath, symbolPathAr, symbolFromArParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
@@ -208,7 +208,7 @@ export default async function ArabicSymbolPage({ params }: Props) {
     // unicode Location header 500s.
     const canonicalPath = symbolPathAr(symbol, ticker.name_ar);
     const redirectTarget = canonicalRedirectTarget(`/ar/symbol/${id}`, canonicalPath);
-    if (redirectTarget) redirect(redirectTarget);
+    if (redirectTarget) permanentRedirect(redirectTarget);
 
     const [stats, profile, peers] = await Promise.all([
         getStats(symbol).catch(() => null),

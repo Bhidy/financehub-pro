@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getTicker, getStats, getSeasonalitySymbols} from '@/lib/public-data';
 import { SITE_URL, absUrl, symbolFromArParam, canonicalRedirectTarget, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -157,7 +157,7 @@ export async function renderStatistics(id: string, lang: Lang) {
     if (isAr) {
         const canonicalPath = symbolTabPath(symbol, 'statistics', 'ar', ticker.name_ar);
         const target = canonicalRedirectTarget(`/ar/symbol/${id}/statistics`, canonicalPath);
-        if (target) redirect(target);
+        if (target) permanentRedirect(target);
     }
 
     const stats = await getStats(symbol).catch(() => null);

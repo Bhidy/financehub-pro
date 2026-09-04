@@ -272,10 +272,27 @@ function auditPage(url, res) {
             const letters = arabic + latin;
             // Too few letters to judge (a bare ticker or a number) — skip.
             if (letters < 8) continue;
-            if (arabic / letters < 0.3) {
+            const share = Number((arabic / letters).toFixed(2));
+
+            // ZERO Arabic is the unambiguous defect: an English string sitting
+            // in an Arabic template, i.e. the replacement never ran.
+            if (arabic === 0) {
                 f.add(sev('high', 'medium'), 'AR_PAGE_ENGLISH_HEADING',
                     `${path} is Arabic but its <h1> is English: "${heading.slice(0, 70)}"`,
-                    { url, h1: heading, arabicShare: Number((arabic / letters).toFixed(2)) });
+                    { url, h1: heading, arabicShare: share });
+            } else if (share < 0.3) {
+                // Arabic present but outweighed. On this site that is almost
+                // always an Arabic TEMPLATE carrying an English proper noun —
+                // "سهم Fawry For Banking Technology And Electronic Payment
+                // (FWRY)" — because some rows have no Arabic company name
+                // upstream, and inventing one for a listed issuer is not an
+                // option. The template is correct and the page is not broken,
+                // so this is reported for visibility at `low` rather than
+                // raised as a defect: a check that fires daily on something
+                // nobody can fix is how monitoring gets ignored.
+                f.add('low', 'AR_HEADING_MOSTLY_LATIN',
+                    `${path} has an Arabic <h1> dominated by a Latin proper noun (likely a missing Arabic name upstream): "${heading.slice(0, 70)}"`,
+                    { url, h1: heading, arabicShare: share });
             }
         }
     }

@@ -5,6 +5,7 @@ import { getNewsArticle, getLatestNews, type NewsArticle } from '@/lib/public-da
 import { sanitizeNewsText } from '@/lib/news-display';
 import { SITE_URL, newsPath, idFromParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
+import PreferredSource from '@/components/seo/PreferredSource';
 import JsonLd from '@/components/seo/JsonLd';
 import { newsCoverPath, newsCoverUrl } from '@/lib/news-cover';
 
@@ -191,6 +192,12 @@ export default async function NewsArticlePage({ params }: Props) {
                         <p key={i} className="mb-4">{p}</p>
                     ))}
                 </div>
+
+                {/* Google's Preferred Sources button, at the end of the article
+                    because that is where Google's guidance puts it — a reader
+                    acting on a good experience. Deliberately not on the hubs or
+                    the fund pages. */}
+                <PreferredSource lang={arabic ? 'ar' : 'en'} />
 
             </article>
 

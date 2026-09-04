@@ -11,6 +11,7 @@ import {
     getGlossaryTermByParam,
     relatedGlossaryTerms,
 } from '@/content/glossary-terms';
+import { glossaryDepth } from '@/content/glossary-detail';
 
 /**
  * Arabic glossary term page. Canonical URL carries the ARABIC-term slug:
@@ -73,6 +74,10 @@ export default async function GlossaryTermArabicPage({ params }: Props) {
     if (redirectTarget) permanentRedirect(redirectTarget);
     const related = relatedGlossaryTerms(term.slug);
     const siteLinks = GLOSSARY_SITE_LINKS[term.slug] ?? [];
+    // term.slug, NOT slug: the Arabic URL carries the Arabic slug, while
+    // GLOSSARY_DETAIL is keyed by the canonical English slug — the same key
+    // GLOSSARY_SITE_LINKS uses one line above.
+    const depth = glossaryDepth(term.slug, 'ar');
 
     const definedTermJsonLd = {
         '@context': 'https://schema.org',
@@ -112,6 +117,23 @@ export default async function GlossaryTermArabicPage({ params }: Props) {
                 <p className="mt-5 text-[1.05rem] leading-relaxed text-main">
                     {term.ar.definition}
                 </p>
+
+                {depth && (
+                    <div className="mt-8 space-y-6">
+                        <section>
+                            <h2 className="text-base font-extrabold tracking-tight text-main">مثال</h2>
+                            <p className="mt-1.5 leading-relaxed text-muted">{depth.example}</p>
+                        </section>
+                        <section>
+                            <h2 className="text-base font-extrabold tracking-tight text-main">لماذا يهم</h2>
+                            <p className="mt-1.5 leading-relaxed text-muted">{depth.whyItMatters}</p>
+                        </section>
+                        <section>
+                            <h2 className="text-base font-extrabold tracking-tight text-main">خطأ شائع</h2>
+                            <p className="mt-1.5 leading-relaxed text-muted">{depth.mistake}</p>
+                        </section>
+                    </div>
+                )}
 
                 {siteLinks.length > 0 && (
                     <div className="mt-6 rounded-xl border border-teal-100 bg-teal-50 p-4">

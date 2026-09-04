@@ -11,6 +11,7 @@ import {
     getGlossaryTerm,
     relatedGlossaryTerms,
 } from '@/content/glossary-terms';
+import { glossaryDepth } from '@/content/glossary-detail';
 
 /**
  * English glossary term page at /Learn/glossary/{slug}. Fully static: content
@@ -64,6 +65,7 @@ export default async function GlossaryTermPage({ params }: Props) {
     const path = `/Learn/glossary/${slug}`;
     const related = relatedGlossaryTerms(slug);
     const siteLinks = GLOSSARY_SITE_LINKS[slug] ?? [];
+    const depth = glossaryDepth(slug, 'en');
 
     const definedTermJsonLd = {
         '@context': 'https://schema.org',
@@ -103,6 +105,23 @@ export default async function GlossaryTermPage({ params }: Props) {
                 <p className="mt-5 text-[1.05rem] leading-relaxed text-main">
                     {term.en.definition}
                 </p>
+
+                {depth && (
+                    <div className="mt-8 space-y-6">
+                        <section>
+                            <h2 className="text-base font-extrabold tracking-tight text-main">Example</h2>
+                            <p className="mt-1.5 leading-relaxed text-muted">{depth.example}</p>
+                        </section>
+                        <section>
+                            <h2 className="text-base font-extrabold tracking-tight text-main">Why it matters</h2>
+                            <p className="mt-1.5 leading-relaxed text-muted">{depth.whyItMatters}</p>
+                        </section>
+                        <section>
+                            <h2 className="text-base font-extrabold tracking-tight text-main">A common mistake</h2>
+                            <p className="mt-1.5 leading-relaxed text-muted">{depth.mistake}</p>
+                        </section>
+                    </div>
+                )}
 
                 {siteLinks.length > 0 && (
                     <div className="mt-6 rounded-xl border border-teal-100 bg-teal-50 p-4">

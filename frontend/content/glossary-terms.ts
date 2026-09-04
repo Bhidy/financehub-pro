@@ -683,13 +683,25 @@ export function relatedGlossaryTerms(slug: string): GlossaryTerm[] {
  * Bilingual labels so the EN and AR term pages stay perfectly mirrored.
  */
 export const GLOSSARY_SITE_LINKS: Record<string, Array<{ href: string; en: string; ar: string }>> = {
+    // Each term points at the MOST SPECIFIC page on this site that shows it as
+    // live data. The first version of this map predated the fund-category,
+    // prices-today, fees and market-screen pages, so most entries pointed at a
+    // generic hub; a glossary link is only worth following if it lands on the
+    // number the term describes.
     stock: [{ href: '/companies', en: 'Browse all EGX-listed companies', ar: 'تصفح جميع الشركات المقيدة في البورصة المصرية' }],
     'stock-market': [{ href: '/Market-Pulse', en: 'See today’s EGX market pulse', ar: 'تابع نبض السوق المصرية اليوم' }],
-    'egx-30': [{ href: '/Market-Pulse', en: 'Track the EGX 30 live on Market Pulse', ar: 'تابع مؤشر EGX 30 لحظيًا في نبض السوق' }],
+    'egx-30': [{ href: '/markets/egx30', en: 'EGX 30 index and its constituents', ar: 'مؤشر EGX 30 ومكوناته' }],
     'mutual-fund': [{ href: '/Funds', en: 'Compare Egyptian mutual funds and their NAVs', ar: 'قارن صناديق الاستثمار المصرية وصافي قيمة أصولها' }],
-    nav: [{ href: '/Funds', en: 'See daily NAVs for Egyptian funds', ar: 'اطلع على صافي قيمة الأصول اليومي للصناديق المصرية' }],
-    'market-cap': [{ href: '/companies', en: 'Compare EGX companies by market cap', ar: 'قارن شركات البورصة المصرية حسب القيمة السوقية' }],
+    nav: [{ href: '/Funds/prices-today', en: 'Today’s unit price for every Egyptian fund', ar: 'سعر الوثيقة اليوم لكل صندوق مصري' }],
+    dividend: [{ href: '/Learn/what-are-dividends', en: 'Learn how dividends work', ar: 'تعرّف على كيفية عمل التوزيعات' }],
+    'dividend-yield': [{ href: '/companies', en: 'Compare EGX companies by dividend yield', ar: 'قارن شركات البورصة المصرية حسب عائد التوزيعات' }],
+    'market-cap': [{ href: '/markets/largest-companies', en: 'Largest EGX companies by market cap', ar: 'أكبر شركات البورصة المصرية بالقيمة السوقية' }],
+    volatility: [{ href: '/markets/most-volatile', en: 'Most volatile EGX stocks', ar: 'الأسهم الأكثر تقلبًا في البورصة المصرية' }],
+    liquidity: [{ href: '/markets/most-active', en: 'Most actively traded EGX stocks', ar: 'الأسهم الأكثر نشاطًا في البورصة المصرية' }],
+    diversification: [{ href: '/Learn/diversification-made-simple', en: 'Learn: diversification made simple', ar: 'تعلّم: التنويع ببساطة' }],
     etf: [{ href: '/Funds', en: 'Explore listed Egyptian funds', ar: 'استكشف الصناديق المصرية المتاحة' }],
-    'money-market-fund': [{ href: '/Funds', en: 'Compare Egyptian money market funds', ar: 'قارن صناديق النقد والسيولة المصرية' }],
-    'shariah-compliant': [{ href: '/Funds', en: 'Find Shariah-compliant Egyptian funds', ar: 'ابحث عن الصناديق المصرية المتوافقة مع الشريعة' }],
+    'money-market-fund': [{ href: '/Funds/category/money-market', en: 'Egyptian money market funds', ar: 'صناديق أسواق النقد المصرية' }],
+    'shariah-compliant': [{ href: '/Funds/category/shariah', en: 'Shariah-compliant Egyptian funds', ar: 'الصناديق المصرية المتوافقة مع الشريعة' }],
+    'treasury-bonds': [{ href: '/Funds/category/fixed-income', en: 'Egyptian fixed income funds', ar: 'صناديق الدخل الثابت المصرية' }],
+    'bank-cd': [{ href: '/Learn/savings-certificates-vs-funds', en: 'Learn: certificates vs mutual funds', ar: 'تعلّم: الشهادات مقابل صناديق الاستثمار' }],
 };

@@ -220,6 +220,8 @@ export async function collectGsc({ days = 28 } = {}) {
             previousWindow: { start: dayStr(prevStart), end: dayStr(prevEnd) },
             totals: {
                 clicks: tNow.clicks,
+                // Clicks attributed to non-anonymised queries — always ≤ clicks.
+                visibleQueryClicks: tQueriesNow.clicks,
                 impressions: tNow.impressions,
                 ctr: tNow.impressions ? Number(((tNow.clicks / tNow.impressions) * 100).toFixed(2)) : 0,
                 clicksPrev: tPrev.clicks,
@@ -253,7 +255,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         else if (r.error) console.error(`[gsc] ERROR — ${r.error}`);
         else
             console.log(
-                `[gsc] ${r.totals.clicks} clicks / ${r.totals.impressions} impressions over ${r.window.days}d;  — ${tQueriesNow.clicks} of those clicks sit on visible (non-anonymised) queries` +
+                `[gsc] ${r.totals.clicks} clicks / ${r.totals.impressions} impressions over ${r.window.days}d;  — ${r.totals.visibleQueryClicks ?? 0} of those clicks sit on visible (non-anonymised) queries` +
                     `${r.strikingDistance.length} striking-distance queries, ${r.ctrOpportunities.length} CTR gaps, ${r.cannibalization.length} cannibalisations`
             );
     });

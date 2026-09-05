@@ -64,11 +64,28 @@ const nextConfig = {
   // default, so each of those functions must be told to include the file it
   // needs. Without this the routes fall back to redirecting at the static
   // asset (safe, but the server-rendered content is lost).
+  // Every Route Handler that serves a designed shell reads it (and, for the
+  // Arabic server-side dictionary pass, public/assets/starta-i18n.js) with
+  // readFileSync at request time. public/ is not in the serverless bundle by
+  // default, so each shell route lists what it reads — the shared chrome
+  // dictionary included, or /ar/* routes would silently ship an English nav.
   outputFileTracingIncludes: {
-    '/Funds': ['./public/marketplace.html'],
-    '/News': ['./public/news.html'],
-    '/Learn': ['./public/learn.html'],
-    '/Market-Pulse': ['./public/market-pulse.html'],
+    '/Funds': ['./public/marketplace.html', './public/assets/starta-i18n.js'],
+    '/ar/Funds': ['./public/marketplace.html', './public/assets/starta-i18n.js'],
+    '/Funds/category/[slug]': ['./public/marketplace.html', './public/assets/starta-i18n.js'],
+    '/ar/Funds/category/[slug]': ['./public/marketplace.html', './public/assets/starta-i18n.js'],
+    '/Funds/provider/[slug]': ['./public/marketplace.html', './public/assets/starta-i18n.js'],
+    '/ar/Funds/provider/[slug]': ['./public/marketplace.html', './public/assets/starta-i18n.js'],
+    '/Funds/Compare': ['./public/fund-compare.html', './public/assets/starta-i18n.js'],
+    '/ar/Funds/Compare': ['./public/fund-compare.html', './public/assets/starta-i18n.js'],
+    '/News': ['./public/news.html', './public/assets/starta-i18n.js'],
+    '/ar/News': ['./public/news.html', './public/assets/starta-i18n.js'],
+    '/News/category/[slug]': ['./public/news.html', './public/assets/starta-i18n.js'],
+    '/ar/News/category/[slug]': ['./public/news.html', './public/assets/starta-i18n.js'],
+    '/Learn': ['./public/learn.html', './public/assets/starta-i18n.js'],
+    '/ar/Learn': ['./public/learn.html', './public/assets/starta-i18n.js'],
+    '/Market-Pulse': ['./public/market-pulse.html', './public/assets/starta-i18n.js'],
+    '/ar/Market-Pulse': ['./public/market-pulse.html', './public/assets/starta-i18n.js'],
   },
 
   experimental: {

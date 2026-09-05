@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTicker } from "@/lib/public-data";
+import { getTicker, getTickerAny } from "@/lib/public-data";
 import { symbolPath, symbolPathAr } from "@/lib/seo";
 
 /**
@@ -22,9 +22,15 @@ type Props = { params: Promise<{ id: string }>; children: React.ReactNode };
  */
 async function lookupTicker(symbol: string) {
     try {
-        return { ticker: await getTicker(symbol), dbOk: true };
+        const ticker = await getTicker(symbol);
+        if (ticker) return { ticker, dbOk: true, listed: true };
+        // A real but non-listed symbol (delisted, alias, rights, unverified)
+        // resolves through the identity lookup so its status page can render;
+        // it is never indexed and its sub-tabs (which use getTicker) 404.
+        const any = await getTickerAny(symbol);
+        return { ticker: any, dbOk: true, listed: false };
     } catch {
-        return { ticker: null, dbOk: false };
+        return { ticker: null, dbOk: false, listed: false };
     }
 }
 
@@ -33,7 +39,12 @@ export async function generateMetadata(
 ): Promise<Metadata> {
     const { id } = await params;
     const symbol = (id || "").toUpperCase();
-    const { ticker, dbOk } = symbol ? await lookupTicker(symbol) : { ticker: null, dbOk: true };
+    const { ticker, dbOk, listed } = symbol ? await lookupTicker(symbol) : { ticker: null, dbOk: true, listed: false };
+    if (ticker && !listed) {
+        // Reachable, honest, not indexed: a delisted or unverified line must
+        // never rank as an "EGX stock".
+        return { title: `${ticker.name_en || symbol} (${symbol}) — listing status`, robots: { index: false, follow: true } };
+    }
     if (!ticker) {
         if (!dbOk) {
             return {

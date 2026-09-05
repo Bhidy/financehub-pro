@@ -4,6 +4,7 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { SECURITY_MASTER_SOURCES } from '@/lib/security-master';
 
 /**
  * /companies — the EGX listed-companies directory. Server-rendered full list
@@ -76,10 +77,12 @@ export default async function CompaniesPage() {
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Egyptian Exchange (EGX) Listed Companies</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">
-                All {tickers.length} companies listed on the Egyptian Exchange with live prices, sorted by market
-                capitalization. Click any company for its full profile: price chart, key statistics, financial
-                statements, dividends, technicals and news — in Arabic and English.
-                {asOfHuman && <> Updated daily; prices as of {asOfHuman}.</>}
+                {tickers.length} companies listed on the Egyptian Exchange — main and SME markets, as confirmed against
+                EGX&rsquo;s own register of listed securities ({SECURITY_MASTER_SOURCES.egx_main_register?.captured_at}) —
+                with their latest prices, sorted by market capitalization. Click any company for its full profile: price
+                chart, key statistics, financial statements, dividends, technicals and news — in Arabic and English.
+                {asOfHuman && <> Updated daily; prices as of {asOfHuman}.</>} A price is shown only when the quote is
+                current; a company whose last quote is older than two weeks shows no price.
             </p>
             <p className="mt-1 text-sm text-muted" dir="rtl" lang="ar">
                 دليل الشركات المدرجة في البورصة المصرية — الأسعار والقطاعات والقيمة السوقية، محدَّث يوميًا.
@@ -121,7 +124,7 @@ export default async function CompaniesPage() {
                                 <td className="px-4 py-2.5 font-mono font-semibold text-muted">
                                     <Link href={symbolPath(t.symbol)} className="hover:text-starta-darkTeal">{t.symbol}</Link>
                                 </td>
-                                <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
+                                <td className="px-4 py-2.5 text-muted" title={t.sector_name ? `TradingView classification: ${t.sector_name}` : undefined}>{t.official_sector_en || t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 text-right font-semibold">
                                     {t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}
                                 </td>
@@ -138,8 +141,10 @@ export default async function CompaniesPage() {
             </div>
 
             <p className="mt-4 text-xs text-muted">
-                Source: Egyptian Exchange via TradingView. Prices refresh every 15 minutes during EGX trading hours
-                (Sunday–Thursday). Market caps in Egyptian pounds. Prices are in EGP unless a currency code is shown (some EGX lines trade in USD).
+                Listing status and sector: the Egyptian Exchange&rsquo;s register of listed securities (main and SME markets).
+                Prices: EGX feed via TradingView, refreshed every 15 minutes during EGX trading hours (Sunday–Thursday); a quote
+                older than two weeks is withheld rather than shown as current. Market caps in Egyptian pounds. Prices are in EGP
+                unless a currency code is shown (some EGX lines trade in USD).
             </p>
         </PublicPageShell>
     );

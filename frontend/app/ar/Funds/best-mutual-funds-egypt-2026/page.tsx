@@ -9,6 +9,8 @@ import JsonLd from '@/components/seo/JsonLd';
 import FundsGuide from '@/components/seo/FundsGuide';
 import FundsNarrativeSections from '@/components/seo/FundsNarrative';
 import { buildFundsNarrative } from '@/lib/funds-narrative';
+import RankingEligibility from '@/components/seo/RankingEligibility';
+import { rankingEligibility, fundCurrency } from '@/lib/fund-stats';
 
 /**
  * Arabic twin of /Funds/best-mutual-funds-egypt-2026 — "أفضل صناديق الاستثمار
@@ -77,7 +79,9 @@ const CATEGORY_AR: Record<string, string> = {
 
 export default async function BestFundsArPage() {
     const funds = await getAllFundsRanked();
-    const withReturn = funds.filter((f) => num(f, 'return_1y') !== null);
+    // RANKED = the audited engine stands behind the 12-month figure (lib/fund-stats.ts).
+    // Every other current fund is counted and explained in <RankingEligibility>.
+    const withReturn = funds.filter((f) => rankingEligibility(f).eligible);
     if (withReturn.length < 3) notFound();
     const asOfMs = funds.reduce<number | null>((mx, f) => {
         const t = f.last_nav_date ? Date.parse(String(f.last_nav_date)) : NaN;
@@ -116,7 +120,7 @@ export default async function BestFundsArPage() {
         ...narrative.faq,
         {
             q: 'كيف تُرتَّب هذه الصناديق؟',
-            a: `تُرتَّب حصريًا حسب عائد آخر 12 شهرًا المحسوب من تاريخ صافي قيمة الأصول لكل صندوق، مجمّعة حسب الفئة. لا يُطبَّق أي حكم تحريري — تُعاد الجداول تلقائيًا مع تحديث صافي قيمة الأصول (مرتين يوميًا). البيانات بتاريخ ${asOfHuman ?? 'آخر إفصاح'}.`,
+            a: `تُرتَّب حصريًا حسب عائد آخر 12 شهرًا الذي يحسبه محرّكنا المُدقَّق يوميًا من سجل صافي قيمة الأصول المنشور لكل صندوق، مجمّعة حسب الفئة. يُرتَّب ${withReturn.length} من ${funds.length} صندوقًا؛ ويُدرَج الباقي دون ترتيب لسبب معلن (سجل أقل من 12 شهرًا، أو غياب إفصاح قريب من تاريخ الإسناد، أو تحذير جودة على السلسلة). لا يُطبَّق أي حكم تحريري — تُعاد الجداول تلقائيًا مع تحديث صافي قيمة الأصول (مرتين يوميًا). البيانات بتاريخ ${asOfHuman ?? 'آخر إفصاح'}.`,
         },
         {
             q: 'هل يعني ارتفاع العائد السابق أن الصندوق هو الخيار الأفضل؟',
@@ -136,7 +140,7 @@ export default async function BestFundsArPage() {
 
             <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">أفضل صناديق الاستثمار في مصر 2026</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">
-                {withReturn.length} صندوق استثمار مصري مرتبة <strong>حصريًا حسب عائد آخر 12 شهرًا</strong>، حسب الفئة. تأتي صافي قيمة الأصول والعوائد من الإفصاحات الرسمية لمديري الصناديق وتُحدَّث مرتين يوميًا
+                {withReturn.length} من {funds.length} صندوق استثمار مصري مؤهل للترتيب، مرتبة <strong>حصريًا حسب عائد آخر 12 شهرًا</strong> المحسوب من سجل صافي قيمة الأصول المنشور، حسب الفئة. تأتي صافي قيمة الأصول والعوائد من الإفصاحات الرسمية لمديري الصناديق وتُحدَّث مرتين يوميًا
                 {asOfHuman && <> — البيانات بتاريخ <time dateTime={asOf as string}>{asOfHuman}</time></>}. الترتيب آلي وليس توصية.
             </p>
 
@@ -173,7 +177,7 @@ export default async function BestFundsArPage() {
                                         <td className="px-4 py-2.5 text-muted">{CATEGORY_AR[categoryOf(f)]}</td>
                                         <td className={`px-4 py-2.5 font-bold tabular-nums ${r1y !== null && r1y >= 0 ? 'text-emerald-700' : 'text-red-600'}`} dir="ltr">{fmtPct(r1y)}</td>
                                         <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtPct(num(f, 'return_ytd'))}</td>
-                                        <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtNav(num(f, 'latest_nav'))} {str(f, 'currency') || 'EGP'}</td>
+                                        <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtNav(num(f, 'latest_nav'))} {fundCurrency(f)}</td>
                                     </tr>
                                 );
                             })}
@@ -227,9 +231,11 @@ export default async function BestFundsArPage() {
                     المنهجية
                 </h2>
                 <p className="mt-3 leading-relaxed text-muted">
-                    تُجمَّع الصناديق حسب نوعها وتصنيفها المُفصَح عنه، ثم تُرتَّب حسب عائد آخر 12 شهرًا المشتق من تاريخ صافي قيمة الأصول. تُحذف الفئات التي تضم أقل من ثلاثة صناديق. تأتي الرسوم والحدود الدنيا ومستويات المخاطرة من الإفصاحات نفسها المعروضة على صفحة كل صندوق. تُعاد الجداول تلقائيًا مع تحديث صافي قيمة الأصول — لا شيء على هذه الصفحة مُنتقى يدويًا.
+                    تُجمَّع الصناديق حسب نوعها المُفصَح عنه (أو حسب النوع الوارد في اسمها الرسمي عندما لا يحمل الإفصاح نوعًا)، ثم تُرتَّب حسب عائد آخر 12 شهرًا الذي يحسبه محرّكنا المُدقَّق من سجل صافي قيمة الأصول — الرقم نفسه المعروض على صفحة كل صندوق. تُحذف الفئات التي تضم أقل من ثلاثة صناديق مُرتَّبة. تأتي الرسوم والحدود الدنيا ومستويات المخاطرة من الإفصاحات نفسها المعروضة على صفحة كل صندوق. تُعاد الجداول تلقائيًا مع تحديث صافي قيمة الأصول — لا شيء على هذه الصفحة مُنتقى يدويًا.
                 </p>
             </section>
+
+            <RankingEligibility rows={funds} lang="ar" />
 
             <section className="mt-10 max-w-3xl">
                 <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight"><span aria-hidden className="inline-block h-4 w-1 rounded-full bg-starta-teal" />الأسئلة الشائعة</h2>

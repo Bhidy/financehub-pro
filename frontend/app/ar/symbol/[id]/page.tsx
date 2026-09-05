@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { ltrNum } from '@/lib/bidi';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getTicker, getStats, getCompanyProfile, getSectorPeers } from '@/lib/public-data';
+import { getTicker, getTickerAny, getStats, getCompanyProfile, getSectorPeers } from '@/lib/public-data';
+import ListingStatusNotice from '@/components/seo/ListingStatusNotice';
 import type { Ticker } from '@/lib/public-data';
 import { SITE_URL, symbolPath, symbolPathAr, symbolFromArParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
 import { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -128,6 +129,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
                 robots: { index: false }, // degraded render: don't index a stub
             };
         }
+        // A real but non-listed symbol (delisted, alias, rights, unverified)
+        // renders a status page: never indexed as an "EGX stock".
+        const any = await getTickerAny(symbol).catch(() => null);
+        if (any) return { title: `${any.name_ar || any.name_en || symbol} (${symbol}) — حالة القيد`, robots: { index: false, follow: true } };
         return { title: 'الشركة غير موجودة', robots: { index: false } };
     }
 
@@ -204,7 +209,16 @@ export default async function ArabicSymbolPage({ params }: Props) {
     }
     if (!ticker) {
         if (!dbOk) return <ArabicSymbolAppOnly />;
-        notFound();
+        // Not listed, but real (delisted, duplicate alias, rights, unverified):
+        // a reachable status page, never a live-looking quote; noindex.
+        const any = await getTickerAny(symbol).catch(() => null);
+        if (!any) notFound();
+        return (
+            <>
+                <ListingStatusNotice symbol={symbol} security={any.listing} lang="ar" />
+                <ArabicSymbolAppOnly />
+            </>
+        );
     }
 
     // Canonicalise: the bare-ticker form and any stale slug 308 to the current

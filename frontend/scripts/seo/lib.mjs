@@ -27,7 +27,7 @@ export const sevRank = (s) => {
  * fetch with timeout + bounded retry. Retries only on network errors and 5xx —
  * a 404 is an ANSWER, not a failure, and retrying it would mask the finding.
  */
-export async function httpGet(url, { timeoutMs = 25000, retries = 2, redirect = 'follow' } = {}) {
+export async function httpGet(url, { timeoutMs = 25000, retries = 2, redirect = 'follow', userAgent = USER_AGENT } = {}) {
     let lastErr = null;
     for (let attempt = 0; attempt <= retries; attempt++) {
         const ctl = new AbortController();
@@ -37,7 +37,7 @@ export async function httpGet(url, { timeoutMs = 25000, retries = 2, redirect = 
             const res = await fetch(url, {
                 redirect,
                 signal: ctl.signal,
-                headers: { 'user-agent': USER_AGENT, accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' },
+                headers: { 'user-agent': userAgent, accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' },
             });
             const body = await res.text();
             clearTimeout(timer);

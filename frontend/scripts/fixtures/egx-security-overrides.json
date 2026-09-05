@@ -1,0 +1,79 @@
+{
+  "_comment": "Hand-verified facts the registers cannot express: documented delistings, identity matches for platform symbols the vendor no longer serves (name_match → the register ISIN), and lines that are share classes rather than companies. Every entry carries its evidence. The generator (scripts/egx-security-master.mjs) applies these AFTER the register match, never instead of it.",
+  "delisted": [
+    {
+      "symbol": "GTHE",
+      "isin": "EGS74081C018",
+      "delisting_date": "2019-09-09",
+      "evidence": [
+        "https://www.veon.com/newsroom/press-releases/veon-announces-delisting-of-gth-shares-from-the-egyptian-exchange",
+        "https://english.mubasher.info/markets/EGX/stocks/GTHE"
+      ],
+      "note": "EGX published a Delisting Decree for Global Telecom Holding; shares delisted at the close of 9 Sep 2019 (VEON). Mubasher's market announcement of 11 Sep 2019 confirms. The 2026 prints TradingView relays under EGX:GTHE are off-board trades in a delisted security, not a listed EGX quote."
+    }
+  ],
+  "identity": [
+    {
+      "symbol": "AIHC",
+      "isin": "EGS21351C019",
+      "method": "name_match",
+      "note": "Arabia Investments Holding — register name match; vendor no longer serves the ticker (quote frozen 2026-06-02)."
+    },
+    {
+      "symbol": "ALRA",
+      "isin": "EGS071L1C018",
+      "method": "name_match",
+      "note": "Atlas for Investment & Food Industries — register name match; quote frozen 2026-06-02."
+    },
+    {
+      "symbol": "ARVA",
+      "isin": "EGS3E1E1C013",
+      "method": "page_isin",
+      "note": "Arabian Metal Industries — ISIN shown on the platform page; register match; vendor no longer serves the ticker (quote frozen 2026-07-28)."
+    },
+    {
+      "symbol": "NAPR",
+      "isin": "EGS370O1C013",
+      "method": "name_match",
+      "note": "National Printing — register match; TradingView serves the line under its ISIN (platform symbol EGS370O1C013), so NAPR is the frozen duplicate."
+    },
+    {
+      "symbol": "FERC",
+      "isin": "EGS385S1C012",
+      "method": "page_isin",
+      "note": "Ferchem Misr — TradingView serves the line under its ISIN (platform symbol EGS385S1C012); FERC is the frozen duplicate."
+    },
+    {
+      "symbol": "ACRO",
+      "isin": "EGS3E071C013",
+      "method": "page_isin",
+      "note": "Acrow Misr — TradingView serves the line as EGS3E071C013-EGP; ACRO is the frozen duplicate. Not on either EGX register on 2026-09-05."
+    },
+    {
+      "symbol": "CCAPP",
+      "isin": "EGS73541P048",
+      "method": "page_isin",
+      "note": "QALA (Citadel Capital) PREFERRED shares — a share class of CCAP, not a company."
+    },
+    {
+      "symbol": "MKIT",
+      "isin": "EGS659O1C015",
+      "method": "name_match",
+      "note": "Misr Kuwait Investment & Trading — TradingView serves it under its ISIN; not on either EGX register on 2026-09-05."
+    },
+    {
+      "symbol": "ACTF.CA",
+      "isin": "EGS7D5P1C019",
+      "method": "suffix_alias",
+      "note": ".CA suffix duplicate of ACTF."
+    }
+  ],
+  "share_classes": [
+    {
+      "isin_pattern": "^EGS[0-9A-Z]{5}P[0-9A-Z]{3}$",
+      "security_type": "preferred",
+      "note": "EGX preferred-share ISINs carry P as the 9th character (QALA preferred: EGS73541P048)."
+    }
+  ],
+  "rights_name_pattern": "subscription rights|حق اكتتاب|حقوق اكتتاب"
+}

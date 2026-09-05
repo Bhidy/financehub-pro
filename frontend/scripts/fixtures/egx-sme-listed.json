@@ -1,0 +1,155 @@
+{
+ "_comment": "EGX SME market register (formerly NILEX) — egyptsmes.com.eg › Listed Companies › All Companies. Captured 2026-09-05; the endpoint is public and fetchable (node scripts/egx-security-master.mjs --refresh-sme).",
+ "source_url": "https://www.egyptsmes.com.eg/en/sme/listedcompanies",
+ "captured_at": "2026-09-05",
+ "market_segment": "sme",
+ "rows": [
+  {
+   "ticker": "BIDI",
+   "isin": "EGS3A2Z1C015",
+   "name": "El Badr Investment And Development BID",
+   "sector": "Basic Resources",
+   "listing_date": "2008-06-11"
+  },
+  {
+   "ticker": "RKAZ",
+   "isin": "EGS521T1C016",
+   "name": "REKAZ Financial Holding",
+   "sector": "Industrial Goods , Services and Automobiles",
+   "listing_date": "2011-09-08"
+  },
+  {
+   "ticker": "IBCT",
+   "isin": "EGS550K1C019",
+   "name": "International Business Corporation For Trading and Agencies",
+   "sector": "Industrial Goods , Services and Automobiles",
+   "listing_date": "2012-10-03"
+  },
+  {
+   "ticker": "MISR",
+   "isin": "EGS3C4P1C011",
+   "name": "MISR INTERCONTINENTAL FOR GRANITE & MARBLE (EGY-STON)",
+   "sector": "Building Materials",
+   "listing_date": "2010-09-16"
+  },
+  {
+   "ticker": "NIRE",
+   "isin": "EGS65101C015",
+   "name": "National Investment And Reconstruction Co -NIRCO",
+   "sector": "Real Estate",
+   "listing_date": "2026-04-23"
+  },
+  {
+   "ticker": "BIGP",
+   "isin": "EGS551D1C017",
+   "name": "Barbary Investment Group ( BIG)",
+   "sector": "Trade & Distributors",
+   "listing_date": "2009-10-15"
+  },
+  {
+   "ticker": "UTOP",
+   "isin": "EGS655Y1C017",
+   "name": "UTOPIA",
+   "sector": "Real Estate",
+   "listing_date": "2009-10-15"
+  },
+  {
+   "ticker": "AMPI",
+   "isin": "EGS745W1C011",
+   "name": "Novida for Investment and Technology",
+   "sector": "IT , Media & Communication Services",
+   "listing_date": "2010-02-10"
+  },
+  {
+   "ticker": "FNAR",
+   "isin": "EGS221U1C016",
+   "name": "Al Fanar Contracting Construction Trade Import And Export Co",
+   "sector": "Contracting & Construction Engineering",
+   "listing_date": "2013-01-17"
+  },
+  {
+   "ticker": "FIRE",
+   "isin": "EGS65AL1C010",
+   "name": "First Investment Company And Real Estate Development",
+   "sector": "Real Estate",
+   "listing_date": "2013-05-15"
+  },
+  {
+   "ticker": "INEG",
+   "isin": "EGS3E3B1C014",
+   "name": "Integrated Engineering Group S.A.E",
+   "sector": "Contracting & Construction Engineering",
+   "listing_date": "2014-08-27"
+  },
+  {
+   "ticker": "VERT",
+   "isin": "EGS74801C019",
+   "name": "Vertika for Industry & Trade",
+   "sector": "Trade & Distributors",
+   "listing_date": "2013-04-10"
+  },
+  {
+   "ticker": "ADRI",
+   "isin": "EGS65AN1C018",
+   "name": "Arab Development & Real Estate Investment",
+   "sector": "Real Estate",
+   "listing_date": "2014-09-10"
+  },
+  {
+   "ticker": "UPMS",
+   "isin": "EGS3I1D1C015",
+   "name": "Union Pharmacist Company For Medical Services and Investment",
+   "sector": "Real Estate",
+   "listing_date": "2016-10-05"
+  },
+  {
+   "ticker": "EGWA",
+   "isin": "EGS42091C016",
+   "name": "GENERAL WAREHOUSES OF EGYPT",
+   "sector": "Shipping & Transportation Services",
+   "listing_date": "2022-12-28"
+  },
+  {
+   "ticker": "FTNS",
+   "isin": "EGS774M1C017",
+   "name": "Fitness Prime",
+   "sector": "Travel & Leisure",
+   "listing_date": "2023-03-29"
+  },
+  {
+   "ticker": "SLAR",
+   "isin": "EGS72L31C011",
+   "name": "SOLARSOL For Energy",
+   "sector": "Energy & Support Services",
+   "listing_date": "2025-06-18"
+  },
+  {
+   "ticker": "HBCO",
+   "isin": "EGS23OD1C015",
+   "name": "Heibco for commercial investments & real estate development",
+   "sector": "Contracting & Construction Engineering",
+   "listing_date": "2024-09-22"
+  },
+  {
+   "ticker": "HDST",
+   "isin": "EGS751G1C012",
+   "name": "HEDGESTONE Investment",
+   "sector": "Trade & Distributors",
+   "listing_date": "2024-12-25"
+  },
+  {
+   "ticker": "NAMI",
+   "isin": "EGS73M81C012",
+   "name": "National Asset Management And Investment",
+   "sector": "Real Estate",
+   "listing_date": "2026-04-23"
+  },
+  {
+   "ticker": "TOUR",
+   "isin": "EGS65021C015",
+   "name": "Tourism Urbanization",
+   "sector": "Travel & Leisure",
+   "listing_date": "2026-08-26"
+  }
+ ]
+}

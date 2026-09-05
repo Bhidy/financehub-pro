@@ -216,5 +216,62 @@ export function categoryOfFund(row: {
     const isShariah = row.is_shariah === true || row.is_shariah === 'true' || row.is_shariah === 1;
     const shariah = FUND_CATEGORIES.find((c) => c.key === 'shariah') as FundCategory;
     if (shariah.match(text, isShariah)) return shariah;
-    return FUND_CATEGORIES.find((c) => c.key !== 'shariah' && c.match(text, isShariah)) ?? null;
+    const byType = FUND_CATEGORIES.find((c) => c.key !== 'shariah' && c.match(text, isShariah)) ?? null;
+    if (byType) return byType;
+    // No disclosed type at all (106 of the 207 current funds on 2026-09-05):
+    // fall back to the fund's own registered NAME, which in this market
+    // carries the type verbatim — "HSBC Money Market Fund Kol Youm",
+    // "Commercial International Bank Fixed Income Fund Thabat", "ABC Bank
+    // Equity Fund 1". Still mechanical, still the manager's own words; a name
+    // that names no type stays uncategorised.
+    const fromName = classifyFundByName(row as { fund_name?: unknown; fund_name_en?: unknown });
+    if (fromName.shariah) return shariah;
+    return fromName.type ? FUND_CATEGORIES.find((c) => c.marketplaceType === fromName.type) ?? null : null;
+}
+
+/**
+ * NAME-BASED CLASSIFICATION — the fallback when the disclosure carries no
+ * type. Patterns are the type WORDS Egyptian fund names actually use, in
+ * both languages, checked with word boundaries and in a fixed precedence so a
+ * name that mentions two asset classes resolves the same way every time:
+ * gold → money market → fixed income → balanced → equity. Shariah is a flag
+ * on top (the manager's own "Sharia compliant"/"Islamic"), never inferred
+ * from a bank's name.
+ */
+export type FundTypeSlug = 'money_market' | 'fixed_income' | 'equity' | 'balanced' | 'gold';
+/**
+ * Arabic word matcher. `\b` does not delimit Arabic letters in a JS regex, so
+ * a bare token matches INSIDE other words — "فضة" (silver) matched
+ * "منخفضة" (low) and filed an equity fund under gold. Each word is therefore
+ * bounded by "no Arabic letter before/after", with the common proclitics
+ * (و ب ل لل ال وال بال) allowed as a prefix.
+ */
+const AR_LETTER = '[\\u0600-\\u06FF]';
+const arWord = (...words: string[]): string =>
+    `(?<!${AR_LETTER})(?:و|ب|ل|لل|ال|وال|بال)?(?:${words.join('|')})(?!${AR_LETTER})`;
+const NAME_TYPE_PATTERNS: Array<[FundTypeSlug, RegExp]> = [
+    ['gold', new RegExp(`\\b(gold|precious\\s+metals?|silver|commodit\\w*)\\b|${arWord('ذهب', 'دهب', 'معادن\\s*نفيسة', 'فضة', 'سلع')}`, 'i')],
+    ['money_market', new RegExp(`\\bmoney\\s*market\\b|\\bliquidity\\b|\\bcash\\s+fund\\b|\\btreasury\\b|\\bt-?bills?\\b|${arWord('أسواق\\s*النقد', 'اسواق\\s*النقد', 'سوق\\s*النقد', 'نقدي', 'نقدية', 'سيولة')}`, 'i')],
+    ['fixed_income', new RegExp(`\\bfixed\\s*income\\b|\\bbonds?\\b|\\bdebt\\b|\\bsukuk\\b|${arWord('دخل\\s*ثابت', 'الدخل\\s*الثابت', 'سندات', 'صكوك', 'أدوات\\s*الدين', 'ادوات\\s*الدين')}`, 'i')],
+    ['balanced', new RegExp(`\\bbalanced\\b|\\bmixed\\b|\\basset\\s*allocation\\b|${arWord('متوازن', 'متوازنة', 'مختلط', 'مختلطة', 'توزيع\\s*الأصول')}`, 'i')],
+    ['equity', new RegExp(`\\bequit(?:y|ies)\\b|\\bstocks?\\b|\\bshares?\\b|${arWord('أسهم', 'اسهم')}`, 'i')],
+];
+const NAME_SHARIAH = new RegExp(`\\b(shariah?|sharia|islamic|halal)\\b|${arWord('إسلامي', 'اسلامي', 'إسلامية', 'اسلامية', 'شريعة', 'حلال')}`, 'i');
+export function classifyFundByName(row: { fund_name?: unknown; fund_name_en?: unknown }): { type: FundTypeSlug | null; shariah: boolean } {
+    const hay = [row.fund_name_en, row.fund_name].map((v) => (typeof v === 'string' ? v : '')).join(' ');
+    if (!hay.trim()) return { type: null, shariah: false };
+    const hit = NAME_TYPE_PATTERNS.find(([, re]) => re.test(hay));
+    return { type: hit ? hit[0] : null, shariah: NAME_SHARIAH.test(hay) };
+}
+
+/**
+ * The marketplace-facing type slug for a fund: the disclosed `fund_type` when
+ * present, else the name-derived one — so the visitor's type filter and the
+ * server pre-render describe the same category. `source` says which.
+ */
+export function fundTypeSlug(row: { fund_type?: unknown; fund_name?: unknown; fund_name_en?: unknown }): { slug: string; source: 'disclosed' | 'name' | 'none' } {
+    const raw = typeof row.fund_type === 'string' ? row.fund_type.trim().toLowerCase() : '';
+    if (raw) return { slug: raw, source: 'disclosed' };
+    const { type } = classifyFundByName(row);
+    return type ? { slug: type, source: 'name' } : { slug: '', source: 'none' };
 }

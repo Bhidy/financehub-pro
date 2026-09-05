@@ -1,7 +1,9 @@
-import { esc, escUrl } from '@/lib/static-hub';
+import { esc, escUrl, type Injection } from '@/lib/static-hub';
 import { fundPath, absUrl, SITE_URL } from '@/lib/seo';
 import { categoryOfFund } from '@/content/fund-categories';
 import { ltrNum } from '@/lib/bidi';
+import { fundCurrency } from '@/lib/fund-stats';
+import reconciliation from '@/content/fund-universe-reconciliation.json';
 
 /**
  * The ONE server-side pre-render of a fund list.
@@ -80,6 +82,19 @@ export function fundsAsOf(funds: Row[], lang: 'en' | 'ar'): { iso: string; human
 }
 
 /**
+ * The marketplace's results counter. The shell ships `<span id="resultsCount">0</span>`
+ * and lets renderFunds() write the real number on load — so every served
+ * marketplace page said "0 funds matching your filters" directly above 200+
+ * fund rows (verified for Googlebot, OAI-SearchBot, bingbot and PerplexityBot,
+ * 2026-09-05). A server-rendered page must not claim zero results while it
+ * renders results: the count is the length of the very list injected beside
+ * it, so the two cannot disagree. Replace-mode: the span is a leaf.
+ */
+export function fundsCountInjection(funds: Row[]): Injection {
+    return { id: 'resultsCount', html: esc(String(funds.length)), mode: 'replace' };
+}
+
+/**
  * Crawler-facing fund rows, injected into the marketplace's empty #fundsGrid.
  * The marketplace's own renderGrid() replaces this wholesale on load, so it is
  * a pre-render of the same content — never a second design.
@@ -92,12 +107,21 @@ export function fundsHubRows(funds: Row[], lang: 'en' | 'ar'): string {
         ? { cat: 'الفئة', r1y: 'عائد سنة', ytd: 'من بداية العام', nav: 'صافي قيمة الأصول', asOf: 'البيانات كما في' }
         : { cat: 'Category', r1y: '1Y return', ytd: 'YTD', nav: 'Latest NAV', asOf: 'Data as of' };
 
+    // COVERAGE, STATED. The regulator counts funds by issuance; this site
+    // prices the publicly offered ones with a published NAV. Both numbers and
+    // the reason they differ come from content/fund-universe-reconciliation.json
+    // (scripts/fund-universe-reconcile.mjs), never from prose.
+    const fra = reconciliation.fra;
+    const coverage = isAr
+        ? ` تُحصي الهيئة العامة للرقابة المالية ${esc(String(fra.total_by_issuance))} صندوقًا بإصداراتها في نهاية يونيو 2026، منها ${esc(String(fra.out_of_scope.count))} صناديق ملكية خاصة وعقارية وقابضة ومؤشرات متداولة لا تُنشر أسعار وثائقها للجمهور — <a href="/ar/methodology#coverage">تفاصيل المطابقة</a>.`
+        : ` The Financial Regulatory Authority counted ${esc(String(fra.total_by_issuance))} funds by issuance at end-June 2026, ${esc(String(fra.out_of_scope.count))} of them private-equity, real-estate, fund-of-funds or ETF vehicles with no public unit price — <a href="/methodology#coverage">coverage reconciliation</a>.`;
     const intro =
         `<p style="grid-column:1/-1;margin:0 0 .25rem;font-size:.85rem" ${isAr ? 'dir="rtl" lang="ar"' : ''}>` +
         (isAr
-            ? `${esc(String(funds.length))} صندوق استثمار مصري مع صافي قيمة الأصول والعوائد التاريخية ورسوم الإدارة، من الإفصاحات الرسمية لمديري الصناديق. الترتيب آلي حسب عائد سنة وليس توصية.`
-            : `${esc(String(funds.length))} Egyptian mutual funds with net asset values, trailing returns and fees from official fund-manager disclosures. Ordering is mechanical by trailing one-year return and is not a recommendation.`) +
+            ? `${esc(String(funds.length))} صندوق استثمار مصري مطروح للجمهور بصافي قيمة أصول حديث، مع العوائد التاريخية ورسوم الإدارة من الإفصاحات الرسمية لمديري الصناديق. الترتيب آلي حسب عائد سنة وليس توصية.`
+            : `${esc(String(funds.length))} publicly offered Egyptian mutual funds with a current net asset value, trailing returns and fees from official fund-manager disclosures. Ordering is mechanical by trailing one-year return and is not a recommendation.`) +
         (iso ? ` ${esc(t.asOf)} <time datetime="${esc(iso)}">${esc(human)}</time>.` : '') +
+        coverage +
         `</p>`;
 
     const rows = funds
@@ -116,7 +140,7 @@ export function fundsHubRows(funds: Row[], lang: 'en' | 'ar'): string {
                 (cat ? `<dt>${esc(t.cat)}</dt><dd>${esc(isAr ? cat.nameAr : cat.nameEn)}</dd>` : '') +
                 `<dt>${esc(t.r1y)}</dt><dd>${esc(pct(num(f, 'return_1y')))}</dd>` +
                 `<dt>${esc(t.ytd)}</dt><dd>${esc(pct(num(f, 'return_ytd')))}</dd>` +
-                `<dt>${esc(t.nav)}</dt><dd>${esc(navFmt(num(f, 'latest_nav'), lang))} ${esc(str(f, 'currency') || 'EGP')}</dd>` +
+                `<dt>${esc(t.nav)}</dt><dd>${esc(navFmt(num(f, 'latest_nav'), lang))} ${esc(fundCurrency(f))}</dd>` +
                 `</dl></article>`
             );
         })
@@ -153,7 +177,9 @@ export function investmentFundNode(f: Row, lang: 'en' | 'ar', path?: string): Re
     const provider = str(f, 'manager_name_en') || str(f, 'issuer_en');
     if (provider) item.provider = { '@type': 'Organization', name: provider };
     const navValue = num(f, 'latest_nav');
-    const currency = str(f, 'currency') || 'EGP';
+    // The fund's real denomination (a USD fund stored as 'EGP' must not be
+    // described as an EGP MonetaryAmount) — same rule the visible rows use.
+    const currency = fundCurrency(f);
     if (navValue !== null) {
         item.currency = currency;
         item.amount = { '@type': 'MonetaryAmount', currency, value: navValue };

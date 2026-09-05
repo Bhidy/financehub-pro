@@ -15,7 +15,7 @@
     "verify:routes": "node scripts/verify-route-aliases.mjs",
     "verify:i18n": "node scripts/verify-i18n-coverage.mjs",
     "verify:inputs": "node scripts/verify-build-inputs.mjs",
-    "verify:all": "npm run verify:inputs && npm run verify:routes && npm run verify:i18n && npm run verify:nav && npm run verify:auth && npm run verify:funds && npm run verify:providers && npm run verify:pairs && npm run verify:glossary && npm run verify:arhub && npm run verify:dupes && npm run verify:seo-audit && npm run verify:intents && npm run verify:news",
+    "verify:all": "npm run verify:inputs && npm run verify:routes && npm run verify:i18n && npm run verify:nav && npm run verify:auth && npm run verify:funds && npm run verify:providers && npm run verify:pairs && npm run verify:glossary && npm run verify:arhub && npm run verify:ssr && npm run verify:master && npm run verify:universe && npm run verify:dupes && npm run verify:seo-audit && npm run verify:intents && npm run verify:news",
     "verify:deploy": "node scripts/verify-deploy.mjs",
     "seo:audit": "node scripts/seo/audit.mjs",
     "seo:audit:quick": "node scripts/seo/audit.mjs --quick --fail-on critical",
@@ -39,7 +39,10 @@
     "verify:arhub": "npx tsx scripts/test-ar-hub-hero.ts",
     "verify:seo-audit": "node scripts/seo/audit.mjs --selftest",
     "verify:intents": "node scripts/test-intent-map.mjs",
-    "verify:news": "npx tsx scripts/test-news-purity.ts"
+    "verify:news": "npx tsx scripts/test-news-purity.ts",
+    "verify:ssr": "npx tsx scripts/test-ssr-truth.ts",
+    "verify:master": "npx tsx scripts/test-security-master.ts",
+    "verify:universe": "node scripts/fund-universe-reconcile.mjs --check"
   },
   "dependencies": {
     "@capacitor/app": "8.1.0",

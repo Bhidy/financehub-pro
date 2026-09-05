@@ -59,6 +59,8 @@ export type FundClientData = {
     cagrStat: { value: string; years: number | null; sinceInception: string | null } | null;
     movement: { best: number | null; worst: number | null; avgGain: number | null; avgLoss: number | null; cadence: 'day' | 'week' | 'period' } | null;
     compareHref: string;
+    /** The server-rendered full NAV series (/nav-history) — the chart is not crawlable or quotable; this page is. */
+    historyHref: string;
 };
 
 const MICRO = 'text-[0.68rem] uppercase tracking-[0.22em] text-muted';
@@ -134,6 +136,7 @@ export default function FundPageClient(props: FundClientData) {
         cagrStat,
         movement,
         compareHref,
+        historyHref,
     } = props;
 
     const [pickerOpen, setPickerOpen] = useState(false);
@@ -251,6 +254,12 @@ export default function FundPageClient(props: FundClientData) {
                     </div>
 
                     <FundNavChart fundId={fundId} currency={currency} lang={lang} />
+                    {/* The full published series as a page, not a chart: annual closes,
+                        latest values, dates — server-rendered and quotable. Additive link;
+                        the chart and its design are untouched. */}
+                    <p className="mt-3 text-sm text-muted">
+                        <a href={historyHref} className="font-semibold text-starta-darkTeal hover:underline">{t.fullHistory}</a>
+                    </p>
                 </div>
             </section>
 

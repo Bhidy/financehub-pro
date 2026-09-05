@@ -5,6 +5,7 @@ import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { sectorAr } from '@/content/sector-names-ar';
+import { SECURITY_MASTER_SOURCES } from '@/lib/security-master';
 
 /** Arabic twin of /companies — "أسهم البورصة المصرية". Audit #1 gap: the AR lane. */
 
@@ -62,9 +63,10 @@ export default async function CompaniesArPage() {
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أسهم البورصة المصرية (EGX)</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">
-                جميع الشركات الـ{tickers.length} المدرجة في البورصة المصرية بأسعارها المباشرة، مرتبة حسب القيمة السوقية. اضغط على أي شركة
+                {tickers.length} شركة مقيدة في البورصة المصرية — السوق الرئيسي وسوق الشركات الصغيرة والمتوسطة — وفق سجل الأوراق المالية المقيدة
+                الصادر عن البورصة نفسها ({SECURITY_MASTER_SOURCES.egx_main_register?.captured_at})، بآخر أسعارها ومرتبة حسب القيمة السوقية. اضغط على أي شركة
                 لعرض ملفها الكامل: الرسم البياني للسعر، وأهم الإحصاءات، والقوائم المالية، والتوزيعات، والتحليل الفني، والأخبار — بالعربية والإنجليزية.
-                {asOfHuman && <> محدَّث يوميًا؛ الأسعار بتاريخ {asOfHuman}.</>}
+                {asOfHuman && <> محدَّث يوميًا؛ الأسعار بتاريخ {asOfHuman}.</>} يُعرض السعر فقط عندما يكون حديثًا؛ والشركة التي مضى على آخر سعر لها أكثر من أسبوعين لا يُعرض لها سعر.
             </p>
 
             <nav aria-label="تصنيفات البورصة المصرية" className="mt-5 flex flex-wrap gap-2 text-sm">
@@ -100,7 +102,7 @@ export default async function CompaniesArPage() {
                                 <td className="px-4 py-2.5 font-mono font-semibold text-muted" dir="ltr">
                                     <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-darkTeal">{t.symbol}</Link>
                                 </td>
-                                <td className="px-4 py-2.5 text-muted">{sectorAr(t.sector_name) || '—'}</td>
+                                <td className="px-4 py-2.5 text-muted" title={t.sector_name ? `تصنيف TradingView: ${sectorAr(t.sector_name)}` : undefined}>{t.official_sector_ar || sectorAr(t.sector_name) || '—'}</td>
                                 <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">
                                     {t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}
                                 </td>
@@ -115,7 +117,7 @@ export default async function CompaniesArPage() {
             </div>
 
             <p className="mt-4 text-xs text-muted">
-                المصدر: البورصة المصرية عبر TradingView. تُحدَّث الأسعار كل 15 دقيقة خلال ساعات التداول (الأحد–الخميس). القيم السوقية بالجنيه المصري.
+                حالة القيد والقطاع: سجل الأوراق المالية المقيدة الصادر عن البورصة المصرية (السوق الرئيسي وسوق الشركات الصغيرة والمتوسطة). الأسعار: بيانات البورصة المصرية عبر TradingView، تُحدَّث كل 15 دقيقة خلال ساعات التداول (الأحد–الخميس)؛ ويُحجب السعر الذي مضى عليه أكثر من أسبوعين بدلًا من عرضه كسعر حالي. القيم السوقية بالجنيه المصري.
             </p>
 
             <nav aria-label="استكشف" className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">

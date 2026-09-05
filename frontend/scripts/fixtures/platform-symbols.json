@@ -1,0 +1,1915 @@
+{
+ "_comment": "Symbols the platform currently holds with a price (GET /api/v1/egx/stocks, market_code='EGX'). Refresh: node scripts/egx-security-master.mjs --refresh-platform.",
+ "source_url": "https://startamarkets.com/api/v1/egx/stocks",
+ "captured_at": "2026-09-05",
+ "rows": [
+  {
+   "symbol": "AALR",
+   "name_en": "General Co. for Land Reclamation Development & Reconstruction",
+   "name_ar": "العامة لاستصلاح الأراضي",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ABUK",
+   "name_en": "Abou Kir Fertilizers & Chemical Industries Co.",
+   "name_ar": "ابوقير للاسمدة",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "ACAMD",
+   "name_en": "Arab Co. for Asset Management & Development",
+   "name_ar": "العربية لإدارة وتطوير الأصول",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ACAP",
+   "name_en": "A Capital Holding",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ACFR",
+   "name_en": "Alexandria Company For Refractories",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "ACGC",
+   "name_en": "Arab Cotton Ginning Co.",
+   "name_ar": "العربية لحليج الأقطان",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "ACRO",
+   "name_en": "ACRO.CA,0P0000B6WW,81902",
+   "name_ar": "Acrow Misr",
+   "sector_name": "Contracting and Construction Engineering"
+  },
+  {
+   "symbol": "ACTF",
+   "name_en": "Act Financial",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ACTF.CA",
+   "name_en": "Act Financial",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "ADCI",
+   "name_en": "Arab Pharmaceuticals",
+   "name_ar": "أدكو",
+   "sector_name": "Health Technology"
+  },
+  {
+   "symbol": "ADIB",
+   "name_en": "Abu Dhabi Islamic Bank-Egypt",
+   "name_ar": "مصرف أبو ظبي الإسلامي",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ADPC",
+   "name_en": "Arab Dairy Products Co. Arab Dairy - Panda",
+   "name_ar": "آراب ديري-باندا",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "ADRI",
+   "name_en": "Arab Development & Real Estate Investment",
+   "name_ar": "أراب للتنمية و الاستثمار العقاري",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "AFDI",
+   "name_en": "Alahly For Development & Investment",
+   "name_ar": "الاهلي للتنمية والاستثمار",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "AFMC",
+   "name_en": "Alexandria Flour Mills Co.",
+   "name_ar": "مطاحن ومخابز الإسكندرية",
+   "sector_name": "Retail Trade"
+  },
+  {
+   "symbol": "AIDC",
+   "name_en": "Arabia for Investment and Development",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "AIFI",
+   "name_en": "Atlas for Investment & Food Industries SAE",
+   "name_ar": "اطلس لاستصلاح الاراضى",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "AIH",
+   "name_en": "Arabia Investments Holding SAE",
+   "name_ar": "العربية للاستثمارات",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "AIHC",
+   "name_en": "Arabia Investments Holding",
+   "name_ar": "Arabia Investments Holding",
+   "sector_name": "Financial Services"
+  },
+  {
+   "symbol": "AJWA",
+   "name_en": "Ajwa for Food Industries Co. Egypt",
+   "name_ar": "اجواء",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "ALCN",
+   "name_en": "Alexandria Containers & Goods",
+   "name_ar": "الاسكندرية لتداول الحاويات",
+   "sector_name": "Transportation"
+  },
+  {
+   "symbol": "ALEX",
+   "name_en": "Alexandria Cement Co.",
+   "name_ar": null,
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "ALRA",
+   "name_en": "Atlas for Investment & Food Industries",
+   "name_ar": "Atlas for Investment & Food Industries",
+   "sector_name": ""
+  },
+  {
+   "symbol": "ALUM",
+   "name_en": "Arab Aluminum Co. SAE",
+   "name_ar": "الالومنيوم العربية",
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "ALXD",
+   "name_en": "Alexandria For Investment and Urban Development",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "AMER",
+   "name_en": "Amer Group Holding",
+   "name_ar": "عامر جروب",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "AMES",
+   "name_en": "Alexandria New Medical Center Co.",
+   "name_ar": "المركز الطبي الجديد - الإسكندرية",
+   "sector_name": "Health Services"
+  },
+  {
+   "symbol": "AMIA",
+   "name_en": "Arab Moltaqa Investments Company",
+   "name_ar": "الملتقى العربي للاستثمارات",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "AMII",
+   "name_en": "Arabian Metal Industries and Industrial Investments",
+   "name_ar": "العربية للمحابس",
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "AMOC",
+   "name_en": "Alexandria Mineral Oils Co.",
+   "name_ar": "أموك",
+   "sector_name": "Energy Minerals"
+  },
+  {
+   "symbol": "AMPI",
+   "name_en": "AL Moasher Pay for Electronic Payment and Collection (S.A.E)",
+   "name_ar": "المؤشر",
+   "sector_name": "Technology Services"
+  },
+  {
+   "symbol": "ANCC",
+   "name_en": "ALNAHDA Industrial Co.",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "ANFI",
+   "name_en": "ANFI.CA,0P0000WGUB,2300",
+   "name_ar": "Alexandria National Company for Financial Investment",
+   "sector_name": "Financial Services"
+  },
+  {
+   "symbol": "APPC",
+   "name_en": "Advanced Pharmaceutical Packaging Co.",
+   "name_ar": null,
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "APSW",
+   "name_en": "Arab Polvara Spinning & Weaving Co.",
+   "name_ar": "يونيراب",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "ARAB",
+   "name_en": "Arab Developers Holding",
+   "name_ar": "بورتو جروب",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ARCC",
+   "name_en": "Arabian Cement Company",
+   "name_ar": "العربية للأسمنت",
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "AREH",
+   "name_en": "Egyptian Real Estate Group",
+   "name_ar": "المجموعة المصرية العقارية",
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "ARVA",
+   "name_en": "Arabian Metal Industries and Industrial Investments",
+   "name_ar": "العربية للمحابس",
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "ASCM",
+   "name_en": "ASEC Co. for Mining",
+   "name_ar": "اسيك للتعدين",
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "ASPI",
+   "name_en": "Aspire Capital Holding for Financial Investments",
+   "name_ar": "بايونيرز القابضة",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ATLC",
+   "name_en": "Al Tawfeek Leasing Company-A.T.LEASE",
+   "name_ar": "ايه تي ليس",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ATQA",
+   "name_en": "Misr National Steel",
+   "name_ar": "عتاقة",
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "AXPH",
+   "name_en": "Alexandria Company for Pharmaceuticals and Chemical Industries",
+   "name_ar": "الاسكندرية للادوية",
+   "sector_name": "Health Technology"
+  },
+  {
+   "symbol": "BIDI",
+   "name_en": "El Badr Investment and Development - BID",
+   "name_ar": "البدر للبلاستيك",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "BIGP",
+   "name_en": "ElBarbary Investment Group",
+   "name_ar": "بى اى جى للتجارة والاستثمار",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "BINV",
+   "name_en": "B Investments Holding SAE",
+   "name_ar": "بى بى اى القابضة",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "BIOC",
+   "name_en": "GlaxoSmithKline S.A.E.",
+   "name_ar": "جلاكسو سميثكلاين",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "BONY",
+   "name_en": "Bonyan for Development and Trade",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "BTFH",
+   "name_en": "Beltone Holding",
+   "name_ar": "بلتون المالية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "CAED",
+   "name_en": "Cairo Educational Services",
+   "name_ar": "القاهرة للخدمات التعليمية",
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "CANA",
+   "name_en": "Suez Canal Bank SAE",
+   "name_ar": "بنك قناة السويس",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "CCAP",
+   "name_en": "QALA For Financial Investments",
+   "name_ar": "القلعة للاستشارات المالية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "CCAPP",
+   "name_en": "CCAPP.CA,0P0000XXBN,0",
+   "name_ar": "QALA For Financial Investments",
+   "sector_name": "Financial Services"
+  },
+  {
+   "symbol": "CCRS",
+   "name_en": "Gulf Canadian Real Estate Investment Co.",
+   "name_ar": "الخليجية الكندية للاستثمار العقاري العربي",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "CEFM",
+   "name_en": "Middle Egypt Flour Mills",
+   "name_ar": "مطاحن مصر الوسطى",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "CERA",
+   "name_en": "Arab Ceramic Co. - Ceramica Remas",
+   "name_ar": "ريماس",
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "CFGH",
+   "name_en": "Concrete Fashion Group for Commercial and Industrial Investments S.A.E",
+   "name_ar": "العرفة القابضة",
+   "sector_name": "Retail Trade"
+  },
+  {
+   "symbol": "CICH",
+   "name_en": "CI Capital Holding for Financial Investments",
+   "name_ar": "سي اي كابيتال القابضة",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "CID",
+   "name_en": "Chemical Development Industries (CID)",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "CIEB",
+   "name_en": "Credit Agricole Egypt",
+   "name_ar": "كريدي أجريكول",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "CIRA",
+   "name_en": "Cairo For Investment And Real Estate Developments -CIRA Education",
+   "name_ar": null,
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "CLHO",
+   "name_en": "Cleopatra Hospital Company",
+   "name_ar": "مستشفى كليوباترا",
+   "sector_name": "Health Services"
+  },
+  {
+   "symbol": "CNFN",
+   "name_en": "Contact Financial Holding SAE",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "COMI",
+   "name_en": "Commercial International Bank - Egypt (CIB) S.A.E.",
+   "name_ar": "البنك التجاري الدولي",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "COPR",
+   "name_en": "Cooper for Commercial Investment & Real Estate Development",
+   "name_ar": "العقارية للبنوك الوطنية للتنمية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "COSG",
+   "name_en": "Cairo Oils & Soap",
+   "name_ar": "القاهرة للزيوت والصابون",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "CPCI",
+   "name_en": "Kahira Pharmaceuticals & Chemical Industries Co.",
+   "name_ar": "القاهرة للادوية",
+   "sector_name": "Health Technology"
+  },
+  {
+   "symbol": "CPME",
+   "name_en": "Catalyst Partners Middle East",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "CRST",
+   "name_en": "Creast Mark For Contracting And Real Estate Development",
+   "name_ar": "ليفت سلاب مصر",
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "CSAG",
+   "name_en": "Canal Shipping Agencies Co.",
+   "name_ar": "القناة للتوكيلات الملاحية",
+   "sector_name": "Transportation"
+  },
+  {
+   "symbol": "DAPH",
+   "name_en": "Development & Engineering Consultants",
+   "name_ar": "التعمير والاستشارات الهندسية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "DCCC",
+   "name_en": "Damietta Container and Cargo Handling",
+   "name_ar": null,
+   "sector_name": "Transportation"
+  },
+  {
+   "symbol": "DCRC",
+   "name_en": "Delta Construction & Rebuilding Co.",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "DEIN",
+   "name_en": "Delta Insurance",
+   "name_ar": "الدلتا للتأمين",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "DGTZ",
+   "name_en": "Digitize for Investment And Technology",
+   "name_ar": null,
+   "sector_name": "Technology Services"
+  },
+  {
+   "symbol": "DOMT",
+   "name_en": "Arabian Food Industries Co.",
+   "name_ar": "دومتي",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "DSCW",
+   "name_en": "Dice Sports & Casual Wear Manufacturers SAE",
+   "name_ar": "دايس",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "DTPP",
+   "name_en": "Delta for Printing & Packaging",
+   "name_ar": "دلتا للطباعة والتغليف",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "EALR",
+   "name_en": "El Arabia for Land Reclamation",
+   "name_ar": "العربية لاستصلاح الاراضي",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "EASB",
+   "name_en": "Egyptian Arabian Company for Securities Brokerage EAC",
+   "name_ar": "ثمار",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "EAST",
+   "name_en": "Eastern Company",
+   "name_ar": "ايسترن كومباني",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "EBSC",
+   "name_en": "Osool ESB Securities Brokerage",
+   "name_ar": "اصول إى إس بى للوساطة في الاوراق المالية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ECAP",
+   "name_en": "El Ezz Ceramics & Porcelain Co. (Gemma)",
+   "name_ar": "الجوهرة",
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "EDFM",
+   "name_en": "East Delta Flour Mills Co.",
+   "name_ar": "مطاحن شرق الدلتا",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "EEII",
+   "name_en": "El Arabia Engineering Industries",
+   "name_ar": "العربية للصناعات الهندسية",
+   "sector_name": "Electronic Technology"
+  },
+  {
+   "symbol": "EEP",
+   "name_en": "Egypt Education Platform - EEP",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EFAC",
+   "name_en": "Egyptian Ferro All Egp10",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EFIC",
+   "name_en": "Egyptian Financial & Industrial Co.",
+   "name_ar": "المالية والصناعية المصرية",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "EFID",
+   "name_en": "Edita Food Industries SAE",
+   "name_ar": "ايديتا",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "EFIH",
+   "name_en": "e-finance for Digital and Financial Investments S.A.E.",
+   "name_ar": null,
+   "sector_name": "Technology Services"
+  },
+  {
+   "symbol": "EGAL",
+   "name_en": "Egypt Aluminum",
+   "name_ar": "مصر للالومنيوم",
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "EGAS",
+   "name_en": "Egypt Gas Co.",
+   "name_ar": "غاز مصر",
+   "sector_name": "Utilities"
+  },
+  {
+   "symbol": "EGBE",
+   "name_en": "Egyptian Gulf Bank",
+   "name_ar": "البنك المصري الخليجي",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "EGCH",
+   "name_en": "Egyptian Chemical Industries",
+   "name_ar": "كيما",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "EGOTH",
+   "name_en": "El Masreyah Touris Egp100",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGREF",
+   "name_en": "Egyptians Real Estate Fund",
+   "name_ar": "وثائق شركة صندوق استثمار المصريين للاستثمار العقاري",
+   "sector_name": "Miscellaneous"
+  },
+  {
+   "symbol": "EGS220N1C016",
+   "name_en": "ALNASR For Building And Construction Company",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS30AJ1C016-EGP",
+   "name_en": "International Dry Ice Co.",
+   "name_ar": null,
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "EGS370O1C013",
+   "name_en": "National Printing",
+   "name_ar": null,
+   "sector_name": "Commercial Services"
+  },
+  {
+   "symbol": "EGS385S1C012",
+   "name_en": "Ferchem Misr Co. for Fertilizers & Chemicals",
+   "name_ar": "فيركيم",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "EGS39022C016",
+   "name_en": "ENGINEERING FOR THE PETROLEUM AND",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS3E071C013-EGP",
+   "name_en": "Acrow Misr",
+   "name_ar": null,
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "EGS3E1Z2C016",
+   "name_en": "EL MASRYA LINE PETROL ALKEEL PRODUC",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS3J7D2C015",
+   "name_en": "Petroleum Marine Services Co .P.M.S",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS48271C018-EGP",
+   "name_en": "Egypt - South Africa for Communication",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS65101C015",
+   "name_en": "National Investment & Reconstruction",
+   "name_ar": null,
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "EGS651F1C014",
+   "name_en": "El Mamoura Co For Egp10",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS65621C012",
+   "name_en": "El Nasr Housing & Egp5",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS65861C014",
+   "name_en": "Egyptian Contracting Co.-AL- ABD",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS659O1C015",
+   "name_en": "Misr Kuwait Investment & Trading Co.",
+   "name_ar": "المصرية الكويتية للاستثمار والتجارة",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "EGS66DU1C015",
+   "name_en": "Alexandria For Investment and Urban Development",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS70311C013",
+   "name_en": "El Masreyah Touris Egp100",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS72L31C011",
+   "name_en": "SOLARSOL For Energy",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS73M81C012",
+   "name_en": "National Asset Management And Investment",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS924G1C014",
+   "name_en": "Subscription Rights Of Aspire Cap Hold for Financ Invest-3",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "EGS924I1C012",
+   "name_en": "Subscription Rights Of Future Care for Medical Ind FCMI-3",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGS924K1C018",
+   "name_en": "Subscription Rights Of Lotus For Agricul",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EGSA",
+   "name_en": "Egyptian Satellite Co.",
+   "name_ar": "نايل سات",
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "EGTS",
+   "name_en": "Egyptian for Tourism Resorts",
+   "name_ar": "المصرية للمنتجعات السياحية",
+   "sector_name": "Utilities"
+  },
+  {
+   "symbol": "EGWA",
+   "name_en": "General Warehouses of Egypt",
+   "name_ar": null,
+   "sector_name": "Transportation"
+  },
+  {
+   "symbol": "EGX30",
+   "name_en": "EGX 30 Index",
+   "name_ar": null,
+   "sector_name": "Index"
+  },
+  {
+   "symbol": "EHDR",
+   "name_en": "Egyptians Housing Development & Reconstruction",
+   "name_ar": "المصريين للاسكان",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "EITP",
+   "name_en": "Egyptian International Tourism Projects",
+   "name_ar": null,
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "EIUD",
+   "name_en": "EIUD.CA,0P0000TP7J,28746876",
+   "name_ar": "Egyptians for investment & Urban development",
+   "sector_name": "Contracting and Construction Engineering"
+  },
+  {
+   "symbol": "ELAB",
+   "name_en": "Egyptian Linear Alkyl Benzene Company",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "ELEC",
+   "name_en": "Electro Cable Egypt",
+   "name_ar": "الكابلات الكهربائية المصرية",
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "ELKA",
+   "name_en": "El Kahera Housing",
+   "name_ar": "القاهرة للاسكان",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ELNA",
+   "name_en": "El Nasr for Manufacturing Agricultural Crops",
+   "name_ar": "النصر لتصنيع الحاصلات الزراعية",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "ELSH",
+   "name_en": "El-Shams Housing & Development SA",
+   "name_ar": "الشمس للاسكان",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ELWA",
+   "name_en": "Elwadi for International Investment & Development",
+   "name_ar": "الوادى",
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "EMFD",
+   "name_en": "Emaar Misr for Development SAE",
+   "name_ar": "إعمار مصر",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ENGC",
+   "name_en": "Industrial Engineering Co. for Construction & Development",
+   "name_ar": "ايكون",
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "ENPI",
+   "name_en": "Engineering for the Petroleum and Process Industries",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "EOSB",
+   "name_en": "El Orouba Securities Brokerage",
+   "name_ar": "العروبة للسمسرة فى الأوراق المالية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "EPCO",
+   "name_en": "Egypt for Poultry Co.",
+   "name_ar": "إجيبكو",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "EPPK",
+   "name_en": "El Ahram Co. for Printing & Packing",
+   "name_ar": "الاهرام للطباعة والتغليف",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "ETEL",
+   "name_en": "Telecom Egypt",
+   "name_ar": "المصرية للاتصالات",
+   "sector_name": "Communications"
+  },
+  {
+   "symbol": "ETRS",
+   "name_en": "Egyptian Transport And Commercial Services Co. (Egytrans Nosco)",
+   "name_ar": "إيجيترانس",
+   "sector_name": "Transportation"
+  },
+  {
+   "symbol": "EXPA",
+   "name_en": "Export Development Bank of Egypt",
+   "name_ar": "البنك المصري لتنمية الصادرات",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "FAIT",
+   "name_en": "Faisal Islamic Bank of Egypt",
+   "name_ar": "بنك فيصل الإسلامي المصري",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "FAITA",
+   "name_en": "Faisal Islamic Bank of Egypt",
+   "name_ar": "بنك فيصل الإسلامي المصري",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "FCMD",
+   "name_en": "Future Care For Medical Industries",
+   "name_ar": "ايكمي",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "FERC",
+   "name_en": "FERC.CA,0P00013XCU,0",
+   "name_ar": "Ferchem Misr for fertilizers and chemicals S.A.E",
+   "sector_name": "Basic Resources"
+  },
+  {
+   "symbol": "FIRE",
+   "name_en": "First Investment & Real Estate Development",
+   "name_ar": "الأولى للاستثمار",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "FNAR",
+   "name_en": "Al Fanar Contracting Construction Trade Import & Export Co.",
+   "name_ar": "الفنار للمقاولات",
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "FTNS",
+   "name_en": "Fitness Prime",
+   "name_ar": null,
+   "sector_name": "Technology Services"
+  },
+  {
+   "symbol": "FWRY",
+   "name_en": "Fawry For Banking Technology And Electronic Payment",
+   "name_ar": null,
+   "sector_name": "Technology Services"
+  },
+  {
+   "symbol": "GBCO",
+   "name_en": "GB Corp",
+   "name_ar": "جي بي اوتو",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "GDWA",
+   "name_en": "Gadwa For Industrial Development",
+   "name_ar": null,
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "GEOS",
+   "name_en": "Geos for trading and contracting",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "GGCC",
+   "name_en": "Giza General Contracting & Real Estate Investment",
+   "name_ar": "الجيزة العامة للمقاولات",
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "GGRN",
+   "name_en": "Gogreen for Agricultural Investment and Development Company",
+   "name_ar": null,
+   "sector_name": "Commercial Services"
+  },
+  {
+   "symbol": "GIHD",
+   "name_en": "Gharbia Islamic Housing Development",
+   "name_ar": "الغربية الاسلامية للتنمية العمرانية",
+   "sector_name": "Consumer Durables"
+  },
+  {
+   "symbol": "GMCI",
+   "name_en": "GMC Group for Industrial Commercial & Financial Investments",
+   "name_ar": "جى إم سى",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "GOUR",
+   "name_en": "Gourmet Egypt.Com Foods",
+   "name_ar": null,
+   "sector_name": "Retail Trade"
+  },
+  {
+   "symbol": "GPIM",
+   "name_en": "GPI For Urban Growth",
+   "name_ar": "المصريين للاستثمار",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "GPPL",
+   "name_en": "Golden Pyramids Plaza",
+   "name_ar": "جولدن بيراميدز بلازا",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "GRCA",
+   "name_en": "Grand Investment Capital",
+   "name_ar": "جراند انفستمنت القابضة للاستثمارات المالية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "GROV",
+   "name_en": "Grova Special Purpose Acquisition Company",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "GSSC",
+   "name_en": "General Silos & Storage Co.",
+   "name_ar": "العامة للصوامع والتخزين",
+   "sector_name": "Retail Trade"
+  },
+  {
+   "symbol": "GTEX",
+   "name_en": "G-TEX for Commercial and Industrial Investments S.A.E",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "GTHE",
+   "name_en": "Global Telecom Holding S.A.E.",
+   "name_ar": null,
+   "sector_name": "Communications"
+  },
+  {
+   "symbol": "GTWL",
+   "name_en": "Golden Textiles & Clothes Wool",
+   "name_ar": "جولدن تكس",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "HAVC",
+   "name_en": "Hassan Allam Investments & Venture Capital S.A.E",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "HBCO",
+   "name_en": "Heibco Npv",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "HDBK",
+   "name_en": "Housing & Development Bank",
+   "name_ar": "بنك التعمير والاسكان",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "HDST",
+   "name_en": "HEDGESTONE INVESTMENT",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "HELI",
+   "name_en": "Heliopolis Housing",
+   "name_ar": "مصر الجديدة للاسكان",
+   "sector_name": "Consumer Durables"
+  },
+  {
+   "symbol": "HRHO",
+   "name_en": "EFG Holding S.A.E.",
+   "name_ar": "هيرميس",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "IBCT",
+   "name_en": "International Business Corp. for Trading & Agencies",
+   "name_ar": "انترناشيونال بزنيس كوربوريشن",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "ICFC",
+   "name_en": "International Co. for Fertilizers & Chemicals",
+   "name_ar": "الدولية للأسمدة",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "ICID",
+   "name_en": "International Company for Investment & Development",
+   "name_ar": "العالمية للاستثمار والتنمية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "ICLE",
+   "name_en": "International Co. for Leasing SAE",
+   "name_ar": "انكوليس",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "IDRE",
+   "name_en": "Ismailia Development & Real Estate Co.",
+   "name_ar": "الاسماعيلية الجديدة للتطوير",
+   "sector_name": "Consumer Durables"
+  },
+  {
+   "symbol": "IEEC",
+   "name_en": "Industrial & Engineering Enterprises Co.",
+   "name_ar": null,
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "IFAP",
+   "name_en": "International Agricultural Products",
+   "name_ar": "الدولية للمحاصيل الزراعية",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "INEG",
+   "name_en": "Integrated Engineering Group S.A.E",
+   "name_ar": "المجموعة المتكاملة للاعمال الهندسية",
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "INFI",
+   "name_en": "Ismailia National Food Industries",
+   "name_ar": "فوديكو",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "IRAX",
+   "name_en": "El Ezz Aldekhela Steel-Alexandria",
+   "name_ar": null,
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "IRON",
+   "name_en": "Egyptian Iron & Steel",
+   "name_ar": "الحديد والصلب المصرية",
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "ISMA",
+   "name_en": "Ismailia Misr Poultry",
+   "name_ar": "الاسماعيلية مصر للدواجن",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "ISMQ",
+   "name_en": "Iron & Steel for Mines & Quarries",
+   "name_ar": null,
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "ISPH",
+   "name_en": "Ibnsina Pharma",
+   "name_ar": "ابن سينا فارما",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "JUFO",
+   "name_en": "Juhayna Food Industries",
+   "name_ar": "جهينة",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "KABO",
+   "name_en": "El Nasr Clothing & Textiles Co.",
+   "name_ar": "كابو",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "KNGC",
+   "name_en": "EL- Nasr Glass And Crystal",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "KORA",
+   "name_en": "KORRA",
+   "name_ar": null,
+   "sector_name": "Utilities"
+  },
+  {
+   "symbol": "KRDI",
+   "name_en": "Al Khair River for Development Agriculture Investment and Environmental Services",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "KWIN",
+   "name_en": "El Kahera El Watania Investment",
+   "name_ar": "القاهرة الوطنية للاستثمار والاوراق المالية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "KZPC",
+   "name_en": "Kafr El Zayat Pesticides & Chemical Co.",
+   "name_ar": "كفر الزيات للمبيدات والكيماويات",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "LCSW",
+   "name_en": "Lecico Egypt SAE",
+   "name_ar": "ليسيكو",
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "LKGP",
+   "name_en": "The Holding Company for Financial Investment - The Lakah Group",
+   "name_ar": null,
+   "sector_name": "Health Services"
+  },
+  {
+   "symbol": "LUTS",
+   "name_en": "Lotus For Agricultural Investments And Development",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "MAAL",
+   "name_en": "Marseilla Al Masreia Al Khalegeya for Holding Investment",
+   "name_ar": "مرسيليا",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "MASR",
+   "name_en": "Madinet Masr for Housing & Development",
+   "name_ar": "مدينة نصر للاسكان",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "MBEG",
+   "name_en": "MB for Engineering & Contracting",
+   "name_ar": "إم بي",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "MBSC",
+   "name_en": "Misr Beni Suef Cement Co. SAE",
+   "name_ar": "مصر بنى سويف للأسمنت",
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "MCQE",
+   "name_en": "Misr Cement Co. (Qena)",
+   "name_ar": "مصر للأسمنت - قنا",
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "MCRO",
+   "name_en": "Macro Group Pharmaceutical S.A.E.",
+   "name_ar": null,
+   "sector_name": "Health Technology"
+  },
+  {
+   "symbol": "MEGM",
+   "name_en": "Middle East Glass Manufacturing SAE",
+   "name_ar": "الشرق الأوسط لصناعة الزجاج",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "MENA",
+   "name_en": "Mena Touristic & Real Estate Investment",
+   "name_ar": "مينا للاستثمار السياحي",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "MEPA",
+   "name_en": "Medical Packaging Company",
+   "name_ar": "العبوات الطبية",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "MFPC",
+   "name_en": "Misr Fertilizers Production Company MOPCO",
+   "name_ar": "موبكو",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "MFSC",
+   "name_en": "Misr Duty Free Shops Co.",
+   "name_ar": "مصر للاسواق الحرة",
+   "sector_name": "Retail Trade"
+  },
+  {
+   "symbol": "MHOT",
+   "name_en": "Misr Hotels Co.",
+   "name_ar": "مصر للفنادق",
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "MICH",
+   "name_en": "Misr Chemical Industries Ltd.",
+   "name_ar": "مصر لصناعة الكيماويات",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "MILS",
+   "name_en": "North Cairo Mills Co.",
+   "name_ar": "مطاحن شمال القاهرة",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "MIPH",
+   "name_en": "Minapharm Pharmaceuticals",
+   "name_ar": "مينا فارم للأدوية",
+   "sector_name": "Health Technology"
+  },
+  {
+   "symbol": "MISR",
+   "name_en": "MISR Intercontinental for Granite & Marble",
+   "name_ar": "ايجى ستون",
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "MITR",
+   "name_en": "Misr Travel&Touris Egp6",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "MKIT",
+   "name_en": "Misr Kuwait Investment & Trading Co.",
+   "name_ar": "المصرية الكويتية للاستثمار والتجارة",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "MLIC",
+   "name_en": "Misr Life Insurance",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "MMAT",
+   "name_en": "Marsa Marsa Alam for Tourism Development",
+   "name_ar": "مرسى مرسى علم",
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "MMHC",
+   "name_en": "El Mamoura Company For Construction & Tourism Development",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "MOED",
+   "name_en": "Egyptian Modern Education Systems",
+   "name_ar": "المصرية لنظم التعليم الحديثة",
+   "sector_name": "Commercial Services"
+  },
+  {
+   "symbol": "MOIL",
+   "name_en": "Maridive & Oil Services SAE",
+   "name_ar": "ماريدايف",
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "MOIN",
+   "name_en": "Mohandes Insurance Co.",
+   "name_ar": "المهندس للتأمين",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "MOSC",
+   "name_en": "Misr Oils & Soap Co.",
+   "name_ar": "مصر للزيوت والصابون",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "MPCI",
+   "name_en": "Memphis Pharmaceutical & Chemical Industries",
+   "name_ar": "ممفيس للادوية",
+   "sector_name": "Health Technology"
+  },
+  {
+   "symbol": "MPCO",
+   "name_en": "Mansourah Poultry Co.",
+   "name_ar": "المنصورة للدواجن",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "MPRC",
+   "name_en": "Egyptian Media Production City",
+   "name_ar": "مدينة الانتاج الاعلامى",
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "MTIE",
+   "name_en": "MM Group for Industry & International Trade",
+   "name_ar": "إم تي أي",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "NAHO",
+   "name_en": "Naeem Holding Co.",
+   "name_ar": "النعيم القابضة",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "NAPR",
+   "name_en": "National Printing Company S.A.E.",
+   "name_ar": "National Printing Company S.A.E.",
+   "sector_name": "Paper and Packaging"
+  },
+  {
+   "symbol": "NARE",
+   "name_en": "Naeem Real Estate Holding Group",
+   "name_ar": "ريكاب",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "NBKE",
+   "name_en": "National Bank of Kuwait - Egypt",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "NCCW",
+   "name_en": "Nasr Co. for Civil Works",
+   "name_ar": "النصر للأعمال المدنية",
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "NCGC",
+   "name_en": "Nile Cotton Ginning",
+   "name_ar": null,
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "NDRL",
+   "name_en": "National Drilling Co.",
+   "name_ar": "الحفر الوطنية",
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "NEDA",
+   "name_en": "Northern Upper Egypt Development & Agricultural Production",
+   "name_ar": "نيوداب",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "NFCI",
+   "name_en": "ELNASR Co For Fertilizers And Chemical Industries",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "NHPS",
+   "name_en": "National Housing for Professional Syndicates",
+   "name_ar": "الوطنية للاسكان",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "NINH",
+   "name_en": "Nozha International Hospital",
+   "name_ar": "مستشفى النزهه الدولي",
+   "sector_name": "Health Services"
+  },
+  {
+   "symbol": "NIPH",
+   "name_en": "El-Nile Co. for Pharmaceuticals & Chemical Industries",
+   "name_ar": "النيل للادوية",
+   "sector_name": "Health Technology"
+  },
+  {
+   "symbol": "NMIN",
+   "name_en": "El Nasr Mining Co Egp10",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "OBRI",
+   "name_en": "El Obour Real Estate Investment",
+   "name_ar": "العبور للاستثمار العقارى",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "OCAP",
+   "name_en": "OG Capital For Investments SPAC",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "OCDI",
+   "name_en": "Six of October Development & Investment (SODIC)",
+   "name_ar": "سوديك",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "OCPH",
+   "name_en": "October Pharma Co.",
+   "name_ar": "اكتوبر فارما",
+   "sector_name": "Health Technology"
+  },
+  {
+   "symbol": "ODIN",
+   "name_en": "ODIN Investments",
+   "name_ar": "المصريين في الخارج للاستثمار والتنمية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "OFH",
+   "name_en": "O B Financial Holding",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "OIH",
+   "name_en": "Orascom Investment Holding SAE",
+   "name_ar": "اوراسكوم للاتصالات والاعلام والتكنولوجيا",
+   "sector_name": "Communications"
+  },
+  {
+   "symbol": "OLFI",
+   "name_en": "Obour Land for Food Industries",
+   "name_ar": "عبور لاند للصناعات الغذائية",
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "ORAS",
+   "name_en": "Orascom Construction Plc",
+   "name_ar": "اوراسكوم كونستراكشون ليميتد",
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "ORHD",
+   "name_en": "Orascom Development Egypt (S.A.E)",
+   "name_ar": "اوراسكوم للتنمية مصر",
+   "sector_name": "Consumer Durables"
+  },
+  {
+   "symbol": "ORWE",
+   "name_en": "Oriental Weavers Carpet",
+   "name_ar": "النساجون الشرقيون",
+   "sector_name": "Consumer Durables"
+  },
+  {
+   "symbol": "PACH",
+   "name_en": "Paints & Chemical Industries Co.",
+   "name_ar": null,
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "PHAR",
+   "name_en": "Egyptian International Pharmaceutical Industries Co.",
+   "name_ar": "ايبيكو",
+   "sector_name": "Health Technology"
+  },
+  {
+   "symbol": "PHDC",
+   "name_en": "Palm Hills Development Co.",
+   "name_ar": "بالم هيلز",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "PHGC",
+   "name_en": "Premium Healthcare Group",
+   "name_ar": null,
+   "sector_name": "Health Services"
+  },
+  {
+   "symbol": "PHTV",
+   "name_en": "Pyramisa Hotels",
+   "name_ar": "بيراميزا",
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "PMSC",
+   "name_en": "Petroleum Marine Services Company",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "POCO",
+   "name_en": "Port Said Container And Cargo Handling",
+   "name_ar": null,
+   "sector_name": "Transportation"
+  },
+  {
+   "symbol": "POUL",
+   "name_en": "Cairo Poultry Co.",
+   "name_ar": "القاهرة للدواجن",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "PRCL",
+   "name_en": "General Co. for Ceramic & Porcelain Products",
+   "name_ar": "شينى",
+   "sector_name": "Retail Trade"
+  },
+  {
+   "symbol": "PRDC",
+   "name_en": "Pioneers Properties for Urban Development",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "PRMH",
+   "name_en": "Prime Holding",
+   "name_ar": "برايم القابضة",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "QNBE",
+   "name_en": "Qatar National Bank",
+   "name_ar": "بنك قطر الوطني الاهلي",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "RACC",
+   "name_en": "Raya Contact Center",
+   "name_ar": "راية لخدمات مراكز الاتصالات",
+   "sector_name": "Commercial Services"
+  },
+  {
+   "symbol": "RAKT",
+   "name_en": "Rakta Paper Manufacturing",
+   "name_ar": "راكتا",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "RAYA",
+   "name_en": "Raya Holding for Financial Investments SAE",
+   "name_ar": "راية",
+   "sector_name": "Technology Services"
+  },
+  {
+   "symbol": "RKAZ",
+   "name_en": "REKAZ Financial Holding",
+   "name_ar": "بورسعيد للتنمية الزراعية و المقاولات",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "RMDA",
+   "name_en": "Tenth of Ramadan Pharmaceutical Industries & Diagnostic-Rameda",
+   "name_ar": null,
+   "sector_name": "Health Technology"
+  },
+  {
+   "symbol": "RMTV",
+   "name_en": "Rowad Misr Tourism Investment",
+   "name_ar": null,
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "ROTO",
+   "name_en": "Rowad Tourism (Al Rowad) Co",
+   "name_ar": "الرواد",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "RREI",
+   "name_en": "Arab Real Estate Investment Co.",
+   "name_ar": "اليكو",
+   "sector_name": "Consumer Durables"
+  },
+  {
+   "symbol": "RTVC",
+   "name_en": "Remco for Touristic Villages Construction",
+   "name_ar": "رمكو",
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "RUBX",
+   "name_en": "Rubex International for Plastic & Acrylic Manufacturing",
+   "name_ar": "روبكس",
+   "sector_name": "Consumer Durables"
+  },
+  {
+   "symbol": "SAIB",
+   "name_en": "Societe Arabe Internationale de Banque",
+   "name_ar": "بنك الشركة المصرفية العربية الدولية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "SAUD",
+   "name_en": "Al Baraka Bank Egypt",
+   "name_ar": "بنك البركة",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "SCEM",
+   "name_en": "Sinai Cement Co.",
+   "name_ar": "اسمنت سيناء",
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "SCFM",
+   "name_en": "South Cairo & Giza Mills & Bakeries",
+   "name_ar": "مطاحن جنوب القاهرة والجيزة",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "SCTS",
+   "name_en": "Sues Canal Co. for Technology Settling",
+   "name_ar": "قناة السويس لتوطين التكنولوجيا",
+   "sector_name": "Commercial Services"
+  },
+  {
+   "symbol": "SDTI",
+   "name_en": "Sharm Dreams Co. for Tourism Investment",
+   "name_ar": "شارم دريمز",
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "SEIG",
+   "name_en": "Saudi Egyptian Investment & Finance Co. SAE",
+   "name_ar": "السعودية المصرية للاستثمار والتمويل",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "SEIGA",
+   "name_en": "Saudi Egyptian Investment & Finance Co. SAE",
+   "name_ar": "السعودية المصرية للاستثمار والتمويل",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "SIEG",
+   "name_en": "Egyptian Company for Pipes and Cement Products -Siegwart",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "SINA",
+   "name_en": "Sinai Manganese Company",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "SIPC",
+   "name_en": "Sabaa International Company for Pharmaceutial and Chemical Industry",
+   "name_ar": "سبأ",
+   "sector_name": "Health Technology"
+  },
+  {
+   "symbol": "SKPC",
+   "name_en": "Sidi Kerir Petrochemicals",
+   "name_ar": "سيدي كرير للبتروكيماويات",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "SMFR",
+   "name_en": "Samad Misr-EGYFERT",
+   "name_ar": "ايجيفرت",
+   "sector_name": "Distribution Services"
+  },
+  {
+   "symbol": "SMPP",
+   "name_en": "Modern Shorouk Printing & Packaging",
+   "name_ar": null,
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "SNFC",
+   "name_en": "Sharkia National Food",
+   "name_ar": "الشرقية الوطنية للامن الغذائي",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "SNFI",
+   "name_en": "Souhag National Food Industries",
+   "name_ar": null,
+   "sector_name": "Consumer Non-Durables"
+  },
+  {
+   "symbol": "SPHT",
+   "name_en": "El Shams Pyramids Co. for Hotels & Touristic Projects SAE",
+   "name_ar": "الشمس بيراميدز",
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "SPIN",
+   "name_en": "Alexandria Spinning & Weaving",
+   "name_ar": "سبينالكس",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "SPMD",
+   "name_en": "Speed Medical SAE",
+   "name_ar": null,
+   "sector_name": "Health Services"
+  },
+  {
+   "symbol": "SUCE",
+   "name_en": "Suez Cement Co.",
+   "name_ar": null,
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "SUGR",
+   "name_en": "Delta Sugar",
+   "name_ar": "الدلتا للسكر",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "SVCE",
+   "name_en": "South Valley Cement Co.",
+   "name_ar": "جنوب الوادي للاسمنت",
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "SWDY",
+   "name_en": "El Sewedy Electric Company",
+   "name_ar": "السويدي اليكتريك",
+   "sector_name": "Producer Manufacturing"
+  },
+  {
+   "symbol": "TALM",
+   "name_en": "Taaleem Management Services S.A.E",
+   "name_ar": null,
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "TANM",
+   "name_en": "Tanmiya for Real Estate Investment",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "TAQA",
+   "name_en": "TAQA Arabia",
+   "name_ar": null,
+   "sector_name": "Utilities"
+  },
+  {
+   "symbol": "TMGH",
+   "name_en": "Talaat Moustafa Group Holding",
+   "name_ar": "طلعت مصطفى",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "TORA",
+   "name_en": "Tourah Cement Co",
+   "name_ar": null,
+   "sector_name": "Non-Energy Minerals"
+  },
+  {
+   "symbol": "TOUR",
+   "name_en": "Tourism Urbanization",
+   "name_ar": null,
+   "sector_name": "Consumer Services"
+  },
+  {
+   "symbol": "TRTO",
+   "name_en": "TransOceans Tours",
+   "name_ar": "عبر المحيطات للسياحة",
+   "sector_name": "Commercial Services"
+  },
+  {
+   "symbol": "TWSA",
+   "name_en": "Tawasoa Factoring",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "TYCN",
+   "name_en": "Tycoon Holding Company For Financial Investments",
+   "name_ar": "الاسكندرية الوطنية للاستثمارات المالية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "UBEE",
+   "name_en": "United Bank SAE",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "UEFM",
+   "name_en": "Upper Egypt Flour Mills Co.",
+   "name_ar": "مطاحن مصر العليا",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "UEGC",
+   "name_en": "El-Saeed Contracting & Real Estate Investment Co. SCCD",
+   "name_ar": "الصعيد العامة للمقاولات",
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "UNIP",
+   "name_en": "Universal Co. for Paper & Packaging Materials-Unipack",
+   "name_ar": "يونيباك",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "UNIT",
+   "name_en": "United Housing Construction SA",
+   "name_ar": "المتحدة للاسكان",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "UPMS",
+   "name_en": "Union Pharmacist Company For Medical Services And Investment",
+   "name_ar": "الاتحاد الصيدلى",
+   "sector_name": "Health Services"
+  },
+  {
+   "symbol": "UTOP",
+   "name_en": "Utopia Real Estate Investment & Tourism SAE",
+   "name_ar": "يوتوبيا",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "VALU",
+   "name_en": "U Consumer Finance S.A.E",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "VERT",
+   "name_en": "Vertika for Industry & Trade",
+   "name_ar": "فرتيكا",
+   "sector_name": "Technology Services"
+  },
+  {
+   "symbol": "VLMR",
+   "name_en": "Valmore Holding",
+   "name_ar": "القابضة المصرية الكويتية",
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "VLMRA",
+   "name_en": "Valmore Holding",
+   "name_ar": null,
+   "sector_name": "Finance"
+  },
+  {
+   "symbol": "WATP",
+   "name_en": "Modern Co. for Water Proofing",
+   "name_ar": null,
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "WCDF",
+   "name_en": "Middle & West Delta Flour Mills Co.",
+   "name_ar": "مطاحن وسط وغرب الدلتا",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "WKOL",
+   "name_en": "Wadi Kom Ombo Land Reclamation",
+   "name_ar": "وادي كوم امبو",
+   "sector_name": "Industrial Services"
+  },
+  {
+   "symbol": "YAYT",
+   "name_en": "Spring & Transportation Needs Manufacturing Co.",
+   "name_ar": null,
+   "sector_name": ""
+  },
+  {
+   "symbol": "ZEOT",
+   "name_en": "Extracted Oils & Derivatives Co.",
+   "name_ar": "الزيوت المستخلصة",
+   "sector_name": "Process Industries"
+  },
+  {
+   "symbol": "ZMID",
+   "name_en": "Zahraa Maadi Investment & Development",
+   "name_ar": "زهراء المعادي",
+   "sector_name": "Finance"
+  }
+ ]
+}

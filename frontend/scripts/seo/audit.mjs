@@ -18,6 +18,11 @@
  */
 
 import { writeFileSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+const requireJson = createRequire(import.meta.url);
+/** The publish allow-list every company URL must belong to (lib/security-master.ts). */
+const SECURITY_MASTER = requireJson('../../content/egx-security-master.json');
+const PUBLISHABLE = new Set(SECURITY_MASTER.publishable_symbols);
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import {
@@ -130,6 +135,30 @@ async function auditCrawlPolicy() {
 }
 
 /* ── host aliases ────────────────────────────────────────────────────────── */
+
+/**
+ * ANSWER-ENGINE ACCESS, TESTED — not assumed from robots.txt. The Arabic funds
+ * hub must answer OAI-SearchBot, PerplexityBot and bingbot with 200 and an
+ * Arabic <h1>; a CDN/WAF rule or a bot-manager challenge would return 403/429
+ * or a challenge page while robots.txt still says "Allow".
+ */
+async function auditAiCrawlerAccess() {
+    const url = `${SITE_URL}/ar/Funds`;
+    const agents = [
+        ['OAI-SearchBot', 'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; OAI-SearchBot/1.0; +https://openai.com/searchbot'],
+        ['PerplexityBot', 'Mozilla/5.0 (compatible; PerplexityBot/1.0; +https://perplexity.ai/perplexitybot)'],
+        ['bingbot', 'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)'],
+    ];
+    for (const [name, ua] of agents) {
+        const res = await httpGet(url, { userAgent: ua, retries: 1 });
+        const h1 = /<h1[^>]*>([\s\S]*?)<\/h1>/.exec(res.body || '')?.[1]?.replace(/<[^>]+>/g, '').trim() || '';
+        if (!res.ok || res.status !== 200) {
+            f.add('high', 'AI_CRAWLER_BLOCKED', `/ar/Funds answered ${res.status || 'network error'} to ${name} — robots.txt invites it but the edge does not serve it`, { url, agent: name, status: res.status });
+        } else if (!/[\u0600-\u06FF]/.test(h1)) {
+            f.add('high', 'AI_CRAWLER_SERVED_ENGLISH', `/ar/Funds served ${name} a non-Arabic <h1> ("${h1.slice(0, 50)}")`, { url, agent: name, h1 });
+        }
+    }
+}
 
 async function auditHostAliases() {
     // The middleware 308s every non-canonical host to the apex. If that ever
@@ -346,6 +375,46 @@ function auditPage(url, res) {
                     `${path} has an Arabic <h1> dominated by a Latin proper noun (likely a missing Arabic name upstream): "${heading.slice(0, 70)}"`,
                     { url, h1: heading, arabicShare: share });
             }
+        }
+    }
+
+    // SSR TRUTHFULNESS. A server-rendered page must not claim zero results
+    // while it renders results. The marketplace shell shipped its literal
+    // "0 funds matching your filters" above 207 pre-rendered fund rows on
+    // every hub, category and provider URL (verified 2026-09-05) — a browser
+    // hides it because the page's script writes the real count on load.
+    const fundRows = (res.body.match(/<h3><a href="\/(?:ar\/)?Funds\/\d+-/g) || []).length;
+    const zeroClaim = /(?:^|\D)0\s*(?:funds matching your filters|صندوقاً مطابقاً للفلاتر)/.test(facts.text || '');
+    if (fundRows > 0 && zeroClaim) {
+        f.add('high', 'SSR_COUNT_CONTRADICTION',
+            `${path} says "0 funds matching" in server HTML while rendering ${fundRows} fund rows`,
+            { url, fundRows });
+    }
+    // ENGLISH UI LABELS ON AN ARABIC PAGE. Not headings — the filter labels,
+    // table headers and buttons a designed shell translates client-side. Three
+    // or more of the known defaults in one Arabic document is the leak, not a
+    // proper noun.
+    if (isAr) {
+        const UI_LABELS = ['Filters', 'Reset all', 'Search fund', 'Fund type', 'Management fee', 'Sort by', 'Subscription frequency',
+            'Redemption frequency', 'funds matching your filters', 'No entry / exit fees', 'Shariah-compliant only', 'NAV range (EGP)'];
+        const hits = UI_LABELS.filter((l) => new RegExp(`(?:^|[\\s>])${l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:[\\s<]|$)`).test(facts.text || ''));
+        if (hits.length >= 3) {
+            f.add('medium', 'AR_PAGE_ENGLISH_UI_LABELS',
+                `${path} ships ${hits.length} English UI labels in an Arabic document (${hits.slice(0, 4).join(', ')}) — the shell's dictionary was not applied server-side`,
+                { url, count: hits.length, examples: hits.slice(0, 6) });
+        }
+    }
+    // LISTING AUTHORITY. Every company URL a public page links must be on the
+    // security master's publish list. A link to a symbol outside it means the
+    // vendor universe leaked past the gate again (GTHE, delisted 2019, was
+    // served as an active EGX company until 2026-09-05).
+    if (/^\/(ar\/)?(companies|markets|sectors)(\/|$)/.test(path) && PUBLISHABLE.size) {
+        const linked = [...new Set([...res.body.matchAll(/href="\/(?:ar\/)?symbol\/([A-Za-z0-9.\-]+?)(?:-[^"\/]*)?(?:\/|")/g)].map((m) => m[1].toUpperCase()))];
+        const leaked = linked.filter((sym) => !PUBLISHABLE.has(sym));
+        if (leaked.length) {
+            f.add('high', 'SECURITY_MASTER_UNVERIFIED_SYMBOL',
+                `${path} links ${leaked.length} symbol(s) the security master does not publish (${leaked.slice(0, 5).join(', ')})`,
+                { url, leaked: leaked.slice(0, 20) });
         }
     }
 
@@ -587,11 +656,17 @@ function selfTest() {
         `<link rel="alternate" hreflang="ar" href="${SITE_URL}/ar/Funds/2662-x"><link rel="alternate" hreflang="en" href="${SITE_URL}/Funds/2662-x"><link rel="alternate" hreflang="x-default" href="${SITE_URL}/ar/Funds/2662-x">`);
     // C: a fund surface with no as-of at all.
     page('/Funds/prices-today', '<p>prices</p>');
+    // D: the marketplace contradiction + English UI labels on an Arabic hub.
+    page('/ar/Funds', '<span id="resultsCount">0</span> <span>funds matching your filters</span> <label>Filters</label> <button>Reset all</button> <label>Search fund</label> <label>Fund type</label><h3><a href="/ar/Funds/1-x">a</a></h3><h3><a href="/ar/Funds/2-y">b</a></h3>');
+    // E: a directory linking a symbol the master does not publish.
+    page('/companies', '<a href="/symbol/COMI">CIB</a><a href="/symbol/GTHE">GTH</a><time datetime="' + today + '">t</time>');
 
     const codesFor = (path) => new Set(f.all().filter((x) => (x.evidence?.url || '') === `${SITE_URL}${path}`).map((x) => x.code));
     const a = codesFor('/ar/Funds/category/x');
     const b = codesFor('/ar/Funds/2662-x');
     const c = codesFor('/Funds/prices-today');
+    const d = codesFor('/ar/Funds');
+    const e = codesFor('/companies');
     const expect = [
         [a.has('HREFLANG_DUPLICATE_LANG'), 'A: duplicate hreflang per language is detected'],
         [a.has('DATA_STALE'), 'A: stale as-of date is detected'],
@@ -601,6 +676,10 @@ function selfTest() {
         [!b.has('AR_PAGE_LINKS_EN_TREE'), 'B: the language toggle and Arabic links raise nothing'],
         [!b.has('HREFLANG_DUPLICATE_LANG') && !b.has('DATA_STALE') && !b.has('WRONG_CURRENCY') && !b.has('AR_PAGE_ENGLISH_SUBHEADING') && !b.has('PAGE_NO_ASOF'), 'B: a clean Arabic fund page raises none of them'],
         [c.has('PAGE_NO_ASOF'), 'C: a fund surface with no <time datetime> is detected'],
+        [d.has('SSR_COUNT_CONTRADICTION'), 'D: "0 funds matching" above rendered rows is detected'],
+        [d.has('AR_PAGE_ENGLISH_UI_LABELS'), 'D: English UI labels on an Arabic hub are detected'],
+        [!b.has('SSR_COUNT_CONTRADICTION') && !b.has('AR_PAGE_ENGLISH_UI_LABELS'), 'B: a clean Arabic page raises neither'],
+        [e.has('SECURITY_MASTER_UNVERIFIED_SYMBOL'), 'E: a directory link to a non-publishable symbol (GTHE) is detected'],
     ];
     let failed = 0;
     for (const [ok, label] of expect) {
@@ -630,6 +709,7 @@ async function main() {
     console.log(`[seo-audit] target=${SITE_URL} mode=${QUICK ? 'quick' : 'full'} sample=${SAMPLE}`);
 
     await auditCrawlPolicy();
+    await auditAiCrawlerAccess();
     await auditHostAliases();
     const { entriesBySegment } = await auditSitemaps();
 

@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import reconciliation from '@/content/fund-universe-reconciliation.json';
+import { SECURITY_MASTER_SOURCES } from '@/lib/security-master';
+import { DORMANT_DAYS, MIN_NAV_POINTS, QUOTE_STALE_DAYS } from '@/lib/fund-stats';
 import Link from 'next/link';
 import { SITE_URL } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -148,6 +151,37 @@ const EN: { title: string; description: string; h1: string; lede: string; sectio
                 'If a figure on any page looks wrong, report it through the Corrections page or by email to corrections@startamarkets.com. Errors are corrected on the next refresh and, where an article is affected, noted on the article.',
             ],
         },
+        {
+            id: 'coverage',
+            h: 'Fund coverage, reconciled to the regulator',
+            paragraphs: [
+                `The Financial Regulatory Authority counts investment funds BY ISSUANCE: ${reconciliation.fra.total_by_issuance} at the end of June 2026 (report of ${reconciliation.fra.report_date}). This site prices publicly offered funds with a published net asset value. ${reconciliation.fra.out_of_scope.count} of the regulator's issuances are private-equity, real-estate, fund-of-funds or exchange-traded vehicles that publish no public unit price, so they are outside what can be priced here.`,
+                `A fund is CURRENT when its manager has published a NAV within ${DORMANT_DAYS} days and at least ${MIN_NAV_POINTS} NAV points are held; a fund outside that rule keeps its own page, marked dormant, and is not counted, ranked or listed as a current price. The marketplace, the category and provider pages, the rankings and the price list all read this one rule, so the number a crawler is served equals the number a visitor sees.`,
+                `The remaining difference between the regulator's in-scope count and this site's pages (${reconciliation.delta.fra_in_scope_minus_starta_pages} issuances on ${reconciliation.as_of}) is recent launches whose first NAVs publish with a lag, and type-level differences the regulator's report does not itemise. The machine-readable reconciliation (content/fund-universe-reconciliation.json) is regenerated from the live data and re-checked at every build.`,
+            ],
+            table: {
+                head: ['Regulator type (Q2 2026)', 'Issuances', 'Priced here?'],
+                rows: reconciliation.fra.out_of_scope.types.map((t) => [t.type_en, String(t.count), 'No — no public unit price']),
+            },
+        },
+        {
+            id: 'ranking-eligibility',
+            h: 'Who is ranked on the best-funds pages',
+            bullets: [
+                'A fund is ranked only when the audited engine (fund_metrics.py, recomputed daily from the NAV history) produced its trailing 12-month return. The same figure appears on the fund’s own page; the ranking never reads a second column family.',
+                'The 12-month return is withheld — not estimated — when no NAV was published within 10% of the window (about 36 days) of the anchor date, or when the history is shorter than 12 months.',
+                'A series flagged as a data artefact (a redenomination the cleaner could not repair) is not ranked even when a number exists; the fund page still shows what it can honestly support.',
+                'Every excluded fund is counted with its reason on the ranking page itself (eligible, excluded, reason table), so the ranked count and the directory count can never disagree silently.',
+            ],
+        },
+        {
+            id: 'listed-companies',
+            h: 'Which companies are published as EGX-listed',
+            paragraphs: [
+                `Listing status is not inferred from the price feed. The security master (content/egx-security-master.json) is built from the Egyptian Exchange's own registers — the main-market register captured ${SECURITY_MASTER_SOURCES.egx_main_register?.captured_at} and the SME-market register captured ${SECURITY_MASTER_SOURCES.egx_sme_register?.captured_at} — keyed by ISIN. TradingView supplies identity and prices only. A symbol the registers do not confirm (a delisted security such as Global Telecom Holding, delisted 9 September 2019; an ISIN alias of a company already published; a subscription-rights or preferred-share line; or a line neither register lists) keeps a reachable page that states its status, is not indexed, and is excluded from the directory, the market screens, sector pages and sitemaps.`,
+                `Sector on company pages and in the directory is the exchange's own 18-sector classification from the register; the vendor's global classification is kept for the vendor-derived sector hubs and is labelled as such. A quote older than ${QUOTE_STALE_DAYS} days is withheld rather than shown as current.`,
+            ],
+        },
     ],
     related: [
         { href: '/editorial-policy', label: 'Editorial policy' },
@@ -276,6 +310,37 @@ const AR: typeof EN = {
             h: 'التصحيحات',
             paragraphs: [
                 'إذا بدا رقم على أي صفحة خاطئاً، أبلغ عنه عبر صفحة التصحيحات أو بالبريد إلى corrections@startamarkets.com. تُصحَّح الأخطاء في التحديث التالي، وتُذكر على المقال إذا كان مقالاً.',
+            ],
+        },
+        {
+            id: 'coverage',
+            h: 'تغطية الصناديق مطابَقةً مع الجهة الرقابية',
+            paragraphs: [
+                `تُحصي الهيئة العامة للرقابة المالية صناديق الاستثمار بإصداراتها: ${reconciliation.fra.total_by_issuance} صندوقًا في نهاية يونيو 2026 (تقرير ${reconciliation.fra.report_date}). يعرض هذا الموقع أسعار الصناديق المطروحة للجمهور التي تنشر صافي قيمة أصولها. ومن إصدارات الهيئة ${reconciliation.fra.out_of_scope.count} صناديق ملكية خاصة وعقارية وقابضة ومؤشرات متداولة لا تنشر سعر وثيقة للجمهور، فهي خارج ما يمكن تسعيره هنا.`,
+                `يُعدّ الصندوق حاليًا عندما ينشر مديره صافي قيمة الأصول خلال ${DORMANT_DAYS} يومًا ونحتفظ بما لا يقل عن ${MIN_NAV_POINTS} من نقاط صافي قيمة الأصول؛ والصندوق خارج هذه القاعدة يحتفظ بصفحته موسومًا بأنه متوقف، ولا يُحصى ولا يُرتَّب ولا يُعرض كسعر حالي. يقرأ سوق الصناديق وصفحات الفئات والجهات والترتيبات وقائمة الأسعار هذه القاعدة الواحدة، فيتساوى العدد الذي يُقدَّم للزاحف مع ما يراه الزائر.`,
+                `والفارق المتبقي بين عدد الهيئة الداخل في النطاق وصفحات هذا الموقع (${reconciliation.delta.fra_in_scope_minus_starta_pages} إصدارًا بتاريخ ${reconciliation.as_of}) إصدارات حديثة تنشر أول قيم لها متأخرة، وفروق تصنيف لا يفصّلها تقرير الهيئة. تُعاد المطابقة الآلية (content/fund-universe-reconciliation.json) من البيانات الحية ويُتحقق منها عند كل بناء.`,
+            ],
+            table: {
+                head: ['نوع الصندوق لدى الهيئة (الربع الثاني 2026)', 'الإصدارات', 'مُسعَّر هنا؟'],
+                rows: reconciliation.fra.out_of_scope.types.map((t) => [t.type_ar, String(t.count), 'لا — لا يُنشر سعر وثيقة للجمهور']),
+            },
+        },
+        {
+            id: 'ranking-eligibility',
+            h: 'من يُرتَّب في صفحات أفضل الصناديق',
+            bullets: [
+                'لا يُرتَّب الصندوق إلا عندما يُنتج المحرّك المُدقَّق (fund_metrics.py، يُعاد حسابه يوميًا من سجل صافي قيمة الأصول) عائده لآخر 12 شهرًا. الرقم نفسه يظهر على صفحة الصندوق؛ ولا يقرأ الترتيب أي عمود آخر.',
+                'يُحجب عائد 12 شهرًا — لا يُقدَّر — عندما لا يوجد إفصاح خلال 10% من النافذة (نحو 36 يومًا) حول تاريخ الإسناد، أو عندما يقل السجل عن 12 شهرًا.',
+                'السلسلة الموسومة بخلل في البيانات (إعادة تقييم لم يستطع المنظّف إصلاحها) لا تُرتَّب حتى لو وُجد رقم؛ وتعرض صفحة الصندوق ما يمكنها إثباته بأمانة.',
+                'يُحصى كل صندوق مستبعد مع سببه على صفحة الترتيب نفسها (مؤهل، مستبعد، جدول الأسباب)، فلا يمكن أن يختلف عدد المُرتَّبين عن عدد الدليل بصمت.',
+            ],
+        },
+        {
+            id: 'listed-companies',
+            h: 'أي الشركات تُنشر كشركات مقيدة في البورصة',
+            paragraphs: [
+                `لا تُستنتج حالة القيد من تغذية الأسعار. يُبنى سجل الأوراق المالية (content/egx-security-master.json) من سجلات البورصة المصرية نفسها — سجل السوق الرئيسي (بتاريخ ${SECURITY_MASTER_SOURCES.egx_main_register?.captured_at}) وسجل سوق الشركات الصغيرة والمتوسطة (بتاريخ ${SECURITY_MASTER_SOURCES.egx_sme_register?.captured_at}) — مفهرسةً برقم ISIN. ويقتصر دور TradingView على الهوية والأسعار. والرمز الذي لا تؤكده السجلات (ورقة مشطوبة مثل جلوبال تليكوم هولدنج المشطوبة في 9 سبتمبر 2019، أو رمز ISIN مكرر لشركة منشورة، أو حق اكتتاب أو أسهم ممتازة، أو ورقة لا يذكرها أي سجل) يحتفظ بصفحة يمكن الوصول إليها تبيّن حالته، ولا يُفهرس، ويُستبعد من الدليل وشاشات السوق وصفحات القطاعات وخرائط الموقع.`,
+                `القطاع في صفحات الشركات والدليل هو تصنيف البورصة نفسها ذو 18 قطاعًا من السجل؛ ويُحتفظ بتصنيف المزوّد العالمي لصفحات القطاعات المشتقة منه مع الإشارة إلى ذلك. ويُحجب السعر الذي مضى عليه أكثر من ${QUOTE_STALE_DAYS} يومًا بدلًا من عرضه كسعر حالي.`,
             ],
         },
     ],

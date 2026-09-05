@@ -2,7 +2,9 @@ import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { db } from '@/lib/db-server';
 import { matchAssetManager } from './asset-managers';
-import { fundIsDormant } from './fund-stats';
+import { fundIsCurrent, fundCurrency, rankingEligibility, quoteIsStale } from './fund-stats';
+import { fundTypeSlug } from '@/content/fund-categories';
+import { EGX_PUBLISHABLE_SQL, getSecurity, officialSectorOf } from './security-master';
 import { primaryNewsRows, newsDedupeKey, sanitizeNewsText, likeEscape } from './news-display';
 
 /**
@@ -22,8 +24,19 @@ import { primaryNewsRows, newsDedupeKey, sanitizeNewsText, likeEscape } from './
  * This gate is applied to the PUBLIC layer only. No data is deleted and the
  * internal app/API are untouched — the owner deferred the wider Saudi cleanup,
  * and this does not pre-empt that decision.
+ *
+ * 2026-09-05 — THE GATE IS NOW A LISTING GATE, NOT JUST A MARKET GATE.
+ * `market_code='EGX'` only says which vendor feed a row came from. TradingView's
+ * egypt/scan carries delisted securities (GTHE — delisted by EGX decree on
+ * 9 Sep 2019 — was served as an active EGX company with 2026 OHLC), 40 more
+ * lines absent from EGX's registers, ISIN-alias duplicates and subscription-
+ * rights lines. EGX_ONLY therefore also requires the symbol to be on the
+ * security master's publish allow-list (lib/security-master.ts: EGX's own
+ * main + SME registers, keyed by ISIN). Identity lookups that must still
+ * RESOLVE a non-listed symbol — to render its status notice — use EGX_ANY.
  */
-export const EGX_ONLY = `market_code = 'EGX'`;
+export const EGX_ANY = `market_code = 'EGX'`;
+export const EGX_ONLY = EGX_PUBLISHABLE_SQL;
 
 
 /**
@@ -108,6 +121,11 @@ export type Ticker = {
     isin: string | null;
     logo_url: string | null;
     last_updated: string | null;
+    /** True when the last quote is older than QUOTE_STALE_DAYS: price fields are then null, never "live". */
+    quote_stale?: boolean;
+    /** EGX's own sector for the company (register), when known. */
+    official_sector_en?: string | null;
+    official_sector_ar?: string | null;
 };
 
 const TICKER_NUM = ['last_price', 'change_percent', 'volume', 'market_cap', 'pe_ratio', 'pb_ratio', 'dividend_yield'];
@@ -130,6 +148,25 @@ function cleanName(row: Record<string, unknown>): Record<string, unknown> {
     // handful legitimately trade in USD (FAITA/EGBE/VLMRA). Map SAR -> EGP for
     // DISPLAY only (the DB is untouched — the deferred Saudi purge is separate).
     if (row.currency === 'SAR') row.currency = 'EGP';
+    // STALE QUOTES ARE UNKNOWN, NOT CURRENT. 17 companies whose vendor line had
+    // been dropped kept a June price and a day-change on /companies and the
+    // screens for three months (audit 2026-09-05). Beyond QUOTE_STALE_DAYS the
+    // price, change and volume are withheld; the row itself stays (it is a
+    // listed company) and every page dates what it shows.
+    if (quoteIsStale(row.last_updated)) {
+        row.quote_stale = true;
+        row.last_price = null;
+        row.change_percent = null;
+        row.volume = null;
+    } else {
+        row.quote_stale = false;
+    }
+    // EGX's own sector, from the register through the security master.
+    if (typeof row.symbol === 'string') {
+        const os = officialSectorOf(row.symbol);
+        row.official_sector_en = os?.en ?? null;
+        row.official_sector_ar = os?.ar ?? null;
+    }
     return row;
 }
 
@@ -146,6 +183,7 @@ function toNum(row: Record<string, unknown> | null, fields: string[]) {
     return row;
 }
 
+/** A PUBLISHABLE (listed) company, or null. Every public list/page uses this. */
 export const getTicker = cache(async (symbol: string): Promise<Ticker | null> => {
     const result = await db.query(
         `SELECT symbol, name_en, name_ar, last_price, change_percent, volume,
@@ -156,6 +194,24 @@ export const getTicker = cache(async (symbol: string): Promise<Ticker | null> =>
     );
     const row = result.rows[0] ? cleanName(result.rows[0]) : null;
     return (toNum(row, TICKER_NUM) as Ticker) || null;
+});
+
+/**
+ * ANY EGX-coded row, listed or not — the identity lookup the company
+ * overview uses to render a status notice for a delisted, duplicate or
+ * unverified symbol instead of a live-looking quote. Never use it to LIST.
+ */
+export const getTickerAny = cache(async (symbol: string): Promise<(Ticker & { listing: ReturnType<typeof getSecurity> }) | null> => {
+    const result = await db.query(
+        `SELECT symbol, name_en, name_ar, last_price, change_percent, volume,
+                sector_name, market_cap, pe_ratio, pb_ratio, dividend_yield,
+                currency, isin, logo_url, last_updated
+         FROM market_tickers WHERE symbol = $1 AND ${EGX_ANY}`,
+        [symbol.toUpperCase()]
+    );
+    const row = result.rows[0] ? cleanName(result.rows[0]) : null;
+    if (!row) return null;
+    return { ...(toNum(row, TICKER_NUM) as Ticker), listing: getSecurity(symbol) };
 });
 
 /** Numeric columns of stock_stats_view every reader coerces — ONE list, so
@@ -204,7 +260,7 @@ const _statsMapCached = unstable_cache(
         }
         return out;
     },
-    ['seo:stats-map'],
+    ['seo:stats-map:v2'],
     { revalidate: 900, tags: ['seo-tickers'] }
 );
 export const getStatsMap = cache((): Promise<Record<string, Record<string, number | string | null>>> => _statsMapCached());
@@ -289,6 +345,9 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
     if (!row) return null;
     // Canonical NAV = live value derived from nav_history (see /api/v1/funds/[id]).
     row.latest_nav = (row.live_latest_nav as number | null) ?? (Number(row.latest_nav) || null);
+    // Denomination: the stored value is 'EGP' on every row, USD/EUR funds
+    // included — resolve it by the shared rule (lib/fund-stats.ts).
+    row.currency = fundCurrency(row);
     // ------------------------------------------------------------------
     // TRUST HIERARCHY CUTOVER (2026-08-15 audit).
     //
@@ -702,7 +761,7 @@ const _sectorsCached = unstable_cache(
             sector_name: string; companies: number; market_cap: number | null;
         }>;
     },
-    ['seo:sectors'],
+    ['seo:sectors:v2'],
     { revalidate: 300, tags: ['seo-tickers'] }
 );
 export const getSectors = cache((): Promise<Array<{ sector_name: string; companies: number; market_cap: number | null }>> => _sectorsCached());
@@ -778,42 +837,125 @@ export const getDividendCalendar = cache(async (): Promise<{ upcoming: Array<Rec
 // 15 min is far shorter than the NAV publication cadence (twice daily) and
 // every page carries an as-of stamp, so the cache can never show a figure the
 // origin would not have shown.
+/**
+ * The return family fund_risk_metrics owns. When a computed row exists for a
+ * fund it is AUTHORITATIVE for every one of these — including its NULLs — on
+ * every surface: the fund's own page (getFund, since the 2026-08-15 cutover),
+ * the hubs, the rankings and the marketplace list API. Until 2026-09-05 the
+ * hubs and rankings still read the legacy family below, and the same fund
+ * showed two different 12-month returns on two pages of this site (fund 2734:
+ * 93.81% ranked, 81.50% on its profile; 96 of 114 funds disagreed).
+ */
+export const COMPUTED_RETURN_FIELDS = ['return_ytd', 'return_1m', 'return_3m', 'return_6m', 'return_1y', 'return_3y', 'return_5y'] as const;
+/** Legacy-family columns the marketplace shell and the mobile app still read. */
+export const LEGACY_RETURN_ALIASES: Record<(typeof COMPUTED_RETURN_FIELDS)[number], string[]> = {
+    return_ytd: ['returns_ytd', 'ytd_return'],
+    return_1m: ['returns_1m'],
+    return_3m: ['returns_3m', 'profit_3month'],
+    return_6m: ['returns_6m'],
+    return_1y: ['returns_1y', 'one_year_return'],
+    return_3y: ['returns_3y', 'three_year_return'],
+    return_5y: ['returns_5y', 'five_year_return'],
+};
+
+/**
+ * Apply the trust hierarchy to one row that carries the metrics columns as
+ * `m_*` (from a LEFT JOIN) or as a nested `metrics` object: computed values
+ * replace the whole return family (and the legacy aliases, so a reader of
+ * either spelling sees one number); with no computed row the legacy family is
+ * coalesced as before. Stamps `returns_source` so every consumer — and every
+ * auditor — can see which engine produced the figure.
+ */
+export function applyReturnHierarchy(r: Record<string, unknown>, metrics: Record<string, unknown> | null): Record<string, unknown> {
+    if (metrics) {
+        for (const k of COMPUTED_RETURN_FIELDS) {
+            const v = metrics[k];
+            const n = v === null || v === undefined || v === '' ? null : Number(v);
+            const value = n !== null && Number.isFinite(n) ? n : null;
+            r[k] = value;
+            for (const alias of LEGACY_RETURN_ALIASES[k]) if (alias in r) r[alias] = value;
+        }
+        for (const k of ['nav_52w_high', 'nav_52w_low']) if (metrics[k] !== undefined) r[k] = metrics[k];
+        r.metrics_points = metrics.points ?? null;
+        r.inception_years = metrics.inception_years ?? null;
+        r.analytics_suppressed = metrics.analytics_suppressed === true || metrics.analytics_suppressed === 't';
+        r.returns_source = 'computed';
+    } else {
+        coalesceReturns(r);
+        r.metrics_points = null;
+        r.inception_years = r.inception_years ?? null;
+        r.analytics_suppressed = false;
+        r.returns_source = 'legacy';
+    }
+    return r;
+}
+
 const _allFundsRankedCached = unstable_cache(
     async (): Promise<Array<Record<string, unknown>>> => {
     const result = await db.query(
-        `SELECT fund_id, fund_name, fund_name_en, fund_type, fund_type_en,
-                classification_en, issuer_en, currency, is_shariah,
+        `SELECT v.fund_id, v.fund_name, v.fund_name_en, v.fund_type, v.fund_type_en,
+                v.classification_en, v.issuer_en, v.currency, v.is_shariah,
                 -- Provider identity, BOTH languages. Omitting owner_name* and
                 -- manager_name here made buildProviders() see managers only,
                 -- so every bank hub 404'd while the sitemap (which queries its
                 -- own column set) advertised them — a page/sitemap
                 -- disagreement that only a live check catches.
-                manager_name, manager_name_en, owner_name, owner_name_en,
-                latest_nav, live_latest_nav, last_nav_date,
-                return_ytd, return_1m, return_3m, return_1y, return_3y, return_5y,
-                returns_ytd, ytd_return, returns_1m, returns_3m, returns_1y, one_year_return,
-                returns_3y, three_year_return, returns_5y, five_year_return,
-                expense_ratio, fee_management, min_subscription, inception_date, risk_level_en
-         FROM funds_view
-         WHERE fund_id::text ~ '^[0-9]+$'`
+                v.manager_name, v.manager_name_en, v.owner_name, v.owner_name_en,
+                v.latest_nav, v.live_latest_nav, v.last_nav_date, v.nav_points,
+                v.return_ytd, v.return_1m, v.return_3m, v.return_1y, v.return_3y, v.return_5y,
+                v.returns_ytd, v.ytd_return, v.returns_1m, v.returns_3m, v.returns_1y, v.one_year_return,
+                v.returns_3y, v.three_year_return, v.returns_5y, v.five_year_return,
+                v.expense_ratio, v.fee_management, v.min_subscription, v.inception_date, v.risk_level_en,
+                -- The audited engine's row, when it exists (see applyReturnHierarchy).
+                m.return_ytd AS m_return_ytd, m.return_1m AS m_return_1m, m.return_3m AS m_return_3m,
+                m.return_6m AS m_return_6m, m.return_1y AS m_return_1y, m.return_3y AS m_return_3y,
+                m.return_5y AS m_return_5y, m.nav_52w_high AS m_nav_52w_high, m.nav_52w_low AS m_nav_52w_low,
+                m.points AS m_points, m.inception_years AS m_inception_years,
+                m.analytics_suppressed AS m_analytics_suppressed,
+                (m.fund_id IS NOT NULL) AS has_metrics
+         FROM funds_view v
+         LEFT JOIN fund_risk_metrics m ON m.fund_id = v.fund_id::text
+         WHERE v.fund_id::text ~ '^[0-9]+$'`
     );
     const rows = result.rows.map((r: Record<string, unknown>) => {
         r.latest_nav = (r.live_latest_nav as number | null) ?? r.latest_nav;
-        coalesceReturns(r);
-        return toNum(r, ['latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_1y', 'return_3y', 'return_5y', 'expense_ratio', 'fee_management', 'min_subscription']);
+        const metrics = r.has_metrics
+            ? {
+                  return_ytd: r.m_return_ytd, return_1m: r.m_return_1m, return_3m: r.m_return_3m, return_6m: r.m_return_6m,
+                  return_1y: r.m_return_1y, return_3y: r.m_return_3y, return_5y: r.m_return_5y,
+                  nav_52w_high: r.m_nav_52w_high, nav_52w_low: r.m_nav_52w_low,
+                  points: r.m_points, inception_years: r.m_inception_years, analytics_suppressed: r.m_analytics_suppressed,
+              }
+            : null;
+        for (const k of Object.keys(r)) if (k.startsWith('m_')) delete r[k];
+        applyReturnHierarchy(r, metrics);
+        // Denomination and type: the stored currency is 'EGP' on every row and
+        // the disclosed type is missing on half of them; both are resolved by
+        // the shared rules so the hubs, the rankings and the marketplace agree.
+        r.currency = fundCurrency(r);
+        const type = fundTypeSlug(r);
+        if (type.source === 'name') { r.fund_type = type.slug; r.fund_type_source = 'name'; }
+        else r.fund_type_source = type.source;
+        return toNum(r, ['latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_6m', 'return_1y', 'return_3y', 'return_5y',
+            'expense_ratio', 'fee_management', 'min_subscription', 'nav_points', 'metrics_points', 'inception_years', 'nav_52w_high', 'nav_52w_low']);
     });
-    // Rank in JS on the coalesced value (the raw return_1y column is all-NULL,
-    // so an SQL ORDER BY on it would be meaningless).
-    rows.sort((a, b) => ((b.return_1y as number | null) ?? -Infinity) - ((a.return_1y as number | null) ?? -Infinity));
-    // THE CURRENT-FUND UNIVERSE. A fund that has not published a NAV for over
-    // DORMANT_DAYS is closed, matured or frozen at source; it stays reachable
-    // through its own page (getFund) but is not a current price, a ranked
-    // return, a category member or a provider's live product. The public API
-    // already drops these, so this is also what makes the crawler-facing
-    // pre-render equal to what the marketplace shows a visitor.
-    return rows.filter((r) => !fundIsDormant(r.last_nav_date));
+    // Order: ranking-eligible funds by trailing 12-month return, then the
+    // rest. An ineligible fund (short history, series gap, data artefact) is
+    // still listed with whatever it can honestly show, but never ABOVE a fund
+    // whose figure the engine stands behind.
+    const key = (r: Record<string, unknown>) => {
+        const e = rankingEligibility(r);
+        return e.eligible ? (r.return_1y as number) : -Infinity;
+    };
+    rows.sort((a, b) => key(b) - key(a));
+    // THE CURRENT-FUND UNIVERSE — the one rule shared with /api/v1/funds, so
+    // the crawler-facing pre-render lists exactly the funds the marketplace
+    // shows a visitor. A fund outside it stays reachable through its own page
+    // (getFund) but is not a current price, a ranked return, a category
+    // member or a provider's live product.
+    return rows.filter((r) => fundIsCurrent(r));
     },
-    ['seo:all-funds-ranked'],
+    ['seo:all-funds-ranked:v2'],
     { revalidate: 900, tags: ['seo-funds'] }
 );
 // React.cache() still dedups within a single request; unstable_cache dedups
@@ -945,7 +1087,7 @@ const _marketListsCached = unstable_cache(
             volatile: byDesc(rows, (r) => r.beta_1y).slice(0, limit),
         };
     },
-    ['seo:market-lists'],
+    ['seo:market-lists:v2'],
     { revalidate: 300, tags: ['seo-tickers'] }
 );
 
@@ -1041,7 +1183,7 @@ const _allTickersCached = unstable_cache(
         );
         return result.rows.map((r: Record<string, unknown>) => toNum(cleanName(r), TICKER_NUM)) as Ticker[];
     },
-    ['seo:all-tickers'],
+    ['seo:all-tickers:v2'],
     { revalidate: 300, tags: ['seo-tickers'] }
 );
 export const getAllTickers = cache((): Promise<Ticker[]> => _allTickersCached());

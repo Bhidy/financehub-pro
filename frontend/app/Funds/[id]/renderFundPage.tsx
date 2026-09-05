@@ -500,6 +500,7 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
         cagrStat,
         movement,
         compareHref,
+        historyHref: `${fundPath(fund.fund_id as number, nameEn, nameAr, lang)}/nav-history`,
     };
 }
 

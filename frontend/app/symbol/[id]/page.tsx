@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
-import { getTicker, getStats, getCompanyProfile, getSectorPeers, getPerformance, getTechnicals, getSymbolNews } from '@/lib/public-data';
+import { getTicker, getTickerAny, getStats, getCompanyProfile, getSectorPeers, getPerformance, getTechnicals, getSymbolNews } from '@/lib/public-data';
+import ListingStatusNotice from '@/components/seo/ListingStatusNotice';
 import SymbolSeoSection from '@/components/seo/SymbolSeoSection';
 import SymbolPageClient from './SymbolPageClient';
 
@@ -41,8 +42,20 @@ export default async function SymbolOverviewPage({
         // with a 200 here put 52 URLs — legacy Saudi numeric tickers and
         // codes that never existed — in Search Console's soft-404 list, the
         // exact class the Arabic page already refuses.
-        if (dbOk) notFound();
-        return <SymbolPageClient />;
+        if (!dbOk) return <SymbolPageClient />;
+        // NOT LISTED, BUT REAL. The security master (lib/security-master.ts)
+        // withholds publication from delisted securities (GTHE, delisted
+        // 2019), duplicate aliases, rights/preferred lines and symbols no EGX
+        // register confirms. Those keep a reachable page that states what the
+        // symbol is before any vendor figure, and the layout marks it noindex.
+        const any = await getTickerAny(symbol).catch(() => null);
+        if (!any) notFound();
+        return (
+            <>
+                <ListingStatusNotice symbol={symbol} security={any.listing} lang="en" />
+                <SymbolPageClient />
+            </>
+        );
     }
 
     const [stats, profile, peers, perf, technicals, news] = await Promise.all([

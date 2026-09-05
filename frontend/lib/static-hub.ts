@@ -28,6 +28,220 @@ import path from 'node:path';
 /** Per-process cache: the shell cannot change within a deployment. */
 const shellCache = new Map<string, string | null>();
 
+/**
+ * SERVER-SIDE DICTIONARY PASS — the missing half of localizing a designed shell.
+ *
+ * Every designed shell bakes its ENGLISH markup defaults into the file and
+ * translates them on load: `setLanguage()` walks `[data-key]` and writes
+ * `translations[lang][key]` into each element, and starta-i18n.js does the
+ * same for the shared nav/footer chrome. `heroText` localized the twelve
+ * headline keys server-side; the other ~45 keyed strings on /ar/Funds
+ * (Filters, Reset all, Search fund, Fund type, Manager, Issuer, Risk,
+ * Management fee, Grid/Table, the table headers, the empty-state copy, the
+ * primary nav) still left the server in English inside an `<html lang="ar">`
+ * document — verified in the served HTML on 2026-09-05 for Googlebot,
+ * OAI-SearchBot, bingbot and PerplexityBot alike.
+ *
+ * So the server now applies the shells' OWN dictionaries: the page's inline
+ * `const translations = {…}` and the shared `var SHARED = {…}` in
+ * public/assets/starta-i18n.js. Same keys, same values, same precedence as
+ * the client (page dictionary wins over shared chrome), so the served Arabic
+ * is byte-for-byte what the visitor sees after hydration, and `data-key`
+ * stays in place so the in-page language toggle keeps working both ways.
+ * verify-i18n-coverage.mjs already guarantees both dictionaries are complete.
+ */
+type Dictionary = Record<string, Record<string, string>>;
+const dictCache = new Map<string, Dictionary | null>();
+
+/**
+ * Extract a `<name> = {…};` object literal from our own script source and
+ * parse it. The dictionaries are flat objects of string values written as a
+ * JS literal (unquoted keys, trailing commas, occasional single quotes), so
+ * they are tokenised into strict JSON and parsed with JSON.parse — no code is
+ * ever evaluated, and a literal this tokeniser cannot express (a function, a
+ * template string) fails loudly instead of being guessed.
+ */
+function extractObjectLiteral(source: string, declaration: RegExp): Record<string, unknown> | null {
+    const m = declaration.exec(source);
+    if (!m) return null;
+    const start = m.index + m[0].length - 1; // index of the opening brace
+    let depth = 0;
+    let inStr: string | null = null;
+    let end = -1;
+    for (let j = start; j < source.length; j++) {
+        const ch = source[j];
+        if (inStr) {
+            if (ch === '\\') { j++; continue; }
+            if (ch === inStr) inStr = null;
+            continue;
+        }
+        if (ch === '"' || ch === "'" || ch === '`') { inStr = ch; continue; }
+        if (ch === '{') depth++;
+        else if (ch === '}' && --depth === 0) { end = j; break; }
+    }
+    if (end === -1) return null;
+    try {
+        return JSON.parse(objectLiteralToJson(source.slice(start, end + 1))) as Record<string, unknown>;
+    } catch (error) {
+        console.error('[static-hub] dictionary literal is not a plain string map:', (error as Error).message);
+        return null;
+    }
+}
+
+/** JS object literal (string values only) → strict JSON text. */
+function objectLiteralToJson(literal: string): string {
+    let out = '';
+    let i = 0;
+    while (i < literal.length) {
+        const ch = literal[i];
+        if (ch === '"' || ch === "'") {
+            // String: re-emit double-quoted with JSON escaping.
+            let j = i + 1;
+            let value = '';
+            while (j < literal.length && literal[j] !== ch) {
+                if (literal[j] === '\\') {
+                    const next = literal[j + 1];
+                    // JS single-char escapes that JSON also accepts pass through;
+                    // an escaped quote of the other kind is just that character.
+                    if (next === ch) value += ch;
+                    else if ('\\/bfnrt"'.includes(next)) value += `\\${next}`;
+                    else if (next === 'u') value += `\\u`;
+                    else value += next;
+                    j += 2;
+                    continue;
+                }
+                value += literal[j];
+                j++;
+            }
+            out += JSON.stringify(value);
+            i = j + 1;
+            continue;
+        }
+        if (ch === '/' && literal[i + 1] === '/') {
+            // Line comment inside the literal.
+            const nl = literal.indexOf('\n', i);
+            i = nl === -1 ? literal.length : nl;
+            continue;
+        }
+        if (ch === '/' && literal[i + 1] === '*') {
+            const close = literal.indexOf('*/', i + 2);
+            i = close === -1 ? literal.length : close + 2;
+            continue;
+        }
+        if (/[A-Za-z_$]/.test(ch)) {
+            // Bare identifier — only valid as a key.
+            let j = i;
+            while (j < literal.length && /[\w$]/.test(literal[j])) j++;
+            const ident = literal.slice(i, j);
+            const rest = literal.slice(j).match(/^\s*:/);
+            if (!rest) throw new Error(`unexpected identifier "${ident}"`);
+            out += JSON.stringify(ident);
+            i = j;
+            continue;
+        }
+        if (ch === ',') {
+            // Drop a trailing comma before a closing brace.
+            const rest = literal.slice(i + 1).match(/^\s*}/);
+            if (rest) { i++; continue; }
+        }
+        out += ch;
+        i++;
+    }
+    return out;
+}
+
+function readDictionary(file: string): Dictionary | null {
+    if (dictCache.has(file)) return dictCache.get(file) ?? null;
+    let dict: Dictionary | null = null;
+    try {
+        const source = readFileSync(path.join(process.cwd(), 'public', file), 'utf8');
+        const obj = extractObjectLiteral(source, /\b(?:const|var|let)\s+(?:translations|SHARED)\s*=\s*\{/);
+        if (obj && typeof obj === 'object') dict = obj as Dictionary;
+    } catch (error) {
+        console.error(`[static-hub] cannot read dictionary from public/${file}:`, (error as Error).message);
+    }
+    dictCache.set(file, dict);
+    return dict;
+}
+
+/** The shared nav/footer chrome dictionary every static page loads. */
+const SHARED_I18N_FILE = 'assets/starta-i18n.js';
+
+/**
+ * Apply `dict[lang]` to every `data-key` element in the shell, the way the
+ * client's applier does — innerHTML replaced wholesale, attribute kept.
+ * Elements whose content nests the same tag are skipped (a regex cannot find
+ * their closing tag safely); that is reported, never guessed.
+ */
+function applyDictionary(html: string, dict: Record<string, string>, label: string): string {
+    const open = /<(\w+)([^>]*?)\sdata-key="([^"]+)"([^>]*)>/g;
+    let out = '';
+    let cursor = 0;
+    let m: RegExpExecArray | null;
+    while ((m = open.exec(html)) !== null) {
+        const [tag, name, , key] = m;
+        const value = dict[key];
+        if (value === undefined) continue;
+        const start = m.index + tag.length;
+        const close = `</${name}>`;
+        const end = html.indexOf(close, start);
+        if (end === -1) continue;
+        const inner = html.slice(start, end);
+        if (new RegExp(`<${name}\\b`, 'i').test(inner)) {
+            console.error(`[static-hub] ${label}: data-key="${key}" nests another <${name}> — left as markup default`);
+            continue;
+        }
+        out += html.slice(cursor, start) + value;
+        cursor = end;
+        open.lastIndex = end + close.length;
+    }
+    return out + html.slice(cursor);
+}
+
+/**
+ * Input placeholders are not `data-key`ed — the client sets them from the
+ * dictionary by element id. Translate any placeholder whose English text is a
+ * dictionary value (search box, NAV min/max), by reverse lookup on the same
+ * dictionary, so the mapping cannot drift from the client's.
+ */
+function applyPlaceholders(html: string, en: Record<string, string>, target: Record<string, string>): string {
+    const byEnglish = new Map<string, string>();
+    for (const [k, v] of Object.entries(en)) if (typeof v === 'string') byEnglish.set(v, k);
+    return html.replace(/(<input\b[^>]*?\splaceholder=")([^"]*)(")/g, (whole, pre: string, text: string, post: string) => {
+        const key = byEnglish.get(text);
+        const value = key ? target[key] : undefined;
+        return value ? `${pre}${value.replace(/"/g, '&quot;')}${post}` : whole;
+    });
+}
+
+/**
+ * Localize a designed shell into `lang` with its own dictionaries. Runs
+ * BEFORE `heroText`, so page-specific headings still win.
+ */
+function localizeShell(html: string, file: string, lang: 'en' | 'ar', reserved: Set<string>): string {
+    if (lang !== 'ar') return html; // the shells' markup default IS English
+    const page = readDictionary(file);
+    const shared = readDictionary(SHARED_I18N_FILE);
+    // Keys a route edits through a LITERAL replacement anchor (compare-hub
+    // matches `data-key="empty_cta">Go back to Funds</a>`) must keep their
+    // markup default here, or the anchor stops matching and the route's own
+    // localized edit is silently lost. The replacement then localizes them.
+    const strip = (d: Record<string, string>) => Object.fromEntries(Object.entries(d).filter(([k]) => !reserved.has(k)));
+    let out = html;
+    // Client precedence: shared chrome applies first, the page dictionary
+    // applies after and may override — replicate by applying page LAST.
+    if (shared?.ar) out = applyDictionary(out, strip(shared.ar), `${file} (shared chrome)`);
+    if (page?.ar) {
+        out = applyDictionary(out, strip(page.ar), file);
+        if (page.en) out = applyPlaceholders(out, page.en, page.ar);
+    }
+    // The language toggle shows the OTHER language: `langToggle.textContent =
+    // lang === 'ar' ? 'EN' : 'AR'` in every shell.
+    out = out.replace(/(<button\b[^>]*\bid="langToggle"[^>]*>)\s*AR\s*(<\/button>)/, '$1EN$2');
+    if (!page && !shared) console.error(`[static-hub] ${file}: no dictionary found — Arabic labels not localized server-side`);
+    return out;
+}
+
 function readShell(file: string): string | null {
     if (shellCache.has(file)) return shellCache.get(file) ?? null;
     let html: string | null = null;
@@ -229,17 +443,25 @@ export async function renderStaticHub(opts: StaticHubOptions): Promise<Response>
             return `${open}${localizedHref(href, 'ar')}${close}`;
         });
     }
+    if (opts.lang) {
+        const reserved = new Set<string>();
+        for (const r of opts.replacements ?? []) for (const m of r.find.matchAll(/data-key="([^"]+)"/g)) reserved.add(m[1]);
+        html = localizeShell(html, opts.file, opts.lang, reserved);
+    }
     for (const h of opts.heroText ?? []) {
         const re = new RegExp(`(<(\\w+)[^>]*?)\\s*data-key="${h.dataKey}"([^>]*>)([\\s\\S]*?)(</\\2>)`);
-        const before = html;
+        // Presence is tested explicitly: comparing before/after misreported a
+        // MISSING element whenever the dictionary pass had already written the
+        // identical string (the replacement is then a legitimate no-op).
+        if (!re.test(html)) {
+            console.error(`[static-hub] ${opts.file}: no element with data-key="${h.dataKey}" — heading not localized`);
+            continue;
+        }
         html = html.replace(re, (_m, open: string, _tag: string, rest: string, _inner: string, close: string) =>
             h.keepKey
                 ? `${open} data-key="${h.dataKey}"${rest}${esc(h.text)}${close}`
                 : `${open}${rest}${esc(h.text)}${close}`
         );
-        if (html === before) {
-            console.error(`[static-hub] ${opts.file}: no element with data-key="${h.dataKey}" — heading not localized`);
-        }
     }
     for (const r of opts.replacements ?? []) {
         if (!html.includes(r.find)) {

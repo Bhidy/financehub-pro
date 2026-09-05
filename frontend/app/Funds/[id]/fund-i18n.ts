@@ -142,6 +142,7 @@ export type FundLabels = {
     channelsDisclaimer: string;
     allFunds: string;
     compare: string;
+    fullHistory: string;
     unit: string;
     units: string;
     // graceful empty states — sections always render; missing data degrades to these
@@ -226,6 +227,7 @@ const EN: FundLabels = {
     channelsDisclaimer: 'Channels & prospectus as published by the fund manager. Verify terms before investing.',
     allFunds: 'All Egyptian mutual funds',
     compare: 'Compare',
+    fullHistory: 'Full NAV history — annual closes and latest published values →',
     unit: 'unit',
     units: 'units',
     dataPending: 'Data for this section is not yet available.',
@@ -417,6 +419,7 @@ const AR: FundLabels = {
     channelsDisclaimer: 'القنوات والنشرة كما ينشرها مدير الصندوق. يرجى التحقق من الشروط قبل الاستثمار.',
     allFunds: 'جميع صناديق الاستثمار المصرية',
     compare: 'قارن',
+    fullHistory: 'سجل صافي قيمة الأصول الكامل — الإغلاقات السنوية وآخر القيم المنشورة ←',
     unit: 'وثيقة',
     units: 'وثيقة',
     dataPending: 'بيانات هذا القسم غير متوفرة بعد.',

@@ -47,6 +47,16 @@ debug_*.png
 # review ran against an empty ledger.
 !frontend/content/seo-experiments.json
 !frontend/content/search-intent-map.json
+# Listing authority + fund-universe reconciliation (build inputs — lib/security-master.ts,
+# lib/funds-hub-render.ts and the methodology page import them; docs/DATA_GOVERNANCE.md).
+!frontend/content/egx-security-master.json
+!frontend/content/fund-universe-reconciliation.json
+!frontend/scripts/fixtures/egx-official-listed.json
+!frontend/scripts/fixtures/egx-sme-listed.json
+!frontend/scripts/fixtures/egx-security-overrides.json
+!frontend/scripts/fixtures/tv-egypt-universe.json
+!frontend/scripts/fixtures/platform-symbols.json
+!frontend/scripts/fixtures/fra-fund-universe.json
 system_backup_*
 
 # --- repo hygiene (2026-06 cleanup) ---

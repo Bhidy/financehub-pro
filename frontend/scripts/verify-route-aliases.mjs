@@ -981,7 +981,10 @@ async function assertDesignedShellsIntact() {
       continue;
     }
     const queries = [...text.matchAll(/`([^`]*FROM market_tickers[^`]*)`/g)].map((m) => m[1]);
-    const ungated = queries.filter((q) => !q.includes("EGX_ONLY"));
+    // EGX_ANY (market filter only, no listing gate) is permitted ONLY on the
+    // single-symbol identity lookup that renders a non-listed symbol's status
+    // page (getTickerAny). Any LIST or aggregate must carry EGX_ONLY.
+    const ungated = queries.filter((q) => !q.includes("EGX_ONLY") && !(q.includes("EGX_ANY") && /WHERE symbol = \$1 AND \$\{EGX_ANY\}/.test(q)));
     if (ungated.length > 0) {
       console.error(
         `FAIL: ${file} has ${ungated.length} market_tickers quer${ungated.length === 1 ? "y" : "ies"} without the EGX_ONLY gate — Saudi rows would publish as EGX companies.`
@@ -989,6 +992,22 @@ async function assertDesignedShellsIntact() {
       for (const q of ungated.slice(0, 2)) {
         console.error(`       ${q.replace(/\s+/g, " ").trim().slice(0, 110)}`);
       }
+      failed = true;
+    }
+  }
+
+  // LISTING AUTHORITY. EGX_ONLY is not a market filter any more: it is the
+  // security master's publish allow-list (EGX's own registers, keyed by ISIN).
+  // A revert to `market_code = 'EGX'` would republish delisted securities
+  // (GTHE), ISIN-alias duplicates and rights lines as EGX companies.
+  {
+    const pd = readFileSync(path.join(root, "lib/public-data.ts"), "utf8");
+    if (!/export const EGX_ONLY = EGX_PUBLISHABLE_SQL;/.test(pd)) {
+      console.error("FAIL: lib/public-data.ts EGX_ONLY must be EGX_PUBLISHABLE_SQL (lib/security-master.ts) — the listing gate was weakened.");
+      failed = true;
+    }
+    if (!/import \{[^}]*EGX_PUBLISHABLE_SQL[^}]*\} from '\.\/security-master'/.test(pd)) {
+      console.error("FAIL: lib/public-data.ts no longer imports the security master.");
       failed = true;
     }
   }

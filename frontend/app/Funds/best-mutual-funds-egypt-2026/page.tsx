@@ -9,6 +9,8 @@ import JsonLd from '@/components/seo/JsonLd';
 import FundsGuide from '@/components/seo/FundsGuide';
 import FundsNarrativeSections from '@/components/seo/FundsNarrative';
 import { buildFundsNarrative } from '@/lib/funds-narrative';
+import RankingEligibility from '@/components/seo/RankingEligibility';
+import { rankingEligibility, fundCurrency } from '@/lib/fund-stats';
 
 /**
  * /Funds/best-mutual-funds-egypt-2026 — the master plan's first editorial
@@ -94,7 +96,9 @@ const CATEGORY_AR: Record<string, string> = {
 
 export default async function BestFundsPage() {
     const funds = await getAllFundsRanked();
-    const withReturn = funds.filter((f) => num(f, 'return_1y') !== null);
+    // RANKED = the audited engine stands behind the 12-month figure (lib/fund-stats.ts).
+    // Every other current fund is counted and explained in <RankingEligibility>.
+    const withReturn = funds.filter((f) => rankingEligibility(f).eligible);
     // A ranking page with (almost) nothing ranked is a misleading financial
     // display — 404 rather than publish an empty "best funds" table.
     if (withReturn.length < 3) notFound();
@@ -138,7 +142,7 @@ export default async function BestFundsPage() {
         ...narrative.faq,
         {
             q: 'How are these funds ranked?',
-            a: `Purely by trailing 1-year return computed from each fund's published NAV history, grouped by category. No editorial judgment is applied — the tables re-rank automatically as NAVs update (twice daily). Data as of ${asOfHuman ?? 'the latest NAV publication'}.`,
+            a: `Purely by trailing 1-year return, computed daily by our audited engine from each fund's published NAV history and grouped by category. ${withReturn.length} of ${funds.length} current funds are ranked; the rest are listed with a stated reason (under 12 months of history, no NAV published near the anchor date, or a data-quality flag on the series). No editorial judgment is applied — the tables re-rank automatically as NAVs update (twice daily). Data as of ${asOfHuman ?? 'the latest NAV publication'}.`,
         },
         {
             q: 'Does a high past return mean a fund is the best choice?',
@@ -158,7 +162,7 @@ export default async function BestFundsPage() {
 
             <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Best-Performing Mutual Funds in Egypt (2026)</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">
-                {withReturn.length} Egyptian mutual funds ranked <strong>purely by trailing 1-year return</strong>, by
+                {withReturn.length} of {funds.length} Egyptian mutual funds with a current NAV are eligible and ranked <strong>purely by trailing 1-year return</strong> computed from published NAV history, by
                 category. NAVs and returns come from official fund-manager disclosures and refresh twice daily
                 {asOfHuman && <> — data as of <time dateTime={asOf as string}>{asOfHuman}</time></>}. Rankings are
                 mechanical, not recommendations.
@@ -204,7 +208,7 @@ export default async function BestFundsPage() {
                                         <td className="px-4 py-2.5 text-muted">{categoryOf(f)}</td>
                                         <td className={`px-4 py-2.5 text-right font-bold ${r1y !== null && r1y >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{fmtPct(r1y)}</td>
                                         <td className="px-4 py-2.5 text-right">{fmtPct(num(f, 'return_ytd'))}</td>
-                                        <td className="px-4 py-2.5 text-right">{fmtNav(num(f, 'latest_nav'))} {str(f, 'currency') || 'EGP'}</td>
+                                        <td className="px-4 py-2.5 text-right">{fmtNav(num(f, 'latest_nav'))} {fundCurrency(f)}</td>
                                     </tr>
                                 );
                             })}
@@ -289,10 +293,12 @@ export default async function BestFundsPage() {
                     Methodology
                 </h2>
                 <p className="mt-3 leading-relaxed text-muted">
-                    Funds are grouped by their disclosed type and classification, then ordered by trailing 1-year return
-                    derived from published NAV history. Categories with fewer than three ranked funds are omitted. Fees,
-                    minimums and risk levels come from the same manager disclosures shown on each fund&rsquo;s page. The
-                    tables regenerate automatically as NAVs update — nothing on this page is hand-picked.
+                    Funds are grouped by their disclosed type (or, where the disclosure carries no type, by the type in
+                    their registered name), then ordered by the trailing 1-year return our audited engine computes from
+                    published NAV history — the same figure shown on each fund&rsquo;s own page. Categories with fewer than
+                    three ranked funds are omitted. Fees, minimums and risk levels come from the same manager disclosures
+                    shown on each fund&rsquo;s page. The tables regenerate automatically as NAVs update — nothing on this
+                    page is hand-picked.
                 </p>
                 <p className="mt-3 text-sm text-muted">
                     Past performance does not guarantee future results. This page is informational and is not investment
@@ -300,6 +306,8 @@ export default async function BestFundsPage() {
                     Egyptian Financial Regulatory Authority (FRA).
                 </p>
             </section>
+
+            <RankingEligibility rows={funds} lang="en" />
 
             <section className="mt-10">
                 <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">

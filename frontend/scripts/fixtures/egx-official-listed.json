@@ -1,0 +1,1319 @@
+{
+ "_comment": "EGX official register — All Listed Securities › Stocks (main market). egx.com.eg is bot-protected (F5/TSPD), so this snapshot is captured in a real browser session and committed; refresh it with the procedure in docs/DATA_GOVERNANCE.md. Keyed by ISIN; sector is EGX's own 18-sector classification.",
+ "source_url": "https://www.egx.com.eg/en/ListedStocks.aspx",
+ "source_url_ar": "https://www.egx.com.eg/ar/ListedStocks.aspx",
+ "captured_at": "2026-09-05",
+ "market_segment": "main",
+ "rows": [
+  {
+   "name": "Zahraa Maadi Investment & Development",
+   "isin": "EGS21171C011",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "A Capital Holding",
+   "isin": "EGS697S1C015",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "AJWA for Food Industries company Egypt",
+   "isin": "EGS30211C014",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "ALNAHDA Industrial Co",
+   "isin": "EGS3C6P1C019",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "ALNASR For Building And Construction Company",
+   "isin": "EGS220N1C016",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "ARAB POLVARA SPINNING & WEAVING CO.",
+   "isin": "EGS32331C018",
+   "sector": "Textile & Durables"
+  },
+  {
+   "name": "ASEC Company For Mining - ASCOM",
+   "isin": "EGS10001C013",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Abou Kir Fertilizers",
+   "isin": "EGS38191C010",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Abu Dhabi Islamic Bank- Egypt",
+   "isin": "EGS60111C019",
+   "sector": "Banks"
+  },
+  {
+   "name": "Act Financial",
+   "isin": "EGS7D5P1C019",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Al Baraka Bank Egypt",
+   "isin": "EGS60101C010",
+   "sector": "Banks"
+  },
+  {
+   "name": "Al Khair River For Development Agricultural Investment&Envir",
+   "isin": "EGS02291C010",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Al Tawfeek Leasing Company-A.T.LEASE",
+   "isin": "EGS676N1C015",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Alexandria Company For Refractories",
+   "isin": "EGS3E2F1C011",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "Alexandria Containers and goods",
+   "isin": "EGS42111C012",
+   "sector": "Shipping & Transportation Services"
+  },
+  {
+   "name": "Alexandria Flour Mills",
+   "isin": "EGS30471C014",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Alexandria For Investment and Urban Development",
+   "isin": "EGS66DU1C015",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Alexandria Mineral Oils Company",
+   "isin": "EGS380P1C010",
+   "sector": "Energy & Support Services"
+  },
+  {
+   "name": "Alexandria New Medical Center",
+   "isin": "EGS72081C010",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Alexandria Pharmaceuticals",
+   "isin": "EGS38341C011",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Alexandria Spinning & Weaving (SPINALEX)",
+   "isin": "EGS32041C013",
+   "sector": "Textile & Durables"
+  },
+  {
+   "name": "Amer Group Holding",
+   "isin": "EGS675S1C011",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Arab Aluminum",
+   "isin": "EGS3D031C018",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Arab Co. for Asset Management And Development",
+   "isin": "EGS72AQ1C016",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Arab Cotton Ginning",
+   "isin": "EGS32221C011",
+   "sector": "Textile & Durables"
+  },
+  {
+   "name": "Arab Developers Holding",
+   "isin": "EGS694A1C018",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Arab Moltaka Investments Co",
+   "isin": "EGS67221C019",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Arab Pharmaceuticals",
+   "isin": "EGS38321C013",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Arab Real Estate Investment CO.-ALICO",
+   "isin": "EGS65011C016",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Arabia Investments Holding",
+   "isin": "EGS21351C019",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Arabia for Investment and Development",
+   "isin": "EGS65R01C015",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Arabian Cement Company",
+   "isin": "EGS3C0O1C016",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "Arabian Food Industries DOMTY",
+   "isin": "EGS30031C016",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Arabian Metal Industries And Industrial Investments",
+   "isin": "EGS3E1E1C013",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "Aspire Capital Holding For Financial Investments",
+   "isin": "EGS691L1C018",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Atlas For Investment and Food Industries",
+   "isin": "EGS071L1C018",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "B Investments Holding",
+   "isin": "EGS691T1C010",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Banque Du Caire",
+   "isin": "EGS600K1C019",
+   "sector": "Banks"
+  },
+  {
+   "name": "Beltone Holding",
+   "isin": "EGS691G1C015",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Bonyan for Development and Trade",
+   "isin": "EGS656M1C010",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "CI Capital Holding For Financial Investments",
+   "isin": "EGS691D1C018",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Cairo Educational Services",
+   "isin": "EGS72201C014",
+   "sector": "Education Services"
+  },
+  {
+   "name": "Cairo For Investment And Real Estate Developments-CIRA Edu",
+   "isin": "EGS65541C012",
+   "sector": "Education Services"
+  },
+  {
+   "name": "Cairo Oils & Soap",
+   "isin": "EGS30581C010",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Cairo Pharmaceuticals",
+   "isin": "EGS38391C016",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Cairo Poultry",
+   "isin": "EGS02051C018",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Canal Shipping Agencies",
+   "isin": "EGS44031C010",
+   "sector": "Shipping & Transportation Services"
+  },
+  {
+   "name": "Catalyst Partners Middle East –CPME",
+   "isin": "EGS698X1C017",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Ceramic & Porcelain",
+   "isin": "EGS3C111C019",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "Certificates Of Odin Egyptian Equity Investment Fund-KASAB",
+   "isin": "EGS696Z1C017",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Chemical Industries Development - CID",
+   "isin": "EGS38361C019",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Cleopatra Hospital Company",
+   "isin": "EGS729J1C018",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Commercial International Bank-Egypt (CIB)",
+   "isin": "EGS60121C018",
+   "sector": "Banks"
+  },
+  {
+   "name": "Concrete Fashion Group For Commercial& Industrial Investment",
+   "isin": "EGS672I2C014",
+   "sector": "Textile & Durables"
+  },
+  {
+   "name": "Contact Financial Holding",
+   "isin": "EGS738I1C018",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Copper For Commercial Investment & Real Estate Development",
+   "isin": "EGS65511C015",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "Creast Mark For Contracting And Real Estate Development",
+   "isin": "EGS23141C012",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "Credit Agricole Egypt",
+   "isin": "EGS60041C018",
+   "sector": "Banks"
+  },
+  {
+   "name": "Damietta Container and Cargo Handling",
+   "isin": "EGS42121C011",
+   "sector": "Shipping & Transportation Services"
+  },
+  {
+   "name": "Delta For Printing & Packaging",
+   "isin": "EGS370W1C013",
+   "sector": "Industrial Goods , Services and Automobiles"
+  },
+  {
+   "name": "Delta Insurance",
+   "isin": "EGS63031C016",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Delta Sugar",
+   "isin": "EGS30201C015",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Development & Engineering Consultants",
+   "isin": "EGS65081C019",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Dice Sport & Casual Wear",
+   "isin": "EGS33321C018",
+   "sector": "Textile & Durables"
+  },
+  {
+   "name": "Digitize for Investment And Technology",
+   "isin": "EGS74F71C015",
+   "sector": "IT , Media & Communication Services"
+  },
+  {
+   "name": "E-finance For Digital and Financial Investments",
+   "isin": "EGS743O1C013",
+   "sector": "IT , Media & Communication Services"
+  },
+  {
+   "name": "EFG Holding",
+   "isin": "EGS69101C011",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "EGX 30 INDEX ETF",
+   "isin": "EGS69491M015",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "EL Nasr Mining",
+   "isin": "EGS14041C015",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "EL- Nasr Glass And Crystal –NGC",
+   "isin": "EGS3C6Q1C018",
+   "sector": "Industrial Goods , Services and Automobiles"
+  },
+  {
+   "name": "ELNASR Co For Fertilizers And Chemical Industries",
+   "isin": "EGS5ACC1C014",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "ELSWEDY ELECTRIC",
+   "isin": "EGS3G0Z1C014",
+   "sector": "Industrial Goods , Services and Automobiles"
+  },
+  {
+   "name": "East Delta Flour Mills",
+   "isin": "EGS30351C018",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Eastern Company",
+   "isin": "EGS37091C013",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Edita Food Industries S.A.E",
+   "isin": "EGS305I1C011",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Egypt Aluminum",
+   "isin": "EGS3E181C010",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Egypt Education Platform",
+   "isin": "EGS72FL1C016",
+   "sector": "Education Services"
+  },
+  {
+   "name": "Egypt for Poultry",
+   "isin": "EGS02211C018",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Egyptian Arabian(Themar)Comp. For Securities&Bonds Brok. EAC",
+   "isin": "EGS681D1C010",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Egyptian Chemical Industries (Kima)",
+   "isin": "EGS38201C017",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Egyptian Company for Pipes and Cement Products Siegwart",
+   "isin": "EGS3C9X1C016",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "Egyptian Ferroalloys Co.-EFACO",
+   "isin": "EGS3D0A1C010",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Egyptian Financial & Industrial",
+   "isin": "EGS38381C017",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Egyptian Gulf Bank",
+   "isin": "EGS60182C010",
+   "sector": "Banks"
+  },
+  {
+   "name": "Egyptian Gulf Marseilia For Real Estate Investment",
+   "isin": "EGS739Z1C016",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Egyptian International Pharmaceuticals (EIPICO)",
+   "isin": "EGS38081C013",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Egyptian Iron & Steel",
+   "isin": "EGS3D061C015",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Egyptian Media Production City",
+   "isin": "EGS78021C010",
+   "sector": "IT , Media & Communication Services"
+  },
+  {
+   "name": "Egyptian Real Estate Group",
+   "isin": "EGS65211C012",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Egyptian Satellites (NileSat)",
+   "isin": "EGS48022C015",
+   "sector": "IT , Media & Communication Services"
+  },
+  {
+   "name": "Egyptian Transport & Commercial Services Co. -EGYTRANS NOSCO",
+   "isin": "EGS42051C010",
+   "sector": "Shipping & Transportation Services"
+  },
+  {
+   "name": "Egyptian for Tourism Resorts",
+   "isin": "EGS70431C019",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "Egyptians Housing Development & Reconstruction",
+   "isin": "EGS65341C017",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Egyptians Real Estate Fund Certificates",
+   "isin": "EGS694B1C017",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "El Ahli Investment and Development",
+   "isin": "EGS69021C011",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "El Ahram Co. For Printing And Packing",
+   "isin": "EGS360A1C011",
+   "sector": "Paper & Packaging"
+  },
+  {
+   "name": "El Arabia Engineering Industries",
+   "isin": "EGS3G111C015",
+   "sector": "Industrial Goods , Services and Automobiles"
+  },
+  {
+   "name": "El Arabia for Land Reclamation",
+   "isin": "EGS65771C015",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "El Ezz Porcelain (Gemma)",
+   "isin": "EGS3C071C015",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "El Kahera El Watania Investment",
+   "isin": "EGS69011C012",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "El Kahera Housing",
+   "isin": "EGS65071C010",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "El MAAMOURA For Construction And Tourism Development Company",
+   "isin": "EGS651F1C014",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "El Masreyah Tourism & Hotels (EGOTH)",
+   "isin": "EGS70311C013",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "El Nasr Clothes & Textiles (Kabo)",
+   "isin": "EGS33061C010",
+   "sector": "Textile & Durables"
+  },
+  {
+   "name": "El Nasr For Manufacturing Agricultural Crops",
+   "isin": "EGS300L1C011",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "El Nasr Housing and Development",
+   "isin": "EGS65621C012",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "El Obour Real Estate Investment",
+   "isin": "EGS65551C011",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "El Orouba Securities Brokerage",
+   "isin": "EGS681I1C015",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "El Shams Housing & Urbanization",
+   "isin": "EGS65091C018",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "El Shams Pyramids For Hotels& Touristic Projects",
+   "isin": "EGS70H02C014",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "El Wadi For International and Investement Development",
+   "isin": "EGS70R91C016",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "El-Nile Co. For Pharmaceuticals And Chemical Industries",
+   "isin": "EGS38331C012",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Electro Cable Egypt",
+   "isin": "EGS3G231C011",
+   "sector": "Industrial Goods , Services and Automobiles"
+  },
+  {
+   "name": "Elsaeed Contracting& Real Estate Investment Company SCCD",
+   "isin": "EGS21531C016",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Emaar Misr for Development",
+   "isin": "EGS673Y1C015",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Engineering Industries (ICON)",
+   "isin": "EGS3F021C017",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "Engineering for the Petroleum and Process Industries-Enppi",
+   "isin": "EGS39022C016",
+   "sector": "Energy & Support Services"
+  },
+  {
+   "name": "Export Development Bank of Egypt",
+   "isin": "EGS60241C014",
+   "sector": "Banks"
+  },
+  {
+   "name": "Extracted Oils",
+   "isin": "EGS38251C012",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "FERCHEM MISR CO. FOR FERTILLIZERS & CHEMICALS",
+   "isin": "EGS385S1C012",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Faisal Islamic Bank of Egypt - In EGP",
+   "isin": "EGS60321C014",
+   "sector": "Banks"
+  },
+  {
+   "name": "Faisal Islamic Bank of Egypt - In US Dollars",
+   "isin": "EGS60322C012",
+   "sector": "Banks"
+  },
+  {
+   "name": "Fawry For Banking Technology And Electronic Payment",
+   "isin": "EGS745L1C014",
+   "sector": "IT , Media & Communication Services"
+  },
+  {
+   "name": "Future Care for Medical Industries - FCMI",
+   "isin": "EGS3I0S1C019",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "GB Corp",
+   "isin": "EGS673T1C012",
+   "sector": "Industrial Goods , Services and Automobiles"
+  },
+  {
+   "name": "GMC GROUP FOR INDUSTRIAL COMMERCIAL & FINANCIAL INVESTMENTS",
+   "isin": "EGS46051C016",
+   "sector": "Trade & Distributors"
+  },
+  {
+   "name": "GPI For Urban Growth",
+   "isin": "EGS213S1C010",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "GTEX For Commercial And Industrial",
+   "isin": "EGS59U92C011",
+   "sector": "Textile & Durables"
+  },
+  {
+   "name": "Gadwa For Industrial Development",
+   "isin": "EGS3JM11C012",
+   "sector": "Industrial Goods , Services and Automobiles"
+  },
+  {
+   "name": "General Company For Land Reclamation,Development & Reconstru",
+   "isin": "EGS01081C016",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "General Silos & Storage",
+   "isin": "EGS30441C017",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Geos for trading and contracting",
+   "isin": "EGS51LQ1C018",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "Gharbia Islamic Housing Development",
+   "isin": "EGS65461C013",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Giza General Contracting",
+   "isin": "EGS21541C015",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "Glaxo Smith Kline",
+   "isin": "EGS38171C012",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Gogreen for Agricultural Investment",
+   "isin": "EGS07DR1C012",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Golden Pyramids Plaza",
+   "isin": "EGS70342C018",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "Golden Textiles & Clothes Wool",
+   "isin": "EGS32161C019",
+   "sector": "Textile & Durables"
+  },
+  {
+   "name": "Gourmet Egypt.Com Foods",
+   "isin": "EGS540S1C014",
+   "sector": "Trade & Distributors"
+  },
+  {
+   "name": "Grand Investment Capital",
+   "isin": "EGS69261C013",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Grova Special Purpose Acquisition Company",
+   "isin": "EGS69921C012",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Gulf Canadian Real Estate Investment Co.",
+   "isin": "EGS651B1C018",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Heliopolis Housing",
+   "isin": "EGS65591C017",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Housing & Development Bank",
+   "isin": "EGS60301C016",
+   "sector": "Banks"
+  },
+  {
+   "name": "Ibnsina Pharma",
+   "isin": "EGS512O1C012",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Industrial & Engineering Projects",
+   "isin": "EGS22171C010",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "International Agricultural Products",
+   "isin": "EGS07061C012",
+   "sector": "Trade & Distributors"
+  },
+  {
+   "name": "International Co For Investment & Development",
+   "isin": "EGS67191C014",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "International Company For Fertilizers & Chemicals",
+   "isin": "EGS520D1C015",
+   "sector": "Trade & Distributors"
+  },
+  {
+   "name": "International Company For Leasing (IncoLEASE)",
+   "isin": "EGS67001C015",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Iron And Steel for Mines and Quarries",
+   "isin": "EGS102S1C014",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Ismailia Development and Real Estate Co",
+   "isin": "EGS214Q1C011",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Ismailia Misr Poultry",
+   "isin": "EGS02021C011",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Ismailia National Food Industries",
+   "isin": "EGS01041C010",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Juhayna Food Industries",
+   "isin": "EGS30901C010",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "KORRA",
+   "isin": "EGS07911C018",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "Kafr El Zayat Pesticides",
+   "isin": "EGS38411C012",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Lecico Egypt",
+   "isin": "EGS3C161C014",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "Lotus For Agricultural Investments And Development",
+   "isin": "EGS07661C019",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "M.B Engineering",
+   "isin": "EGS221V1C015",
+   "sector": "Industrial Goods , Services and Automobiles"
+  },
+  {
+   "name": "MM Group For Industry And International Trade",
+   "isin": "EGS75011C014",
+   "sector": "Trade & Distributors"
+  },
+  {
+   "name": "Macro Group Pharmaceuticals -Macro Capital",
+   "isin": "EGS7D971C011",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Madinet Masr For Housing and Development",
+   "isin": "EGS65571C019",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Mansourah Poultry",
+   "isin": "EGS02091C014",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Maridive & oil services",
+   "isin": "EGS44012C010",
+   "sector": "Energy & Support Services"
+  },
+  {
+   "name": "Marsa Marsa Alam For Tourism Development",
+   "isin": "EGS70P91C010",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "Medical Packaging Company",
+   "isin": "EGS3C4L1C015",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Memphis Pharmaceuticals",
+   "isin": "EGS38351C010",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Mena Touristic & Real Estate Investment",
+   "isin": "EGS65441C015",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Middle & West Delta Flour Mills",
+   "isin": "EGS30421C019",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Middle East Glass Manufacturing",
+   "isin": "EGS3C001C012",
+   "sector": "Paper & Packaging"
+  },
+  {
+   "name": "Middle Egypt Flour Mills",
+   "isin": "EGS30401C011",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Minapharm Pharmaceuticals",
+   "isin": "EGS380G1C011",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Misr Beni Suef Cement",
+   "isin": "EGS3C371C019",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "Misr Cement (Qena)",
+   "isin": "EGS3C391C017",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "Misr Chemical Industries",
+   "isin": "EGS38211C016",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Misr Duty Free Shops",
+   "isin": "EGS53051C016",
+   "sector": "Trade & Distributors"
+  },
+  {
+   "name": "Misr Fertilizers Production Company - Mopco",
+   "isin": "EGS39061C014",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Misr Hotels",
+   "isin": "EGS70081C012",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "Misr Life Insurance",
+   "isin": "EGS632D1C010",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Misr National Steel - Ataqa",
+   "isin": "EGS3D0C1C018",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Misr Oils & Soap",
+   "isin": "EGS38421C011",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Misr Travel",
+   "isin": "EGS79031C018",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "Mohandes Insurance",
+   "isin": "EGS63041C015",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Naeem Holding",
+   "isin": "EGS69182C011",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Naeem Real Estate Holding Group",
+   "isin": "EGS69191C012",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Nasr Company for Civil Works",
+   "isin": "EGS23111C015",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "National Drilling",
+   "isin": "EGS735N2C012",
+   "sector": "Energy & Support Services"
+  },
+  {
+   "name": "National Housing for Professional Syndicates",
+   "isin": "EGS65131C012",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "National Printing",
+   "isin": "EGS370O1C013",
+   "sector": "Paper & Packaging"
+  },
+  {
+   "name": "Natural Gas & Mining Project (Egypt Gas)",
+   "isin": "EGS39011C019",
+   "sector": "Utilities"
+  },
+  {
+   "name": "North Cairo Mills",
+   "isin": "EGS30361C017",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Northern Upper Egypt Development & Agricultural Production",
+   "isin": "EGS52041C018",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Nozha International Hospital",
+   "isin": "EGS72011C017",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "O B Financial Holding",
+   "isin": "EGS696S1C016",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "O G Capital For Investments SPAC",
+   "isin": "EGS699Z1C014",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "ODIN Investments",
+   "isin": "EGS67181C015",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Obour Land For Food Industries",
+   "isin": "EGS30AL1C012",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "October Pharma",
+   "isin": "EGS380R1C018",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Orascom Construction PLC",
+   "isin": "EGS95001C011",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "Orascom Development Egypt",
+   "isin": "EGS70321C012",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Orascom Investment Holding",
+   "isin": "EGS693V1C014",
+   "sector": "IT , Media & Communication Services"
+  },
+  {
+   "name": "Oriental Weavers",
+   "isin": "EGS33041C012",
+   "sector": "Textile & Durables"
+  },
+  {
+   "name": "Osool ESB Securities Brokerage",
+   "isin": "EGS68181C014",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Palm Hills Development Company",
+   "isin": "EGS655L1C012",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Paper Middle East (Simo)",
+   "isin": "EGS36091C014",
+   "sector": "Paper & Packaging"
+  },
+  {
+   "name": "Petroleum Marine Services Co –P.M.S",
+   "isin": "EGS3J7D2C015",
+   "sector": "Energy & Support Services"
+  },
+  {
+   "name": "Pioneers Properties For Urban Development - PRE Group",
+   "isin": "EGS21FW1C015",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Port Said Containers And Cargo Handling Co.",
+   "isin": "EGS42101C013",
+   "sector": "Shipping & Transportation Services"
+  },
+  {
+   "name": "Premium HealthCare Group",
+   "isin": "EGS72XL1C014",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Prime Holding",
+   "isin": "EGS691A1C011",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Pyramisa Hotels",
+   "isin": "EGS70331C011",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "QALA For Financial Investments - Preferred Shares",
+   "isin": "EGS73541P048",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "QALAA For Financial Investments",
+   "isin": "EGS73541C012",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Qatar National Bank",
+   "isin": "EGS60081C014",
+   "sector": "Banks"
+  },
+  {
+   "name": "Rakta Paper Manufacturing",
+   "isin": "EGS36021C011",
+   "sector": "Paper & Packaging"
+  },
+  {
+   "name": "Raya Customer Experience",
+   "isin": "EGS74191C015",
+   "sector": "IT , Media & Communication Services"
+  },
+  {
+   "name": "Raya Holding For Financial Investments",
+   "isin": "EGS690C1C010",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Remco for Touristic Villages Construction",
+   "isin": "EGS70271C019",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "Rowad Tourism (Al Rowad)",
+   "isin": "EGS70281C018",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "Rubex International for Plastic and Acrylic Manufacturing",
+   "isin": "EGS3A221C018",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "Sabaa International Company for Pharmaceutical and Chemical",
+   "isin": "EGS382M1C011",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Samad Misr -EGYFERT",
+   "isin": "EGS51191C012",
+   "sector": "Trade & Distributors"
+  },
+  {
+   "name": "Saudi Egyptian Investment & Finance",
+   "isin": "EGS67031C012",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Saudi Egyptian Investment & Finance $",
+   "isin": "EGS67032C010",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Sharkia National Food",
+   "isin": "EGS30291C016",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Sharm Dreams Co. for Tourism Investment",
+   "isin": "EGS70571C012",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "Sidi Kerir Petrochemicals - SIDPEC",
+   "isin": "EGS380S1C017",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Sinai Cement",
+   "isin": "EGS3C401C014",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "Sinai Manganese Company",
+   "isin": "EGS103V1C018",
+   "sector": "Basic Resources"
+  },
+  {
+   "name": "Six of October Development & Investment (SODIC)",
+   "isin": "EGS65851C015",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Societe Arabe Internationale De Banque S.A.E.",
+   "isin": "EGS60142C014",
+   "sector": "Banks"
+  },
+  {
+   "name": "South Cairo & Giza Mills & Bakeries",
+   "isin": "EGS30411C010",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "South Valley Cement",
+   "isin": "EGS3C351C011",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "Speed Medical",
+   "isin": "EGS73BR1C013",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "Spring And Transportation Needs Manufacturing Co",
+   "isin": "EGS3E7F1C016",
+   "sector": "Industrial Goods , Services and Automobiles"
+  },
+  {
+   "name": "Subscription Rights Of Aspire Cap Hold for Financ Invest-3",
+   "isin": "EGS924G1C014",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Subscription Rights Of Lotus For Agricultural Invest&Dev-1",
+   "isin": "EGS924K1C018",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Sues Canal Company For Technology Settling",
+   "isin": "EGS740C1C010",
+   "sector": "Education Services"
+  },
+  {
+   "name": "Suez Canal Bank S.A.E",
+   "isin": "EGS60231C015",
+   "sector": "Banks"
+  },
+  {
+   "name": "T M G Holding",
+   "isin": "EGS691S1C011",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "TAWASOA For Factoring",
+   "isin": "EGS7D231C010",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Taaleem Management Services",
+   "isin": "EGS597R1C017",
+   "sector": "Education Services"
+  },
+  {
+   "name": "Tanmiya for Real Estate Investment",
+   "isin": "EGS21EB1C011",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Taqa Arabia",
+   "isin": "EGS490S1C014",
+   "sector": "Utilities"
+  },
+  {
+   "name": "Telecom Egypt",
+   "isin": "EGS48031C016",
+   "sector": "IT , Media & Communication Services"
+  },
+  {
+   "name": "Tenth Of Ramadan Pharmaceutical Industries&Diagnostic-Rameda",
+   "isin": "EGS381B1C015",
+   "sector": "Health Care & Pharmaceuticals"
+  },
+  {
+   "name": "The Arab Ceramic CO.- Ceramica Remas",
+   "isin": "EGS3C151C015",
+   "sector": "Building Materials"
+  },
+  {
+   "name": "The Arab Dairy Products Co. Arab Dairy - Panda",
+   "isin": "EGS30221C013",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "The Egyptian Contracting Co.-AL- ABD",
+   "isin": "EGS65861C014",
+   "sector": "Contracting & Construction Engineering"
+  },
+  {
+   "name": "The Egyptian Linear Alkyl Benzene co.-ELAB",
+   "isin": "EGS3E1Z2C016",
+   "sector": "Energy & Support Services"
+  },
+  {
+   "name": "The Egyptian Modern Education Systems",
+   "isin": "EGS729F1C012",
+   "sector": "Education Services"
+  },
+  {
+   "name": "The United Bank",
+   "isin": "EGS600M1C017",
+   "sector": "Banks"
+  },
+  {
+   "name": "TransOceans Tours",
+   "isin": "EGS79072C012",
+   "sector": "Travel & Leisure"
+  },
+  {
+   "name": "Tycoon Holding Company For Financial Investments",
+   "isin": "EGS67331C016",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "U Consumer Finance",
+   "isin": "EGS505Z1C018",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "United Housing & Development",
+   "isin": "EGS65061C011",
+   "sector": "Real Estate"
+  },
+  {
+   "name": "Universal For Paper and Packaging Materials (Unipack",
+   "isin": "EGS38161C013",
+   "sector": "Paper & Packaging"
+  },
+  {
+   "name": "Upper Egypt Flour Mills",
+   "isin": "EGS30451C016",
+   "sector": "Food, Beverages and Tobacco"
+  },
+  {
+   "name": "Valmore Holding",
+   "isin": "EGS69082C013",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Valmore Holding-EGP",
+   "isin": "EGS69081C023",
+   "sector": "Non-bank financial services"
+  },
+  {
+   "name": "Wadi Kom Ombo Land Reclamation",
+   "isin": "EGS01071C017",
+   "sector": "Contracting & Construction Engineering"
+  }
+ ]
+}

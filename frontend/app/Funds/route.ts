@@ -2,7 +2,7 @@ import { renderStaticHub, esc, escUrl, jsonLdScript } from '@/lib/static-hub';
 import { getAllFundsRanked } from '@/lib/public-data';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { buildProviders, providerPath } from '@/content/fund-providers';
-import { fundsHubRows, fundsHubItemList, breadcrumbJson } from '@/lib/funds-hub-render';
+import { fundsHubRows, fundsHubItemList, fundsCountInjection, breadcrumbJson } from '@/lib/funds-hub-render';
 
 /**
  * /Funds — the designed funds marketplace, unchanged, with its fund list
@@ -75,7 +75,11 @@ export async function GET() {
                 replace: `<meta name="description" content="${esc(EN_DESC)}">`,
             },
         ],
-        injections: [{ id: 'fundsGrid', html: categoryNav + providerNav + fundsHubRows(funds, 'en') }],
+        injections: [
+            { id: 'fundsGrid', html: categoryNav + providerNav + fundsHubRows(funds, 'en') },
+            // The counter beside the grid must equal the rows in the grid.
+            fundsCountInjection(funds),
+        ],
         // hreflang already ships inside marketplace.html (injected by
         // scripts/inject-seo-heads.mjs) — re-adding it here would duplicate it.
         head:

@@ -1,5 +1,5 @@
 import { renderStaticHub, esc, escUrl, jsonLdScript, langSeedScript } from '@/lib/static-hub';
-import { fundsHubRows, fundsHubItemList, breadcrumbJson , AR_MARKETPLACE_CLOSING } from '@/lib/funds-hub-render';
+import { fundsHubRows, fundsHubItemList, fundsCountInjection, breadcrumbJson, AR_MARKETPLACE_CLOSING } from '@/lib/funds-hub-render';
 
 /**
  * THE ONE FUND-HUB RENDERER.
@@ -96,7 +96,11 @@ export function renderFundHub(spec: FundHubSpec): Promise<Response> {
             // closing CTA is dictionary copy and keeps its key.
             ...(isAr ? AR_MARKETPLACE_CLOSING : []),
         ],
-        injections: [{ id: 'fundsGrid', html: fundsHubRows(spec.funds, spec.lang) + siblingNav }],
+        injections: [
+            { id: 'fundsGrid', html: fundsHubRows(spec.funds, spec.lang) + siblingNav },
+            // The counter beside the grid must equal the rows in the grid.
+            fundsCountInjection(spec.funds),
+        ],
         head:
             langSeedScript(spec.lang) +
             (spec.marketplaceType

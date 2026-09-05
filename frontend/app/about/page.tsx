@@ -22,7 +22,8 @@ export const metadata: Metadata = {
 };
 
 const SOURCES: Array<[string, string]> = [
-    ['EGX share prices & market data', 'Egyptian Exchange feed via TradingView — refreshed every 15 minutes during trading hours (Sunday–Thursday)'],
+    ['Listed-company register & sectors', 'The Egyptian Exchange’s own registers of listed securities (main and SME markets), keyed by ISIN — the listing authority behind the company directory; a price vendor never grants listing status'],
+    ['EGX share prices & market data', 'Egyptian Exchange feed via TradingView — refreshed every 15 minutes during trading hours (Sunday–Thursday); quotes older than two weeks are withheld'],
     ['Financial statements', 'Company disclosures aggregated via TradingView and Yahoo Finance — up to 20 years of annual statements, refreshed weekly'],
     ['Mutual-fund NAVs & profiles', 'Fund-manager disclosures — NAV history back to 2010, refreshed twice daily'],
     ['Market news', 'Licensed Egyptian financial press coverage in Arabic and English — refreshed throughout the day'],

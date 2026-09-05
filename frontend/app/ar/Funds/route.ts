@@ -3,7 +3,7 @@ import { getAllFundsRanked } from '@/lib/public-data';
 import { fundPath, absUrl, SITE_URL } from '@/lib/seo';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { buildProviders, providerPath } from '@/content/fund-providers';
-import { fundsHubRows, fundsHubItemList, breadcrumbJson, AR_MARKETPLACE_CLOSING } from '@/lib/funds-hub-render';
+import { fundsHubRows, fundsHubItemList, fundsCountInjection, breadcrumbJson, AR_MARKETPLACE_CLOSING } from '@/lib/funds-hub-render';
 
 /**
  * /ar/Funds — THE ARABIC FUNDS HUB, served by the PREMIUM MARKETPLACE DESIGN.
@@ -121,7 +121,13 @@ export async function GET() {
             },
             ...AR_MARKETPLACE_CLOSING,
         ],
-        injections: [{ id: 'fundsGrid', html: categoryNav + providerNav + fundsHubRows(funds, 'ar') }],
+        injections: [
+            { id: 'fundsGrid', html: categoryNav + providerNav + fundsHubRows(funds, 'ar') },
+            // The counter beside the grid must equal the rows in the grid — the
+            // shell's literal "0" shipped as "0 funds matching your filters"
+            // above 207 rows (audit 2026-09-05).
+            fundsCountInjection(funds),
+        ],
         head:
             langSeedScript('ar') +
             (funds.length ? jsonLdScript(fundsHubItemList(funds, 'ar', PATH_AR)) : '') +

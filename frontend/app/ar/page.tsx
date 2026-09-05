@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getEgx30Index, getMovers, getAllFundsRanked, type Ticker } from '@/lib/public-data';
+import { rankingEligibility } from '@/lib/fund-stats';
 import { ltrNum } from '@/lib/bidi';
 import { SITE_URL, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -64,8 +65,16 @@ export default async function ArHome() {
         getAllFundsRanked().catch(() => [] as Array<Record<string, unknown>>),
     ]);
     // The homepage's one funds sentence: today's 12-month leader and the size
-    // of the ranked universe, from the same rows as the ranking page.
-    const ranked = funds.filter((f) => typeof f.return_1y === 'number' && Number.isFinite(f.return_1y as number));
+    // of the ranked universe, from the same rows AND the same eligibility rule
+    // as the ranking page (rankingEligibility, lib/fund-stats.ts). Until
+    // 2026-09-05 this counted every fund with a 12-month number (114) while the
+    // ranking page counted the funds the audited engine stands behind (102 of
+    // 207) — two "facts" for one metric on one site. The data-metric attributes
+    // below are the cross-surface invariant the live audit enforces
+    // (METRIC_DRIFT_ACROSS_SURFACES).
+    const ranked = funds
+        .filter((f) => rankingEligibility(f).eligible)
+        .sort((x, y) => (y.return_1y as number) - (x.return_1y as number));
     const leadFund = ranked[0];
     const leadFundName = leadFund ? String(leadFund.fund_name || leadFund.fund_name_en || '') : '';
     const leadFundPct = leadFund ? `${(leadFund.return_1y as number) >= 0 ? '+' : ''}${(leadFund.return_1y as number).toFixed(2)}%` : '';
@@ -98,7 +107,7 @@ export default async function ArHome() {
             </p>
             {leadFund && leadFundName && (
                 <p className="mt-3 max-w-3xl leading-relaxed text-muted">
-                    أفضل صندوق استثمار في مصر خلال آخر 12 شهرًا اليوم: <strong>{leadFundName}</strong> بعائد {ltrNum(leadFundPct)}، من بين {ltrNum(String(ranked.length))} صندوقًا مرتبة آليًا حسب العائد في{' '}
+                    أفضل صندوق استثمار في مصر خلال آخر 12 شهرًا اليوم: <strong>{leadFundName}</strong> بعائد <strong data-metric="lead_fund_return_1y">{ltrNum(leadFundPct)}</strong>، وهو الأول بين <span data-metric="ranked_fund_count">{ltrNum(String(ranked.length))}</span> صندوقًا مؤهلًا للترتيب من أصل <span data-metric="current_fund_count">{ltrNum(String(funds.length))}</span> صندوق استثمار مصري له سعر حالي، مرتبة آليًا حسب العائد في{' '}
                     <Link href="/ar/Funds/best-mutual-funds-egypt-2026" className="font-semibold text-starta-teal hover:underline">أفضل صناديق الاستثمار في مصر 2026</Link>.
                 </p>
             )}

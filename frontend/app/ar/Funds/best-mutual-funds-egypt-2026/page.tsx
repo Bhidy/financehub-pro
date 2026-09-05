@@ -144,7 +144,7 @@ export default async function BestFundsArPage() {
 
             <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">أفضل صناديق الاستثمار في مصر 2026</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">
-                {withReturn.length} من {funds.length} صندوق استثمار مصري مؤهل للترتيب، مرتبة <strong>حصريًا حسب عائد آخر 12 شهرًا</strong> المحسوب من سجل صافي قيمة الأصول المنشور، حسب الفئة. تأتي صافي قيمة الأصول والعوائد من الإفصاحات الرسمية لمديري الصناديق وتُحدَّث مرتين يوميًا
+                <span data-metric="ranked_fund_count">{withReturn.length}</span> من <span data-metric="current_fund_count">{funds.length}</span> صندوق استثمار مصري مؤهل للترتيب، مرتبة <strong>حصريًا حسب عائد آخر 12 شهرًا</strong> المحسوب من سجل صافي قيمة الأصول المنشور، حسب الفئة. تأتي صافي قيمة الأصول والعوائد من الإفصاحات الرسمية لمديري الصناديق وتُحدَّث مرتين يوميًا
                 {asOfHuman && <> — البيانات بتاريخ <time dateTime={asOf as string}>{asOfHuman}</time></>}. الترتيب آلي وليس توصية.
             </p>
 

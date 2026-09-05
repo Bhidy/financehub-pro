@@ -108,6 +108,50 @@ const pages = [];
 /** Paths served with no-store — reported once, in aggregate (see auditPage). */
 const uncacheable = [];
 
+/**
+ * ENGLISH PROSE INSIDE AN ARABIC DOCUMENT. Labels are matched by name
+ * (AR_PAGE_ENGLISH_UI_LABELS); this catches a template SENTENCE that never got
+ * its Arabic twin — "Annual management fees are 1.00% and 2.00% respectively"
+ * sat inside Arabic prose on every /ar/Funds/vs/* page (2026-09-05). Proper
+ * nouns are Title Case and short ("Fawry For Banking Technology And Electronic
+ * Payment"); a sentence has lowercase function words. A run of 6+ Latin tokens
+ * uninterrupted by Arabic, with 2+ lowercase English function words, is prose.
+ */
+// Deliberately NO articles, prepositions or conjunctions: "Bank of Egypt",
+// "Company for Cosmetics", "Investment and Environmental Services" are legal
+// names that sit in Arabic pages legitimately (a dry run over the live Arabic
+// hub flagged 14 fund/manager name runs on "of"/"and" alone). Verbs, negation,
+// determiners and sentence adverbs do not occur inside a proper noun.
+const EN_FUNCTION_WORDS = new Set([
+    'are', 'is', 'was', 'were', 'has', 'have', 'had', 'does', 'do', 'did', 'not', 'been', 'be', 'means', 'shown', 'respectively',
+    'than', 'only', 'which', 'this', 'these', 'those', 'its', 'their', 'per', 'during', 'between', 'against', 'over', 'also',
+    'because', 'while', 'when', 'where', 'here', 'there', 'each', 'every', 'any', 'some', 'may', 'can', 'will', 'should', 'would',
+]);
+export function englishSentenceRuns(text) {
+    const runs = [];
+    let run = [];
+    let latin = 0;
+    let stops = 0;
+    const flush = () => {
+        if (latin >= 6 && stops >= 2) runs.push(run.join(' '));
+        run = []; latin = 0; stops = 0;
+    };
+    for (const tok of String(text).split(/\s+/)) {
+        if (!tok) continue;
+        if (/[؀-ۿ]/.test(tok)) { flush(); continue; }
+        if (/[A-Za-z]/.test(tok)) {
+            run.push(tok);
+            latin++;
+            const word = tok.replace(/^[^A-Za-z]+|[^A-Za-z]+$/g, '');
+            if (word && word === word.toLowerCase() && EN_FUNCTION_WORDS.has(word)) stops++;
+        } else if (run.length) {
+            run.push(tok); // a number or punctuation inside a sentence
+        }
+    }
+    flush();
+    return runs;
+}
+
 /* ── crawl-policy layer ──────────────────────────────────────────────────── */
 
 async function auditCrawlPolicy() {
@@ -400,12 +444,21 @@ function auditPage(url, res) {
     // proper noun.
     if (isAr) {
         const UI_LABELS = ['Filters', 'Reset all', 'Search fund', 'Fund type', 'Management fee', 'Sort by', 'Subscription frequency',
-            'Redemption frequency', 'funds matching your filters', 'No entry / exit fees', 'Shariah-compliant only', 'NAV range (EGP)'];
+            'Redemption frequency', 'funds matching your filters', 'No entry / exit fees', 'Shariah-compliant only', 'NAV range (EGP)',
+            // The comparison table's row labels and its "as of" — English on every /ar/Funds/vs/* page until 2026-09-05.
+            'YTD return', '1-month return', '3-month return', '1-year return', 'as of', 'Latest NAV'];
         const hits = UI_LABELS.filter((l) => new RegExp(`(?:^|[\\s>])${l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:[\\s<]|$)`).test(facts.text || ''));
         if (hits.length >= 3) {
             f.add('medium', 'AR_PAGE_ENGLISH_UI_LABELS',
                 `${path} ships ${hits.length} English UI labels in an Arabic document (${hits.slice(0, 4).join(', ')}) — the shell's dictionary was not applied server-side`,
                 { url, count: hits.length, examples: hits.slice(0, 6) });
+        }
+        // Whole English sentences inside Arabic prose (see englishSentenceRuns).
+        const leaks = englishSentenceRuns(facts.text || '');
+        if (leaks.length) {
+            f.add(sev('high', 'medium'), 'AR_PAGE_ENGLISH_SENTENCE',
+                `${path} carries ${leaks.length} English sentence(s) in an Arabic document, e.g. "${leaks[0].slice(0, 100)}"`,
+                { url, count: leaks.length, examples: leaks.slice(0, 3).map((s) => s.slice(0, 160)) });
         }
     }
     // LISTING AUTHORITY. Every company URL a public page links must be on the
@@ -610,6 +663,106 @@ function auditCrossPage() {
             f.add('medium', 'DUPLICATE_DESCRIPTION', `${paths.length} URLs share one meta description`, { paths: paths.slice(0, 8) });
         }
     }
+
+    // CROSS-SURFACE METRIC CONTRACT. Every element tagged data-metric (and
+    // optionally data-entity) is one (metric, entity) fact; the same fact must
+    // print the same value on every page that carries it. The Arabic homepage
+    // said "114 funds ranked" while the ranking page said 102 of 207 — two
+    // "facts" for one metric on one domain (2026-09-05). Values are compared
+    // in canonical form (lib.mjs normalizeMetricValue).
+    const byMetric = new Map();
+    for (const p of pages) {
+        if (p.status !== 200) continue;
+        for (const m of p.metrics || []) {
+            const k = `${m.entity ?? '*'}::${m.key}`;
+            if (!byMetric.has(k)) byMetric.set(k, new Map());
+            const values = byMetric.get(k);
+            if (!values.has(m.value)) values.set(m.value, []);
+            values.get(m.value).push(p.path);
+        }
+    }
+    for (const [k, values] of byMetric) {
+        if (values.size < 2) continue;
+        const [entity, key] = k.split('::');
+        const shown = [...values.entries()].map(([v, ps]) => `${v} on ${ps[0]}`).join(' vs ');
+        f.add('high', 'METRIC_DRIFT_ACROSS_SURFACES',
+            `${key}${entity !== '*' ? ` for ${entity}` : ''} prints ${values.size} different values across surfaces: ${shown}`,
+            { key, entity: entity === '*' ? null : entity, values: Object.fromEntries([...values.entries()].map(([v, ps]) => [v, ps.slice(0, 6)])) });
+    }
+}
+
+/* ── legacy foreign routes, listing-status pages, fund taxonomy ─────────── */
+
+/**
+ * Saudi/legacy security routes that were once served as EGX pages (7010 STC,
+ * 7030 Zain KSA, 2222 Aramco, 9547, 8311). They 404 since the EGX_ONLY gate;
+ * search snapshots may still show them for weeks, which is why this is probed
+ * every run: a 200 here means the vendor universe leaked past the gate again.
+ */
+const FOREIGN_LEGACY_ROUTES = ['/symbol/7010', '/ar/symbol/7010', '/symbol/7030', '/ar/symbol/7030', '/symbol/2222', '/ar/symbol/2222', '/ar/symbol/9547', '/ar/symbol/8311'];
+/** Delisted lines that keep a reachable STATUS page: it must be noindex. */
+const STATUS_ONLY_SYMBOLS = ['GTHE'];
+async function auditLegacyRoutes() {
+    for (const path of FOREIGN_LEGACY_ROUTES) {
+        const res = await httpGet(SITE_URL + path, { redirect: 'manual', retries: 1 });
+        if (res.status === 200) {
+            f.add('critical', 'FOREIGN_LEGACY_ROUTE_LIVE',
+                `${path} answers 200 — a Saudi/legacy security is served as an EGX page again (must be 404/410)`,
+                { url: SITE_URL + path, status: res.status });
+        } else if (res.status >= 300 && res.status < 400) {
+            f.add('high', 'FOREIGN_LEGACY_ROUTE_REDIRECTS',
+                `${path} redirects (${res.status}) instead of answering 404/410`,
+                { url: SITE_URL + path, status: res.status, location: res.headers.location || null });
+        }
+    }
+    for (const sym of STATUS_ONLY_SYMBOLS) {
+        for (const path of [`/symbol/${sym}`, `/ar/symbol/${sym}`]) {
+            const res = await httpGet(SITE_URL + path, { redirect: 'follow', retries: 1 });
+            if (res.status !== 200) continue; // a 404 is also an honest answer for a delisted line
+            const facts = extractHtmlFacts(res.body);
+            const robots = `${facts.robotsMeta || ''} ${res.headers['x-robots-tag'] || ''}`;
+            if (!/\bnoindex\b/i.test(robots)) {
+                f.add('high', 'LISTING_STATUS_PAGE_INDEXABLE',
+                    `${path} is a delisted security's status page but is served without noindex`, { url: SITE_URL + path });
+            }
+        }
+    }
+}
+
+/**
+ * FUND TAXONOMY. The list API runs the one taxonomy resolver (override →
+ * disclosure → registered name) and stamps `taxonomy_conflict` on a fund
+ * whose vendor type its own registered name contradicts and that has no
+ * recorded disposition (content/fund-taxonomy-overrides.json). Every such
+ * fund is a wrong category page, wrong analytics and wrong "same class" peers
+ * until someone looks at its prospectus — so it is reported until it does.
+ */
+async function auditFundTaxonomy() {
+    const url = `${SITE_URL}/api/v1/funds?limit=500`;
+    const res = await httpGet(url, { redirect: 'follow', retries: 1, timeoutMs: 45000 });
+    if (res.status !== 200) {
+        f.add('medium', 'FUND_API_UNAVAILABLE', `/api/v1/funds answered ${res.status}; the taxonomy check was skipped`, { url, status: res.status });
+        return;
+    }
+    let rows;
+    try { rows = JSON.parse(res.body); } catch { rows = null; }
+    if (!Array.isArray(rows)) {
+        f.add('medium', 'FUND_API_INVALID', '/api/v1/funds did not return a JSON array; the taxonomy check was skipped', { url });
+        return;
+    }
+    const conflicts = rows.filter((r) => r && r.taxonomy_conflict);
+    const describe = (r) => `${r.fund_id} ${r.fund_name_en || r.fund_name} (vendor ${r.fund_type} vs name ${r.taxonomy_conflict})`;
+    if (conflicts.length) {
+        f.add('medium', 'FUND_TAXONOMY_CONFLICT',
+            `${conflicts.length} fund(s) carry a vendor type their registered name contradicts and have no recorded disposition: ${conflicts.slice(0, 4).map(describe).join('; ')}`,
+            { url, funds: conflicts.slice(0, 25).map(describe) });
+    }
+    pages.taxonomy = {
+        funds: rows.length,
+        overrides: rows.filter((r) => r && r.fund_type_source === 'override').length,
+        conflicts: conflicts.length,
+        unclassified: rows.filter((r) => r && !r.primary_asset_class).length,
+    };
 }
 
 /* ── hreflang reciprocity ────────────────────────────────────────────────── */
@@ -664,6 +817,13 @@ function selfTest() {
     page('/ar/Funds', '<span id="resultsCount">0</span> <span>funds matching your filters</span> <label>Filters</label> <button>Reset all</button> <label>Search fund</label> <label>Fund type</label><h3><a href="/ar/Funds/1-x">a</a></h3><h3><a href="/ar/Funds/2-y">b</a></h3>');
     // E: a directory linking a symbol the master does not publish.
     page('/companies', '<a href="/symbol/COMI">CIB</a><a href="/symbol/GTHE">GTH</a><time datetime="' + today + '">t</time>');
+    // F: one metric, two values on two pages (the homepage-vs-ranking drift).
+    page('/ar/metric-a', '<p>من بين <span data-metric="ranked_fund_count">⁦114⁩</span> صندوقًا</p>');
+    page('/metric-b', '<p><span data-metric="ranked_fund_count">102</span> of 207</p><p><strong data-metric="return_1y" data-entity="2734">+81.50%</strong></p>');
+    page('/ar/metric-c', '<div data-metric="return_1y" data-entity="2734"><span>81.50%</span></div>');
+    // G: English prose and English row labels inside an Arabic comparison page.
+    page('/ar/Funds/vs/1-vs-2', '<p>خلال آخر سنة، حقق الصندوق عائداً قدره ⁦+10.00%⁩ (البيانات كما في 1 September 2026). Annual management fees are ⁦1.00%⁩ and ⁦2.00%⁩ respectively.</p><table><tr><th>YTD return</th><td>293.6 EGP (as of 2026-08-26)</td></tr><tr><th>1-month return</th></tr><tr><th>1-year return</th></tr></table>');
+    auditCrossPage();
 
     const codesFor = (path) => new Set(f.all().filter((x) => (x.evidence?.url || '') === `${SITE_URL}${path}`).map((x) => x.code));
     const a = codesFor('/ar/Funds/category/x');
@@ -671,6 +831,7 @@ function selfTest() {
     const c = codesFor('/Funds/prices-today');
     const d = codesFor('/ar/Funds');
     const e = codesFor('/companies');
+    const g = codesFor('/ar/Funds/vs/1-vs-2');
     const expect = [
         [a.has('HREFLANG_DUPLICATE_LANG'), 'A: duplicate hreflang per language is detected'],
         [a.has('DATA_STALE'), 'A: stale as-of date is detected'],
@@ -684,6 +845,11 @@ function selfTest() {
         [d.has('AR_PAGE_ENGLISH_UI_LABELS'), 'D: English UI labels on an Arabic hub are detected'],
         [!b.has('SSR_COUNT_CONTRADICTION') && !b.has('AR_PAGE_ENGLISH_UI_LABELS'), 'B: a clean Arabic page raises neither'],
         [e.has('SECURITY_MASTER_UNVERIFIED_SYMBOL'), 'E: a directory link to a non-publishable symbol (GTHE) is detected'],
+        [f.all().some((x) => x.code === 'METRIC_DRIFT_ACROSS_SURFACES' && x.evidence?.key === 'ranked_fund_count'), 'F: one data-metric printing two values on two pages is detected (bidi marks ignored)'],
+        [!f.all().some((x) => x.code === 'METRIC_DRIFT_ACROSS_SURFACES' && x.evidence?.key === 'return_1y'), 'F: "+81.50%" and "81.50%" for the same entity compare equal'],
+        [g.has('AR_PAGE_ENGLISH_SENTENCE'), 'G: an English sentence inside Arabic prose is detected'],
+        [g.has('AR_PAGE_ENGLISH_UI_LABELS'), 'G: English comparison row labels on an Arabic page are detected'],
+        [!a.has('AR_PAGE_ENGLISH_SENTENCE') && !b.has('AR_PAGE_ENGLISH_SENTENCE') && !d.has('AR_PAGE_ENGLISH_SENTENCE'), 'A/B/D: Arabic pages carrying English proper nouns, labels or a toggle raise no sentence leak'],
     ];
     let failed = 0;
     for (const [ok, label] of expect) {
@@ -715,6 +881,8 @@ async function main() {
     await auditCrawlPolicy();
     await auditAiCrawlerAccess();
     await auditHostAliases();
+    await auditLegacyRoutes();
+    await auditFundTaxonomy();
     const { entriesBySegment } = await auditSitemaps();
 
     const targets = new Set(MONEY_PAGES.map((p) => SITE_URL + p));
@@ -768,6 +936,7 @@ async function main() {
         indexableFootprint: Object.values(entriesBySegment).reduce((a, v) => a + v.length, 0),
         healthScore: score,
         timing: pages.timing || null,
+        taxonomy: pages.taxonomy || null,
         counts,
         findings: f.all(),
         pages: pages.map((p) => ({

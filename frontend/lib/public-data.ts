@@ -3,7 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { db } from '@/lib/db-server';
 import { matchAssetManager } from './asset-managers';
 import { fundIsCurrent, fundCurrency, rankingEligibility, quoteIsStale } from './fund-stats';
-import { fundTypeSlug } from '@/content/fund-categories';
+import { applyFundTaxonomy } from '@/content/fund-categories';
 import { EGX_PUBLISHABLE_SQL, getSecurity, officialSectorOf } from './security-master';
 import { primaryNewsRows, newsDedupeKey, sanitizeNewsText, likeEscape } from './news-display';
 
@@ -382,7 +382,10 @@ function coalesceReturns(r: Record<string, unknown>): Record<string, unknown> {
 // through the Data Cache changes nothing.
 const _fundCached = unstable_cache(
     async (fundId: number): Promise<Fund | null> => _getFundUncached(fundId),
-    ['seo:fund:v1'],
+    // v2 (2026-09-05): the row now carries the resolved taxonomy — a new key
+    // misses the Data Cache on the first request after deploy instead of
+    // serving the vendor's type for another 15 minutes.
+    ['seo:fund:v2'],
     { revalidate: 900, tags: ['seo-funds'] }
 );
 export const getFund = cache((fundId: number): Promise<Fund | null> => _fundCached(fundId));
@@ -396,6 +399,11 @@ async function _getFundUncached(fundId: number): Promise<Fund | null> {
     // Denomination: the stored value is 'EGP' on every row, USD/EUR funds
     // included — resolve it by the shared rule (lib/fund-stats.ts).
     row.currency = fundCurrency(row);
+    // Taxonomy: the same resolver the hubs, rankings and APIs run (override →
+    // disclosure → registered name). Until 2026-09-05 the profile read the raw
+    // vendor type, so BANK NXT's money-market fund said "صندوق متوازن" here while
+    // the category pages had their own view of it.
+    applyFundTaxonomy(row);
     // ------------------------------------------------------------------
     // TRUST HIERARCHY CUTOVER (2026-08-15 audit).
     //
@@ -992,9 +1000,7 @@ const _allFundsRankedCached = unstable_cache(
         // the disclosed type is missing on half of them; both are resolved by
         // the shared rules so the hubs, the rankings and the marketplace agree.
         r.currency = fundCurrency(r);
-        const type = fundTypeSlug(r);
-        if (type.source === 'name') { r.fund_type = type.slug; r.fund_type_source = 'name'; }
-        else r.fund_type_source = type.source;
+        applyFundTaxonomy(r);
         return toNum(r, ['latest_nav', 'return_ytd', 'return_1m', 'return_3m', 'return_6m', 'return_1y', 'return_3y', 'return_5y',
             'expense_ratio', 'fee_management', 'min_subscription', 'nav_points', 'metrics_points', 'inception_years', 'nav_52w_high', 'nav_52w_low']);
     });
@@ -1014,7 +1020,8 @@ const _allFundsRankedCached = unstable_cache(
     // member or a provider's live product.
     return rows.filter((r) => fundIsCurrent(r));
     },
-    ['seo:all-funds-ranked:v2'],
+    // v3 (2026-09-05): rows carry the resolved taxonomy (see getFund's key note).
+    ['seo:all-funds-ranked:v3'],
     { revalidate: 900, tags: ['seo-funds'] }
 );
 // React.cache() still dedups within a single request; unstable_cache dedups

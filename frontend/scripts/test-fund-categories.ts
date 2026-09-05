@@ -13,6 +13,8 @@
 import {
     FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categorySlugEn, categorySlugAr,
     categoryPath, findCategory,
+    FUND_TAXONOMY_OVERRIDES, applyFundTaxonomy, nameTypeConflict, primaryAssetClassOf, strategyTagsOf, shariaCompliantOf,
+    taxonomyOverrideFor, normalizeVendorType,
 } from '../content/fund-categories';
 
 let failures = 0;
@@ -103,14 +105,70 @@ console.log('\n[7] production distribution — every category clears the thresho
 // an index / sector / Shariah name marker (the vendor files every Beltone
 // EGX100/EGX70/EGX33 index fund as "equity"): counts are from the live fund
 // payloads of that day — 207 current funds, 29 still uncategorised.
+// Refreshed 2026-09-05 (evening) for the taxonomy overrides: BANK NXT (2689,
+// vendor "balanced") and Cash Mubasher (2665, vendor "fixed income") moved to
+// money-market; 5958 stays on the Shariah page (flag wins) with class money_market.
 const OBSERVED: Record<string, number> = {
-    equity: 35, 'money-market': 59, 'fixed-income': 29, balanced: 12, shariah: 15, gold: 8,
+    equity: 35, 'money-market': 61, 'fixed-income': 28, balanced: 11, shariah: 15, gold: 8,
     index: 8, sector: 12,
 };
 for (const c of FUND_CATEGORIES) {
     const n = OBSERVED[c.key];
     check(`${c.key} had ${n} funds in production >= threshold`, n !== undefined && n >= MIN_FUNDS_TO_PUBLISH, true);
 }
+
+console.log('\n[8] documented overrides beat a wrong vendor type — on every surface, through one resolver');
+// The chief re-audit (2026-09-05) found the vendor filing BANK NXT's money-market
+// fund as "balanced": category page, fund FAQ, analytics and "same category"
+// peers all repeated it. The override carries the FRA prospectus as evidence.
+const bankNxt = applyFundTaxonomy({ fund_id: '2689', fund_type: 'balanced', classification: 'Balanced Fund', fund_name_en: 'BANK NXT Money Market Fund', fund_name: 'صندوق بنك نكست التجاري النقدي', is_shariah: false });
+check('2689 fund_type -> money_market', bankNxt.fund_type, 'money_market');
+check('2689 fund_type_source -> override', bankNxt.fund_type_source, 'override');
+check('2689 vendor classification text replaced', bankNxt.classification, 'Money Market Fund');
+check('2689 primary_asset_class', bankNxt.primary_asset_class, 'money_market');
+check('2689 strategy_tags carry daily_yield', (bankNxt.strategy_tags as string[]).includes('daily_yield'), true);
+check('2689 no open conflict', bankNxt.taxonomy_conflict, null);
+check('2689 category page -> money-market', categoryOfFund({ fund_id: '2689', fund_type: 'balanced', classification_en: null })?.key ?? null, 'money-market');
+check('2689 category from a raw row with the vendor text -> money-market', categoryOfFund({ fund_id: 2689, fund_type_en: 'balanced' })?.key ?? null, 'money-market');
+const nasser = applyFundTaxonomy({ fund_id: '5958', fund_type: 'fixed_income', classification: 'Fixed Income Fund', fund_name_en: 'Nasser Social Bank and Azimut Egypt Islamic Money Market fund', is_shariah: true });
+check('5958 class money_market, Shariah kept as its own dimension', `${nasser.primary_asset_class}/${nasser.sharia_compliant}`, 'money_market/true');
+check('5958 canonical category page stays Shariah (URL contract: the flag wins)', categoryOfFund({ fund_id: '5958', fund_type: 'fixed_income', is_shariah: true })?.key ?? null, 'shariah');
+const granite = applyFundTaxonomy({ fund_id: '6411', fund_type: 'fixed_income', fund_name_en: 'Granite Fixed Income Fund Issuance 1 EGP', fund_name: 'صندوق استثمار جرانيت لأدوات الدخل الثابت - الإصدار الأول النقدي بالجنيه' });
+check('6411 keep_vendor: type unchanged', granite.fund_type, 'fixed_income');
+check('6411 keep_vendor: reviewed, no open conflict', `${granite.taxonomy_reviewed}/${granite.taxonomy_conflict}`, 'true/null');
+check('a fund with no disposition keeps the vendor type', applyFundTaxonomy({ fund_id: '2734', fund_type: 'equity', fund_name_en: 'Pharos Investment Fund 1' }).fund_type_source, 'disclosed');
+check('a fund with no type resolves from its name', applyFundTaxonomy({ fund_id: '4877', fund_name_en: 'Misr Insurance Fund Hesn El Aman', fund_name: 'صندوق استثمار مصر للتأمين - حصن الأمان اليومي' }).primary_asset_class, null);
+check('name-only money-market fund', applyFundTaxonomy({ fund_id: '1', fund_name_en: 'HSBC Money Market Fund Kol Youm' }).primary_asset_class, 'money_market');
+for (const o of FUND_TAXONOMY_OVERRIDES) {
+    check(`${o.fund_id}: disposition is override|keep_vendor`, ['override', 'keep_vendor'].includes(o.disposition), true);
+    if (o.disposition === 'override') check(`${o.fund_id}: override cites evidence`, o.evidence.length >= 1, true);
+    check(`${o.fund_id}: names the vendor value it judges`, typeof o.vendor_type === 'string' && o.vendor_type.length > 0, true);
+    check(`${o.fund_id}: taxonomyOverrideFor agrees with the disposition`, taxonomyOverrideFor(o.fund_id) !== null, o.disposition === 'override');
+}
+
+console.log('\n[9] name-vs-type conflict rule — flags a contradiction, not a refinement');
+check('vendor balanced + "Money Market" name -> money_market', nameTypeConflict({ fund_id: '9001', fund_type: 'balanced', fund_name_en: 'Some Bank Money Market Fund' }), 'money_market');
+check('vendor fixed_income + "النقدي الإسلامي" name -> money_market', nameTypeConflict({ fund_id: '9002', fund_type: 'fixed_income', fund_name: 'صندوق بنك ما النقدي الإسلامي' }), 'money_market');
+check('vendor fixed_income + "Cash Mubasher" / «كاش مباشر» -> money_market', nameTypeConflict({ fund_id: '9003', fund_type: 'fixed_income', fund_name_en: 'Mubasher Capital Daily Cumulative Return Fund Cash Mubasher', fund_name: 'صندوق استثمار مباشر كابيتال ذو العائد اليومي التراكمي - كاش مباشر' }), 'money_market');
+check('name that also names the vendor class is not a conflict (Granite)', nameTypeConflict({ fund_id: '9004', fund_type: 'fixed_income', fund_name_en: 'Granite Fixed Income Fund Issuance 1 EGP', fund_name: 'صندوق استثمار جرانيت لأدوات الدخل الثابت - الإصدار الأول النقدي بالجنيه' }), null);
+check('vendor equity + index name is a refinement, not a conflict', nameTypeConflict({ fund_id: '9005', fund_type: 'equity', fund_name_en: 'Beltone EGX100 Fund Issuance 2' }), null);
+check('vendor balanced naming both legs is not a conflict', nameTypeConflict({ fund_id: '9006', fund_type: 'balanced', fund_name_en: 'Equity and Bond Balanced Fund' }), null);
+check('vendor equity + gold name -> gold', nameTypeConflict({ fund_id: '9007', fund_type: 'equity', fund_name_en: 'ABC Gold Fund' }), 'gold');
+check('no vendor type -> nothing to conflict with', nameTypeConflict({ fund_id: '9008', fund_name_en: 'ABC Gold Fund' }), null);
+check('a recorded disposition silences the conflict', nameTypeConflict({ fund_id: '2689', fund_type: 'balanced', fund_name_en: 'BANK NXT Money Market Fund' }), null);
+check('normalizeVendorType("Fixed Income Fund")', normalizeVendorType('Fixed Income Fund'), 'fixed_income');
+check('normalizeVendorType("fixed_income_usd")', normalizeVendorType('fixed_income_usd'), 'fixed_income');
+check('normalizeVendorType("commodities")', normalizeVendorType('commodities'), 'gold');
+check('normalizeVendorType("structured_note") is unknown', normalizeVendorType('structured_note'), null);
+
+console.log('\n[10] orthogonal dimensions — class, strategy and Shariah never substitute for each other');
+check('index fund: class equity + tag index', `${primaryAssetClassOf({ fund_type: 'equity', fund_name_en: 'Beltone EGX70 EWI Fund B 70' })}/${strategyTagsOf({ fund_name_en: 'Beltone EGX70 EWI Fund B 70' }).join(',')}`, 'equity/index');
+check('sector fund: class equity + tag sector', `${primaryAssetClassOf({ fund_type: 'equity', fund_name_en: 'Beltone Financial Fund Issuance 3' })}/${strategyTagsOf({ fund_name_en: 'Beltone Financial Fund Issuance 3' }).join(',')}`, 'equity/sector');
+check('daily-yield cash fund: class money_market + tag daily_yield', `${primaryAssetClassOf({ fund_name_en: 'HSBC Money Market Fund Kol Youm' })}/${strategyTagsOf({ fund_name_en: 'HSBC Money Market Fund Kol Youm' }).join(',')}`, 'money_market/daily_yield');
+check('Shariah from the flag', shariaCompliantOf({ is_shariah: true, fund_name_en: 'ABC Equity Fund' }), true);
+check('Shariah from the registered name', shariaCompliantOf({ is_shariah: false, fund_name_en: 'Sanabel Equity Fund Islamic Sharia Compliant' }), true);
+check('Shariah is not inferred from a bank name', shariaCompliantOf({ is_shariah: false, fund_name_en: 'Faisal Islamic Bank of Egypt Fund' }), true);
+check('class from the classification text when fund_type is empty', primaryAssetClassOf({ fund_type: null, classification: 'Equity Fund' }), 'equity');
 
 console.log(failures === 0 ? '\nPASS: fund category classifier gate\n' : `\nFAIL: ${failures} check(s) failed\n`);
 process.exit(failures === 0 ? 0 : 1);

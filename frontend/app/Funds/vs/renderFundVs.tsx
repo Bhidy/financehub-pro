@@ -7,6 +7,7 @@ import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo
 import JsonLd from '@/components/seo/JsonLd';
 import { FUNDVS, t, type Lang } from '@/content/symbol-pages-i18n';
 import { ltrNum } from '@/lib/bidi';
+import { fundTypeLabel, riskLabel } from '@/app/Funds/[id]/fund-i18n';
 
 /**
  * /Funds/vs/{idA}-vs-{idB} — side-by-side comparison of two Egyptian mutual
@@ -91,9 +92,9 @@ function isoDate(v: unknown): string | null {
     return null;
 }
 
-/** Human date ("2 July 2026") from a YYYY-MM-DD string, timezone-stable. */
-function humanDate(iso: string): string {
-    return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', {
+/** Human date ("2 July 2026" / "٢ يوليو ٢٠٢٦") from a YYYY-MM-DD string, in the page language, timezone-stable. */
+function humanDate(iso: string, lang: Lang): string {
+    return new Date(`${iso}T00:00:00Z`).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -202,13 +203,14 @@ export async function renderFundVs(pair: string, lang: Lang) {
     const B = fundBasics(b, lang);
     const canonicalPath = `${isAr ? '/ar' : ''}/Funds/vs/${a.fund_id}-vs-${b.fund_id}`;
 
-    const currencyA = str(a, 'currency') || 'EGP';
-    const currencyB = str(b, 'currency') || 'EGP';
+    // Currency in the page language ("جنيه مصري", not "EGP", inside Arabic prose).
+    const currencyLabel = (code: string): string => (FUNDVS.currency[code.toUpperCase()] ? t(FUNDVS.currency[code.toUpperCase()], lang) : code);
+    const currencyA = currencyLabel(str(a, 'currency') || 'EGP');
+    const currencyB = currencyLabel(str(b, 'currency') || 'EGP');
+    const asOf = (iso: string | null): string => (iso ? ` (${t(FUNDVS.asOf, lang)} ${humanDate(iso, lang)})` : '');
 
     const navCell = (basics: typeof A, currency: string): string | null =>
-        basics.nav !== null
-            ? `${fmtNav(basics.nav)} ${currency}${basics.navDateIso ? ` (as of ${basics.navDateIso})` : ''}`
-            : null;
+        basics.nav !== null ? `${fmtNav(basics.nav)} ${currency}${asOf(basics.navDateIso)}` : null;
 
     const minSubCell = (fund: Fund, currency: string): string | null => {
         const v = num(fund, 'min_subscription');
@@ -217,7 +219,7 @@ export async function renderFundVs(pair: string, lang: Lang) {
 
     const shariahCell = (fund: Fund): string | null => {
         const v = bool(fund, 'is_shariah');
-        return v === null ? null : v ? 'Yes' : 'No';
+        return v === null ? null : t(v ? FUNDVS.yes : FUNDVS.no, lang);
     };
 
     const pctCell = (fund: Fund, key: string): string | null => {
@@ -225,14 +227,29 @@ export async function renderFundVs(pair: string, lang: Lang) {
         return v !== null ? fmtPct(v) : null;
     };
 
+    // Type / classification / risk through the fund page's own label maps, so
+    // the two pages name the same thing identically in each language. The
+    // classification row is shown only when it adds something to the type.
+    const typeCell = (fund: Fund): string | null =>
+        fundTypeLabel(str(fund, 'fund_type') || str(fund, 'fund_type_en'), str(fund, 'classification_en') || str(fund, 'classification'), lang);
+    const classificationCell = (fund: Fund): string | null => {
+        const v = fundTypeLabel(str(fund, 'classification_en') || str(fund, 'classification'), null, lang);
+        return v && v !== typeCell(fund) ? v : null;
+    };
+    const riskCell = (fund: Fund): string | null => riskLabel(str(fund, 'risk_level') || str(fund, 'risk_level_en'), lang);
+    const managerCell = (fund: Fund): string | null =>
+        isAr ? str(fund, 'manager_name') || str(fund, 'manager_name_en') : str(fund, 'manager_name_en') || str(fund, 'manager_name');
+    const issuerCell = (fund: Fund): string | null =>
+        isAr ? str(fund, 'owner_name') || str(fund, 'issuer_en') || str(fund, 'owner_name_en') : str(fund, 'issuer_en') || str(fund, 'owner_name_en') || str(fund, 'owner_name');
+
     const returnRows: CompareRow[] = (
         [
-            ['YTD return', 'return_ytd'],
-            ['1-month return', 'return_1m'],
-            ['3-month return', 'return_3m'],
-            ['1-year return', 'return_1y'],
-            ['3-year return', 'return_3y'],
-            ['5-year return', 'return_5y'],
+            [t(FUNDVS.rows.returnYtd, lang), 'return_ytd'],
+            [t(FUNDVS.rows.return1m, lang), 'return_1m'],
+            [t(FUNDVS.rows.return3m, lang), 'return_3m'],
+            [t(FUNDVS.rows.return1y, lang), 'return_1y'],
+            [t(FUNDVS.rows.return3y, lang), 'return_3y'],
+            [t(FUNDVS.rows.return5y, lang), 'return_5y'],
         ] as Array<[string, string]>
     ).map(([label, key]) => {
         const aNum = num(a, key);
@@ -250,15 +267,15 @@ export async function renderFundVs(pair: string, lang: Lang) {
     const factRows: CompareRow[] = [
         { label: t(FUNDVS.rows.latestNav, lang), a: navCell(A, currencyA), b: navCell(B, currencyB) },
         ...returnRows,
-        { label: t(FUNDVS.rows.fundType, lang), a: str(a, 'fund_type_en'), b: str(b, 'fund_type_en') },
-        { label: t(FUNDVS.rows.classification, lang), a: str(a, 'classification_en'), b: str(b, 'classification_en') },
-        { label: t(FUNDVS.rows.riskLevel, lang), a: str(a, 'risk_level_en'), b: str(b, 'risk_level_en') },
+        { label: t(FUNDVS.rows.fundType, lang), a: typeCell(a), b: typeCell(b) },
+        { label: t(FUNDVS.rows.classification, lang), a: classificationCell(a), b: classificationCell(b) },
+        { label: t(FUNDVS.rows.riskLevel, lang), a: riskCell(a), b: riskCell(b) },
         { label: t(FUNDVS.rows.managementFee, lang), a: pctCell(a, 'fee_management'), b: pctCell(b, 'fee_management') },
         { label: t(FUNDVS.rows.expenseRatio, lang), a: pctCell(a, 'expense_ratio'), b: pctCell(b, 'expense_ratio') },
         { label: t(FUNDVS.rows.minSubscription, lang), a: minSubCell(a, currencyA), b: minSubCell(b, currencyB) },
         { label: t(FUNDVS.rows.shariah, lang), a: shariahCell(a), b: shariahCell(b) },
-        { label: 'Manager', a: str(a, 'manager_name_en') || str(a, 'manager_name'), b: str(b, 'manager_name_en') || str(b, 'manager_name') },
-        { label: 'Issuer', a: str(a, 'issuer_en'), b: str(b, 'issuer_en') },
+        { label: t(FUNDVS.rows.manager, lang), a: managerCell(a), b: managerCell(b) },
+        { label: t(FUNDVS.rows.issuer, lang), a: issuerCell(a), b: issuerCell(b) },
         { label: t(FUNDVS.rows.inception, lang), a: isoDate(a['inception_date'])?.slice(0, 4) ?? null, b: isoDate(b['inception_date'])?.slice(0, 4) ?? null },
     ].filter((row) => row.a !== null || row.b !== null);
 
@@ -270,7 +287,7 @@ export async function renderFundVs(pair: string, lang: Lang) {
     const latestNavDate = [A.navDateIso, B.navDateIso].filter((d): d is string => d !== null).sort().pop() ?? null;
     if (r1yA !== null && r1yB !== null) {
         summaryBits.push(
-            t(FUNDVS.summary.bothReturns(A.name, fmtSignedPct(r1yA), B.name, fmtSignedPct(r1yB), latestNavDate ? humanDate(latestNavDate) : ''), lang)
+            t(FUNDVS.summary.bothReturns(A.name, fmtSignedPct(r1yA), B.name, fmtSignedPct(r1yB), latestNavDate ? humanDate(latestNavDate, lang) : ''), lang)
         );
     } else if (r1yA !== null) {
         summaryBits.push(t(FUNDVS.summary.oneReturn(A.name, fmtSignedPct(r1yA), B.name), lang));
@@ -279,13 +296,13 @@ export async function renderFundVs(pair: string, lang: Lang) {
     }
     if (A.nav !== null && B.nav !== null) {
         summaryBits.push(
-            t(FUNDVS.summary.navs(A.name, fmtNav(A.nav), currencyA, A.navDateIso || '', B.name, fmtNav(B.nav), currencyB, B.navDateIso || ''), lang)
+            t(FUNDVS.summary.navs(A.name, fmtNav(A.nav), currencyA, A.navDateIso ? humanDate(A.navDateIso, lang) : '', B.name, fmtNav(B.nav), currencyB, B.navDateIso ? humanDate(B.navDateIso, lang) : ''), lang)
         );
     }
     const feeA = num(a, 'fee_management');
     const feeB = num(b, 'fee_management');
     if (feeA !== null && feeB !== null) {
-        summaryBits.push(`Annual management fees are ${fmtPct(feeA)} and ${fmtPct(feeB)} respectively`);
+        summaryBits.push(t(FUNDVS.summary.fees(fmtPct(feeA), fmtPct(feeB)), lang));
     }
     const summary = summaryBits.length > 0 ? `${summaryBits.join('. ')}.` : null;
 
@@ -323,7 +340,7 @@ export async function renderFundVs(pair: string, lang: Lang) {
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[560px] text-sm">
                     <thead>
-                        <tr className="border-b border-border bg-panel/40 text-left text-xs font-bold uppercase tracking-wide text-muted">
+                        <tr className={`border-b border-border bg-panel/40 ${isAr ? 'text-right' : 'text-left'} text-xs font-bold uppercase tracking-wide text-muted`}>
                             <th scope="col" className="px-4 py-3">{t(FUNDVS.metric, lang)}</th>
                             <th scope="col" className="px-4 py-3">
                                 <Link href={A.path} className="normal-case tracking-normal text-main hover:text-starta-darkTeal">{A.name}</Link>
@@ -336,7 +353,7 @@ export async function renderFundVs(pair: string, lang: Lang) {
                     <tbody>
                         {factRows.map((row) => (
                             <tr key={row.label} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
-                                <th scope="row" className="px-4 py-2.5 text-left font-semibold text-main">{row.label}</th>
+                                <th scope="row" className={`px-4 py-2.5 ${isAr ? 'text-right' : 'text-left'} font-semibold text-main`}>{row.label}</th>
                                 {row.isReturn ? (
                                     <>
                                         {returnCell(row.aNum ?? null, row.bNum ?? null)}
@@ -354,21 +371,15 @@ export async function renderFundVs(pair: string, lang: Lang) {
                 </table>
             </div>
 
-            <p className="mt-3 text-xs text-muted">
-                Return rows: the higher value is shown in bold. &lsquo;—&rsquo; means the fund has not reported that
-                figure. Source: fund manager disclosures.
-            </p>
+            <p className="mt-3 text-xs text-muted">{t(FUNDVS.footnote, lang)}</p>
 
             <nav aria-label={isAr ? 'صفحات الصناديق' : 'Fund profiles'} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-teal-700">
-                <Link href={A.path} className="hover:text-starta-darkTeal hover:underline">{A.name} profile →</Link>
-                <Link href={B.path} className="hover:text-starta-darkTeal hover:underline">{B.name} profile →</Link>
+                <Link href={A.path} className="hover:text-starta-darkTeal hover:underline">{t(FUNDVS.profile(A.name), lang)} →</Link>
+                <Link href={B.path} className="hover:text-starta-darkTeal hover:underline">{t(FUNDVS.profile(B.name), lang)} →</Link>
                 <Link href={isAr ? '/ar/Funds' : '/Funds'} className="hover:text-starta-darkTeal hover:underline">{t(FUNDVS.allFunds, lang)} →</Link>
             </nav>
 
-            <p className="mt-8 border-t border-border pt-4 text-xs text-muted">
-                Past performance does not guarantee future results. This comparison is informational only
-                and is not investment advice.
-            </p>
+            <p className="mt-8 border-t border-border pt-4 text-xs text-muted">{t(FUNDVS.disclaimer, lang)}</p>
         </PublicPageShell>
     );
 }

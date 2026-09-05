@@ -1,0 +1,70 @@
+{
+  "_comment": "FUND TAXONOMY OVERRIDES — hand-verified dispositions for funds whose vendor type (funds_view.fund_type / classification, from the price vendor) contradicts the fund's own registered name or prospectus. Applied by applyFundTaxonomy() in content/fund-categories.ts on EVERY public surface (fund page, hubs, rankings, categories, related funds, list + detail API, CSV). An 'override' entry needs primary-source evidence (regulator or issuer document, else two independent press records) and states the vendor value it replaces; a 'keep_vendor' entry records that the name-vs-type conflict was reviewed and the vendor is right. Nothing here is inferred: a fund without an entry keeps the vendor type, and an unreviewed conflict is reported by the live audit (FUND_TAXONOMY_CONFLICT) until it gets a disposition. Dimensions are orthogonal: primary_asset_class is the asset class; strategy_tags (index, sector, daily_yield, capital_protected, periodic_income) and Shariah compliance are separate properties, never substitutes for the class.",
+  "as_of": "2026-09-05",
+  "overrides": [
+    {
+      "fund_id": "2689",
+      "fund_name_en": "BANK NXT Money Market Fund",
+      "fund_name": "صندوق بنك نكست التجاري النقدي",
+      "disposition": "override",
+      "vendor_type": "balanced",
+      "vendor_classification": "Balanced Fund",
+      "primary_asset_class": "money_market",
+      "strategy_tags": ["daily_yield"],
+      "confidence": "high",
+      "evidence": [
+        "https://fra.gov.eg/wp-content/uploads/2021/08/%D8%AA%D8%AD%D8%AF%D9%8A%D8%AB-%D9%86%D8%B4%D8%B1%D8%A9-%D8%A7%D9%83%D8%AA%D8%AA%D8%A7%D8%A8-%D8%B5%D9%86%D8%AF%D9%88%D9%82-%D8%A8%D9%86%D9%83-%D9%86%D9%83%D8%B3%D8%AA-%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D9%8A-%D8%A7%D9%84%D9%86%D9%82%D8%AF%D9%8A.pdf"
+      ],
+      "note": "The FRA-hosted prospectus update names the fund «صندوق بنك نكست التجاري (النقدي) ذو العائد اليومي بالجنيه المصري» — a daily-yield money-market fund. The disclosed investment policy (T-bills, bank deposits, certificates of deposit) and the registered name in both languages agree; the vendor's 'balanced' has no source.",
+      "verified_at": "2026-09-05"
+    },
+    {
+      "fund_id": "5958",
+      "fund_name_en": "Nasser Social Bank and Azimut Egypt Islamic Money Market fund",
+      "fund_name": "صندوق استثمار بنك ناصر الاجتماعي وأزيموت مصر النقدي الإسلامي",
+      "disposition": "override",
+      "vendor_type": "fixed_income",
+      "vendor_classification": "Fixed Income Fund",
+      "primary_asset_class": "money_market",
+      "strategy_tags": ["daily_yield"],
+      "confidence": "high",
+      "evidence": [
+        "https://nsb.gov.eg/ar/خدمات-إستثمارية/صندوق-بنك-ناصر-الاجتماعي-وازيموت/",
+        "https://almalnews.com/1482713/%D8%A8%D9%86%D9%83-%D9%86%D8%A7%D8%B5%D8%B1-%D9%88%D8%A3%D8%B2%D9%8A%D9%85%D9%88%D8%AA-%D9%85%D8%B5%D8%B1-%D9%8A%D8%B7%D9%84%D9%82%D8%A7%D9%86-%D8%B5%D9%86%D8%AF%D9%88%D9%82%D8%A7-%D9%86%D9%82%D8%AF%D9%8A%D8%A7/"
+      ],
+      "note": "The issuing bank's own page titles the fund «النقدي الاسلامي» and describes a daily cumulative return from high-liquidity instruments; Al Mal reported the launch as «صندوقاً نقدياً إسلامياً». The registered name says Money Market in both languages. Shariah compliance is a separate property (is_shariah), not the asset class.",
+      "verified_at": "2026-09-05"
+    },
+    {
+      "fund_id": "2665",
+      "fund_name_en": "Mubasher Capital Daily Cumulative Return Fund Cash Mubasher",
+      "fund_name": "صندوق استثمار مباشر كابيتال ذو العائد اليومي التراكمي - كاش مباشر",
+      "disposition": "override",
+      "vendor_type": "fixed_income",
+      "vendor_classification": "Fixed Income Fund",
+      "primary_asset_class": "money_market",
+      "strategy_tags": ["daily_yield"],
+      "confidence": "medium",
+      "evidence": [
+        "https://amwalalghad.com/2022/10/07/مباشر-كابيتال-تستعد-لإطلاق-صندوق-كا/",
+        "https://fra.gov.eg/company_records/صندوق-استثمار-مباشر-كابيتال-ذو-العائد/"
+      ],
+      "note": "Registered as «صندوق استثمار مباشر كابيتال ذو العائد اليومي التراكمي (كاش مباشر حاليا)» in the FRA company record; Amwal Al Ghad (7 Oct 2022) reports Mubasher Capital restructured the former Misr El Kheir periodic-return fund into a new money-market fund («صندوق نقدي») with a daily cumulative return. Medium confidence: the FRA record confirms the name, the fund type rests on the manager's public statements.",
+      "verified_at": "2026-09-05"
+    },
+    {
+      "fund_id": "6411",
+      "fund_name_en": "Granite Fixed Income Fund Issuance 1 EGP",
+      "fund_name": "صندوق استثمار جرانيت لأدوات الدخل الثابت - الإصدار الأول النقدي بالجنيه",
+      "disposition": "keep_vendor",
+      "vendor_type": "fixed_income",
+      "vendor_classification": "Fixed Income Fund",
+      "primary_asset_class": "fixed_income",
+      "strategy_tags": [],
+      "confidence": "high",
+      "evidence": [],
+      "note": "The Arabic name carries both «لأدوات الدخل الثابت» (fixed-income instruments) and «النقدي بالجنيه» (the EGP cash share class); the English registered name says Fixed Income. The name agrees with the vendor; «النقدي» here qualifies the issuance, not the asset class.",
+      "verified_at": "2026-09-05"
+    }
+  ]
+}

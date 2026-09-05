@@ -51,6 +51,7 @@ debug_*.png
 # lib/funds-hub-render.ts and the methodology page import them; docs/DATA_GOVERNANCE.md).
 !frontend/content/egx-security-master.json
 !frontend/content/fund-universe-reconciliation.json
+!frontend/content/fund-taxonomy-overrides.json
 !frontend/scripts/fixtures/egx-official-listed.json
 !frontend/scripts/fixtures/egx-sme-listed.json
 !frontend/scripts/fixtures/egx-security-overrides.json

@@ -52,6 +52,8 @@ export type FundClientData = {
     objective: string | null;
     managerProfile: { name: string; logo: string | null; rows: LabelValue[] } | null;
     peers: Array<{ id: number; label: string; href: string; compareHref: string }>;
+    /** Heading that states the peers' selection rule ("same asset class" vs "same universe"). */
+    peersHeading: string;
     faqs: Array<{ q: string; a: string }>;
     isShariah: boolean;
     // analytics layer
@@ -131,6 +133,7 @@ export default function FundPageClient(props: FundClientData) {
         objective,
         managerProfile,
         peers,
+        peersHeading,
         faqs,
         analytics,
         cagrStat,
@@ -273,7 +276,14 @@ export default function FundPageClient(props: FundClientData) {
                             {perfCards.map((p) => (
                                 <div key={p.label} className="summary-card perf-card rounded-[1.4rem] p-4">
                                     <div className={MICRO}>{p.label}</div>
-                                    <div className="mt-3 text-xl font-display font-bold tracking-[-0.03em]">
+                                    {/* data-metric/data-entity: the cross-surface invariant the live audit
+                                        checks (METRIC_DRIFT_ACROSS_SURFACES) — this fund's 12-month return
+                                        must equal the figure the ranking table prints for the same fund. */}
+                                    <div
+                                        className="mt-3 text-xl font-display font-bold tracking-[-0.03em]"
+                                        data-metric={p.label === '1Y' ? 'return_1y' : undefined}
+                                        data-entity={p.label === '1Y' ? String(fundId) : undefined}
+                                    >
                                         <MaybeSigned value={p.value} negative={p.negative} />
                                     </div>
                                 </div>
@@ -460,7 +470,7 @@ export default function FundPageClient(props: FundClientData) {
                         line (peers without an id or a name are dropped server-side, so no
                         empty compare-only cards can appear) */}
                     <section aria-label={t.exploreMore}>
-                        <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{t.similarFunds}</h2>
+                        <h2 className="text-xl font-display font-bold tracking-[-0.03em] text-main">{peersHeading}</h2>
                         {peers.length > 0 ? (
                             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                                 {peers.map((p) => (

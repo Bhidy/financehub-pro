@@ -87,6 +87,8 @@ export type FundLabels = {
     prospectusMeta: string;
     exploreMore: string;
     similarFunds: string;
+    similarFundsUniverse: string;
+    source: string;
     fundFaq: string;
     faqTitle: string;
     // hero
@@ -177,7 +179,12 @@ const EN: FundLabels = {
     prospectus: 'Fund prospectus',
     prospectusMeta: 'PDF · opens in a new tab',
     exploreMore: 'Explore more',
-    similarFunds: 'Similar funds in the same universe',
+    // The module is a HARD same-asset-class filter (renderFundPage.resolvePeers);
+    // the heading must say exactly what the list is. The universe variant is
+    // used only when the fund's own asset class is unknown.
+    similarFunds: 'Similar funds in the same asset class',
+    similarFundsUniverse: 'Other funds in the same universe',
+    source: 'Source (latest NAV)',
     fundFaq: 'Fund FAQ',
     faqTitle: 'Frequently asked questions',
     latestNav: 'Latest NAV',
@@ -369,7 +376,9 @@ const AR: FundLabels = {
     prospectus: 'نشرة الاكتتاب',
     prospectusMeta: 'PDF · يفتح في نافذة جديدة',
     exploreMore: 'استكشف المزيد',
-    similarFunds: 'صناديق مشابهة في نفس الفئة',
+    similarFunds: 'صناديق مشابهة من نفس فئة الأصول',
+    similarFundsUniverse: 'صناديق أخرى من نفس السوق',
+    source: 'المصدر (آخر قيمة)',
     fundFaq: 'الأسئلة الشائعة',
     faqTitle: 'الأسئلة الأكثر شيوعًا',
     latestNav: 'أحدث صافي قيمة الأصول',
@@ -546,23 +555,34 @@ const FUND_TYPE_AR: Record<string, string> = {
     equity: 'صندوق أسهم',
     money_market: 'صندوق أسواق نقدية',
     fixed_income: 'صندوق دخل ثابت',
+    fixed_income_usd: 'صندوق دخل ثابت بالدولار',
     balanced: 'صندوق متوازن',
     mixed: 'صندوق متوازن',
     bond: 'صندوق سندات',
+    gold: 'صندوق ذهب',
+    commodities: 'صندوق سلع',
+    index: 'صندوق مؤشرات',
+    sector: 'صندوق قطاعي',
     real_estate: 'صندوق عقاري',
     'equity fund': 'صندوق أسهم',
     'money market fund': 'صندوق أسواق نقدية',
     'fixed income fund': 'صندوق دخل ثابت',
     'balanced fund': 'صندوق متوازن',
+    'gold fund': 'صندوق ذهب',
 };
 
 const FUND_TYPE_EN: Record<string, string> = {
     equity: 'Equity Fund',
     money_market: 'Money Market Fund',
     fixed_income: 'Fixed Income Fund',
+    fixed_income_usd: 'Fixed Income Fund (USD)',
     balanced: 'Balanced Fund',
     mixed: 'Balanced Fund',
     bond: 'Fixed Income Fund',
+    gold: 'Gold Fund',
+    commodities: 'Commodity Fund',
+    index: 'Index Fund',
+    sector: 'Sector Fund',
     real_estate: 'Real Estate Fund',
 };
 

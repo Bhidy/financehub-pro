@@ -110,7 +110,11 @@ export function FundTable({
                                 </td>
                                 {showCategory && <td className="px-4 py-2.5 text-muted">{cat ? (isAr ? cat.nameAr : cat.nameEn) : '—'}</td>}
                                 <td className="px-4 py-2.5 text-muted">{manager || '—'}</td>
-                                <td className={`px-4 py-2.5 font-bold ${isAr ? 'text-left' : 'text-right'} ${r1y === null ? 'text-muted' : r1y >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                                <td
+                                    className={`px-4 py-2.5 font-bold ${isAr ? 'text-left' : 'text-right'} ${r1y === null ? 'text-muted' : r1y >= 0 ? 'text-emerald-700' : 'text-red-600'}`}
+                                    data-metric="return_1y"
+                                    data-entity={String(f.fund_id)}
+                                >
                                     {fmtPct(r1y)}
                                 </td>
                                 <td className={`px-4 py-2.5 ${isAr ? 'text-left' : 'text-right'}`}>{fmtPct(num(f, 'return_ytd'))}</td>

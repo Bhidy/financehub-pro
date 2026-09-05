@@ -117,6 +117,10 @@ export function extractHtmlFacts(html) {
         subheadings: [],
         /** Visible text (scripts/styles stripped). */
         text: '',
+        /** data-metric="key" [data-entity="id"] elements — the cross-surface
+         *  metric contract (docs/DATA_GOVERNANCE.md §7): one key (and entity)
+         *  must print one value on every page that carries it. */
+        metrics: [],
         /** data-fund-status="dormant|active" on fund pages — a page that
          *  declares dormancy is honest about an old NAV, not stale. */
         fundStatus: null,
@@ -229,10 +233,32 @@ export function extractHtmlFacts(html) {
         facts.anchors.push({ href: href.split(/[?#]/)[0].replace(/\/$/, '') || '/', text: stripTags(m[2]).trim().slice(0, 80) });
     }
 
+    // Tagged metrics. The element's own tag closes the capture, so a value may
+    // wrap a differently-named child (<div data-metric><span>…</span></div>).
+    for (const m of noScript.matchAll(/<([a-z][a-z0-9]*)\b([^>]*?\sdata-metric=["']([^"']+)["'][^>]*)>([\s\S]*?)<\/\1>/gi)) {
+        const entity = attr(`<x ${m[2]}>`, 'data-entity');
+        facts.metrics.push({ key: m[3], entity: entity || null, value: normalizeMetricValue(stripTags(m[4])) });
+    }
+
     return facts;
 }
 
 export const stripTags = (s) => decodeEntities(String(s).replace(/<[^>]*>/g, ' ')).replace(/\s+/g, ' ');
+
+/**
+ * Canonical form of a printed metric so the SAME figure compares equal across
+ * templates: bidi isolates and marks removed (ltrNum wraps Arabic-page numbers
+ * in U+2066/U+2069), Arabic-Indic digits → ASCII, whitespace and thousands
+ * separators dropped, an explicit leading "+" dropped ("+81.50%" = "81.50%").
+ */
+export function normalizeMetricValue(s) {
+    return String(s)
+        .replace(/[⁦-⁩‎‏؜]/g, '')
+        .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+        .replace(/[\s,]+/g, '')
+        .replace(/^\+/, '')
+        .trim();
+}
 
 export function decodeEntities(s) {
     return String(s)

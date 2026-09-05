@@ -397,8 +397,31 @@ export const FUNDVS = {
     metric: s('Metric', 'البند'),
     allFunds: s('All Egyptian mutual funds', 'كل صناديق الاستثمار المصرية'),
     crumb: s('Mutual Funds', 'صناديق الاستثمار'),
+    // Every string the comparison renders comes from here. The Arabic page
+    // shipped "as of", "YTD return", "Yes"/"No", an en-GB date and a whole
+    // English fee sentence inside Arabic prose (audit 2026-09-05) because the
+    // renderer had inline English for the rows and the summary tail.
+    asOf: s('as of', 'كما في'),
+    yes: s('Yes', 'نعم'),
+    no: s('No', 'لا'),
+    profile: (name: string): S => s(`${name} profile`, `صفحة ${name}`),
+    footnote: s(
+        'Return rows: the higher value is shown in bold. ‘—’ means the fund has not reported that figure. Source: fund manager disclosures.',
+        'في صفوف العوائد يظهر الرقم الأعلى بخط عريض. وتعني «—» أن الصندوق لم يُعلن هذا الرقم. المصدر: إفصاحات مديري الصناديق.'
+    ),
+    disclaimer: s(
+        'Past performance does not guarantee future results. This comparison is informational only and is not investment advice.',
+        'الأداء السابق لا يضمن النتائج المستقبلية. هذه المقارنة لأغراض المعلومات فقط وليست نصيحة استثمارية.'
+    ),
+    currency: { EGP: s('EGP', 'جنيه مصري'), USD: s('USD', 'دولار أمريكي'), EUR: s('EUR', 'يورو'), SAR: s('SAR', 'ريال سعودي'), AED: s('AED', 'درهم إماراتي'), GBP: s('GBP', 'جنيه إسترليني') } as Record<string, S>,
     rows: {
         latestNav: s('Latest NAV', 'صافي قيمة الأصول'),
+        returnYtd: s('YTD return', 'العائد منذ بداية العام'),
+        return1m: s('1-month return', 'عائد شهر'),
+        return3m: s('3-month return', 'عائد 3 أشهر'),
+        return1y: s('1-year return', 'عائد 12 شهرًا'),
+        return3y: s('3-year return', 'عائد 3 سنوات'),
+        return5y: s('5-year return', 'عائد 5 سنوات'),
         fundType: s('Fund type', 'نوع الصندوق'),
         classification: s('Classification', 'التصنيف'),
         riskLevel: s('Risk level', 'مستوى المخاطر'),
@@ -406,6 +429,8 @@ export const FUNDVS = {
         expenseRatio: s('Expense ratio', 'نسبة المصروفات'),
         minSubscription: s('Minimum subscription', 'الحد الأدنى للاشتراك'),
         shariah: s('Shariah-compliant', 'متوافق مع الشريعة'),
+        manager: s('Manager', 'مدير الصندوق'),
+        issuer: s('Issuer', 'الجهة المُصدِرة'),
         inception: s('Inception year', 'سنة التأسيس'),
     },
     summary: {
@@ -424,6 +449,8 @@ export const FUNDVS = {
                 `The latest reported NAV is ${na} ${ca} for ${a}${da ? ` (as of ${da})` : ''} and ${nb} ${cb} for ${b}${db ? ` (as of ${db})` : ''}`,
                 `أحدث صافي قيمة أصول معلن هو ${na} ${ca} لصندوق ${a}${da ? ` (كما في ${da})` : ''} و${nb} ${cb} لصندوق ${b}${db ? ` (كما في ${db})` : ''}`
             ),
+        fees: (fa: string, fb: string): S =>
+            s(`Annual management fees are ${fa} and ${fb} respectively`, `رسوم الإدارة السنوية ${fa} و${fb} على الترتيب`),
     },
     note: s(
         'Both funds are compared on figures their managers publish. A difference in one field does not make either fund better suited to you — the categories, horizons and fee structures differ, and nothing here is a recommendation.',

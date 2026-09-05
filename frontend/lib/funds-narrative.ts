@@ -1,6 +1,7 @@
 import { fundPath } from '@/lib/seo';
 import { ltrNum } from '@/lib/bidi';
 import { categoryOfFund } from '@/content/fund-categories';
+import { rankingEligibility } from '@/lib/fund-stats';
 
 /**
  * ANSWER-FIRST NARRATIVE FOR THE MONEY PAGES (2026-09-05).
@@ -80,7 +81,13 @@ const joinNames = (xs: NarrativeItem[], lang: Lang) =>
     xs.map((x, i) => `${i + 1}) ${x.name} (${pct(x.ret1y, lang)})`).join(lang === 'ar' ? '، ' : ', ');
 
 export function buildFundsNarrative(rows: Row[], lang: Lang, asOfHuman: string | null): FundsNarrative {
-    const ranked = rows.filter((r) => num(r, 'return_1y') !== null);
+    // RANKED = the funds the audited engine stands behind (rankingEligibility),
+    // the same rule the tables and the homepage leader sentence use — never
+    // "any row with a 12-month number", which would let a suppressed series
+    // into the top-5 list while the table beside it excludes it.
+    const ranked = rows
+        .filter((r) => rankingEligibility(r).eligible && num(r, 'return_1y') !== null)
+        .sort((x, y) => (num(y, 'return_1y') as number) - (num(x, 'return_1y') as number));
     const top5 = ranked.slice(0, 5).map((r) => item(r, lang));
     const moneyMarket = ranked.filter((r) => categoryOf(r) === 'Money Market Funds').slice(0, 3).map((r) => item(r, lang));
     const shariah = ranked.filter(isShariah).slice(0, 3).map((r) => item(r, lang));

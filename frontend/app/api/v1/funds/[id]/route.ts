@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
 import { applyReturnHierarchy } from '@/lib/public-data';
 import { fundCurrency } from '@/lib/fund-stats';
+import { applyFundTaxonomy } from '@/content/fund-categories';
 
 export async function GET(
     request: Request,
@@ -58,6 +59,10 @@ export async function GET(
         // USD/EUR funds; on 2026-09-05 this endpoint answered currency=EGP and
         // return_1y=null for funds the list endpoint priced in USD at +81.50%.
         const shaped = applyReturnHierarchy({ ...row }, (row.risk_metrics as Record<string, unknown> | null) ?? null);
+        // One taxonomy resolver (override → disclosure → registered name) — the
+        // same call the list API and the SSR profile make, so the JSON facts
+        // equal the visible ones (BANK NXT was 'balanced' here, 2026-09-05).
+        applyFundTaxonomy(shaped);
         const asOf = shaped.last_nav_date ?? shaped.last_update_date ?? null;
         const asOfMs = asOf ? Date.parse(String(asOf)) : NaN;
         return NextResponse.json({

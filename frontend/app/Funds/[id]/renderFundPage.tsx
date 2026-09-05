@@ -10,6 +10,8 @@ import { fundLogo } from '@/lib/fund-logos';
 import { investmentFundNode } from '@/lib/funds-hub-render';
 import { DORMANT_DAYS } from '@/lib/fund-stats';
 import { buildFundAnalytics, type AnalyticsInput } from '@/lib/fund-analytics';
+import { primaryAssetClassOf, shariaCompliantOf } from '@/content/fund-categories';
+import { fundSourceLabel } from '@/lib/fund-sources';
 
 /**
  * Shared, per-URL bilingual renderer for the fund-profile page. Both routes
@@ -237,6 +239,10 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
             [t.dividendPolicy, str(fund, 'dividend_policy'), false],
             [t.navObservations, navPoints !== null ? fmtInt(navPoints) : null, false],
             [t.historyQuality, qualityText, false],
+            // PROVENANCE: which pipeline source vouched for the latest NAV, named
+            // as the pipeline tags it (lib/fund-sources.ts — the same labels the
+            // NAV-history page prints per row). Hidden when unrecorded.
+            [t.source, fundSourceLabel((fund as Fields)['source'], lang), false],
             [
                 t.minSubscription,
                 minSubscription !== null
@@ -494,6 +500,9 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
         objective,
         managerProfile,
         peers,
+        // The heading states the rule the list was built with: a hard same-asset-
+        // class filter when the fund's class is known, else the whole universe.
+        peersHeading: primaryAssetClassOf(fund) ? t.similarFunds : t.similarFundsUniverse,
         faqs,
         isShariah: isTrue(fund, 'is_shariah'),
         analytics,
@@ -504,37 +513,74 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
     };
 }
 
+/** Cards in the "similar funds" module (2-column grid → three rows). */
+const MAX_PEERS = 6;
+
+/**
+ * RELATED FUNDS — "same asset class" is a HARD filter, not a heading.
+ *
+ * Until 2026-09-05 the module took the vendor's name-matched `fund_peers` as
+ * they came, so an equity fund's "similar funds in the same category" listed
+ * a money-market fund and a daily-yield insurance fund (Pharos, fund 2734).
+ * Now every candidate must share the fund's primary asset class (override →
+ * disclosure → registered name, content/fund-categories.ts) and be a CURRENT
+ * fund (getAllFundsRanked applies the universe rule). Within the class the
+ * order is deterministic: the vendor's peers first (they encode Mubasher's
+ * own similarity), then same currency + same Shariah status with one fund per
+ * manager, then the rest of the class in ranking order. A fund whose class is
+ * unknown falls back to the ranked universe under a heading that says so.
+ */
 async function resolvePeers(fund: Fund, lang: Lang): Promise<FundClientData['peers']> {
-    let peers = (await getFundPeers(fund.fund_id))
-        .map((p) => {
-            const peerId = typeof p.peer_fund_id === 'number' ? p.peer_fund_id : Number(p.peer_fund_id);
-            if (!Number.isInteger(peerId) || peerId <= 0 || peerId === Number(fund.fund_id)) return null;
-            const en = typeof p.peer_fund_name_en === 'string' && p.peer_fund_name_en.trim() ? p.peer_fund_name_en.trim() : null;
-            const ar = typeof p.peer_fund_name === 'string' && p.peer_fund_name.trim() ? p.peer_fund_name.trim() : null;
+    const myId = Number(fund.fund_id);
+    const myClass = primaryAssetClassOf(fund);
+    const myShariah = shariaCompliantOf(fund);
+    const myCurrency = (str(fund, 'currency') || 'EGP').toUpperCase();
+    const universe = (await getAllFundsRanked()).filter((f) => Number(f.fund_id) !== myId);
+    const candidates = myClass ? universe.filter((f) => primaryAssetClassOf(f) === myClass) : universe;
+    const byId = new Map(candidates.map((f) => [Number(f.fund_id), f]));
+
+    const picked: Array<Record<string, unknown>> = [];
+    const seen = new Set<number>([myId]);
+    const managers = new Set<string>();
+    const managerOf = (f: Record<string, unknown>): string =>
+        (typeof f.manager_name_en === 'string' && f.manager_name_en.trim() ? f.manager_name_en : typeof f.manager_name === 'string' ? f.manager_name : '').trim().toLowerCase();
+    const take = (f: Record<string, unknown>) => {
+        const id = Number(f.fund_id);
+        if (!Number.isInteger(id) || id <= 0 || seen.has(id) || picked.length >= MAX_PEERS) return;
+        seen.add(id);
+        picked.push(f);
+        const m = managerOf(f);
+        if (m) managers.add(m);
+    };
+    // 1. The vendor's peers that pass the class filter, in the vendor's order.
+    for (const p of await getFundPeers(fund.fund_id)) {
+        const f = byId.get(typeof p.peer_fund_id === 'number' ? p.peer_fund_id : Number(p.peer_fund_id));
+        if (f) take(f);
+    }
+    // 2. Same currency and Shariah status, one fund per manager; 3. same
+    //    currency and Shariah status; 4. the rest of the class — all in the
+    //    universe's ranking order (eligible funds by 12-month return first).
+    for (const pass of [0, 1, 2]) {
+        for (const f of candidates) {
+            if (picked.length >= MAX_PEERS) break;
+            const sameCurrency = (typeof f.currency === 'string' ? f.currency : 'EGP').toUpperCase() === myCurrency;
+            const sameShariah = shariaCompliantOf(f) === myShariah;
+            const m = managerOf(f);
+            if (pass === 0 && !(sameCurrency && sameShariah && (!m || !managers.has(m)))) continue;
+            if (pass === 1 && !(sameCurrency && sameShariah)) continue;
+            take(f);
+        }
+    }
+    const peers = picked
+        .map((f) => {
+            const id = Number(f.fund_id);
+            const en = typeof f.fund_name_en === 'string' && f.fund_name_en.trim() ? f.fund_name_en.trim() : null;
+            const ar = typeof f.fund_name === 'string' && f.fund_name.trim() ? f.fund_name.trim() : null;
             if (!en && !ar) return null;
             const label = lang === 'ar' ? ar || en! : en || ar!;
-            return { id: peerId, label, href: encodeURI(fundPath(peerId, en, ar, lang)) };
+            return { id, label, href: encodeURI(fundPath(id, en, ar, lang)) };
         })
         .filter((p): p is { id: number; label: string; href: string } => p !== null);
-    if (peers.length === 0) {
-        const myId = Number(fund.fund_id);
-        const myType = str(fund, 'fund_type_en') || str(fund, 'fund_type');
-        const seen = new Set<number>([myId]);
-        peers = (await getAllFundsRanked())
-            .filter((f) => !myType || f.fund_type_en === myType || f.fund_type === myType)
-            .map((f) => {
-                const id = Number(f.fund_id);
-                const en = typeof f.fund_name_en === 'string' && f.fund_name_en.trim() ? f.fund_name_en.trim() : null;
-                const ar = typeof f.fund_name === 'string' && f.fund_name.trim() ? f.fund_name.trim() : null;
-                if (!Number.isInteger(id) || id <= 0 || seen.has(id) || (!en && !ar)) return null;
-                seen.add(id);
-                const label = lang === 'ar' ? ar || en! : en || ar!;
-                return { id, label, href: encodeURI(fundPath(id, en, ar, lang)) };
-            })
-            .filter((p): p is { id: number; label: string; href: string } => p !== null)
-            .slice(0, 4);
-    }
-    const myId = Number(fund.fund_id);
     // Compare via the BILINGUAL comparison tool (/Funds/Compare), carrying the
     // current language so the user stays in Arabic/English — the old /Funds/vs
     // route was English-only and flipped the language. `lang` is also persisted in

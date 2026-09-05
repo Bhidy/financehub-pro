@@ -21,6 +21,7 @@
  */
 
 import { arabicSlug } from '@/lib/seo';
+import taxonomyOverrides from './fund-taxonomy-overrides.json';
 
 export type FundCategory = {
     /** Stable key — never change: it is the English URL slug and a URL contract. */
@@ -229,6 +230,7 @@ export function findCategory(slug: string): FundCategory | null {
  * categories or the pages cannibalise each other.
  */
 export function categoryOfFund(row: {
+    fund_id?: unknown;
     fund_type_en?: unknown;
     fund_type?: unknown;
     classification_en?: unknown;
@@ -244,7 +246,13 @@ export function categoryOfFund(row: {
     // category pages in the Egyptian market (verified against production:
     // 26 money-market and 20 fixed-income funds were being discarded).
     // Underscores, hyphens and dots all become spaces before any matcher runs.
-    const text = [row.fund_type_en, row.fund_type, row.classification_en]
+    //
+    // A DOCUMENTED OVERRIDE replaces the vendor's type text outright. The
+    // vendor filed BANK NXT's money-market fund as "balanced" (its FRA
+    // prospectus says «النقدي», 2026-09-05) and no matcher can repair a wrong
+    // input — only evidence can (content/fund-taxonomy-overrides.json).
+    const override = taxonomyOverrideFor(row.fund_id);
+    const text = (override ? [override.primary_asset_class] : [row.fund_type_en, row.fund_type, row.classification_en])
         .map((v) => (typeof v === 'string' ? v : ''))
         .join(' ')
         .toLowerCase()
@@ -307,7 +315,9 @@ const NAME_TYPE_PATTERNS: Array<[FundTypeSlug, RegExp]> = [
     ['index', new RegExp(`\\bindex\\b|\\bEGX ?(?:30|33|35|70|100)\\b|\\bEFX ?35\\b|\\bEWI\\b|${arWord('مؤشر', 'مؤشرات', 'المؤشر')}`, 'i')],
     ['sector', new RegExp(`\\bsector\\b|\\bthematic\\b|\\bspecialized funds\\b|\\bspeciaized funds\\b|\\bctor specialized\\b|\\bctor speciaized\\b|\\b(?:building|technology|export|consumption|e[- ]?payment|consumer|industrial|financial|real estate) fund\\b|\\bIPO\\b|${arWord('قطاعي', 'قطاعية', 'القطاعية', 'موضوعي', 'موضوعية', 'الموضوعية')}`, 'i')],
     ['gold', new RegExp(`\\b(gold|precious\\s+metals?|silver|commodit\\w*)\\b|${arWord('ذهب', 'دهب', 'معادن\\s*نفيسة', 'فضة', 'سلع')}`, 'i')],
-    ['money_market', new RegExp(`\\bmoney\\s*market\\b|\\bliquidity\\b|\\bcash\\s+fund\\b|\\btreasury\\b|\\bt-?bills?\\b|${arWord('أسواق\\s*النقد', 'اسواق\\s*النقد', 'سوق\\s*النقد', 'نقدي', 'نقدية', 'سيولة')}`, 'i')],
+    // "Cash" alone (not only "cash fund") and the transliterated «كاش»: Egyptian
+    // cash funds are named that way ("Cash Mubasher" / «كاش مباشر»).
+    ['money_market', new RegExp(`\\bmoney\\s*market\\b|\\bliquidity\\b|\\bcash\\b|\\btreasury\\b|\\bt-?bills?\\b|${arWord('أسواق\\s*النقد', 'اسواق\\s*النقد', 'سوق\\s*النقد', 'نقدي', 'نقدية', 'سيولة', 'كاش')}`, 'i')],
     ['fixed_income', new RegExp(`\\bfixed\\s*income\\b|\\bbonds?\\b|\\bdebt\\b|\\bsukuk\\b|${arWord('دخل\\s*ثابت', 'الدخل\\s*الثابت', 'سندات', 'صكوك', 'أدوات\\s*الدين', 'ادوات\\s*الدين')}`, 'i')],
     ['balanced', new RegExp(`\\bbalanced\\b|\\bmixed\\b|\\basset\\s*allocation\\b|${arWord('متوازن', 'متوازنة', 'مختلط', 'مختلطة', 'توزيع\\s*الأصول')}`, 'i')],
     ['equity', new RegExp(`\\bequit(?:y|ies)\\b|\\bstocks?\\b|\\bshares?\\b|${arWord('أسهم', 'اسهم')}`, 'i')],
@@ -325,7 +335,10 @@ export function classifyFundByName(row: { fund_name?: unknown; fund_name_en?: un
  * present, else the name-derived one — so the visitor's type filter and the
  * server pre-render describe the same category. `source` says which.
  */
-export function fundTypeSlug(row: { fund_type?: unknown; fund_name?: unknown; fund_name_en?: unknown }): { slug: string; source: 'disclosed' | 'name' | 'none' } {
+export function fundTypeSlug(row: { fund_id?: unknown; fund_type?: unknown; fund_name?: unknown; fund_name_en?: unknown }): { slug: string; source: 'disclosed' | 'name' | 'none' | 'override' } {
+    // A documented override outranks the disclosure it corrects.
+    const override = taxonomyOverrideFor(row.fund_id);
+    if (override) return { slug: override.primary_asset_class, source: 'override' };
     const raw = typeof row.fund_type === 'string' ? row.fund_type.trim().toLowerCase() : '';
     if (raw) return { slug: raw, source: 'disclosed' };
     const { type } = classifyFundByName(row);
@@ -333,4 +346,194 @@ export function fundTypeSlug(row: { fund_type?: unknown; fund_name?: unknown; fu
     // the category pages carry the finer distinction.
     const slug = type === 'index' || type === 'sector' ? 'equity' : type;
     return slug ? { slug, source: 'name' } : { slug: '', source: 'none' };
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * ORTHOGONAL TAXONOMY + DOCUMENTED OVERRIDES (chief re-audit, 2026-09-05)
+ *
+ * The vendor's `fund_type` is one text field that mixes asset class, strategy
+ * and Shariah status — and it is sometimes plainly wrong: BANK NXT's
+ * money-market fund was filed as "balanced", two more daily-yield cash funds
+ * as "fixed income". A wrong INPUT cannot be repaired by a matcher, only by
+ * evidence, so:
+ *
+ *   · content/fund-taxonomy-overrides.json holds hand-verified dispositions
+ *     (regulator/issuer documents, or two independent press records), each
+ *     naming the vendor value it replaces. `override` replaces the type on
+ *     every surface; `keep_vendor` records that a name-vs-type conflict was
+ *     reviewed and the vendor is right.
+ *   · applyFundTaxonomy() is the ONE place a fund row's type is resolved —
+ *     fund page, hubs, rankings, categories, related funds, list + detail API
+ *     and the CSV all read rows that went through it.
+ *   · Dimensions are exposed separately: `primary_asset_class` (the asset
+ *     class), `strategy_tags` (index, sector, daily_yield, capital_protected,
+ *     periodic_income) and `sharia_compliant`. Category URLs keep their
+ *     single-dimension contract (a Shariah equity fund's canonical hub is the
+ *     Shariah page); the "same asset class" module and the API use the class.
+ *   · nameTypeConflict() flags a disclosed type the registered name
+ *     contradicts, so the live audit (FUND_TAXONOMY_CONFLICT) reports every
+ *     unreviewed disagreement until it gets a disposition.
+ */
+export type PrimaryAssetClass = 'money_market' | 'fixed_income' | 'equity' | 'balanced' | 'gold';
+export type StrategyTag = 'index' | 'sector' | 'daily_yield' | 'capital_protected' | 'periodic_income';
+export type TaxonomyDisposition = 'override' | 'keep_vendor';
+export type TaxonomyOverride = {
+    fund_id: string;
+    fund_name_en: string;
+    fund_name: string;
+    disposition: TaxonomyDisposition;
+    vendor_type: string | null;
+    vendor_classification: string | null;
+    primary_asset_class: PrimaryAssetClass;
+    strategy_tags: StrategyTag[];
+    confidence: 'high' | 'medium';
+    evidence: string[];
+    note: string;
+    verified_at: string;
+};
+
+const PRIMARY_CLASSES = new Set<string>(['money_market', 'fixed_income', 'equity', 'balanced', 'gold']);
+export const FUND_TAXONOMY_OVERRIDES: readonly TaxonomyOverride[] = (taxonomyOverrides as unknown as { overrides: TaxonomyOverride[] }).overrides;
+const DISPOSITION_BY_ID = new Map<string, TaxonomyOverride>();
+for (const o of FUND_TAXONOMY_OVERRIDES) {
+    // Validated at load: a disposition without a fund id, an override without
+    // evidence, or an unknown class is a build error, never a quiet mislabel.
+    if (!/^\d+$/.test(String(o.fund_id))) throw new Error(`[fund-taxonomy] override without a numeric fund_id: ${JSON.stringify(o.fund_id)}`);
+    if (!PRIMARY_CLASSES.has(o.primary_asset_class)) throw new Error(`[fund-taxonomy] ${o.fund_id}: unknown primary_asset_class ${JSON.stringify(o.primary_asset_class)}`);
+    if (o.disposition === 'override' && (!Array.isArray(o.evidence) || o.evidence.length === 0)) throw new Error(`[fund-taxonomy] ${o.fund_id}: an override needs evidence`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(o.verified_at)) throw new Error(`[fund-taxonomy] ${o.fund_id}: verified_at must be an ISO date`);
+    if (DISPOSITION_BY_ID.has(String(o.fund_id))) throw new Error(`[fund-taxonomy] ${o.fund_id}: duplicate disposition`);
+    DISPOSITION_BY_ID.set(String(o.fund_id), o);
+}
+
+/** Any recorded disposition (override or reviewed keep_vendor) for a fund, else null. */
+export function taxonomyDispositionFor(fundId: unknown): TaxonomyOverride | null {
+    if (fundId === null || fundId === undefined || fundId === '') return null;
+    return DISPOSITION_BY_ID.get(String(fundId)) ?? null;
+}
+/** The documented override that REPLACES the vendor type for a fund, else null. */
+export function taxonomyOverrideFor(fundId: unknown): TaxonomyOverride | null {
+    const d = taxonomyDispositionFor(fundId);
+    return d && d.disposition === 'override' ? d : null;
+}
+
+const VENDOR_TYPE_ALIASES: Record<string, PrimaryAssetClass> = {
+    money_market: 'money_market', liquidity: 'money_market', cash: 'money_market',
+    fixed_income: 'fixed_income', fixed_income_usd: 'fixed_income', bond: 'fixed_income', bonds: 'fixed_income', debt: 'fixed_income',
+    equity: 'equity', equities: 'equity', stock: 'equity', stocks: 'equity',
+    balanced: 'balanced', mixed: 'balanced', asset_allocation: 'balanced',
+    gold: 'gold', commodities: 'gold', commodity: 'gold',
+};
+/** The vendor's type text ("money_market", "Fixed Income Fund", "fixed_income_usd") as an asset class, else null. */
+export function normalizeVendorType(raw: unknown): PrimaryAssetClass | null {
+    if (typeof raw !== 'string') return null;
+    const k = raw.trim().toLowerCase().replace(/[\s\-.]+/g, '_').replace(/_?funds?$/, '');
+    return k ? VENDOR_TYPE_ALIASES[k] ?? null : null;
+}
+
+type NameRow = { fund_name?: unknown; fund_name_en?: unknown };
+const nameHay = (row: NameRow): string => [row.fund_name_en, row.fund_name].map((v) => (typeof v === 'string' ? v : '')).join(' ');
+/** EVERY type word the registered name carries, in the classifier's precedence order. */
+export function nameTypeHits(row: NameRow): FundTypeSlug[] {
+    const hay = nameHay(row);
+    if (!hay.trim()) return [];
+    return NAME_TYPE_PATTERNS.filter(([, re]) => re.test(hay)).map(([t]) => t);
+}
+const toClass = (t: FundTypeSlug): PrimaryAssetClass => (t === 'index' || t === 'sector' ? 'equity' : t);
+
+/**
+ * A disclosed type the registered name contradicts, else null. Not a conflict:
+ * a name that also names the vendor's class ("Granite Fixed Income Fund … النقدي
+ * بالجنيه" is fixed income with an EGP cash class), an index/sector name on a
+ * vendor "equity" (a refinement), a balanced fund naming both legs, or a fund
+ * that already has a recorded disposition.
+ */
+export function nameTypeConflict(row: NameRow & { fund_id?: unknown; fund_type?: unknown }): PrimaryAssetClass | null {
+    if (taxonomyDispositionFor(row.fund_id)) return null;
+    const disclosed = normalizeVendorType(row.fund_type);
+    if (!disclosed) return null;
+    const classes = nameTypeHits(row).map(toClass);
+    if (classes.length === 0 || classes.includes(disclosed)) return null;
+    if (disclosed === 'balanced' && classes.includes('equity') && classes.includes('fixed_income')) return null;
+    return classes[0];
+}
+
+/** The fund's asset class: override → disclosure (type, then classification text) → registered name → null. */
+export function primaryAssetClassOf(row: NameRow & { fund_id?: unknown; fund_type?: unknown; fund_type_en?: unknown; classification_en?: unknown; classification?: unknown }): PrimaryAssetClass | null {
+    const override = taxonomyOverrideFor(row.fund_id);
+    if (override) return override.primary_asset_class;
+    const disclosed =
+        normalizeVendorType(row.fund_type) ?? normalizeVendorType(row.fund_type_en) ??
+        normalizeVendorType(row.classification_en) ?? normalizeVendorType(row.classification);
+    if (disclosed) return disclosed;
+    const hit = nameTypeHits(row)[0];
+    return hit ? toClass(hit) : null;
+}
+
+const STRATEGY_PATTERNS: Array<[StrategyTag, RegExp]> = [
+    ['daily_yield', new RegExp(`\\bdaily\\b|\\bkol\\s*youm\\b|\\byoum\\s*b\\s*youm\\b|${arWord('يومي', 'اليومي', 'يومية', 'اليومية')}|كل\\s*يوم|يوم\\s*ب\\s*يوم|يوم\\s*بيوم`, 'i')],
+    ['capital_protected', new RegExp(`\\bcapital\\s*(?:protect|guarant)\\w*|\\bprotected\\b|${arWord('حماية', 'ضمان', 'مضمون', 'المضمون', 'محمي')}`, 'i')],
+    ['periodic_income', new RegExp(`\\bperiodic\\b|\\bincome\\s+distribut\\w*|${arWord('دوري', 'الدوري', 'دورية', 'الدورية', 'توزيعات')}`, 'i')],
+];
+/** Strategy properties, orthogonal to the asset class: from the registered name plus any disposition's tags. */
+export function strategyTagsOf(row: NameRow & { fund_id?: unknown }): StrategyTag[] {
+    const tags = new Set<StrategyTag>();
+    for (const t of nameTypeHits(row)) if (t === 'index' || t === 'sector') tags.add(t);
+    const hay = nameHay(row);
+    if (hay.trim()) for (const [tag, re] of STRATEGY_PATTERNS) if (re.test(hay)) tags.add(tag);
+    const d = taxonomyDispositionFor(row.fund_id);
+    if (d) for (const t of d.strategy_tags) tags.add(t);
+    return [...tags];
+}
+/** Shariah compliance as the manager declares it (flag or the registered name), separate from the class. */
+export function shariaCompliantOf(row: NameRow & { is_shariah?: unknown }): boolean {
+    return row.is_shariah === true || row.is_shariah === 'true' || row.is_shariah === 1 || classifyFundByName(row).shariah;
+}
+
+const CLASS_LABEL_EN: Record<PrimaryAssetClass, string> = {
+    money_market: 'Money Market Fund', fixed_income: 'Fixed Income Fund', equity: 'Equity Fund', balanced: 'Balanced Fund', gold: 'Gold Fund',
+};
+
+/**
+ * Resolve a fund row's taxonomy IN PLACE — the one entry point every loader
+ * calls (getFund, getAllFundsRanked, /api/v1/funds, /api/v1/funds/{id}).
+ * Sets `fund_type` (override → disclosed → name), `fund_type_source`
+ * (override|disclosed|name|none), the orthogonal dimensions, and the audit
+ * fields `taxonomy_conflict` / `taxonomy_reviewed`. Under an override the
+ * vendor's contradicting classification text is replaced too, so no surface
+ * can print the vendor's word beside the corrected type.
+ */
+export type FundTaxonomyFields = {
+    fund_type: string | null;
+    fund_type_source: 'override' | 'disclosed' | 'name' | 'none';
+    primary_asset_class: PrimaryAssetClass | null;
+    strategy_tags: StrategyTag[];
+    sharia_compliant: boolean;
+    /** A vendor type the registered name contradicts, with no recorded disposition — else null. */
+    taxonomy_conflict: PrimaryAssetClass | null;
+    taxonomy_reviewed: boolean;
+    taxonomy_evidence?: string[];
+};
+export function applyFundTaxonomy<T extends Record<string, unknown>>(row: T): T & FundTaxonomyFields {
+    const r = row as Record<string, unknown>;
+    const override = taxonomyOverrideFor(r.fund_id);
+    if (override) {
+        r.fund_type = override.primary_asset_class;
+        r.fund_type_source = 'override';
+        for (const k of ['classification', 'classification_en'] as const) {
+            if (typeof r[k] === 'string' && (r[k] as string).trim()) r[k] = CLASS_LABEL_EN[override.primary_asset_class];
+        }
+        if (typeof r.fund_type_en === 'string' && r.fund_type_en.trim()) r.fund_type_en = override.primary_asset_class;
+        r.taxonomy_evidence = override.evidence;
+    } else {
+        const type = fundTypeSlug(r);
+        if (type.source === 'name') r.fund_type = type.slug;
+        r.fund_type_source = type.source;
+    }
+    r.primary_asset_class = primaryAssetClassOf(r);
+    r.strategy_tags = strategyTagsOf(r);
+    r.sharia_compliant = shariaCompliantOf(r);
+    r.taxonomy_conflict = nameTypeConflict(r);
+    r.taxonomy_reviewed = taxonomyDispositionFor(r.fund_id) !== null;
+    return row as T & FundTaxonomyFields;
 }

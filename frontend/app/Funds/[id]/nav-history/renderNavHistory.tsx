@@ -6,6 +6,7 @@ import { SITE_URL, absUrl, fundPath, idFromParam, canonicalRedirectTarget, OG_DE
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { NAVHIST, t, type Lang } from '@/content/symbol-pages-i18n';
+import { fundSourceLabel } from '@/lib/fund-sources';
 
 /**
  * /Funds/{id}-{slug}/nav-history and the Arabic twin.
@@ -157,19 +158,14 @@ export async function renderNavHistory(id: string, lang: Lang) {
     // PROVENANCE (audit 2026-09-05): which source vouched for each point, from
     // which document, and when it was ingested — read from nav_history itself.
     // Sources are named as the pipeline tags them; nothing is inferred.
-    const SOURCE_LABEL: Record<string, { en: string; ar: string }> = {
-        mubasher_csv: { en: 'Mubasher per-fund price file (primary)', ar: 'ملف أسعار الصندوق من مباشر (المصدر الأساسي)' },
-        mubasher_api: { en: 'Mubasher chart API (fallback)', ar: 'واجهة الرسم البياني من مباشر (احتياطي)' },
-        mubasher_list_api: { en: 'Mubasher fund-list API (latest price)', ar: 'قائمة الصناديق من مباشر (آخر سعر)' },
-        eima_report: { en: 'EIMA weekly performance report (published NAV)', ar: 'تقرير الأداء الأسبوعي لجمعية إدارة الاستثمار (قيمة منشورة)' },
-        eima_derived: { en: 'EIMA weekly report (NAV reconstructed from published return)', ar: 'تقرير جمعية إدارة الاستثمار (قيمة مستخرجة من العائد المنشور)' },
-    };
+    // Labels live in lib/fund-sources.ts, shared with the fund profile's
+    // provenance row, so both pages name a source identically.
     const bySource = new Map<string, number>();
     for (const p of points) bySource.set(p.source ?? 'unrecorded', (bySource.get(p.source ?? 'unrecorded') ?? 0) + 1);
     const provenance = [...bySource.entries()].sort((a, b) => b[1] - a[1]);
     const latestIngest = points.reduce<string | null>((mx, p) => (p.ingested_at && (!mx || p.ingested_at > mx) ? p.ingested_at : mx), null);
     const sourceUrls = [...new Set(points.map((p) => p.source_url).filter((u): u is string => !!u))];
-    const sourceName = (k: string) => (SOURCE_LABEL[k] ? SOURCE_LABEL[k][lang] : k === 'unrecorded' ? (isAr ? 'غير مسجَّل (قبل تتبّع المصدر)' : 'unrecorded (before source tracking)') : k);
+    const sourceName = (k: string) => fundSourceLabel(k, lang) ?? k;
 
     const dataset = {
         '@context': 'https://schema.org',

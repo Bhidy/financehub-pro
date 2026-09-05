@@ -65,7 +65,30 @@ name carries the denomination and wins when the store says EGP. Applied in the h
 and fund page.
 
 Classification: `categoryOfFund()` falls back to the fund's registered name when the disclosure has
-no type (106 of 207 funds had none); the API exposes `fund_type_source: disclosed|name|none`.
+no type (106 of 207 funds had none); the API exposes `fund_type_source: disclosed|name|none|override`.
+
+**Taxonomy overrides and orthogonal dimensions (chief re-audit, 2026-09-05).** The vendor's type is
+sometimes plainly wrong — BANK NXT's money-market fund (2689) was filed as "balanced", two daily-yield
+cash funds (2665, 5958) as "fixed income" — and a wrong input cannot be repaired by a matcher.
+`content/fund-taxonomy-overrides.json` holds hand-verified dispositions, each naming the vendor value
+it judges and citing evidence (regulator/issuer document, else two independent press records):
+`override` replaces the type, `keep_vendor` records a reviewed conflict where the vendor is right
+(6411 Granite: «النقدي بالجنيه» is the EGP cash class of a fixed-income fund). `applyFundTaxonomy()`
+(`content/fund-categories.ts`) is the ONE place a row's type is resolved — `getFund`,
+`getAllFundsRanked`, `/api/v1/funds` and `/api/v1/funds/{id}` all run it — and it exposes the
+dimensions separately: `primary_asset_class` (money_market | fixed_income | equity | balanced | gold),
+`strategy_tags` (index, sector, daily_yield, capital_protected, periodic_income) and
+`sharia_compliant`. Category URLs keep their single-dimension contract (a Shariah fund's canonical hub
+is the Shariah page); the fund page's "similar funds in the same asset class" module and the API use
+the class. `nameTypeConflict()` flags a disclosed type the registered name contradicts;
+`/api/v1/funds` stamps it as `taxonomy_conflict` and the live audit reports every unreviewed one
+(`FUND_TAXONOMY_CONFLICT`) until it gets a disposition. Gate: `npm run verify:funds` (sections 8–10).
+
+Related funds: the "similar funds" module is a HARD same-class filter (`resolvePeers`,
+`app/Funds/[id]/renderFundPage.tsx`): the vendor's `fund_peers` are kept only when they share the
+fund's `primary_asset_class`, then same currency + Shariah status with one fund per manager, then
+the rest of the class in ranking order. Until 2026-09-05 an equity fund's "same category" module
+listed a money-market fund. The heading says which rule built the list.
 
 ## 3. Ranking eligibility — one engine, stated reasons
 
@@ -168,7 +191,36 @@ Gate: `npm run verify:ssr` (`scripts/test-ssr-truth.ts`). Live: `SSR_COUNT_CONTR
   per-request queries at 250 ms, prints the ILIKE and the API search scan for the record, and checks
   the `market_news` indexes (`published_at DESC`, `(symbol, published_at DESC)`).
 
+## 7. Cross-surface metric contract — one fact, one value (chief re-audit, 2026-09-05)
+
+The Arabic homepage said "114 funds ranked" while the ranking page said 102 of 207: the homepage
+counted every fund with a 12-month number, the ranking page counted the funds `rankingEligibility()`
+stands behind. Both now read the same rows through the same rule, and the contract is machine-checked:
+an element carrying `data-metric="<key>"` (optionally `data-entity="<id>"`) is one fact, and the live
+audit (`scripts/seo/audit.mjs`, `METRIC_DRIFT_ACROSS_SURFACES`, high) fails when the same
+(metric, entity) prints two values on two pages. Values are compared in canonical form
+(`normalizeMetricValue` in `scripts/seo/lib.mjs`: bidi marks, digits, thousands separators and a leading
+`+` neutralised). Tagged today: `ranked_fund_count` and `current_fund_count` (AR home, both ranking
+pages), `lead_fund_return_1y` (AR home, both ranking narratives), `return_1y` per fund (ranking tables,
+fund profile 1Y card). Tag any new surface that prints one of these; never print a metric from a
+second query path.
+
+Also new in the live audit: `AR_PAGE_ENGLISH_SENTENCE` (English prose inside an Arabic document —
+6+ Latin tokens with 2+ lowercase function words), `FOREIGN_LEGACY_ROUTE_LIVE` /
+`FOREIGN_LEGACY_ROUTE_REDIRECTS` (the Saudi legacy symbol routes 7010/7030/2222/9547/8311 must
+404/410 in both languages), `LISTING_STATUS_PAGE_INDEXABLE` (a delisted line's status page must be
+noindex) and `FUND_TAXONOMY_CONFLICT` (§2). The comparison page (`app/Funds/vs/renderFundVs.tsx`)
+now renders every string from the `FUNDVS` dictionary — it shipped "as of", "YTD return", "Yes/No",
+en-GB dates and a whole English fee sentence on `/ar/Funds/vs/*`.
+
 ## Follow-ups not done in this pass
+
+* Multidimensional taxonomy in URLs: the category hubs are still one dimension (Shariah, index and
+  sector are categories beside the asset classes) by URL contract; the API and the related-funds module
+  carry the orthogonal `primary_asset_class` / `strategy_tags` / `sharia_compliant`. A "Shariah money-
+  market funds" style hub would be a new intent page, not a re-mapping.
+* Taxonomy conflicts are reviewed one by one as `FUND_TAXONOMY_CONFLICT` reports them; each needs a
+  prospectus-backed entry in `content/fund-taxonomy-overrides.json`.
 
 * `nav_history` provenance (`source`, `source_url`, `ingested_at`) is live in the writers and the
   schema (self-migrating `NAV_DDL`, CI probe 14.1e); rows written before 2026-09-05 stay

@@ -3,7 +3,7 @@ import { apiError } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
 import { DORMANT_DAYS, MIN_NAV_POINTS, fundCurrency } from '@/lib/fund-stats';
-import { fundTypeSlug } from '@/content/fund-categories';
+import { applyFundTaxonomy } from '@/content/fund-categories';
 import { applyReturnHierarchy } from '@/lib/public-data';
 
 /**
@@ -107,12 +107,13 @@ export async function GET(request: Request) {
             // Flag NAVs older than 10 days so clients can show a "delayed" cue (the fund
             // detail page renders an amber badge). Keeps the universe rule honest.
             const is_stale = Number.isFinite(asOfMs) ? Date.now() - asOfMs > 10 * 86_400_000 : false;
-            const type = fundTypeSlug(r);
+            // One taxonomy resolver (override → disclosure → name) — also sets
+            // primary_asset_class, strategy_tags, sharia_compliant and the audit
+            // field taxonomy_conflict the live crawler reads.
+            applyFundTaxonomy(r);
             return {
                 ...r,
                 currency: fundCurrency(r),
-                fund_type: type.slug || r.fund_type,
-                fund_type_source: type.source,
                 as_of_date: asOf,
                 is_stale,
                 last_updated: asOf ?? r.last_updated,

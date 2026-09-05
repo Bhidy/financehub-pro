@@ -11,14 +11,22 @@ export default function FundsNarrativeSections({ lang, n }: { lang: Lang; n: Fun
             {children}
         </h2>
     );
-    const List = ({ items }: { items: NarrativeItem[] }) => (
+    // `lead`: the first item of the overall top-5 is the site's 12-month leader;
+    // its figure is tagged so the live audit can assert the homepage prints the
+    // same value (METRIC_DRIFT_ACROSS_SURFACES).
+    const List = ({ items, lead = false }: { items: NarrativeItem[]; lead?: boolean }) => (
         <ol className="mt-3 space-y-2">
             {items.map((x, i) => (
                 <li key={x.id} className="flex flex-wrap items-baseline gap-x-2 text-[15px] leading-relaxed">
                     <span className="font-mono text-xs text-muted">{i + 1}.</span>
                     <Link href={encodeURI(x.href)} prefetch={false} className="font-semibold text-starta-darkTeal hover:underline">{x.name}</Link>
                     <span className="text-muted">{ar ? 'عائد 12 شهرًا' : '1-year return'}</span>
-                    <strong className={x.ret1y !== null && x.ret1y < 0 ? 'text-red-700' : 'text-emerald-700'}>{pct(x.ret1y, lang)}</strong>
+                    <strong
+                        className={x.ret1y !== null && x.ret1y < 0 ? 'text-red-700' : 'text-emerald-700'}
+                        data-metric={lead && i === 0 ? 'lead_fund_return_1y' : undefined}
+                    >
+                        {pct(x.ret1y, lang)}
+                    </strong>
                     {x.issuer && <span className="text-sm text-muted">· {x.issuer}</span>}
                 </li>
             ))}
@@ -30,7 +38,7 @@ export default function FundsNarrativeSections({ lang, n }: { lang: Lang; n: Fun
             {n.top5.length >= 3 && (
                 <section className="mt-8" aria-label={ar ? 'أفضل 5 صناديق' : 'Best 5 funds'}>
                     <H>{ar ? 'أفضل 5 صناديق استثمار في مصر 2026' : 'Best 5 mutual funds in Egypt (2026)'}</H>
-                    <List items={n.top5} />
+                    <List items={n.top5} lead />
                 </section>
             )}
             {n.moneyMarket.length > 0 && (

@@ -65,7 +65,7 @@ export default async function LargestCompaniesArPage() {
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { url: '/ar/companies', label: 'الشركات' }, { label: 'الأكبر حسب القيمة السوقية' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/companies', label: 'الشركات' }, { label: 'الأكبر حسب القيمة السوقية' }]} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/companies', label: 'الشركات' }, { label: 'الأكبر حسب القيمة السوقية' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أكبر الشركات في البورصة المصرية حسب القيمة السوقية</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

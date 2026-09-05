@@ -143,7 +143,7 @@ export default async function BestFundsPage() {
         <PublicPageShell altHref="/ar/Funds/best-mutual-funds-egypt-2026">
             <JsonLd data={itemList} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/Funds', label: 'Mutual Funds' }, { label: 'Best Funds in Egypt 2026' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { href: '/Funds', label: 'Mutual Funds' }, { label: 'Best Funds in Egypt 2026' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/Funds', label: 'Mutual Funds' }, { label: 'Best Funds in Egypt 2026' }]} />
 
             <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Best-Performing Mutual Funds in Egypt (2026)</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

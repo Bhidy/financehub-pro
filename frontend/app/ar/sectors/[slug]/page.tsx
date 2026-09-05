@@ -85,7 +85,7 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
         <PublicPageShell lang="ar" altHref={`/sectors/${slugify(match.sector_name)}`}>
             <JsonLd data={itemListJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { url: '/ar/sectors', label: 'القطاعات' }, { label: ar }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/sectors', label: 'القطاعات' }, { label: ar }]} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/sectors', label: 'القطاعات' }, { label: ar }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">قطاع {ar} — الشركات المدرجة في البورصة المصرية</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

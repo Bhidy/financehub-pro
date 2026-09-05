@@ -71,7 +71,7 @@ export default async function LargestCompaniesPage() {
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/companies', label: 'Companies' }, { label: 'Largest by Market Cap' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { href: '/companies', label: 'Companies' }, { label: 'Largest by Market Cap' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/companies', label: 'Companies' }, { label: 'Largest by Market Cap' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Largest Companies on the EGX by Market Cap</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

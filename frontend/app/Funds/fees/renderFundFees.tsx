@@ -222,7 +222,7 @@ export async function renderFundFees(lang: Lang) {
                     variableMeasured: t(C.fee, lang),
                 }}
             />
-            <Breadcrumbs items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
+            <Breadcrumbs lang={lang} items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">{t(FEES.h1, lang)}</h1>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">

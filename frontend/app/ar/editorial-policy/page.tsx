@@ -31,7 +31,7 @@ export default function EditorialPolicyArPage() {
         <PublicPageShell lang="ar" altHref="/editorial-policy">
             <JsonLd data={{ '@context': 'https://schema.org', '@type': 'AboutPage', name: 'سياسة التحرير — ستارتا ماركتس', url: `${SITE_URL}/ar/editorial-policy`, inLanguage: 'ar', mainEntity: { '@id': `${SITE_URL}/#organization` } }} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'سياسة التحرير' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'الرئيسية' }, { label: 'سياسة التحرير' }]} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'سياسة التحرير' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">سياسة التحرير</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

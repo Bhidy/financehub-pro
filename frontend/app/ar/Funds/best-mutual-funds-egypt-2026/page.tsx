@@ -121,7 +121,7 @@ export default async function BestFundsArPage() {
         <PublicPageShell lang="ar" altHref="/Funds/best-mutual-funds-egypt-2026">
             <JsonLd data={itemList} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'أفضل صناديق الاستثمار في مصر' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'الرئيسية' }, { label: 'أفضل صناديق الاستثمار في مصر' }]} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'أفضل صناديق الاستثمار في مصر' }]} />
 
             <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">أفضل صناديق الاستثمار في مصر 2026</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

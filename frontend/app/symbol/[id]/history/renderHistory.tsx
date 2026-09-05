@@ -182,7 +182,7 @@ export async function renderHistory(id: string, lang: Lang) {
                     SITE_URL
                 )}
             />
-            <Breadcrumbs
+            <Breadcrumbs lang={lang}
                 items={[
                     { href: '/', label: t(NAV.home, lang) },
                     { href: '/companies', label: t(NAV.companies, lang) },

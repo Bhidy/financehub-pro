@@ -177,7 +177,7 @@ export async function renderTechnicals(id: string, lang: Lang) {
                     })),
                 }}
             />
-            <Breadcrumbs items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
+            <Breadcrumbs lang={lang} items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">{t(TECHNICALS.h1(name, symbol), lang)}</h1>
 

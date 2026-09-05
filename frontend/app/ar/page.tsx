@@ -14,7 +14,9 @@ import JsonLd from '@/components/seo/JsonLd';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'البورصة المصرية اليوم — أسعار الأسهم والمؤشرات والأخبار مباشرة',
+    // The Arabic brand leads: "ستارتا" had 16 impressions at position 6.6 and no
+    // clicks in 28 days — the homepage was not being read as the brand entity.
+    title: { absolute: 'ستارتا ماركتس | البورصة المصرية اليوم — الأسهم والصناديق والأخبار' },
     description:
         'تابع البورصة المصرية (EGX) اليوم: مؤشر EGX30 المباشر، أسعار الأسهم، الأكثر ارتفاعًا وانخفاضًا، صناديق الاستثمار، وأخبار السوق — بالعربية، محدَّث كل 15 دقيقة.',
     alternates: {
@@ -79,7 +81,7 @@ export default async function ArHome() {
                     isPartOf: { '@id': `${SITE_URL}/#website` },
                 }}
             />
-            <Breadcrumbs items={[{ label: 'البورصة المصرية اليوم' }]} />
+            <Breadcrumbs lang="ar" items={[{ label: 'البورصة المصرية اليوم' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">البورصة المصرية اليوم</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

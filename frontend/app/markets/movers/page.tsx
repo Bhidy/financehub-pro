@@ -107,7 +107,7 @@ export default async function MoversPage() {
                     SITE_URL
                 )}
             />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'EGX Movers' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'EGX Movers' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 EGX Movers Today — Top Gainers, Losers &amp; Most Active

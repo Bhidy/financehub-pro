@@ -57,7 +57,7 @@ export default async function SectorsArPage() {
         <PublicPageShell lang="ar" altHref="/sectors">
             <JsonLd data={itemListJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'القطاعات' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'الرئيسية' }, { label: 'القطاعات' }]} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'القطاعات' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">قطاعات البورصة المصرية (EGX)</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

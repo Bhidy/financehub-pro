@@ -29,7 +29,7 @@ export default function CorrectionsPage() {
                 }}
             />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { label: 'Corrections' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Corrections' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'Corrections' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Corrections Policy</h1>
 

@@ -72,7 +72,7 @@ export default async function CompaniesPage() {
                     SITE_URL
                 )}
             />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'EGX Listed Companies' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'EGX Listed Companies' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Egyptian Exchange (EGX) Listed Companies</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

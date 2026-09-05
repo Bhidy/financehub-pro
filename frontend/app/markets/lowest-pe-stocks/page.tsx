@@ -63,7 +63,7 @@ export default async function LowestPeStocksPage() {
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/companies', label: 'Companies' }, { label: 'Lowest P/E' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { href: '/companies', label: 'Companies' }, { label: 'Lowest P/E' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/companies', label: 'Companies' }, { label: 'Lowest P/E' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Lowest P/E Stocks on the EGX</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

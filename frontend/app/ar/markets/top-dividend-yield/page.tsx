@@ -54,7 +54,7 @@ export default async function TopDividendYieldArPage() {
         <PublicPageShell lang="ar" altHref="/markets/top-dividend-yield">
             <JsonLd data={itemList} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'أعلى توزيعات الأرباح' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'الرئيسية' }, { label: 'أعلى توزيعات الأرباح' }]} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'أعلى توزيعات الأرباح' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أعلى الأسهم توزيعًا للأرباح في البورصة المصرية</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

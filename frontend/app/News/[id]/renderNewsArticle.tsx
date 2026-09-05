@@ -181,7 +181,7 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
                     SITE_URL
                 )}
             />
-            <Breadcrumbs
+            <Breadcrumbs lang={lang}
                 items={[
                     { href: '/', label: arabic ? 'الرئيسية' : 'Home' },
                     { href: '/News', label: arabic ? 'أخبار السوق' : 'Market News' },

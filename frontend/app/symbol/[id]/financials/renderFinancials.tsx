@@ -149,7 +149,7 @@ export async function renderFinancials(id: string, lang: Lang) {
         <PublicPageShell lang={lang} altHref={encodeURI(symbolTabPath(symbol, 'financials', isAr ? 'en' : 'ar', ticker.name_ar))} persistLang>
             <JsonLd data={breadcrumbJsonLd(breadcrumbItems, SITE_URL)} />
             <JsonLd data={datasetJsonLd} />
-            <Breadcrumbs items={breadcrumbItems} />
+            <Breadcrumbs lang={lang} items={breadcrumbItems} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 {t(FINANCIALS.h1(name, symbol), lang)}

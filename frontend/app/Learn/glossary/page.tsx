@@ -69,7 +69,7 @@ export default function GlossaryIndexPage() {
                     SITE_URL
                 )}
             />
-            <Breadcrumbs items={crumbs} />
+            <Breadcrumbs lang="en" items={crumbs} />
 
             <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">
                 Financial Glossary — EGX &amp; Investing Terms

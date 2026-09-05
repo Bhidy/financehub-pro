@@ -67,7 +67,7 @@ export default function GlossaryIndexArabicPage() {
                     SITE_URL
                 )}
             />
-            <Breadcrumbs items={crumbs} />
+            <Breadcrumbs lang="ar" items={crumbs} />
 
             <div lang="ar">
                 <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">

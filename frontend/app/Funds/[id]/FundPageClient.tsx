@@ -468,9 +468,12 @@ export default function FundPageClient(props: FundClientData) {
                         ) : (
                             <p className="ax-pending mt-5">{t.similarFundsEmpty}</p>
                         )}
-                        <p className="mt-5 text-sm">
+                        <p className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm">
                             <Link href={lang === 'ar' ? '/ar/Funds' : '/Funds'} className="font-semibold text-starta-teal hover:underline">
                                 {t.allFunds} →
+                            </Link>
+                            <Link href={lang === 'ar' ? '/ar/Funds/best-mutual-funds-egypt-2026' : '/Funds/best-mutual-funds-egypt-2026'} className="font-semibold text-starta-teal hover:underline">
+                                {lang === 'ar' ? 'ترتيب أفضل صناديق الاستثمار في مصر 2026' : 'Best mutual funds in Egypt 2026, ranked'} →
                             </Link>
                         </p>
                     </section>

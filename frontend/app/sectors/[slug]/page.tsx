@@ -139,7 +139,7 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
                     SITE_URL
                 )}
             />
-            <Breadcrumbs
+            <Breadcrumbs lang="en"
                 items={[
                     { href: '/', label: 'Home' },
                     { href: '/sectors', label: 'EGX Sectors' },

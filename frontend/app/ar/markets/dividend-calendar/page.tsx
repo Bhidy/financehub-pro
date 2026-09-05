@@ -110,7 +110,7 @@ export default async function DividendCalendarArPage() {
         <PublicPageShell lang="ar" altHref="/markets/dividend-calendar">
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'مواعيد التوزيعات' }], SITE_URL)} />
             <JsonLd data={{ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQS.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }} />
-            <Breadcrumbs items={[{ href: '/', label: 'الرئيسية' }, { label: 'مواعيد التوزيعات' }]} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'مواعيد التوزيعات' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">مواعيد توزيعات الأرباح في البورصة المصرية — القادمة والأخيرة</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

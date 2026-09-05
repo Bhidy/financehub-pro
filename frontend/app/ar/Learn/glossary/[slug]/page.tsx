@@ -104,7 +104,7 @@ export default async function GlossaryTermArabicPage({ params }: Props) {
                     SITE_URL
                 )}
             />
-            <Breadcrumbs items={crumbs} />
+            <Breadcrumbs lang="ar" items={crumbs} />
 
             <article lang="ar" className="max-w-3xl">
                 <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">

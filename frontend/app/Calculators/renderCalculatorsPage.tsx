@@ -82,7 +82,7 @@ export function renderCalculatorsPage(lang: Lang) {
         <PublicPageShell lang={lang} altHref={altHref} persistLang>
             <JsonLd data={appJsonLd} />
             <JsonLd data={breadcrumbJsonLd(crumbLd, SITE_URL)} />
-            <Breadcrumbs items={crumbs} />
+            <Breadcrumbs lang={lang} items={crumbs} />
             <CalculatorsClient labels={labels} lang={lang} />
         </PublicPageShell>
     );

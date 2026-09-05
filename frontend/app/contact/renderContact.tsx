@@ -164,7 +164,7 @@ export function renderContact(lang: Lang) {
                 }}
             />
             <JsonLd data={breadcrumbJsonLd(crumbs, SITE_URL)} />
-            <Breadcrumbs items={crumbs} />
+            <Breadcrumbs lang={lang} items={crumbs} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">{t.h1}</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-main">{t.lede}</p>

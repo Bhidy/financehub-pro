@@ -50,6 +50,7 @@ const FOOTER_LABELS: Record<Lang, Record<string, string>> = {
         companies: 'EGX Companies', about: 'About', contact: 'Contact',
         privacy: 'Privacy Policy', terms: 'Terms of Service',
         editorial: 'Editorial Policy', corrections: 'Corrections', methodology: 'Methodology',
+        col4: 'Funds', bestFunds: 'Best Funds 2026', pricesToday: 'Fund Prices Today', providers: 'Fund Providers', categories: 'Fund Categories', riskTable: 'Risk League Table',
     },
     ar: {
         desc: 'منصة الصناديق الاستثمارية في السوق المصري بالعربية والإنجليزية: أسعار موثّقة لصافي قيمة الوحدة، ومقارنة وبطاقات تقييم للصناديق، وأخبار السوق، وأكاديمية تعليمية، وحاسبات استثمارية.',
@@ -64,6 +65,7 @@ const FOOTER_LABELS: Record<Lang, Record<string, string>> = {
         companies: 'الشركات المدرجة', about: 'من نحن', contact: 'اتصل بنا',
         privacy: 'سياسة الخصوصية', terms: 'شروط الاستخدام',
         editorial: 'سياسة التحرير', corrections: 'التصحيحات', methodology: 'المنهجية',
+        col4: 'الصناديق', bestFunds: 'أفضل الصناديق 2026', pricesToday: 'أسعار الصناديق اليوم', providers: 'شركات إدارة الصناديق', categories: 'فئات الصناديق', riskTable: 'جدول المخاطر',
     },
 };
 
@@ -262,7 +264,7 @@ export default function PublicPageShell({
                         <div className="space-y-4">
                             <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col1}</h4>
                             <ul className="space-y-2.5 text-sm">
-                                <li><Link href="/" prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.home}</Link></li>
+                                <li><Link href={localizedHref('/', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.home}</Link></li>
                                 <li><Link href={localizedHref('/Funds', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.funds}</Link></li>
                             </ul>
                         </div>
@@ -283,7 +285,13 @@ export default function PublicPageShell({
                             </ul>
                         </div>
                         <div className="space-y-4">
+                            <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col4}</h4>
                             <ul className="space-y-2.5 text-sm">
+                                <li><Link href={localizedHref('/Funds/best-mutual-funds-egypt-2026', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.bestFunds}</Link></li>
+                                <li><Link href={localizedHref('/Funds/prices-today', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.pricesToday}</Link></li>
+                                <li><Link href={localizedHref('/Funds/providers', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.providers}</Link></li>
+                                <li><Link href={localizedHref('/Funds/categories', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.categories}</Link></li>
+                                <li><Link href={localizedHref('/Funds/risk', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.riskTable}</Link></li>
                                 <li><a href="mailto:support@startamarkets.com" className="text-muted hover:text-starta-darkTeal transition-colors font-medium">support@startamarkets.com</a></li>
                             </ul>
                         </div>
@@ -314,7 +322,14 @@ export default function PublicPageShell({
 }
 
 /** Linked breadcrumb trail in the site's font-mono tracked style. */
-export function Breadcrumbs({ items }: { items: Array<{ href?: string; label: string }> }) {
+/**
+ * `lang`: on an Arabic page every crumb href is localised through
+ * localizedHref(), so "الرئيسية" goes to /ar and "أخبار السوق" to /ar/News.
+ * A 209-page crawl (2026-09-05) found Arabic news, glossary, sector, symbol
+ * and fund-comparison pages all sending their breadcrumb links — and their
+ * PageRank — into the English tree, while the Arabic hubs got almost none.
+ */
+export function Breadcrumbs({ items, lang }: { items: Array<{ href?: string; label: string }>; lang?: Lang }) {
     return (
         <nav aria-label="Breadcrumb" className="mb-6 text-xs font-mono uppercase tracking-widest text-muted">
             <ol className="flex flex-wrap items-center gap-1.5">
@@ -322,7 +337,7 @@ export function Breadcrumbs({ items }: { items: Array<{ href?: string; label: st
                     <li key={i} className="flex items-center gap-1.5">
                         {i > 0 && <span aria-hidden className="opacity-50">/</span>}
                         {item.href ? (
-                            <Link href={item.href} prefetch={false} className="transition-colors hover:text-starta-darkTeal">
+                            <Link href={lang ? localizedHref(item.href, lang) : item.href} prefetch={false} className="transition-colors hover:text-starta-darkTeal">
                                 {item.label}
                             </Link>
                         ) : (

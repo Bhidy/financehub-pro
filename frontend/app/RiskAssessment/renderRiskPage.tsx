@@ -86,7 +86,7 @@ export function renderRiskPage(lang: Lang) {
         <PublicPageShell lang={lang} altHref={altHref} persistLang>
             <JsonLd data={webAppJsonLd} />
             <JsonLd data={breadcrumbJsonLd(crumbs, SITE_URL)} />
-            <Breadcrumbs items={crumbs} />
+            <Breadcrumbs lang={lang} items={crumbs} />
             <RiskAssessmentClient lang={lang} />
             {/* The published methodology, server-rendered. The wizard is a
                 client component, so before this the server sent under 200 words

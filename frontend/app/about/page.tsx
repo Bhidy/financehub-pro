@@ -42,7 +42,7 @@ export default function AboutPage() {
                 }}
             />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { label: 'About' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'About' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'About' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">About Starta Markets</h1>
 

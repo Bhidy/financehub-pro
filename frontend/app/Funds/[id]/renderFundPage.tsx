@@ -594,7 +594,7 @@ export async function renderFundPage(idParam: string, lang: Lang) {
                     }}
                 />
             )}
-            <Breadcrumbs items={crumbs} />
+            <Breadcrumbs lang={lang} items={crumbs} />
             {/* Machine-readable status for the live audit: a page that DECLARES
                 dormancy is honest about a years-old NAV, not stale. */}
             <div data-fund-status={data.dormant ? 'dormant' : 'active'}>

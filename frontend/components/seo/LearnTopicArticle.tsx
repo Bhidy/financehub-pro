@@ -112,7 +112,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     SITE_URL
                 )}
             />
-            <Breadcrumbs items={crumbs} />
+            <Breadcrumbs lang={lang} items={crumbs} />
 
 
             {coverImage && (

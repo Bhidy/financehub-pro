@@ -92,7 +92,7 @@ export default async function GlossaryTermPage({ params }: Props) {
                     SITE_URL
                 )}
             />
-            <Breadcrumbs items={crumbs} />
+            <Breadcrumbs lang="en" items={crumbs} />
 
             <article className="max-w-3xl">
                 <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">

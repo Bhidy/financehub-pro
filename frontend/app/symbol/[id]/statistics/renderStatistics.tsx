@@ -193,7 +193,7 @@ export async function renderStatistics(id: string, lang: Lang) {
         <PublicPageShell lang={lang} altHref={encodeURI(symbolTabPath(symbol, 'statistics', isAr ? 'en' : 'ar', ticker.name_ar))} persistLang>
             <JsonLd data={dataset} />
             <JsonLd data={breadcrumbJsonLd(crumbs.map((c) => ({ url: c.url, label: c.label })), SITE_URL)} />
-            <Breadcrumbs items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
+            <Breadcrumbs lang={lang} items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
 
             <h1 className="text-2xl font-extrabold tracking-tight text-main sm:text-3xl">
                 {t(STATISTICS.h1(name, symbol), lang)}

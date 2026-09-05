@@ -225,7 +225,7 @@ export default async function DividendCalendarPage() {
                     })),
                 }}
             />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Dividend Calendar' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'Dividend Calendar' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 EGX Dividend Calendar — Upcoming &amp; Recent Payouts

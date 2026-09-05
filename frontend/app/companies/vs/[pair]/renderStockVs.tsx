@@ -316,7 +316,7 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
                     })),
                 }}
             />
-            <Breadcrumbs items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
+            <Breadcrumbs lang={lang} items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
 
             <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">
                 {t(STOCKVS.h1(A.name, B.name), lang)}

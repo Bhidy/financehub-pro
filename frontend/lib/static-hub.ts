@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { localizedHref } from '@/lib/localized-href';
 import path from 'node:path';
 
 /**
@@ -214,6 +215,19 @@ export async function renderStaticHub(opts: StaticHubOptions): Promise<Response>
         if (html === before) {
             console.error(`[static-hub] ${opts.file}: could not rewrite <html lang>`);
         }
+    }
+    if (opts.lang === 'ar') {
+        // Every shell anchor to a twinned route points at the Arabic twin. The
+        // designed shells are written once, in English: an Arabic category hub
+        // rendered from marketplace.html shipped a header reading HOME · MUTUAL
+        // FUNDS · MARKET NEWS · LEARN that linked /, /Funds, /News and /Learn —
+        // so to a crawler the Arabic hubs had no Arabic parents. Scripts
+        // (starta-nav.js) relabel on load; the server must ship the right
+        // hrefs, because that is what is crawled and what carries PageRank.
+        html = html.replace(/(<a\b[^>]*?\shref=")(\/[^"]*)(")/g, (m, open: string, href: string, close: string) => {
+            if (href.startsWith('/assets') || href.startsWith('/api') || href.startsWith('/_next')) return m;
+            return `${open}${localizedHref(href, 'ar')}${close}`;
+        });
     }
     for (const h of opts.heroText ?? []) {
         const re = new RegExp(`(<(\\w+)[^>]*?)\\s*data-key="${h.dataKey}"([^>]*>)([\\s\\S]*?)(</\\2>)`);

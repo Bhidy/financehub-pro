@@ -68,7 +68,7 @@ export default async function TopDividendYieldPage() {
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { label: 'Top Dividend Yield' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Top Dividend Yield' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'Top Dividend Yield' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Highest Dividend-Yield Stocks on the EGX</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

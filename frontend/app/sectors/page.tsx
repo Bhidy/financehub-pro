@@ -65,7 +65,7 @@ export default async function SectorsPage() {
                     SITE_URL
                 )}
             />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'EGX Sectors' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'EGX Sectors' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Egyptian Exchange (EGX) Sectors</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

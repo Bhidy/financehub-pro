@@ -58,7 +58,7 @@ export default async function CompaniesArPage() {
         <PublicPageShell lang="ar" altHref="/companies">
             <JsonLd data={itemListJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'أسهم البورصة المصرية' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'الرئيسية' }, { label: 'أسهم البورصة المصرية' }]} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'أسهم البورصة المصرية' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أسهم البورصة المصرية (EGX)</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

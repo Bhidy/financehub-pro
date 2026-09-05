@@ -130,7 +130,7 @@ export async function renderMarketScreen(slug: string, lang: 'en' | 'ar') {
         <PublicPageShell lang={lang} altHref={screenPath(screen, isAr ? 'en' : 'ar')} persistLang>
             <JsonLd data={itemList} />
             <JsonLd data={breadcrumbJsonLd(crumbs.map((c) => ({ url: c.url, label: c.label })), SITE_URL)} />
-            <Breadcrumbs items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
+            <Breadcrumbs lang={lang} items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
 
             <h1 className="text-2xl font-extrabold tracking-tight text-main sm:text-3xl">{h1}</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">{intro}</p>

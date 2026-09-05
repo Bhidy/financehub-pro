@@ -191,7 +191,7 @@ export async function renderPricesToday(lang: 'en' | 'ar') {
                 }}
             />
             <JsonLd data={breadcrumbJsonLd(crumbs.map((c) => ({ url: c.url, label: c.label })), SITE_URL)} />
-            <Breadcrumbs items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
+            <Breadcrumbs lang={lang} items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
 
             <h1 className="text-2xl font-extrabold tracking-tight text-main sm:text-3xl">
                 {isAr ? 'أسعار وثائق صناديق الاستثمار اليوم' : 'Egyptian mutual fund prices today'}

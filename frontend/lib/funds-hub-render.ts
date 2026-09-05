@@ -40,6 +40,12 @@ const navFmt = (v: number | null, lang: 'en' | 'ar'): string =>
  */
 export const AR_MARKETPLACE_CLOSING = [
     { dataKey: 'close_title', text: 'ابحث بوضوح ثم تحرك بثقة.', keepKey: true },
+    { dataKey: 'close_lnk_best', text: 'أفضل صناديق الاستثمار في مصر 2026 حسب العائد', keepKey: true },
+    { dataKey: 'close_lnk_prices', text: 'أسعار الصناديق اليوم', keepKey: true },
+    { dataKey: 'close_lnk_providers', text: 'شركات إدارة الصناديق', keepKey: true },
+    { dataKey: 'close_lnk_categories', text: 'فئات الصناديق', keepKey: true },
+    { dataKey: 'close_lnk_risk', text: 'جدول المخاطر', keepKey: true },
+    { dataKey: 'close_lnk_method', text: 'المنهجية', keepKey: true },
     {
         dataKey: 'close_text',
         text: 'تحول ستارتا سوق الصناديق بالكامل إلى تجربة أنظف من الاكتشاف وحتى دراسة كل صندوق.',

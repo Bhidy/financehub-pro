@@ -65,7 +65,7 @@ export default function EditorialPolicyPage() {
                 }}
             />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { label: 'Editorial Policy' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'Home' }, { label: 'Editorial Policy' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'Editorial Policy' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Editorial Policy</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

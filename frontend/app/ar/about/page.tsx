@@ -54,7 +54,7 @@ export default function AboutArPage() {
                 }}
             />
             <JsonLd data={breadcrumbJsonLd(crumbs, SITE_URL)} />
-            <Breadcrumbs items={crumbs} />
+            <Breadcrumbs lang="ar" items={crumbs} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">من نحن</h1>
 

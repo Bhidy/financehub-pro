@@ -311,7 +311,7 @@ export async function renderFundVs(pair: string, lang: Lang) {
                     ],
                 }}
             />
-            <Breadcrumbs items={breadcrumbItems} />
+            <Breadcrumbs lang={lang} items={breadcrumbItems} />
 
             <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">
                 {t(FUNDVS.h1(A.name, B.name), lang)}

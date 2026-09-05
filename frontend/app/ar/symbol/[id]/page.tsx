@@ -321,7 +321,7 @@ export default async function ArabicSymbolPage({ params }: Props) {
                     SITE_URL
                 )}
             />
-            <Breadcrumbs items={crumbs} />
+            <Breadcrumbs lang="ar" items={crumbs} />
 
             <div lang="ar">
                 <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
@@ -436,9 +436,10 @@ export default async function ArabicSymbolPage({ params }: Props) {
                 <nav aria-label={`صفحات بيانات ${symbol}`} className="mt-8 flex flex-wrap gap-2 text-sm font-semibold">
                     {(
                         [
+                            [`${symbolPathAr(symbol, name)}/financials`, 'القوائم المالية'],
+                            [`${symbolPathAr(symbol, name)}/dividends`, 'التوزيعات'],
+                            [`${symbolPathAr(symbol, name)}/history`, 'السعر التاريخي'],
                             [symbolPath(symbol), 'الصفحة الإنجليزية'],
-                            [`${symbolPath(symbol)}/financials`, 'القوائم المالية'],
-                            [`${symbolPath(symbol)}/dividends`, 'التوزيعات'],
                         ] as Array<[string, string]>
                     ).map(([href, label]) => (
                         <Link

@@ -21,7 +21,7 @@ export default function CorrectionsArPage() {
         <PublicPageShell lang="ar" altHref="/corrections">
             <JsonLd data={{ '@context': 'https://schema.org', '@type': 'AboutPage', name: 'سياسة التصحيحات — ستارتا ماركتس', url: `${SITE_URL}/ar/corrections`, inLanguage: 'ar', mainEntity: { '@id': `${SITE_URL}/#organization` } }} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'التصحيحات' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'الرئيسية' }, { label: 'التصحيحات' }]} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'التصحيحات' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">سياسة التصحيحات</h1>
 

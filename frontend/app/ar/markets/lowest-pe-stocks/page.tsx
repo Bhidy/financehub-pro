@@ -58,7 +58,7 @@ export default async function LowestPeStocksArPage() {
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { url: '/ar/companies', label: 'الشركات' }, { label: 'الأقل مكرر ربحية' }], SITE_URL)} />
-            <Breadcrumbs items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/companies', label: 'الشركات' }, { label: 'الأقل مكرر ربحية' }]} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/companies', label: 'الشركات' }, { label: 'الأقل مكرر ربحية' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أرخص أسهم البورصة المصرية حسب مكرر الربحية</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

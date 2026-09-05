@@ -159,8 +159,10 @@ Gate: `npm run verify:ssr` (`scripts/test-ssr-truth.ts`). Live: `SSR_COUNT_CONTR
 
 * **News + glossary read path:** the article page ran a leading-wildcard `headline ILIKE '%…%'`
   (duplicate detection) on every render — no index can serve it — so the answer is cached per article
-  for an hour (tag `seo-news`); the related-articles list reads the cached, body-less news window
-  instead of 60 full rows per render. Hubs, categories and feeds already read the 15-minute window.
+  for an hour (tag `seo-news`); the related-articles list reads a headline-only indexed query
+  (`getLatestNewsLight`) instead of 60 full rows with bodies per render — the 2,500-row cached window
+  was tried first and cost ~0.3 s of Data Cache payload per article, so a large cached blob is not a
+  free read. Hubs, categories and feeds still read the 15-minute window (one read per render).
   Glossary live examples read cached universe sets (funds, tickers) or tiny tables. `qa/egx_audit.py`
   suite 14.5 EXPLAIN-ANALYZEs the article/hub/feed/glossary queries with a real recent article, gates
   per-request queries at 250 ms, prints the ILIKE and the API search scan for the record, and checks

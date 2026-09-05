@@ -70,6 +70,24 @@ export const getNewsArticle = cache(async (id: number): Promise<NewsArticle | nu
     return (result.rows[0] as NewsArticle) || null;
 });
 
+/**
+ * Headline-only recent list for "more news" blocks: the six columns a card
+ * needs, never article_body. One indexed read (published_at DESC, LIMIT n) of a
+ * few kilobytes — the article page first tried the 2,500-row cached window for
+ * this and lost ~0.3 s per render to the Data Cache payload (measured
+ * 2026-09-05), then the 60-row read WITH bodies it replaced; this is the
+ * cheapest of the three.
+ */
+export type NewsCard = Pick<NewsArticle, 'id' | 'symbol' | 'headline' | 'published_at' | 'source_section' | 'image_url'>;
+export const getLatestNewsLight = cache(async (limit = 60): Promise<NewsCard[]> => {
+    const result = await db.query(
+        `SELECT id, symbol, headline, published_at, source_section, image_url
+         FROM market_news ORDER BY published_at DESC LIMIT $1`,
+        [limit]
+    );
+    return result.rows as NewsCard[];
+});
+
 export const getLatestNews = cache(async (limit = 6): Promise<NewsArticle[]> => {
     // Over-fetch, then keep only publishable rows (no off-market stories, one
     // copy per headline) — see primaryNewsRows(). A LIMIT applied before that

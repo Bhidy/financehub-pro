@@ -306,3 +306,12 @@ hubs open with the category's size and its best 12-month performer, like the pro
 verified live with every category section rendering. Lab performance on the Arabic money page (desktop
 Chrome, unthrottled): LCP 809 ms (TTFB 174 ms), CLS 0 — no performance work needed; PSI's daily quota was
 exhausted so mobile field/lab numbers were not measured.
+
+**Seventh pass (same day).** Every glossary term page now carries a "live example from the Egyptian
+market" — today's NAV of the leading fund for NAV/fund terms, the largest company for market cap, the
+largest company's P/E, P/B or dividend yield for those ratios, the EGX 30 level for index and market
+terms, the most active stock for liquidity, the next cash dividend for dividend terms — from the same
+cached reads the rest of the site uses (`lib/glossary-live-example.ts`), linked to the page that carries
+the figure and stamped with its date. Rationale: the Arabic definitional SERPs ("ما هو صافي قيمة الأصول")
+are held by machine-translated Investopedia/TradingView/Investor.gov pages with no local example. Fund
+profile titles are absolute (no brand suffix; the fund name is the title).

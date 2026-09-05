@@ -144,7 +144,8 @@ export async function fundMetadata(idParam: string, lang: Lang): Promise<Metadat
         : `${name} unit price today${navForTitle ? ` — EGP ${navForTitle}` : ''}, returns & fees`;
     const canonical = lang === 'ar' ? canonicalAr : canonicalEn;
     return {
-        title,
+        // absolute: the fund name is the title; the layout's brand suffix only lengthened it.
+        title: { absolute: title },
         description,
         alternates: {
             canonical: encodeURI(canonical),

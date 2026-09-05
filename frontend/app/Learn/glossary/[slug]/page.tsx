@@ -12,6 +12,7 @@ import {
     relatedGlossaryTerms,
 } from '@/content/glossary-terms';
 import { glossaryDepth } from '@/content/glossary-detail';
+import { glossaryLiveExample } from '@/lib/glossary-live-example';
 
 /**
  * English glossary term page at /Learn/glossary/{slug}. Fully static: content
@@ -65,6 +66,7 @@ export default async function GlossaryTermPage({ params }: Props) {
     const path = `/Learn/glossary/${slug}`;
     const related = relatedGlossaryTerms(slug);
     const siteLinks = GLOSSARY_SITE_LINKS[slug] ?? [];
+    const live = await glossaryLiveExample(term.slug, 'en');
     const depth = glossaryDepth(slug, 'en');
 
     const definedTermJsonLd = {
@@ -123,6 +125,16 @@ export default async function GlossaryTermPage({ params }: Props) {
                     </div>
                 )}
 
+                {live && (
+                    <section className="mt-8" aria-label="Live example from the Egyptian market">
+                        <h2 className="text-base font-extrabold tracking-tight text-main">Live example from the Egyptian market</h2>
+                        <p className="mt-1.5 leading-relaxed text-muted">
+                            {live.text}{' '}
+                            <Link href={encodeURI(live.href)} prefetch={false} className="font-semibold text-starta-darkTeal hover:underline">Details →</Link>
+                        </p>
+                        {live.asOf && <p className="mt-1 text-xs text-muted">Data as of <time dateTime={live.asOf}>{live.asOf}</time>; refreshes with every session or disclosure.</p>}
+                    </section>
+                )}
                 {siteLinks.length > 0 && (
                     <div className="mt-6 rounded-xl border border-teal-100 bg-teal-50 p-4">
                         <p className="text-sm font-bold uppercase tracking-[0.12em] text-muted">

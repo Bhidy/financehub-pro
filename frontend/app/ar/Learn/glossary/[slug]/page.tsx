@@ -13,6 +13,7 @@ import {
     relatedGlossaryTerms,
 } from '@/content/glossary-terms';
 import { glossaryDepth } from '@/content/glossary-detail';
+import { glossaryLiveExample } from '@/lib/glossary-live-example';
 
 /**
  * Arabic glossary term page. Canonical URL carries the ARABIC-term slug:
@@ -75,6 +76,7 @@ export default async function GlossaryTermArabicPage({ params }: Props) {
     if (redirectTarget) permanentRedirect(redirectTarget);
     const related = relatedGlossaryTerms(term.slug);
     const siteLinks = GLOSSARY_SITE_LINKS[term.slug] ?? [];
+    const live = await glossaryLiveExample(term.slug, 'ar');
     // term.slug, NOT slug: the Arabic URL carries the Arabic slug, while
     // GLOSSARY_DETAIL is keyed by the canonical English slug — the same key
     // GLOSSARY_SITE_LINKS uses one line above.
@@ -136,6 +138,16 @@ export default async function GlossaryTermArabicPage({ params }: Props) {
                     </div>
                 )}
 
+                {live && (
+                    <section className="mt-8" aria-label="مثال حي من السوق المصري">
+                        <h2 className="text-base font-extrabold tracking-tight text-main">مثال حي من السوق المصري</h2>
+                        <p className="mt-1.5 leading-relaxed text-muted">
+                            {live.text}{' '}
+                            <Link href={encodeURI(live.href)} prefetch={false} className="font-semibold text-starta-darkTeal hover:underline">التفاصيل ←</Link>
+                        </p>
+                        {live.asOf && <p className="mt-1 text-xs text-muted">البيانات بتاريخ <time dateTime={live.asOf}>{live.asOf}</time>؛ تتحدث مع كل جلسة أو إفصاح.</p>}
+                    </section>
+                )}
                 {siteLinks.length > 0 && (
                     <div className="mt-6 rounded-xl border border-teal-100 bg-teal-50 p-4">
                         <p className="text-sm font-bold uppercase tracking-[0.12em] text-muted">

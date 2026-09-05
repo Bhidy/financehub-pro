@@ -118,7 +118,6 @@ export type FundLabels = {
     navObservations: string;
     historyQuality: string;
     dormant: string;
-    dormantNotice: (date: string) => string;
     purchaseFrequency: string;
     redemptionFrequency: string;
     // fee labels
@@ -207,7 +206,6 @@ const EN: FundLabels = {
     navObservations: 'NAV observations',
     historyQuality: 'Our NAV history (coverage)',
     dormant: 'No NAV for 6+ months',
-    dormantNotice: (date: string) => `This fund has not published a net asset value since ${date}. It appears to be closed, matured or no longer reporting; the figures on this page are its last published record, not a current price, and it is excluded from rankings and today's price list.`,
     purchaseFrequency: 'Purchase frequency',
     redemptionFrequency: 'Redemption frequency',
     managementFee: 'Management fee',
@@ -399,7 +397,6 @@ const AR: FundLabels = {
     navObservations: 'عدد نقاط صافي قيمة الأصول',
     historyQuality: 'تغطية سجل صافي قيمة الأصول لدينا',
     dormant: 'بلا صافي قيمة أصول منذ 6+ أشهر',
-    dormantNotice: (date: string) => `لم ينشر هذا الصندوق صافي قيمة أصول منذ ${date}. يبدو أنه أُغلق أو انتهت مدته أو توقف عن الإفصاح؛ الأرقام في هذه الصفحة هي آخر سجل منشور له وليست سعراً حالياً، وهو مستبعد من الترتيبات ومن قائمة أسعار اليوم.`,
     purchaseFrequency: 'دورية الشراء',
     redemptionFrequency: 'دورية الاسترداد',
     managementFee: 'رسوم الإدارة',
@@ -609,4 +606,16 @@ export function freqLabel(raw: string | null, lang: Lang): string | null {
     const key = raw.trim().toLowerCase();
     if (lang === 'ar') return FREQ_AR[key] ?? raw;
     return key.charAt(0).toUpperCase() + key.slice(1);
+}
+
+/**
+ * The dormant-fund notice, rendered on the SERVER. Kept out of FundLabels on
+ * purpose: the label dictionary is a client-component prop, and a function
+ * inside it is not serialisable — React refused the whole render and every
+ * fund profile returned 500 (2026-09-05).
+ */
+export function dormantNotice(lang: 'en' | 'ar', date: string): string {
+    return lang === 'ar'
+        ? `لم ينشر هذا الصندوق صافي قيمة أصول منذ ${{date}}. يبدو أنه أُغلق أو انتهت مدته أو توقف عن الإفصاح؛ الأرقام في هذه الصفحة هي آخر سجل منشور له وليست سعراً حالياً، وهو مستبعد من الترتيبات ومن قائمة أسعار اليوم.`
+        : `This fund has not published a net asset value since ${{date}}. It appears to be closed, matured or no longer reporting; the figures on this page are its last published record, not a current price, and it is excluded from rankings and today's price list.`;
 }

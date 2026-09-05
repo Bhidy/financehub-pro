@@ -5,7 +5,7 @@ import { SITE_URL, fundPath, idFromParam, canonicalRedirectTarget, absUrl } from
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import FundPageClient, { type FundClientData } from './FundPageClient';
-import { fundLabels, fundTypeLabel, riskLabel, freqLabel, type Lang } from './fund-i18n';
+import { fundLabels, fundTypeLabel, riskLabel, freqLabel, type Lang, dormantNotice } from './fund-i18n';
 import { fundLogo } from '@/lib/fund-logos';
 import { investmentFundNode } from '@/lib/funds-hub-render';
 import { DORMANT_DAYS } from '@/lib/fund-stats';
@@ -463,7 +463,7 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
         navStale,
         navAgeDays,
         dormant,
-        dormantNotice: dormant && navDateIso ? t.dormantNotice(humanDate(navDateIso, lang)) : null,
+        dormantNotice: dormant && navDateIso ? dormantNotice(lang, humanDate(navDateIso, lang)) : null,
         navHigh: navHigh !== null ? fmtNav(navHigh) : null,
         navLow: navLow !== null ? fmtNav(navLow) : null,
         currency,

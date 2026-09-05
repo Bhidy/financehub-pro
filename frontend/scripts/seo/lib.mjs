@@ -217,6 +217,17 @@ export function extractHtmlFacts(html) {
     facts.internalLinks = [...html.matchAll(/<a\b[^>]*href=["']([^"']+)["']/gi)].filter(
         ([, href]) => href.startsWith('/') || href.startsWith(SITE_URL)
     ).length;
+    // Internal anchors with their visible text (scripts stripped first so a
+    // template literal inside a <script> is never mistaken for a link).
+    facts.anchors = [];
+    const noScript = html.replace(/<script[\s\S]*?<\/script>/gi, ' ');
+    for (const m of noScript.matchAll(/<a\b[^>]*?href=["']([^"']+)["'][^>]*>([\s\S]{0,300}?)<\/a>/gi)) {
+        let href = m[1];
+        if (href.startsWith(SITE_URL)) href = href.slice(SITE_URL.length) || '/';
+        if (!href.startsWith('/')) continue;
+        try { href = decodeURI(href); } catch { /* keep raw */ }
+        facts.anchors.push({ href: href.split(/[?#]/)[0].replace(/\/$/, '') || '/', text: stripTags(m[2]).trim().slice(0, 80) });
+    }
 
     return facts;
 }

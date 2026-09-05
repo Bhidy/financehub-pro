@@ -17,7 +17,9 @@
  * 2 the audit itself could not run (never conflated with "the site is fine").
  */
 
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import {
     SITE_URL, httpGet, mapLimit, extractHtmlFacts, jsonLdTypes, parseLocs, parseUrlEntries,
     makeFindings, healthScore, nowIso, sevRank, sleep,
@@ -29,6 +31,10 @@ const flag = (name, dflt) => {
     return i === -1 ? dflt : args[i + 1];
 };
 const QUICK = args.includes('--quick');
+// Routes with an /ar twin — the one list the app's localizedHref() uses, so the
+// audit and the site agree on what "twinned" means.
+const AR_TWIN_ROUTES = JSON.parse(readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '../../lib/ar-twin-routes.json'), 'utf8')).routes;
+const isTwinnedEnPath = (p) => AR_TWIN_ROUTES.some((r) => p === r || p.startsWith(`${r}/`));
 const SAMPLE = Number(flag('sample', QUICK ? 0 : 25));
 const OUT = flag('out', null);
 const FAIL_ON = flag('fail-on', 'critical');
@@ -386,6 +392,29 @@ function auditPage(url, res) {
         }
     }
 
+    // LINK TREE. An Arabic page must send its links — and its PageRank — into
+    // the Arabic tree. A 209-page crawl (2026-09-05) found Arabic news,
+    // glossary, sector and symbol pages pointing breadcrumbs at /, /News,
+    // /Learn and /companies, and Arabic category hubs shipping an English
+    // header nav; the Arabic money page had ZERO inbound internal links while
+    // Search Console recorded /ar/Funds as "page with redirect". The language
+    // toggle (the hreflang twin, or an anchor that says so) is the one
+    // legitimate cross-tree link.
+    if (isAr && facts.anchors?.length) {
+        let enTwin = '';
+        try { enTwin = decodeURI(new URL(facts.hreflang?.en || '', SITE_URL).pathname).replace(/\/$/, '') || '/'; } catch { /* none */ }
+        const toggleText = /^(?:EN|English|الصفحة الإنجليزية|English page)$/i;
+        const leaks = facts.anchors.filter((a) =>
+            !a.href.startsWith('/ar') && isTwinnedEnPath(a.href) && a.href !== enTwin && !toggleText.test(a.text)
+        );
+        if (leaks.length) {
+            const targets = [...new Set(leaks.map((a) => a.href))];
+            f.add(sev('high', 'medium'), 'AR_PAGE_LINKS_EN_TREE',
+                `${path} links ${leaks.length} time(s) into the English tree (${targets.slice(0, 4).join(', ')}${targets.length > 4 ? ', …' : ''}) — its PageRank leaves the Arabic tree`,
+                { url, count: leaks.length, targets: targets.slice(0, 10), examples: leaks.slice(0, 3) });
+        }
+    }
+
     // FRESHNESS. Every fund surface shows NAV-dated figures and carries an
     // as-of <time datetime> by contract. A page with none is not saying WHEN;
     // a page whose newest date is weeks old is showing frozen data as current
@@ -545,10 +574,10 @@ function selfTest() {
         });
 
     // A: duplicate cluster + stale as-of + SAR + English sub-heading.
-    page('/ar/Funds/category/x', '<h2>Money Market Funds In Egypt</h2><p>NAV 10 SAR</p><time datetime="2026-01-01">1 يناير</time>',
+    page('/ar/Funds/category/x', '<h2>Money Market Funds In Egypt</h2><p>NAV 10 SAR</p><time datetime="2026-01-01">1 يناير</time><a href="/">الرئيسية</a><a href="/Funds">كل الصناديق</a>',
         `<link rel="alternate" hreflang="ar" href="${SITE_URL}/ar/Funds/category/x"><link rel="alternate" hreflang="en" href="${SITE_URL}/Funds/category/x"><link rel="alternate" hreflang="x-default" href="${SITE_URL}/ar/Funds/category/x"><link rel="alternate" hreflang="en" href="${SITE_URL}/Funds"><link rel="alternate" hreflang="ar" href="${SITE_URL}/ar/Funds">`);
     // B: clean Arabic fund page — none of those codes may fire.
-    page('/ar/Funds/2662-x', `<h2>صافي قيمة الأصول</h2><p>10 EGP</p><time datetime="${today}">اليوم</time>`,
+    page('/ar/Funds/2662-x', `<h2>صافي قيمة الأصول</h2><p>10 EGP</p><time datetime="${today}">اليوم</time><a href="/ar">الرئيسية</a><a href="/ar/Funds">الصناديق</a><a href="/Funds/2662-x">EN</a>`,
         `<link rel="alternate" hreflang="ar" href="${SITE_URL}/ar/Funds/2662-x"><link rel="alternate" hreflang="en" href="${SITE_URL}/Funds/2662-x"><link rel="alternate" hreflang="x-default" href="${SITE_URL}/ar/Funds/2662-x">`);
     // C: a fund surface with no as-of at all.
     page('/Funds/prices-today', '<p>prices</p>');
@@ -562,6 +591,8 @@ function selfTest() {
         [a.has('DATA_STALE'), 'A: stale as-of date is detected'],
         [a.has('WRONG_CURRENCY'), 'A: SAR on a fund surface is detected'],
         [a.has('AR_PAGE_ENGLISH_SUBHEADING'), 'A: English sub-heading on an Arabic page is detected'],
+        [a.has('AR_PAGE_LINKS_EN_TREE'), 'A: an Arabic page linking the English tree is detected'],
+        [!b.has('AR_PAGE_LINKS_EN_TREE'), 'B: the language toggle and Arabic links raise nothing'],
         [!b.has('HREFLANG_DUPLICATE_LANG') && !b.has('DATA_STALE') && !b.has('WRONG_CURRENCY') && !b.has('AR_PAGE_ENGLISH_SUBHEADING') && !b.has('PAGE_NO_ASOF'), 'B: a clean Arabic fund page raises none of them'],
         [c.has('PAGE_NO_ASOF'), 'C: a fund surface with no <time datetime> is detected'],
     ];

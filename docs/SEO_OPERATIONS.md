@@ -220,3 +220,31 @@ writing the Search Console slice of the command-center report.
 **URL inspection (spot check).** `/ar/Learn/glossary/السيولة` — "URL is on
 Google", indexed, breadcrumbs valid; the glossary duplicate-canonical rows are
 not a page-level defect on this URL.
+
+## 2026-09-05 — fourth pass: internal-link architecture, Search Console actions, brand entity
+
+**The finding.** A 209-page crawl sampled from every sitemap segment showed the Arabic money page
+(`/ar/Funds/best-mutual-funds-egypt-2026`) with **zero** inbound internal links, and Arabic pages
+sending their breadcrumb and header links into the English tree (news → `/` and `/News`; glossary →
+`/Learn`; symbol → `/companies` and the English financials/dividends sub-pages; category hubs shipped
+HOME / MUTUAL FUNDS / MARKET NEWS / LEARN linking `/`, `/Funds`, `/News`, `/Learn`). Search Console
+agreed: `/ar/Funds` was "page with redirect", last crawled 16 August, no referring sitemap detected.
+
+**The fix.** `Breadcrumbs` takes `lang` and localises every crumb href; `renderStaticHub` rewrites every
+shell anchor to its Arabic twin when a shell is served in Arabic; Arabic symbol pages link their Arabic
+sub-pages; the PublicPageShell footer has a Funds column (best funds 2026, prices today, providers,
+categories, risk) in both languages; the designed shells' footers and the marketplace closing carry the
+same links (keys `footer_lnk_best_funds` … in `starta-i18n.js` and home.html's inline dictionary; Arabic
+replacements in `AR_MARKETPLACE_CLOSING`); fund pages link the ranking. Brand: Organization
+`alternateName` now includes ستارتا and ستارتا ماركتس; the Arabic homepage title leads with the brand.
+
+**Re-measure.** `node scripts/seo/audit.mjs` now reports `AR_PAGE_LINKS_EN_TREE` (high) when an Arabic
+page links a twinned English route other than through the language toggle.
+
+**Search Console actions taken (owner's browser, 2026-09-05).** Validation started on Soft 404 (52),
+Not found (62) and Duplicate-Google-canonical (75); indexing requested for both money pages, `/ar/Funds`,
+`/ar` and `/Funds`. The 28-day export: 104K impressions of which ~25K are UK/desktop at 0.02% CTR
+(rank-tracker traffic) — read Egypt (30K impressions, 0.68% CTR) as the human signal.
+
+**Still owner-only.** Google Cloud key creation and Workload Identity setup were both blocked for the
+agent session; Bing Webmaster is not signed in on this machine; SERP providers require an account.

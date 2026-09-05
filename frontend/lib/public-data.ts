@@ -342,7 +342,21 @@ function coalesceReturns(r: Record<string, unknown>): Record<string, unknown> {
     return r;
 }
 
-export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
+// Fund profile row: funds_view computes the fund's NAV facts from nav_history
+// per row (104–121 ms on the live database, CI suite 14.4, 2026-09-05) and the
+// four side tables follow. The result is deterministic for a given NAV state,
+// which changes twice a day, so it is cached per fund for 15 minutes (tag
+// seo-funds). Everything below the client boundary already crossed it as JSON,
+// and every server-side date reader accepts a string, so the JSON round trip
+// through the Data Cache changes nothing.
+const _fundCached = unstable_cache(
+    async (fundId: number): Promise<Fund | null> => _getFundUncached(fundId),
+    ['seo:fund:v1'],
+    { revalidate: 900, tags: ['seo-funds'] }
+);
+export const getFund = cache((fundId: number): Promise<Fund | null> => _fundCached(fundId));
+
+async function _getFundUncached(fundId: number): Promise<Fund | null> {
     const result = await db.query(`SELECT * FROM funds_view WHERE fund_id = $1`, [fundId]);
     const row = result.rows[0] as Fund | undefined;
     if (!row) return null;
@@ -451,7 +465,7 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
         'quality_coverage_pct', 'quality_points', 'quality_worst_gap_days',
     ]);
     return row;
-});
+}
 
 export const getFundPeers = cache(async (fundId: number): Promise<Array<Record<string, unknown>>> => {
     try {

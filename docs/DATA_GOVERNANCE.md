@@ -152,7 +152,10 @@ Gate: `npm run verify:ssr` (`scripts/test-ssr-truth.ts`). Live: `SSR_COUNT_CONTR
   parallel round now, each still isolated. Every per-fund predicate is a plain equality on
   `fund_id` (VARCHAR, PK/FK-indexed); `qa/egx_audit.py` suite 14.4 EXPLAIN-ANALYZEs the eight
   per-fund queries for 2734 and 2738 plus the whole-universe hub read, fails if any per-fund query
-  exceeds 100 ms, and prints the fund tables' index inventory and `fund_id` types on every CI run.
+  exceeds 250 ms (the view read measures 104–121 ms; a sequential scan lands at ≥ 800 ms), and prints
+  the fund tables' index inventory and `fund_id` types on every CI run. `getFund()` is cached per
+  fund for 15 minutes (tag `seo-funds`) — the row is deterministic for a NAV state that changes twice
+  a day, and it already crosses the client boundary as JSON.
 
 ## Follow-ups not done in this pass
 

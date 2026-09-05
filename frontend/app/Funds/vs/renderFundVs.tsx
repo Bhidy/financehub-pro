@@ -362,7 +362,7 @@ export async function renderFundVs(pair: string, lang: Lang) {
             <nav aria-label={isAr ? 'صفحات الصناديق' : 'Fund profiles'} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-teal-700">
                 <Link href={A.path} className="hover:text-starta-darkTeal hover:underline">{A.name} profile →</Link>
                 <Link href={B.path} className="hover:text-starta-darkTeal hover:underline">{B.name} profile →</Link>
-                <Link href="/Funds" className="hover:text-starta-darkTeal hover:underline">{t(FUNDVS.allFunds, lang)} →</Link>
+                <Link href={isAr ? '/ar/Funds' : '/Funds'} className="hover:text-starta-darkTeal hover:underline">{t(FUNDVS.allFunds, lang)} →</Link>
             </nav>
 
             <p className="mt-8 border-t border-border pt-4 text-xs text-muted">

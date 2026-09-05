@@ -248,3 +248,10 @@ Not found (62) and Duplicate-Google-canonical (75); indexing requested for both 
 
 **Still owner-only.** Google Cloud key creation and Workload Identity setup were both blocked for the
 agent session; Bing Webmaster is not signed in on this machine; SERP providers require an account.
+
+**Follow-ups the same day.** `localizedHref('/')` now returns `/ar` (the root is twinned but is not a
+prefix in the generated list); the fund-comparison and learn-topic pages lost their last hardcoded
+English hub links. Re-measured live: inbound links in a 209-page sample to the Arabic money page went
+0 → 38 and to the English one 1 → 134; the Arabic league tables went from 0 to 35–38 each. Indexing was
+requested for twelve hubs (the daily quota) including four that Google reported as "URL is unknown"
+(`/ar/Market-Pulse`, `/ar/Funds/providers`, `/ar/Funds/categories`, `/ar/Funds/risk`).

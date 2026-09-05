@@ -103,7 +103,11 @@ jobs:
         # pytest-asyncio: the data-layer tests carry explicit @pytest.mark.asyncio
         # markers — without the plugin every async test fails as "not natively
         # supported" (first live CI run proved it).
-        run: pip install --quiet ruff pytest pytest-asyncio httpx
+        # fastapi (pinned to production's version): tests/test_auth_hardening.py
+        # imports app.core.rate_limit, which raises fastapi.HTTPException. It was
+        # added 2026-09-02 and this job has failed at collection on EVERY push
+        # since — a required check that is always red protects nothing.
+        run: pip install --quiet ruff pytest pytest-asyncio httpx fastapi==0.109.0
       - name: Ruff — bare `except:` ban (E722, see ruff.toml)
         run: ruff check .
       - name: Write-registry gate (harvester SQL must be QA-covered)

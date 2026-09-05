@@ -1,5 +1,6 @@
 import { fundPath } from '@/lib/seo';
 import { ltrNum } from '@/lib/bidi';
+import { categoryOfFund } from '@/content/fund-categories';
 
 /**
  * ANSWER-FIRST NARRATIVE FOR THE MONEY PAGES (2026-09-05).
@@ -23,20 +24,22 @@ const num = (r: Row, k: string): number | null => {
     return Number.isFinite(n) ? n : null;
 };
 
+const CATEGORY_KEY_TO_NAME: Record<string, string> = {
+    money_market: 'Money Market Funds',
+    fixed_income: 'Fixed Income Funds',
+    equity: 'Equity Funds',
+    balanced: 'Balanced Funds',
+    shariah: 'Shariah-Compliant Funds',
+};
 export function categoryOf(r: Row): string {
-    const t = `${str(r, 'fund_type_en') || ''} ${str(r, 'classification_en') || ''}`.toLowerCase();
-    if (/money\s*market|liquidity|cash/.test(t)) return 'Money Market Funds';
-    if (/fixed\s*income|bond|debt/.test(t)) return 'Fixed Income Funds';
-    if (/equit|stock|share/.test(t)) return 'Equity Funds';
-    if (/balanced|mixed|asset\s*alloc/.test(t)) return 'Balanced Funds';
-    if (/shariah|islamic/.test(t)) return 'Shariah-Compliant Funds';
-    return 'Other Funds';
+    const c = categoryOfFund(r as { fund_type?: unknown; fund_type_en?: unknown; classification_en?: unknown; is_shariah?: unknown });
+    return (c && CATEGORY_KEY_TO_NAME[c.key]) || 'Other Funds';
 }
 const isShariah = (r: Row): boolean =>
     r.is_shariah === true ||
     /shariah|islamic/i.test(`${str(r, 'fund_type_en') || ''} ${str(r, 'classification_en') || ''} ${str(r, 'fund_name_en') || ''}`) ||
     /شريعة|إسلامي|الإسلامية|متوافق/.test(`${str(r, 'fund_type') || ''} ${str(r, 'fund_name') || ''}`);
-const isUsd = (r: Row): boolean => /usd|dollar|\$/i.test(str(r, 'currency') || '') || /دولار/.test(`${str(r, 'currency') || ''} ${str(r, 'fund_name') || ''}`) || /\bUSD\b|dollar/i.test(str(r, 'fund_name_en') || '');
+const isUsd = (r: Row): boolean => /usd/i.test(str(r, 'fund_type') || '') || /usd|dollar|\$/i.test(str(r, 'currency') || '') || /دولار/.test(`${str(r, 'currency') || ''} ${str(r, 'fund_name') || ''}`) || /\bUSD\b|dollar/i.test(str(r, 'fund_name_en') || '');
 
 export type NarrativeItem = { id: number; name: string; href: string; ret1y: number | null; issuer: string | null; minSubscription: number | null };
 export type FundsNarrative = {

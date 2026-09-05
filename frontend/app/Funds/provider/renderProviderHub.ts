@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { ltrNum } from '@/lib/bidi';
 import { getAllFundsRanked } from '@/lib/public-data';
 import { renderFundHub } from '@/lib/fund-hub';
 import { buildProviders, findProvider, fundBelongsToProvider, providerPath } from '@/content/fund-providers';
@@ -19,11 +20,14 @@ import { buildProviders, findProvider, fundBelongsToProvider, providerPath } fro
  * listed bank gets a page as soon as its funds appear.
  */
 
-const introEn = (name: string, n: number, role: string, asOf: string) =>
-    `Every Egyptian mutual fund ${role === 'owner' ? 'offered by' : 'managed by'} ${name} — ${n} fund${n === 1 ? '' : 's'} with net asset value, trailing returns and management fee, taken from the manager's official disclosures${asOf ? ` and current to ${asOf}` : ''}. Ordering is mechanical by trailing one-year return and is not a recommendation.`;
+// ANSWER-FIRST (2026-09-05). The SERP for "صناديق استثمار بنك مصر" asks "what
+// is the best fund at bank X" and "unit prices today"; the intro answers both
+// with the hub's own data before the general description.
+const introEn = (name: string, n: number, role: string, asOf: string, lead: { name: string; ret: number } | null) =>
+    `${name} ${role === 'owner' ? 'offers' : 'manages'} ${n} Egyptian mutual fund${n === 1 ? '' : 's'}${lead ? `; the best-performing over the last 12 months is ${lead.name} at ${lead.ret >= 0 ? '+' : ''}${lead.ret.toFixed(2)}%` : ''}. Unit prices (NAV), trailing returns and management fees come from the manager's official disclosures${asOf ? `, current to ${asOf}` : ''}. Ordering is mechanical by trailing one-year return and is not a recommendation.`;
 
-const introAr = (name: string, n: number, role: string, asOf: string) =>
-    `كل صناديق الاستثمار المصرية ${role === 'owner' ? 'التي يقدمها' : 'التي يديرها'} ${name} — ${n} صندوق مع صافي قيمة الأصول والعوائد التاريخية ورسوم الإدارة، مأخوذة من الإفصاحات الرسمية${asOf ? ` وحتى ${asOf}` : ''}. الترتيب آلي حسب عائد سنة وليس توصية.`;
+const introAr = (name: string, n: number, role: string, asOf: string, lead: { name: string; ret: number } | null) =>
+    `${role === 'owner' ? 'يطرح' : 'يدير'} ${name} ${n} صندوق استثمار في مصر${lead ? `؛ أفضلها أداءً خلال آخر 12 شهرًا «${lead.name}» بعائد ${ltrNum(`${lead.ret >= 0 ? '+' : ''}${lead.ret.toFixed(2)}%`)}` : ''}. أسعار الوثائق (صافي قيمة الأصول) والعوائد ورسوم الإدارة من الإفصاحات الرسمية${asOf ? ` حتى ${asOf}` : ''}. الترتيب آلي حسب عائد سنة وليس توصية.`;
 
 export async function renderProviderHub(slug: string, lang: 'en' | 'ar'): Promise<Response> {
     const isAr = lang === 'ar';
@@ -39,6 +43,11 @@ export async function renderProviderHub(slug: string, lang: 'en' | 'ar'): Promis
 
     const funds = all.filter((f) => fundBelongsToProvider(f, provider));
     if (funds.length === 0) notFound();
+    // funds is already ranked by trailing 1-year return (getAllFundsRanked).
+    const leadRow = funds.find((f) => typeof f.return_1y === 'number' && Number.isFinite(f.return_1y as number));
+    const lead = leadRow
+        ? { name: String((isAr ? leadRow.fund_name || leadRow.fund_name_en : leadRow.fund_name_en || leadRow.fund_name) || ''), ret: leadRow.return_1y as number }
+        : null;
 
     const name = isAr ? provider.nameAr : provider.nameEn;
     const asOfMs = funds.reduce<number | null>((mx, f) => {
@@ -67,8 +76,8 @@ export async function renderProviderHub(slug: string, lang: 'en' | 'ar'): Promis
         description,
         heading: isAr ? `صناديق ${name}` : `${name} funds`,
         intro: isAr
-            ? introAr(name, funds.length, provider.role, asOf)
-            : introEn(name, funds.length, provider.role, asOf),
+            ? introAr(name, funds.length, provider.role, asOf, lead)
+            : introEn(name, funds.length, provider.role, asOf, lead),
         funds,
         crumbs: [
             { name: isAr ? 'الرئيسية' : 'Home', url: isAr ? '/ar' : '/' },

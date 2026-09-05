@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getAllFundsRanked } from '@/lib/public-data';
+import { categoryOfFund } from '@/content/fund-categories';
 import { SITE_URL, fundPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
@@ -49,15 +50,20 @@ const fmtNav = (v: number | null): string => (v === null ? '—' : v.toLocaleStr
 const arName = (f: FundRow): string => str(f, 'fund_name') || str(f, 'fund_name_en') || `صندوق ${f.fund_id}`;
 
 function categoryOf(r: FundRow): string {
-    const t = `${str(r, 'fund_type_en') || ''} ${str(r, 'classification_en') || ''}`.toLowerCase();
-    if (/money\s*market|liquidity|cash/.test(t)) return 'Money Market Funds';
-    if (/fixed\s*income|bond|debt/.test(t)) return 'Fixed Income Funds';
-    if (/equit|stock|share/.test(t)) return 'Equity Funds';
-    if (/balanced|mixed|asset\s*alloc/.test(t)) return 'Balanced Funds';
-    if (/shariah|islamic/.test(t)) return 'Shariah-Compliant Funds';
-    return 'Other Funds';
+    // The shared matcher reads the snake_case `fund_type` codes the data
+    // actually carries; the English text columns this used to read are empty,
+    // which put every fund in "Other" and hid the category sections (2026-09-05).
+    const c = categoryOfFund(r as { fund_type?: unknown; fund_type_en?: unknown; classification_en?: unknown; is_shariah?: unknown });
+    return (c && CATEGORY_KEY_TO_NAME[c.key]) || 'Other Funds';
 }
 
+const CATEGORY_KEY_TO_NAME: Record<string, string> = {
+    'money_market': 'Money Market Funds',
+    'fixed_income': 'Fixed Income Funds',
+    'equity': 'Equity Funds',
+    'balanced': 'Balanced Funds',
+    'shariah': 'Shariah-Compliant Funds',
+};
 const CATEGORY_ORDER = ['Money Market Funds', 'Fixed Income Funds', 'Equity Funds', 'Balanced Funds', 'Shariah-Compliant Funds', 'Other Funds'];
 const CATEGORY_AR: Record<string, string> = {
     'Money Market Funds': 'صناديق أسواق النقد',

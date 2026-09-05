@@ -438,18 +438,25 @@ async function learnEntries(): Promise<Entry[]> {
 async function newsEntries(): Promise<Entry[]> {
     // Indexable window only (NEWS_INDEX_DAYS in renderNewsArticle): older wire
     // copy serves noindex,follow and must not be advertised as indexable.
+    // The query reads the full archive so duplicate detection sees the first copy.
     const result = await db.query(
         `SELECT id, headline, published_at, source_section, symbol,
                 left(article_body, 400) AS body_head
          FROM market_news
-         WHERE published_at >= NOW() - INTERVAL '120 days'
          ORDER BY published_at DESC
          LIMIT 45000`
     );
+    // Dedupe against the WHOLE archive, then keep the indexable window: a
+    // story re-ingested inside the window whose first copy is older than the
+    // window is not primary — the page 308s to the old copy — and must not be
+    // advertised (audit URL_REDIRECTS on /News/175651…, 2026-09-05).
+    const cutoff = Date.now() - 120 * 86_400_000;
     // primaryNewsRows: no off-market (Saudi) stories, and ONE URL per story —
     // the archive had 185 second copies of re-ingested headlines, each a
     // "Duplicate, Google chose different canonical" row in Search Console.
-    return primaryNewsRows(result.rows as Array<{ id: number; headline: string; symbol: string | null; body_head: string | null; published_at: string; source_section: string | null }>).map((r: any) => ({
+    return primaryNewsRows(result.rows as Array<{ id: number; headline: string; symbol: string | null; body_head: string | null; published_at: string; source_section: string | null }>)
+        .filter((r) => Date.parse(String(r.published_at)) >= cutoff)
+        .map((r: any) => ({
         // canonicalNewsPath, NOT newsPath(raw): the article page strips
         // dateline prefixes before slugifying, so the raw headline produces a
         // URL that 308s — ~510 sitemap entries were advertising redirects.

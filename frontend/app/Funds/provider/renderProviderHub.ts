@@ -3,6 +3,7 @@ import { ltrNum } from '@/lib/bidi';
 import { getAllFundsRanked } from '@/lib/public-data';
 import { renderFundHub } from '@/lib/fund-hub';
 import { buildProviders, findProvider, fundBelongsToProvider, providerPath } from '@/content/fund-providers';
+import { clampTitle, clampDescription } from '@/lib/seo';
 
 /**
  * FUND PROVIDER HUBS — /Funds/provider/{slug} and /ar/Funds/provider/{arabic}.
@@ -61,12 +62,17 @@ export async function renderProviderHub(slug: string, lang: 'en' | 'ar'): Promis
 
     // Titles lead with the query shape people type: the institution, then
     // "funds", then the price intent.
-    const title = isAr
-        ? `صناديق ${name} — أسعار الوثائق والعوائد اليوم | Starta Markets`
-        : `${name} Funds — NAVs, Returns & Fees | Starta Markets`;
-    const description = isAr
+    // The brand suffix rides along only while the whole title fits 60; long
+    // institution names ("CI Capital Asset Management") drop it, then the tail.
+    const baseTitle = isAr ? `صناديق ${name} — أسعار الوثائق والعوائد اليوم` : `${name} Funds — NAVs, Returns & Fees`;
+    const title = clampTitle([
+        `${baseTitle} | Starta Markets`,
+        baseTitle,
+        isAr ? `صناديق ${name} — الأسعار والعوائد` : `${name} Funds — NAVs & Returns`,
+    ], 60);
+    const description = clampDescription(isAr
         ? `أسعار وثائق صناديق ${name} وعوائدها ورسوم الإدارة، محدثة من الإفصاحات الرسمية${asOf ? ` حتى ${asOf}` : ''}.`
-        : `Net asset values, trailing returns and management fees for every ${name} mutual fund${asOf ? `, current to ${asOf}` : ''}.`;
+        : `Net asset values, trailing returns and management fees for every ${name} mutual fund${asOf ? `, current to ${asOf}` : ''}.`);
 
     return renderFundHub({
         lang,

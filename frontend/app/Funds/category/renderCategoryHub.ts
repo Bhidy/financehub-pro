@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { ltrNum } from '@/lib/bidi';
 import { getAllFundsRanked } from '@/lib/public-data';
 import { renderFundHub } from '@/lib/fund-hub';
+import { clampTitle, clampDescription } from '@/lib/seo';
 import {
     categoryOfFund, categoryPath, findCategory, MIN_FUNDS_TO_PUBLISH, FUND_CATEGORIES,
 } from '@/content/fund-categories';
@@ -45,8 +46,9 @@ export async function renderCategoryHub(slug: string, lang: 'en' | 'ar'): Promis
         lang,
         canonical: categoryPath(cat, lang),
         altPath: categoryPath(cat, isAr ? 'en' : 'ar'),
-        title: `${isAr ? cat.titleAr : cat.titleEn} | Starta Markets`,
-        description: isAr ? cat.descriptionAr : cat.descriptionEn,
+        // Written straight into the shell's <title>: the brand suffix rides along only while the whole title fits 60.
+        title: clampTitle([`${isAr ? cat.titleAr : cat.titleEn} | Starta Markets`, isAr ? cat.titleAr : cat.titleEn], 60),
+        description: clampDescription(isAr ? cat.descriptionAr : cat.descriptionEn),
         heading: `${isAr ? cat.nameAr : cat.nameEn}${isAr ? ' في مصر' : ' in Egypt'}`,
         intro: lead + (isAr ? cat.introAr : cat.introEn),
         funds,

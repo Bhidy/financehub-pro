@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { localizedHref } from '@/lib/localized-href';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { SITE_URL, absUrl, arabicSlug, assertUniqueSlugs, canonicalRedirectTarget, glossaryPath } from '@/lib/seo';
+import { SITE_URL, absUrl, arabicSlug, assertUniqueSlugs, canonicalRedirectTarget, glossaryPath, clampDescription } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import {
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const term = getGlossaryTermByParam(slug);
     if (!term) return {};
     const path = encodeURI(glossaryPath(term.slug, term.ar.term, 'ar'));
-    const description = firstSentence(term.ar.definition);
+    const description = clampDescription(firstSentence(term.ar.definition));
     return {
         title: `${term.ar.term} — تعريف`,
         description,

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { SITE_URL, absUrl, glossaryPath } from '@/lib/seo';
+import { SITE_URL, absUrl, glossaryPath, clampDescription } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import {
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const term = getGlossaryTerm(slug);
     if (!term) return {};
     const path = `/Learn/glossary/${slug}`;
-    const description = firstSentence(term.en.definition);
+    const description = clampDescription(firstSentence(term.en.definition));
     return {
         // Short template: the root layout appends the brand, and the final
         // audit flagged glossary titles running past 70 chars.

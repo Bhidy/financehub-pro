@@ -361,14 +361,15 @@ async function fundCategoryEntries(): Promise<Entry[]> {
     // DATA-GATED to mirror the page gate: renderFundCategory() 404s a category
     // with fewer than MIN_FUNDS_TO_PUBLISH funds, so the sitemap must apply
     // the same threshold or it advertises dead URLs.
-    const result = await db.query(
-        `SELECT fund_id, fund_type, fund_type_en, classification_en, is_shariah, last_nav_date
-         FROM funds_view
-         WHERE fund_id::text ~ '^[0-9]+$'`
-    );
+    // The SAME rows the category page classifies — getAllFundsRanked() applies
+    // the universe rule and carries the fund names the classifier falls back
+    // to. A private SELECT here (type columns only, no universe rule) left the
+    // index and sector hubs out of the sitemap while their pages published
+    // (verified live 2026-09-05), so the two gates are one call now.
+    const rows = await getAllFundsRanked();
     const counts = new Map<string, number>();
     const lastmods = new Map<string, number>();
-    for (const r of result.rows as Array<Record<string, unknown>>) {
+    for (const r of rows as Array<Record<string, unknown>>) {
         const c = categoryOfFund(r);
         if (!c) continue;
         counts.set(c.key, (counts.get(c.key) ?? 0) + 1);

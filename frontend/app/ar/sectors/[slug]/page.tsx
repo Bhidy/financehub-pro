@@ -3,7 +3,7 @@ import { sectorDescription } from '@/content/sector-descriptions';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getAllTickers, getSectors } from '@/lib/public-data';
-import { SITE_URL, canonicalRedirectTarget, sectorPath, slugify, OG_DEFAULTS } from '@/lib/seo';
+import { SITE_URL, canonicalRedirectTarget, sectorPath, slugify, OG_DEFAULTS, clampTitle } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { sectorAr } from '@/content/sector-names-ar';
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const canonical = encodeURI(sectorPath(match.sector_name, sectorAr(match.sector_name), 'ar'));
     const description = `شركات قطاع ${ar} المدرجة في البورصة المصرية (EGX) — الأسعار المباشرة والقيمة السوقية، محدَّثة يوميًا.`.slice(0, 160);
     return {
-        title: `أسهم قطاع ${ar} في البورصة المصرية — الأسعار والقيمة السوقية`,
+        title: clampTitle([`أسهم قطاع ${ar} في البورصة المصرية — الأسعار والقيمة السوقية`, `أسهم قطاع ${ar} في البورصة المصرية`, `أسهم قطاع ${ar}`]),
         description,
         alternates: {
             canonical,

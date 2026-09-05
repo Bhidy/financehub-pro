@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getAllTickers, type Ticker } from '@/lib/public-data';
-import { SITE_URL, absUrl, arabicSlug, canonicalRedirectTarget, symbolPath, symbolPathAr, OG_DEFAULTS, slugify } from '@/lib/seo';
+import { SITE_URL, absUrl, arabicSlug, canonicalRedirectTarget, symbolPath, symbolPathAr, OG_DEFAULTS, slugify, clampTitle } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { EGX_OFFICIAL_SECTORS, type EgxOfficialSector } from '@/content/egx-official-sectors';
@@ -79,7 +79,9 @@ export async function egxSectorMetadata(slug: string, lang: Lang): Promise<Metad
     if (tickers.length < MIN_COMPANIES) return { title: 'Sector Not Found', robots: { index: false, follow: false } };
     const isAr = lang === 'ar';
     const names = tickers.slice(0, 2).map((t) => (isAr ? t.name_ar || t.name_en : t.name_en) || t.symbol);
-    const title = isAr ? `قطاع ${sector.ar} في البورصة المصرية — الشركات المقيدة` : `${sector.en} Sector on the EGX — Listed Companies`;
+    const title = isAr
+        ? clampTitle([`قطاع ${sector.ar} في البورصة المصرية — الشركات المقيدة`, `قطاع ${sector.ar} في البورصة المصرية`, `قطاع ${sector.ar} — البورصة المصرية`], 60)
+        : clampTitle([`${sector.en} Sector on the EGX — Listed Companies`, `${sector.en} Sector — EGX Listed Companies`, `${sector.en} — EGX Sector`], 60);
     let description = isAr
         ? `${tickers.length} شركة مقيدة في قطاع ${sector.ar} وفق تصنيف البورصة المصرية الرسمي — ${names.join(' و')} وغيرها — بالأسعار والقيمة السوقية، محدَّث يوميًا.`
         : `${tickers.length} companies in the ${sector.en} sector under the Egyptian Exchange’s own classification — ${names.join(', ')} and more — with prices and market caps, updated daily.`;

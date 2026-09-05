@@ -9,7 +9,7 @@ import {
     type Ticker,
     type FinancialYear,
 } from '@/lib/public-data';
-import { SITE_URL, symbolPath, absUrl } from '@/lib/seo';
+import { SITE_URL, symbolPath, absUrl, clampTitle, clampDescription } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import KeyTerms from '@/components/seo/KeyTerms';
@@ -484,8 +484,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const name = ticker.name_en || symbol;
     const view = buildView(slug, ticker, stats, years);
     return {
-        title: `${name} (${symbol}) ${view.label}`,
-        description: view.description,
+        title: clampTitle([`${name} (${symbol}) ${view.label}`, `${symbol} ${view.label}`]),
+        description: clampDescription(view.description),
         alternates: { canonical: `${symbolPath(symbol)}/${slug}` },
     };
 }

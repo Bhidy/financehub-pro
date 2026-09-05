@@ -252,6 +252,22 @@ export function clampTitle(candidates: string[], budget: number = TITLE_BUDGET -
     return list.find((c) => c.length <= budget) ?? list[list.length - 1] ?? '';
 }
 
+/**
+ * Meta-description budget (~160 chars). Cuts at the last sentence end that
+ * still fits when one exists past the halfway mark, else at a word boundary
+ * with an ellipsis — never mid-word, never mid-number.
+ */
+export const DESCRIPTION_BUDGET = 160;
+export function clampDescription(text: string, max: number = DESCRIPTION_BUDGET): string {
+    const t = (text || '').replace(/\s+/g, ' ').trim();
+    if (t.length <= max) return t;
+    const head = t.slice(0, max);
+    const sentence = Math.max(head.lastIndexOf('. '), head.lastIndexOf('؟ '), head.lastIndexOf('! '), head.lastIndexOf('.'), head.lastIndexOf('؟'));
+    if (sentence >= max / 2) return head.slice(0, sentence + 1).trim();
+    const space = head.lastIndexOf(' ');
+    return `${(space > max / 2 ? head.slice(0, space) : head.slice(0, max - 1)).replace(/[،,;:\-–—\s]+$/, '')}…`;
+}
+
 /** Escape a string for inclusion in XML text/attribute content. */
 export function xmlEscape(s: string): string {
     return s

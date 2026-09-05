@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getAllTickers, getSectors } from '@/lib/public-data';
-import { SITE_URL, sectorPath, slugify, symbolPath, OG_DEFAULTS } from '@/lib/seo';
+import { SITE_URL, sectorPath, slugify, symbolPath, OG_DEFAULTS, clampTitle } from '@/lib/seo';
 import { sectorAr } from '@/content/sector-names-ar';
 import { sectorDescription } from '@/content/sector-descriptions';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -78,7 +78,7 @@ export async function generateMetadata({
     const description = clampDescription(`${lead} — live prices and market caps, updated daily.`);
 
     return {
-        title: { absolute: `${match.sector_name} Stocks on the EGX — Prices & Market Caps` },
+        title: { absolute: clampTitle([`${match.sector_name} Stocks on the EGX — Prices & Market Caps`, `${match.sector_name} Stocks on the EGX`, `${match.sector_name} — EGX Stocks`], 60) },
         description,
         // AR canonical carries the Arabic-name slug; x-default = Arabic (site default).
         alternates: {

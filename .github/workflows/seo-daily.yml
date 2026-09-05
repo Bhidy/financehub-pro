@@ -116,6 +116,11 @@ jobs:
           node scripts/seo/report.mjs \
             --audit /tmp/seo-audit.json \
             --gsc /tmp/seo-gsc.json \
+            --competitor /tmp/seo-competitor.json \
+            --serp /tmp/seo-serp.json \
+            --bing /tmp/seo-bing.json \
+            --duplicates /tmp/seo-duplicates.json \
+            --experiments content/seo-experiments.json \
             --out /tmp/seo-report.md \
             --notify
           echo "## SEO Intelligence Report" >> "$GITHUB_STEP_SUMMARY"

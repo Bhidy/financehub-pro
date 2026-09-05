@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { localizedHref } from '@/lib/localized-href';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { SITE_URL, absUrl, arabicSlug, assertUniqueSlugs, canonicalRedirectTarget, glossaryPath } from '@/lib/seo';
@@ -144,7 +145,7 @@ export default async function GlossaryTermArabicPage({ params }: Props) {
                             {siteLinks.map((l) => (
                                 <li key={l.href}>
                                     <Link
-                                        href={l.href}
+                                        href={localizedHref(l.href, 'ar')}
                                         prefetch={false}
                                         className="font-semibold text-starta-darkTeal hover:underline"
                                     >

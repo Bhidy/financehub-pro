@@ -85,11 +85,43 @@ language toggle, and every marketplace route injects the real result count (`fun
 Gate: `npm run verify:ssr` (`scripts/test-ssr-truth.ts`). Live: `SSR_COUNT_CONTRADICTION`,
 `AR_PAGE_ENGLISH_UI_LABELS`, `AI_CRAWLER_BLOCKED` / `AI_CRAWLER_SERVED_ENGLISH`.
 
+## 5. URL hygiene — one address per page (2026-09-05, round 2)
+
+* **Route params arrive percent-encoded** under `next start`; `canonicalRedirectTarget()` compares
+  decoded, raw and `encodeURI` forms on purpose. An exact-match version redirected every canonical
+  Arabic URL to itself locally — a redirect-guard change is never shipped without
+  `preview_start prod-build-local` + curl of a canonical Arabic URL, a Latin alias and a
+  double-encoded spelling.
+* **Double encoding** (`/ar/…/%25D8%25A8…`): Vercel hands the function the once-decoded path, so the
+  page cannot tell; `middleware.ts` peels one layer and 308s (no slug of ours contains a literal
+  `%`). Sitemaps call `absUrl()` once — `absUrl(encodeURI(x))` produced the duplicates the audit
+  found (12 HIGH).
+* **Malformed escapes** (`%E0%A4`) made the router's param decoding throw → 500 on every dynamic
+  family; `middleware.ts` answers 400 before routing.
+* **Sitemap ↔ page parity**: a data-gated sitemap segment classifies the SAME rows the page does
+  (`fundCategoryEntries` → `getAllFundsRanked()`); a private SELECT without the universe rule or the
+  fund names left the index/sector hubs out of the sitemap while their pages published.
+* **Fund sub-types**: the price vendor files index / sector / Shariah-named funds as `equity`;
+  `categoryOfFund()` lets a name marker refine a vendor "equity" (FRA's own taxonomy separates them).
+  Canary counts in `scripts/test-fund-categories.ts` (index 8 · sector 12 · shariah 15 on 2026-09-05).
+* **Title / description budgets**: `clampTitle()` (60 incl. the 17-char brand suffix) and
+  `clampDescription()` (160, sentence-boundary cut) in `lib/seo.ts`; every long-name family
+  (symbol sub-tabs, metric pages, category/provider hubs, sector pages, glossary) routes through them.
+* Live gates: `PAGE_CANONICAL_MISMATCH`, `HREFLANG_NO_SELF_REFERENCE`, `AR_PAGE_LINKS_EN_TREE`
+  (data downloads exempt), `TITLE_TOO_LONG`, `DESCRIPTION_TOO_LONG` in `scripts/seo/audit.mjs`.
+
 ## Follow-ups not done in this pass
 
-* Per-observation provenance on `nav_history` (`source_url`, `source_published_at`,
-  `ingested_at`) — a backend schema/harvester change gated by the CI write-contract.
+* `nav_history` provenance (`source`, `source_url`, `ingested_at`) is live in the writers and the
+  schema (self-migrating `NAV_DDL`, CI probe 14.1e); rows written before 2026-09-05 stay
+  "unrecorded (before source tracking)" — never back-filled with a guessed source. The first
+  populated rows arrive on the next publishing day (the Friday run saved 0 new points).
 * Per-fund reconciliation against the FRA: the FRA PDF lists funds by manager; a parser for its
   RTL tables would let the residual be itemised.
-* Documented delisting dates for the 22 `unverified` symbols (SUCE, ALEX, TORA, PACH, NBKE, IRAX,
-  LKGP, NCGC …) so they move from `unverified` to `delisted` with evidence.
+* 14 symbols remain `unverified` (LKGP …) — documented delisting dates move them to `delisted`
+  with evidence (9 done so far: GTHE, IRAX, NCGC, SUCE, TORA, PACH, NBKE, ALEX, EITP).
+* Owner keys: `SERP_PROVIDER` + `SERP_API_KEY` (share-of-voice), `BING_WEBMASTER_API_KEY`.
+* `PAGES_UNCACHEABLE`: Vercel ignores page-level `Cache-Control` on these dynamic routes — a
+  platform limitation, not a code defect; revisit if Vercel adds route-level CDN caching for them.
+* Four Arabic company pages carry Latin `<h1>`s (GDWA, KRDI, MCRO, TAQA) — the upstream has no
+  Arabic name; a hand override list would fix the heading and the AR title in one place.

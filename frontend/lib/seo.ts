@@ -242,8 +242,15 @@ export function canonicalRedirectTarget(requestPath: string, canonicalPath: stri
  * long legal names of EGX companies ("Egyptian Kuwaiti Holding Company for …")
  * pushed 26 sub-tab titles to 67–136 characters (audit 2026-09-05), and a title
  * that truncates mid-word in the SERP is a title the searcher does not read.
- * The last candidate is returned even when it overflows, so callers make it
- * the symbol-based form that always fits.
+ * The last candidate is returned even when it overflows — so it must be the
+ * shortest form that still carries the ENTITY NAME (the ranking signal for
+ * "<company> stock price"), never a bare symbol: on 2026-09-05 a symbol-only
+ * fallback shipped "COMI — Financials 2006–2025" and "ADPC EPS" (8 chars,
+ * TITLE_TOO_SHORT) in place of the company's name. A long legal name that
+ * overflows is a display truncation; a missing name is a lost query.
+ * Budget: 43 when the root template appends the brand (pages under app/ar/**
+ * and most hubs), 60 for absolute titles and for the EN company sub-tabs
+ * (the symbol layout's absolute title suppresses the template there).
  */
 export const TITLE_SUFFIX = ' | Starta Markets';
 export const TITLE_BUDGET = 60;

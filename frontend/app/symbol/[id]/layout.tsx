@@ -81,9 +81,9 @@ export async function generateMetadata(
     // Price in the title (the query) unless the legal name makes it overflow —
     // then the price goes before the name does (audit: 150 TITLE_TOO_LONG).
     const withPrice = `${name} (${symbol}) Stock Price${price ? ` — ${price}` : ''}`;
-    // Absolute title (no template suffix), so the budget is the full 60; a legal
-    // name too long for even the priceless form yields to the symbol-based one.
-    const title = clampTitle([withPrice, `${name} (${symbol}) Stock Price`, `${symbol} Stock Price${price ? ` — ${price}` : ''} — EGX`], 60);
+    // Absolute title (no template suffix), so the budget is the full 60. The name
+    // stays even when a long legal name overflows — the searcher types the name.
+    const title = clampTitle([withPrice, `${name} (${symbol}) Stock Price`], 60);
     return {
         // absolute: the layout template appends the brand and pushed these to
         // 90+ characters; the company name and price are what the searcher reads.

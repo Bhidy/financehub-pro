@@ -127,7 +127,7 @@ export async function statisticsMetadata(id: string, lang: Lang): Promise<Metada
     const pathEn = encodeURI(symbolTabPath(symbol, 'statistics', 'en'));
     const pathAr = encodeURI(symbolTabPath(symbol, 'statistics', 'ar', ticker.name_ar));
     const canonical = lang === 'ar' ? pathAr : pathEn;
-    const title = clampTitle([t(STATISTICS.title(name, symbol), lang), t(STATISTICS.h1(name, symbol), lang), `${symbol} — ${t(NAV.statistics, lang)}`]);
+    const title = clampTitle([t(STATISTICS.title(name, symbol), lang), t(STATISTICS.h1(name, symbol), lang)], lang === 'ar' ? 43 : 60);
     let description = t(STATISTICS.description(name, symbol), lang);
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 

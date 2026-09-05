@@ -95,7 +95,7 @@ export async function dividendsMetadata(id: string, lang: Lang): Promise<Metadat
     if (!ticker || (history.length === 0 && divYield === null)) return {};
     const name = (lang === 'ar' ? ticker.name_ar || ticker.name_en : ticker.name_en) || symbol;
     return {
-        title: clampTitle([t(DIVIDENDS.title(name, symbol), lang), t(DIVIDENDS.h1(name, symbol), lang), `${symbol} — ${t(NAV.dividends, lang)}`]),
+        title: clampTitle([t(DIVIDENDS.title(name, symbol), lang), t(DIVIDENDS.h1(name, symbol), lang)], lang === 'ar' ? 43 : 60),
         description: buildDescription(name, symbol, divYield, lang),
         alternates: {
             // Language-aware. Emitting the English canonical from the ARABIC

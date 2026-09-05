@@ -97,7 +97,7 @@ export async function technicalsMetadata(id: string, lang: Lang): Promise<Metada
     const daily = rows.find((r) => str(r, 'timeframe') === '1D');
     const signal = daily ? signalText(signalKey(num(daily, 'recommend_all')), lang) : null;
 
-    const title = clampTitle([t(TECHNICALS.title(name, symbol), lang), t(TECHNICALS.h1(name, symbol), lang), `${symbol} — ${t(NAV.technicals, lang)}`]);
+    const title = clampTitle([t(TECHNICALS.title(name, symbol), lang), t(TECHNICALS.h1(name, symbol), lang)], lang === 'ar' ? 43 : 60);
     let description = t(TECHNICALS.description(name, symbol, signal), lang);
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 

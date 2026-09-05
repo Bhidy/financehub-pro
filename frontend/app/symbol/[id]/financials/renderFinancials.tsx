@@ -83,7 +83,7 @@ export async function financialsMetadata(id: string, lang: Lang): Promise<Metada
     const { minYear, maxYear } = yearRange(years);
     const range = minYear !== null && maxYear !== null ? ` ${minYear}–${maxYear}` : '';
     return {
-        title: clampTitle([`${t(FINANCIALS.title(name, symbol), lang)}${range}`, `${t(FINANCIALS.h1(name, symbol), lang)}${range}`, t(FINANCIALS.h1(name, symbol), lang), `${symbol} — ${t(NAV.financials, lang)}${range}`]),
+        title: clampTitle([`${t(FINANCIALS.title(name, symbol), lang)}${range}`, `${t(FINANCIALS.h1(name, symbol), lang)}${range}`, t(FINANCIALS.h1(name, symbol), lang)], lang === 'ar' ? 43 : 60),
         description: buildDescription(name, symbol, years.length, minYear, maxYear, lang),
         alternates: {
             // Language-aware. Emitting the English canonical from the ARABIC

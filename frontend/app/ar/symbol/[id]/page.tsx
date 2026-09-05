@@ -151,13 +151,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // plus the price truncates in the SERP; drop the price segment first, then
     // the market suffix, before the name itself (audit: 150 TITLE_TOO_LONG).
     const full = `سعر سهم ${name} (${symbol}) اليوم${priceStr ? ` ${priceStr}` : ''} — البورصة المصرية`;
-    // Absolute title (no template suffix): the full 60 is the budget; a legal
-    // name too long for even the shortest named form yields to the symbol.
+    // Absolute title (no template suffix): the full 60 is the budget. The name
+    // stays even when a long legal name overflows — the searcher types the name.
     const title = clampTitle([
         full,
         `سعر سهم ${name} (${symbol}) اليوم${priceStr ? ` ${priceStr}` : ''}`,
         `سعر سهم ${name} (${symbol}) اليوم`,
-        `سعر سهم ${symbol} اليوم${priceStr ? ` ${priceStr}` : ''} — البورصة المصرية`,
     ], 60);
     let description = `تابع سعر سهم ${name} (${symbol}) في البورصة المصرية${priceStr ? ` — آخر سعر ${priceStr}` : ''}${ticker.sector_name ? `، قطاع ${sectorAr(ticker.sector_name)}` : ''}. إحصاءات وقوائم مالية وتوزيعات، تحديث كل 15 دقيقة.`;
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;

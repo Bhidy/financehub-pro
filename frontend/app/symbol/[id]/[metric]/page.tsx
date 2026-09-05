@@ -484,15 +484,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const name = ticker.name_en || symbol;
     const view = buildView(slug, ticker, stats, years);
     return {
-        // Long legal names overflow the 43-char budget (60 minus the brand
-        // suffix); the fallbacks keep the metric AND the market — a bare
-        // "ADPC EPS" was flagged TITLE_TOO_SHORT by the audit (2026-09-05).
-        title: clampTitle([
-            `${name} (${symbol}) ${view.label}`,
-            `${name} ${view.label}`,
-            `${symbol} ${view.label} — Egyptian Exchange (EGX)`,
-            `${symbol} ${view.label} — EGX`,
-        ]),
+        // No brand suffix under the symbol layout, so the budget is 60. The
+        // company name stays on overflow — a bare "ADPC EPS" shipped once and
+        // was flagged TITLE_TOO_SHORT (2026-09-05).
+        title: clampTitle([`${name} (${symbol}) ${view.label}`, `${name} ${view.label}`], 60),
         description: clampDescription(view.description),
         alternates: { canonical: `${symbolPath(symbol)}/${slug}` },
     };

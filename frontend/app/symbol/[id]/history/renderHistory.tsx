@@ -94,8 +94,7 @@ export async function historyMetadata(id: string, lang: Lang): Promise<Metadata>
     const title = clampTitle([
         firstYear ? t(HISTORY.titleWithYear(name, symbol, String(firstYear)), lang) : t(HISTORY.title(name, symbol), lang),
         t(HISTORY.h1(name, symbol), lang),
-        `${symbol} — ${t(NAV.history, lang)}`,
-    ]);
+    ], lang === 'ar' ? 43 : 60);
     let description = `${name} (EGX: ${symbol}) daily stock price history${firstYear ? ` since ${firstYear}` : ''}: open, high, low, close & volume${
         rowCount !== null ? ` for ${rowCount.toLocaleString('en-EG')} trading days` : ''
     }, plus all-time high and low.`;

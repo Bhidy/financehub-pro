@@ -81,7 +81,7 @@ export async function seasonalityMetadata(id: string, lang: Lang): Promise<Metad
     const pathAr = symbolTabPath(symbol, 'seasonality', 'ar', ticker.name_ar);
     const canonical = encodeURI(lang === 'ar' ? pathAr : pathEn);
 
-    const title = clampTitle([t(SEASONALITY.title(name, symbol, years), lang), t(SEASONALITY.h1(name, symbol), lang), `${symbol} — ${t(NAV.seasonality, lang)}`]);
+    const title = clampTitle([t(SEASONALITY.title(name, symbol, years), lang), t(SEASONALITY.h1(name, symbol), lang)], lang === 'ar' ? 43 : 60);
     let description = t(
         SEASONALITY.description(name, symbol, years, best ? monthLabel(best, lang) : null),
         lang

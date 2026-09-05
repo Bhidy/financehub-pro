@@ -443,6 +443,82 @@ async def suite_symbol_page_plans():
 
 
 # --------------------------------------------------------------------------- #
+# 14.4 / fund-profile read path: plans + index inventory
+# --------------------------------------------------------------------------- #
+FUND_QUERIES = {
+    "profile (funds_view, one fund)":
+        "SELECT * FROM funds_view WHERE fund_id = $1",
+    "risk metrics (fund_risk_metrics)":
+        "SELECT * FROM fund_risk_metrics WHERE fund_id = $1",
+    "master row (mutual_funds)":
+        "SELECT fund_id, fund_name, fund_name_en FROM mutual_funds WHERE fund_id = $1",
+    "platforms (fund_platforms)":
+        "SELECT platform_name, logo_url FROM fund_platforms WHERE fund_id = $1 ORDER BY platform_name",
+    "data quality (fund_data_quality)":
+        "SELECT * FROM fund_data_quality WHERE fund_id = $1",
+    "peers (fund_peers)":
+        "SELECT * FROM fund_peers p WHERE p.fund_id = $1::text ORDER BY peer_rank",
+    "nav history full series (nav_history ASC)":
+        "SELECT date, nav, source, source_url, ingested_at FROM nav_history WHERE fund_id = $1 ORDER BY date ASC",
+    "nav API (nav_history DESC LIMIT 500)":
+        "SELECT date, nav FROM nav_history WHERE fund_id = $1 ORDER BY date DESC LIMIT 500",
+}
+FUND_TABLES = ["nav_history", "mutual_funds", "fund_risk_metrics", "fund_peers", "fund_platforms", "fund_data_quality", "fund_feedback"]
+
+
+async def suite_fund_page_plans():
+    """Same discipline as 14.3 for the fund profile: every per-fund read the
+    page and its APIs run, EXPLAIN ANALYZE'd on the live database for two funds
+    (2734 has the longest NAV series), plus the whole-universe view read the hubs
+    cache, plus the index inventory of every fund table."""
+    if not DATABASE_URL:
+        print("\n14.4 FUND-PROFILE READ PATH: skipped (no DATABASE_URL)")
+        return
+    import asyncpg
+    print("\n14.4 FUND-PROFILE READ PATH (plans + index inventory)")
+    try:
+        conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0, command_timeout=120)
+    except (asyncpg.CannotConnectNowError, asyncpg.PostgresConnectionError,
+            OSError, asyncio.TimeoutError) as e:
+        skip("fund-profile read path (DB unreachable — transient infra)", type(e).__name__)
+        return
+    slow = []
+    try:
+        for fid in ("2734", "2738"):
+            for label, sql in FUND_QUERIES.items():
+                try:
+                    plan = await conn.fetch(f"EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) {sql}", fid)
+                    lines = [r[0] for r in plan]
+                    total_line = next((l for l in lines if l.startswith("Execution Time")), "Execution Time: ? ms")
+                    ms = float(total_line.split(":")[1].strip().split(" ")[0]) if ":" in total_line and total_line.split(":")[1].strip()[0].isdigit() else None
+                    scan = next((l.strip() for l in lines if "Seq Scan" in l or "Index" in l), "?")
+                    seq = [l.strip() for l in lines if "Seq Scan" in l]
+                    print(f"    {fid} · {label}: {total_line} | {scan[:90]}" + (f" | seq scans: {len(seq)}" if seq else ""))
+                    if ms is not None and ms > 100:
+                        slow.append((fid, label, ms))
+                except Exception as e:  # noqa: BLE001 — informational
+                    print(f"    {fid} · {label}: EXPLAIN failed: {type(e).__name__}: {e}")
+        try:
+            plan = await conn.fetch("EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) SELECT v.*, m.return_1y FROM funds_view v LEFT JOIN fund_risk_metrics m ON m.fund_id = v.fund_id::text WHERE v.fund_id::text ~ '^[0-9]+$'")
+            lines = [r[0] for r in plan]
+            total_line = next((l for l in lines if l.startswith("Execution Time")), "?")
+            print(f"    hub · whole universe (funds_view ⋈ fund_risk_metrics, cached 15 min): {total_line}")
+        except Exception as e:  # noqa: BLE001
+            print(f"    hub · whole universe: EXPLAIN failed: {type(e).__name__}: {e}")
+        check("every per-fund query under 100 ms on the live database", not slow, f"slow: {slow}")
+        idx = await conn.fetch("SELECT tablename, indexname, indexdef FROM pg_indexes WHERE tablename = ANY($1::text[]) ORDER BY tablename, indexname", FUND_TABLES)
+        for r in idx:
+            print(f"    index {r['tablename']}.{r['indexname']}: {r['indexdef'][:110]}")
+        present = {r['tablename'] for r in idx}
+        missing = [t for t in FUND_TABLES if t in present and not any(r['tablename'] == t and '(fund_id' in r['indexdef'] for r in idx)]
+        check("every fund table has an index led by fund_id", not missing, f"missing on: {missing}")
+        types = await conn.fetch("SELECT table_name, data_type FROM information_schema.columns WHERE column_name = 'fund_id' AND table_name = ANY($1::text[]) ORDER BY table_name", FUND_TABLES + ["funds_view"])
+        print("    fund_id types: " + ", ".join(f"{r['table_name']}={r['data_type']}" for r in types))
+    finally:
+        await conn.close()
+
+
+# --------------------------------------------------------------------------- #
 # 14.1 / live: validate the real TV client's own gates
 # --------------------------------------------------------------------------- #
 async def suite_live():
@@ -516,6 +592,7 @@ async def main(suite: str):
         await suite_fund_write_contract()   # DB dry-run: fund_risk_metrics + fund_feedback
         await suite_nav_write_contract()    # DB dry-run: nav_history provenance writers
         await suite_symbol_page_plans()     # DB read path: plans + upper-case symbol invariant
+        await suite_fund_page_plans()       # DB read path: fund profile plans + index inventory
     if suite in ("all", "live"):
         await suite_live()
     if suite in ("all", "dataquality"):

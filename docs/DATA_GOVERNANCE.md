@@ -147,6 +147,13 @@ Gate: `npm run verify:ssr` (`scripts/test-ssr-truth.ts`). Live: `SSR_COUNT_CONTR
   page's queries in both spellings on every CI run. `getPerformance()` and `getStats()` are cached
   per symbol for 15 minutes (tag `seo-tickers`), like the stats map.
 
+* **Fund profile read path:** `getFund()` ran its four side-table reads (fund_risk_metrics,
+  mutual_funds meta, fund_platforms, fund_data_quality) as sequential round trips; they are one
+  parallel round now, each still isolated. Every per-fund predicate is a plain equality on
+  `fund_id` (VARCHAR, PK/FK-indexed); `qa/egx_audit.py` suite 14.4 EXPLAIN-ANALYZEs the eight
+  per-fund queries for 2734 and 2738 plus the whole-universe hub read, fails if any per-fund query
+  exceeds 100 ms, and prints the fund tables' index inventory and `fund_id` types on every CI run.
+
 ## Follow-ups not done in this pass
 
 * `nav_history` provenance (`source`, `source_url`, `ingested_at`) is live in the writers and the

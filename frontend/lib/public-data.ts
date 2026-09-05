@@ -369,67 +369,65 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
     // this page is being cured of. The tile renders '—', which is the truth.
     // Legacy coalesce survives ONLY for funds with no computed row at all.
     // ------------------------------------------------------------------
-    let computed = false;
-    try {
-        const rm = await db.query(`SELECT * FROM fund_risk_metrics WHERE fund_id = $1`, [String(fundId)]);
-        const m = rm.rows[0] as Record<string, unknown> | undefined;
-        if (m) {
-            computed = true;
-            row.max_drawdown = m.max_drawdown;
-            row.volatility_annual = m.volatility_annual;
-            // Phase-2 analytics primitives live ONLY in fund_risk_metrics — take verbatim.
-            for (const k of ['cagr', 'return_inception', 'inception_years', 'downside_deviation',
-                'best_period', 'worst_period', 'positive_periods_pct', 'avg_gain', 'avg_loss',
-                'avg_period_days', 'analytics_suppressed']) {
-                row[k] = m[k];
-            }
-            for (const k of ['nav_52w_high', 'nav_52w_low', 'return_1m', 'return_3m', 'return_6m',
-                'return_ytd', 'return_1y', 'return_3y', 'return_5y']) {
-                row[k] = m[k];
-            }
-            if ((row.nav_points === null || row.nav_points === undefined) && m.points != null) row.nav_points = m.points;
-        }
-    } catch { /* side table isolated — never break the core payload */ }
-    if (!computed) coalesceReturns(row);
-    // Harvested metadata that funds_view doesn't carry (prospectus / manager person /
-    // purchase+redemption frequency) + distribution platforms. Isolated: a missing
-    // column or the fund_platforms table can never break the page.
-    try {
-        const meta = await db.query(
+    // The four side tables are independent of each other, so they are read in
+    // ONE round of parallel queries instead of four sequential round trips
+    // (fund-profile latency pass, 2026-09-05). Each stays isolated: a missing
+    // table or column yields null for that block and never breaks the payload.
+    const fid = String(fundId);
+    const safe = async <T,>(q: () => Promise<T>): Promise<T | null> => { try { return await q(); } catch { return null; } };
+    const [rm, meta, pl, q] = await Promise.all([
+        safe(() => db.query(`SELECT * FROM fund_risk_metrics WHERE fund_id = $1`, [fid])),
+        safe(() => db.query(
             `SELECT prospectus_url, alternative_names, fund_manager, purchase_frequency, redemption_frequency,
                     isin, aum, aum_millions, market
-             FROM mutual_funds WHERE fund_id = $1`, [String(fundId)]);
-        const mm = meta.rows[0] as Record<string, unknown> | undefined;
-        if (mm) for (const k of ['prospectus_url', 'alternative_names', 'fund_manager', 'purchase_frequency',
-            'redemption_frequency', 'isin', 'aum', 'aum_millions', 'market']) {
-            if (row[k] === null || row[k] === undefined) row[k] = mm[k];
+             FROM mutual_funds WHERE fund_id = $1`, [fid])),
+        safe(() => db.query(`SELECT platform_name, logo_url FROM fund_platforms WHERE fund_id = $1 ORDER BY platform_name`, [fid])),
+        safe(() => db.query(
+            `SELECT grade, coverage_pct, cadence, points, first_date, worst_gap_days, worst_gap_from, worst_gap_to
+             FROM fund_data_quality WHERE fund_id = $1`, [fid])),
+    ]);
+    let computed = false;
+    const m = rm?.rows[0] as Record<string, unknown> | undefined;
+    if (m) {
+        computed = true;
+        row.max_drawdown = m.max_drawdown;
+        row.volatility_annual = m.volatility_annual;
+        // Phase-2 analytics primitives live ONLY in fund_risk_metrics — take verbatim.
+        for (const k of ['cagr', 'return_inception', 'inception_years', 'downside_deviation',
+            'best_period', 'worst_period', 'positive_periods_pct', 'avg_gain', 'avg_loss',
+            'avg_period_days', 'analytics_suppressed']) {
+            row[k] = m[k];
         }
-    } catch { /* isolated */ }
-    try {
-        const pl = await db.query(
-            `SELECT platform_name, logo_url FROM fund_platforms WHERE fund_id = $1 ORDER BY platform_name`, [String(fundId)]);
-        row.platforms = pl.rows;
-    } catch { row.platforms = []; }
+        for (const k of ['nav_52w_high', 'nav_52w_low', 'return_1m', 'return_3m', 'return_6m',
+            'return_ytd', 'return_1y', 'return_3y', 'return_5y']) {
+            row[k] = m[k];
+        }
+        if ((row.nav_points === null || row.nav_points === undefined) && m.points != null) row.nav_points = m.points;
+    }
+    if (!computed) coalesceReturns(row);
+    // Harvested metadata that funds_view doesn't carry (prospectus / manager person /
+    // purchase+redemption frequency) + distribution platforms.
+    const mm = meta?.rows[0] as Record<string, unknown> | undefined;
+    if (mm) for (const k of ['prospectus_url', 'alternative_names', 'fund_manager', 'purchase_frequency',
+        'redemption_frequency', 'isin', 'aum', 'aum_millions', 'market']) {
+        if (row[k] === null || row[k] === undefined) row[k] = mm[k];
+    }
+    row.platforms = pl?.rows ?? [];
     // The per-fund NAV quality ledger (compute_fund_data_quality.py): cadence,
     // coverage, worst gap, grade. Published on the profile as a fact about OUR
     // history of the fund — the spec's "confidence/status" field — never as a
-    // judgement of the fund. Isolated: a missing table cannot break the page.
-    try {
-        const q = await db.query(
-            `SELECT grade, coverage_pct, cadence, points, first_date, worst_gap_days, worst_gap_from, worst_gap_to
-             FROM fund_data_quality WHERE fund_id = $1`, [String(fundId)]);
-        const qr = q.rows[0] as Record<string, unknown> | undefined;
-        if (qr) {
-            row.quality_grade = qr.grade;
-            row.quality_coverage_pct = qr.coverage_pct;
-            row.quality_cadence = qr.cadence;
-            row.quality_points = qr.points;
-            row.quality_first_date = qr.first_date instanceof Date ? qr.first_date.toISOString().slice(0, 10) : qr.first_date;
-            row.quality_worst_gap_days = qr.worst_gap_days;
-            row.quality_worst_gap_from = qr.worst_gap_from instanceof Date ? qr.worst_gap_from.toISOString().slice(0, 10) : qr.worst_gap_from;
-            row.quality_worst_gap_to = qr.worst_gap_to instanceof Date ? qr.worst_gap_to.toISOString().slice(0, 10) : qr.worst_gap_to;
-        }
-    } catch { /* isolated */ }
+    // judgement of the fund.
+    const qr = q?.rows[0] as Record<string, unknown> | undefined;
+    if (qr) {
+        row.quality_grade = qr.grade;
+        row.quality_coverage_pct = qr.coverage_pct;
+        row.quality_cadence = qr.cadence;
+        row.quality_points = qr.points;
+        row.quality_first_date = qr.first_date instanceof Date ? qr.first_date.toISOString().slice(0, 10) : qr.first_date;
+        row.quality_worst_gap_days = qr.worst_gap_days;
+        row.quality_worst_gap_from = qr.worst_gap_from instanceof Date ? qr.worst_gap_from.toISOString().slice(0, 10) : qr.worst_gap_from;
+        row.quality_worst_gap_to = qr.worst_gap_to instanceof Date ? qr.worst_gap_to.toISOString().slice(0, 10) : qr.worst_gap_to;
+    }
     // Asset-manager profile from the STATIC harvested set (23 houses in
     // lib/asset-managers.ts). Matched by normalised, Arabic-aware token-set
     // equality (precise: "اتون فاروس" never matches a "فاروس" fund). No DB

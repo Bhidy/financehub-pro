@@ -255,3 +255,11 @@ English hub links. Re-measured live: inbound links in a 209-page sample to the A
 0 → 38 and to the English one 1 → 134; the Arabic league tables went from 0 to 35–38 each. Indexing was
 requested for twelve hubs (the daily quota) including four that Google reported as "URL is unknown"
 (`/ar/Market-Pulse`, `/ar/Funds/providers`, `/ar/Funds/categories`, `/ar/Funds/risk`).
+
+**Incident, same day.** The first full daily audit after the dormant-fund change reported 13 × PAGE_5XX:
+every fund profile (EN and AR) returned 500 because `dormantNotice` was a function inside the label
+dictionary passed to the client component, which React refuses to serialise. Fixed in d5502cc (the
+notice is a standalone server function). The post-deploy guard had not sampled a fund profile, so its
+MONEY_PAGES list now includes one per language. The "Similar funds" query joined `fund_peers` on a
+column that never existed; it now resolves peers by name. Read runtime errors with
+`npx vercel logs <deployment id> --json` — the table view truncates the message.

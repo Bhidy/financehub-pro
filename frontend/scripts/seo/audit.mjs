@@ -49,6 +49,10 @@ const MONEY_PAGES = [
     '/', '/ar',
     '/Funds', '/ar/Funds',
     '/Funds/best-mutual-funds-egypt-2026', '/ar/Funds/best-mutual-funds-egypt-2026',
+    // One fund PROFILE per language. Every fund profile returned 500 for hours
+    // on 2026-09-05 while this list — and therefore the post-deploy guard —
+    // stayed green, because it held hubs and league tables only.
+    '/Funds/2662-arab-african-international-bank-fixed-income-fund-gozoor', '/ar/Funds/2662-صندوق-استثمار-البنك-العربي-الأفريقي-الدولي-للدخل-الثابت-جذور',
     '/companies', '/ar/companies',
     '/sectors', '/ar/sectors',
     '/News', '/Learn', '/Learn/glossary', '/ar/Learn/glossary',

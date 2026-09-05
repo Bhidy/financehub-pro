@@ -395,12 +395,23 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
 
 export const getFundPeers = cache(async (fundId: number): Promise<Array<Record<string, unknown>>> => {
     try {
+        // fund_peers stores peers BY NAME (peer_fund_name, peer_rank) — the
+        // scraper writes no peer id, and fund_id is VARCHAR. The old query
+        // joined on a column that never existed (p.peer_fund_id) and compared
+        // varchar to integer, so it threw on every request and "Similar funds"
+        // was empty on every fund page (Vercel logs, 2026-09-05). Resolve the
+        // peer's id by matching its name against the fund universe.
         const result = await db.query(
-            `SELECT p.*, f.fund_name AS peer_fund_name, f.fund_name_en AS peer_fund_name_en
+            `SELECT p.peer_fund_name AS peer_name_raw, p.peer_rank,
+                    f.fund_id AS peer_fund_id,
+                    COALESCE(f.fund_name, p.peer_fund_name) AS peer_fund_name,
+                    f.fund_name_en AS peer_fund_name_en
              FROM fund_peers p
-             LEFT JOIN funds_view f ON f.fund_id = p.peer_fund_id
-             WHERE p.fund_id = $1 ORDER BY p.peer_rank LIMIT 6`,
-            [fundId]
+             LEFT JOIN funds_view f
+               ON f.fund_name = p.peer_fund_name OR f.fund_name_en = p.peer_fund_name
+             WHERE p.fund_id = $1::text
+             ORDER BY p.peer_rank NULLS LAST LIMIT 6`,
+            [String(fundId)]
         );
         return result.rows;
     } catch {

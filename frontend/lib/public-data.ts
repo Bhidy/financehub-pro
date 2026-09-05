@@ -90,7 +90,20 @@ export const getLatestNews = cache(async (limit = 6): Promise<NewsArticle[]> => 
  * canonical. Candidates come from a headline-prefix ILIKE and are confirmed
  * with the same newsDedupeKey() the lists use, so page and lists agree.
  */
-export const getNewsPrimaryId = cache(async (article: { id: number; headline?: string | null }): Promise<number | null> => {
+// Duplicate detection needs a leading-wildcard ILIKE over the whole archive —
+// there is no index for that, so it is a sequential scan of market_news on
+// every article render (news read-path audit, 2026-09-05). A story's primary
+// copy never changes once ingested, so the answer is cached per article for an
+// hour (tag seo-news); the ILIKE runs once per article per hour, not per view.
+const _newsPrimaryIdCached = unstable_cache(
+    async (id: number, headline: string | null): Promise<number | null> => _getNewsPrimaryIdUncached({ id, headline }),
+    ['seo:news-primary:v1'],
+    { revalidate: 3600, tags: ['seo-news'] }
+);
+export const getNewsPrimaryId = cache((article: { id: number; headline?: string | null }): Promise<number | null> =>
+    _newsPrimaryIdCached(Number(article.id), article.headline ?? null));
+
+async function _getNewsPrimaryIdUncached(article: { id: number; headline?: string | null }): Promise<number | null> {
     const key = newsDedupeKey(article.headline);
     if (!key) return null;
     const prefix = sanitizeNewsText(article.headline).slice(0, 40);
@@ -103,7 +116,7 @@ export const getNewsPrimaryId = cache(async (article: { id: number; headline?: s
     );
     const hit = (result.rows as Array<{ id: number; headline: string }>).find((r) => newsDedupeKey(r.headline) === key);
     return hit ? Number(hit.id) : null;
-});
+}
 
 export type Ticker = {
     symbol: string;

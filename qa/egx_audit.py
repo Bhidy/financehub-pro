@@ -523,6 +523,79 @@ async def suite_fund_page_plans():
 
 
 # --------------------------------------------------------------------------- #
+# 14.5 / news + glossary read path: plans + index inventory
+# --------------------------------------------------------------------------- #
+async def suite_news_page_plans():
+    """The news article page, hubs, feeds and the glossary's live examples —
+    EXPLAIN ANALYZE'd on the live database with a real recent article, plus the
+    market_news index inventory. The duplicate-detection ILIKE (no index can
+    serve a leading wildcard) is printed for the record; it is cached per
+    article for an hour in the frontend, so it is informational here."""
+    if not DATABASE_URL:
+        print("\n14.5 NEWS + GLOSSARY READ PATH: skipped (no DATABASE_URL)")
+        return
+    import asyncpg
+    print("\n14.5 NEWS + GLOSSARY READ PATH (plans + index inventory)")
+    try:
+        conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0, command_timeout=120)
+    except (asyncpg.CannotConnectNowError, asyncpg.PostgresConnectionError,
+            OSError, asyncio.TimeoutError) as e:
+        skip("news read path (DB unreachable — transient infra)", type(e).__name__)
+        return
+    slow = []
+    try:
+        latest = await conn.fetchrow("SELECT id, headline FROM market_news ORDER BY published_at DESC LIMIT 1")
+        if not latest:
+            skip("news read path (market_news is empty)", "nothing to plan")
+            return
+        aid = int(latest["id"]); prefix = (latest["headline"] or "")[:40]
+        total = await conn.fetchval("SELECT COUNT(*) FROM market_news")
+        print(f"    market_news rows: {total}; probe article id {aid}")
+        gated = {
+            "article by id": ("SELECT id, symbol, headline, url, published_at, article_body FROM market_news WHERE id = $1", [aid]),
+            "latest 60 (article page related list, with body)": ("SELECT id, symbol, headline, url, published_at, article_body FROM market_news ORDER BY published_at DESC LIMIT $1", [60]),
+            "news window 400 (hubs/categories/feeds, cached)": ("SELECT id, headline, published_at, source_section, symbol, image_url FROM market_news ORDER BY published_at DESC LIMIT $1", [400]),
+            "symbol news 5 (company page)": ("SELECT id, headline FROM market_news WHERE symbol = $1 ORDER BY published_at DESC LIMIT $2", ["COMI", 5]),
+            "hub page 24 + count (pagination)": ("SELECT id, headline FROM market_news ORDER BY published_at DESC LIMIT $1 OFFSET $2", [24, 48]),
+            "glossary example: movers (market_tickers)": ("SELECT symbol, change_percent FROM market_tickers WHERE market_code = 'EGX' AND change_percent IS NOT NULL ORDER BY change_percent DESC LIMIT $1", [5]),
+            "glossary example: dividend calendar (egx_dividends ⋈ tickers)": ("SELECT e.symbol, e.amount_upcoming FROM egx_dividends e JOIN market_tickers t ON t.symbol = UPPER(e.symbol) WHERE e.amount_upcoming IS NOT NULL AND e.ex_date_upcoming IS NOT NULL ORDER BY e.ex_date_upcoming ASC", []),
+        }
+        informational = {
+            "duplicate detection: headline ILIKE %prefix% (cached 1 h per article)": ("SELECT id, headline FROM market_news WHERE id < $1 AND headline ILIKE $2 ORDER BY id ASC LIMIT 20", [aid, f"%{prefix}%"]),
+            "API search: LOWER(headline/body/symbol) LIKE (explicit ?q= only)": ("SELECT id FROM market_news WHERE (LOWER(headline) LIKE $1 OR LOWER(article_body) LIKE $1 OR LOWER(symbol) LIKE $1) ORDER BY published_at DESC LIMIT 20", ["%egx%"]),
+            "archive count (hub pagination)": ("SELECT COUNT(*)::int AS n FROM market_news", []),
+        }
+        async def explain(label, sql, args, gate):
+            try:
+                plan = await conn.fetch(f"EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) {sql}", *args)
+                lines = [r[0] for r in plan]
+                total_line = next((l for l in lines if l.startswith("Execution Time")), "Execution Time: ? ms")
+                try:
+                    ms = float(total_line.split(":")[1].strip().split(" ")[0])
+                except Exception:  # noqa: BLE001
+                    ms = None
+                scan = next((l.strip() for l in lines if "Seq Scan" in l or "Index" in l), "?")
+                print(f"    {label}: {total_line} | {scan[:90]}")
+                if gate and ms is not None and ms > 250:
+                    slow.append((label, ms))
+            except Exception as e:  # noqa: BLE001 — informational
+                print(f"    {label}: EXPLAIN failed: {type(e).__name__}: {e}")
+        for label, (sql, args) in gated.items():
+            await explain(label, sql, args, True)
+        for label, (sql, args) in informational.items():
+            await explain(label, sql, args, False)
+        check("every per-request news/glossary query under 250 ms on the live database", not slow, f"slow: {slow}")
+        idx = await conn.fetch("SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'market_news' ORDER BY indexname")
+        for r in idx:
+            print(f"    index market_news.{r['indexname']}: {r['indexdef'][:110]}")
+        check("market_news has a published_at index and a (symbol, published_at) index",
+              any("(published_at DESC)" in r["indexdef"] for r in idx) and any("(symbol, published_at" in r["indexdef"] for r in idx),
+              "; ".join(r["indexname"] for r in idx))
+    finally:
+        await conn.close()
+
+
+# --------------------------------------------------------------------------- #
 # 14.1 / live: validate the real TV client's own gates
 # --------------------------------------------------------------------------- #
 async def suite_live():
@@ -597,6 +670,7 @@ async def main(suite: str):
         await suite_nav_write_contract()    # DB dry-run: nav_history provenance writers
         await suite_symbol_page_plans()     # DB read path: plans + upper-case symbol invariant
         await suite_fund_page_plans()       # DB read path: fund profile plans + index inventory
+        await suite_news_page_plans()       # DB read path: news + glossary plans + index inventory
     if suite in ("all", "live"):
         await suite_live()
     if suite in ("all", "dataquality"):

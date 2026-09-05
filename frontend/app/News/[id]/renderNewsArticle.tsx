@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getNewsArticle, getLatestNews, getNewsPrimaryId, type NewsArticle } from '@/lib/public-data';
+import { getNewsArticle, getNewsWindow, getNewsPrimaryId, type NewsArticle } from '@/lib/public-data';
 import { sanitizeNewsText, newsLang, canonicalNewsPath, newsSuppressionReason } from '@/lib/news-display';
 import { SITE_URL, newsPath, idFromParam, canonicalRedirectTarget, absUrl, symbolPath, symbolPathAr, type SiteLang } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -139,7 +139,19 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
     // Same-language only. The archive is bilingual and an article exists in
     // ONE language, so "latest" on an Arabic page must be Arabic: 24 Arabic
     // articles carried an English headline in this block (audit 2026-09-05).
-    const latest = (await getLatestNews(60)).filter((n) => n.id !== article.id && newsLang(n) === lang).slice(0, 6);
+    // From the cached, body-less news window (15 min, shared with the hubs and
+    // feeds) — this list used to fetch 60 full rows with article_body on every
+    // article render (news read-path audit, 2026-09-05). Same six cards, same
+    // language rule, zero per-render database work.
+    const latest = (await getNewsWindow())
+        .map((r) => ({
+            id: Number(r.id),
+            headline: String(r.headline ?? ''),
+            published_at: r.published_at ? String(r.published_at) : null,
+            source_section: (r.source_section as string | null) ?? null,
+        }))
+        .filter((n) => n.id !== article.id && newsLang(n) === lang)
+        .slice(0, 6);
 
     const newsJsonLd = {
         '@context': 'https://schema.org',

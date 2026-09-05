@@ -110,6 +110,35 @@ Gate: `npm run verify:ssr` (`scripts/test-ssr-truth.ts`). Live: `SSR_COUNT_CONTR
 * Live gates: `PAGE_CANONICAL_MISMATCH`, `HREFLANG_NO_SELF_REFERENCE`, `AR_PAGE_LINKS_EN_TREE`
   (data downloads exempt), `TITLE_TOO_LONG`, `DESCRIPTION_TOO_LONG` in `scripts/seo/audit.mjs`.
 
+## 6. Public API endpoints are publication surfaces too (adversarial pass, 2026-09-05 evening)
+
+* `/api/v1/egx/stocks` and `/api/v1/egx/stats` read `market_tickers WHERE market_code = 'EGX'`
+  and served all 318 vendor lines — the nine documented delistings included — while every page was
+  gated. Both now carry `AND ${EGX_ONLY}`. Rule: any query that PUBLISHES securities filters on the
+  security master, pages and APIs alike; `verify:master` covers the SQL shape, the live check is
+  `SECURITY_MASTER_UNVERIFIED_SYMBOL` plus the API assertion in the post-deploy verifier.
+* `/api/v1/funds/{id}` returned the raw `funds_view` row: `currency` "EGP" on USD/EUR funds, the
+  legacy (often NULL) return family, no `as_of_date`/`is_stale` — while `/api/v1/funds`, the CSV and
+  the SSR profile disagreed. It now applies `applyReturnHierarchy()` + `fundCurrency()` + the
+  10-day staleness contract. Rule: one fund, one number everywhere — list API, detail API, CSV,
+  profile, hub, ranking (cross-surface check: `verify-live4.py` in the audit scratchpad, to be
+  ported into `scripts/seo/audit.mjs`).
+* The Arabic homepage's hreflang cluster rendered `hrefLang="en" href=""` / `x-default href=""`
+  (Next 16 rewrites the origin URL to an empty path); explicit absolute `<link>` elements now carry
+  it, and both homepages declare `x-default → /ar` like every other pair.
+* **Vercel automatic mitigation:** a burst of hostile-looking probes from one IP (`/.env`,
+  `wp-login.php`, SQLi strings, path traversal) made Vercel challenge EVERY non-browser client for
+  ~25 minutes (`x-vercel-mitigated: challenge`, 403 "Vercel Security Checkpoint" — also from an
+  unrelated network). Browsers pass; crawlers that do not run JS may not. Never run hostile probes
+  against production from one IP without pacing; after any such window re-check `robots.txt` with
+  a plain client and, if it persists, the Firewall tab of the finhub project (the CLI token's
+  account, `bhidys-projects`, not the Chrome profile's account).
+
+* **Compute next to the data:** functions ran in `iad1` (US East) while the database is Supabase
+  `eu-central-1` and the audience is in Egypt — every SSR query crossed the Atlantic (company page
+  TTFB 1.3 s, fund profile 2.7 s, measured 2026-09-05). `frontend/vercel.json` pins `regions: ["fra1"]`;
+  the post-deploy verifier asserts `x-vercel-id` carries `fra1::fra1` and page latency.
+
 ## Follow-ups not done in this pass
 
 * `nav_history` provenance (`source`, `source_url`, `ingested_at`) is live in the writers and the

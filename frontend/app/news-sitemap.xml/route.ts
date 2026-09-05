@@ -22,7 +22,7 @@ export async function GET() {
             .map((r: any) => {
                 const lang = (r.source_section || '').endsWith('/ar') ? 'ar' : 'en';
                 return `  <url>
-    <loc>${absUrl(canonicalNewsPath(r.id, r.headline))}</loc>
+    <loc>${absUrl(canonicalNewsPath(r.id, r.headline, r.source_section))}</loc>
     <news:news>
       <news:publication>
         <news:name>Starta Markets</news:name>

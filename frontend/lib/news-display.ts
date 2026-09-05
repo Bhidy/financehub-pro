@@ -1,4 +1,4 @@
-import { newsPath } from "./seo";
+import { newsPath, type SiteLang } from "./seo";
 
 const LEADING_CITY_RE = /^\s*(?:cairo|egypt|dubai|riyadh|abu\s+dhabi|kuwait)\s*[-–—:]\s*/i;
 const LEADING_SOURCE_RE = /^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya|enterprise(?:am)?)\s*[-–—:]\s*/i;
@@ -58,8 +58,39 @@ export function sanitizeNewsText(value?: string | null): string {
  * Any new place that needs a news URL must call THIS, never newsPath() with a
  * raw headline. `verify:seo` enforces that.
  */
-export function canonicalNewsPath(id: number | string, headline?: string | null): string {
-    return newsPath(id, sanitizeNewsText(headline) || null);
+/**
+ * THE ONE LANGUAGE DECISION FOR A NEWS ARTICLE.
+ *
+ * The feed is genuinely bilingual (2,033 Arabic articles, 2,552 English) and
+ * an article exists in ONE language, so its language decides which tree it
+ * lives in. This must be computed identically by the article page, the
+ * sitemaps and the feed — a page that thinks an article is Arabic while the
+ * sitemap thinks it is English advertises a URL that immediately 308s, which
+ * burns crawl budget and devalues the sitemap as a signal.
+ *
+ * source_section is authoritative when present ('.../ar'); otherwise fall back
+ * to the script of the RAW headline (not the sanitized one — sanitizing strips
+ * dateline prefixes and must never change the language verdict).
+ */
+export type NewsLangSource = { headline?: string | null; source_section?: string | null };
+
+export function newsLang(article: NewsLangSource): SiteLang {
+    if ((article.source_section || "").endsWith("/ar")) return "ar";
+    return /[\u0600-\u06FF]/.test(article.headline || "") ? "ar" : "en";
+}
+
+/**
+ * Canonical URL for an article, in its own language's tree. Pass
+ * `sourceSection` wherever the caller has it; without it the headline script
+ * decides, which agrees with the page for every article whose headline is
+ * written in the article's own language.
+ */
+export function canonicalNewsPath(
+    id: number | string,
+    headline?: string | null,
+    sourceSection?: string | null
+): string {
+    return newsPath(id, sanitizeNewsText(headline) || null, newsLang({ headline, source_section: sourceSection }));
 }
 
 export function formatNewsDate(value?: string | null): string {

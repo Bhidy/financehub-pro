@@ -78,11 +78,13 @@ async function coreEntries(): Promise<Entry[]> {
         ['/Funds/best-mutual-funds-egypt-2026', 'daily', '0.8'],
         ['/ar/Funds/best-mutual-funds-egypt-2026', 'daily', '0.7'],
         ['/about', 'monthly', '0.5'],
+        ['/ar/about', 'monthly', '0.6'], // Arabic twin (previously 404)
         ['/editorial-policy', 'monthly', '0.4'],
         ['/ar/editorial-policy', 'monthly', '0.3'],
         ['/corrections', 'monthly', '0.3'],
         ['/ar/corrections', 'monthly', '0.3'],
         ['/contact', 'monthly', '0.4'],
+        ['/ar/contact', 'monthly', '0.5'], // Arabic twin (previously 404)
         ['/Calculators', 'weekly', '0.6'],
         ['/ar/Calculators', 'weekly', '0.6'],
         ['/RiskAssessment', 'weekly', '0.6'],
@@ -407,7 +409,7 @@ async function learnEntries(): Promise<Entry[]> {
 async function newsEntries(): Promise<Entry[]> {
     // Full archive (well under the 50k/sitemap limit; revisit when we approach it).
     const result = await db.query(
-        `SELECT id, headline, published_at
+        `SELECT id, headline, published_at, source_section
          FROM market_news
          ORDER BY published_at DESC
          LIMIT 45000`
@@ -416,7 +418,7 @@ async function newsEntries(): Promise<Entry[]> {
         // canonicalNewsPath, NOT newsPath(raw): the article page strips
         // dateline prefixes before slugifying, so the raw headline produces a
         // URL that 308s — ~510 sitemap entries were advertising redirects.
-        loc: absUrl(canonicalNewsPath(r.id, r.headline)),
+        loc: absUrl(canonicalNewsPath(r.id, r.headline, r.source_section)),
         lastmod: r.published_at,
         changefreq: 'never',
         priority: '0.5',

@@ -3,6 +3,7 @@ import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo
 import JsonLd from '@/components/seo/JsonLd';
 import { SITE_URL, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import RiskAssessmentClient from './RiskAssessmentClient';
+import RiskMethodology from '@/components/seo/RiskMethodology';
 import { RISK_I18N, type Lang } from './risk-i18n';
 
 /**
@@ -87,6 +88,11 @@ export function renderRiskPage(lang: Lang) {
             <JsonLd data={breadcrumbJsonLd(crumbs, SITE_URL)} />
             <Breadcrumbs items={crumbs} />
             <RiskAssessmentClient lang={lang} />
+            {/* The published methodology, server-rendered. The wizard is a
+                client component, so before this the server sent under 200 words
+                and no content heading — a tool that assigns a risk profile and a
+                model allocation while disclosing neither. */}
+            <RiskMethodology lang={lang} />
         </PublicPageShell>
     );
 }

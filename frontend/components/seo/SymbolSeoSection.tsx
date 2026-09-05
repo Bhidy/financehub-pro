@@ -3,6 +3,7 @@ import { SITE_URL, symbolPath, slugify, newsPath } from '@/lib/seo';
 import type { Ticker, CompanyProfile, NewsArticle, SymbolPerformance } from '@/lib/public-data';
 import JsonLd from '@/components/seo/JsonLd';
 import { breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
+import { canonicalNewsPath } from '@/lib/news-display';
 
 /**
  * Server-rendered SEO/GEO content for /symbol/[id], mounted BELOW the
@@ -346,7 +347,7 @@ export default function SymbolSeoSection({
                         <ul className="mt-3 divide-y divide-slate-200/70 rounded-2xl border border-slate-200/70 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:divide-slate-800/70 dark:border-slate-800/70 dark:bg-[#0F172A]">
                             {news.map((a) => (
                                 <li key={String(a.id)} className="px-5 py-3.5">
-                                    <Link href={newsPath(a.id, a.headline)} className="text-[15px] font-semibold leading-snug tracking-tight hover:text-[#0D9488] dark:hover:text-[#2DD4BF]">
+                                    <Link href={encodeURI(canonicalNewsPath(a.id, a.headline, (a as { source_section?: string | null }).source_section))} className="text-[15px] font-semibold leading-snug tracking-tight hover:text-[#0D9488] dark:hover:text-[#2DD4BF]">
                                         {a.headline}
                                     </Link>
                                     {a.published_at && (

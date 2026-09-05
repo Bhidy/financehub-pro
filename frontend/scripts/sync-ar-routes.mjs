@@ -54,6 +54,12 @@ export async function deriveArRoutes() {
       if (e.isDirectory()) {
         await walk(path.join(dir, e.name), `${rel}/${e.name}`);
       } else if ((e.name === "page.tsx" || e.name === "route.ts") && rel) {
+        // A route may opt OUT of being treated as a language twin. /ar/News/[id]
+        // does: it holds different articles, not translations, so prefixing a
+        // news link would rewrite an English article into the Arabic tree and
+        // 308 straight back.
+        const body = await readFile(path.join(dir, e.name), "utf8").catch(() => "");
+        if (body.includes("@ar-not-a-twin")) continue;
         found.add(rel);
       }
     }
@@ -101,8 +107,10 @@ async function run() {
     /var AR_TWIN_ROUTES = \[[^\]]*\];/,
     `var AR_TWIN_ROUTES = ${JSON.stringify(routes)};`
   );
+  // NOT [^\]]* — the patterns themselves contain "]" (from "[^/]+"), so a
+  // negated-class match stops at the first one and silently rewrites nothing.
   next = next.replace(
-    /var AR_TWIN_PATTERNS = \[[^\]]*\];/,
+    /var AR_TWIN_PATTERNS = \[[\s\S]*?\];/,
     `var AR_TWIN_PATTERNS = ${JSON.stringify(patterns)};`
   );
   if (next !== js) await writeFile(MIRROR, next, "utf8");

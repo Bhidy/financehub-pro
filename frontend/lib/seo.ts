@@ -65,12 +65,26 @@ export function arabicSlug(input: string | null | undefined, maxLen = 80): strin
     return slugify(stripped, maxLen);
 }
 
-/** Canonical news-article path: /News/{id}-{slug} (bare /News/{id} 308s here).
- *  Single URL per article; Arabic articles already carry Arabic slugs because
- *  the slug derives from the (Arabic) headline. */
-export function newsPath(id: number | string, headline?: string | null): string {
+/**
+ * Canonical news-article path, IN THE TREE THAT MATCHES THE ARTICLE'S OWN
+ * LANGUAGE:
+ *   en → /News/{id}-{slug}
+ *   ar → /ar/News/{id}-{arabic-slug}
+ *
+ * The news feed is genuinely bilingual — 2,033 Arabic articles and 2,552
+ * English ones, which are DIFFERENT articles, not translations. So this is not
+ * a mirrored tree and the two sides are never hreflang alternates: an article
+ * exists in exactly one language and therefore at exactly one URL. Serving an
+ * Arabic article from /News meant shipping Arabic text under <html lang="en">,
+ * because the root layout derives the document language from the URL.
+ *
+ * The slug derives from the headline, so Arabic articles already carry Arabic
+ * slugs. Bare /News/{id} and any wrong-tree or stale-slug form 308 here.
+ */
+export function newsPath(id: number | string, headline?: string | null, lang: SiteLang = 'en'): string {
     const slug = slugify(headline);
-    return slug ? `/News/${id}-${slug}` : `/News/${id}`;
+    const base = lang === 'ar' ? '/ar/News' : '/News';
+    return slug ? `${base}/${id}-${slug}` : `${base}/${id}`;
 }
 
 /**

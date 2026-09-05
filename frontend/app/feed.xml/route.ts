@@ -16,7 +16,7 @@ export async function GET() {
         const articles = await getLatestNews(50);
         items = articles
             .map((a) => {
-                const link = absUrl(canonicalNewsPath(a.id, a.headline));
+                const link = absUrl(canonicalNewsPath(a.id, a.headline, (a as { source_section?: string | null }).source_section));
                 const title = xmlEscape((sanitizeNewsText(a.headline) || 'Egypt market update').trim());
                 const body = (a.article_body || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 400);
                 const pub = a.published_at ? new Date(a.published_at).toUTCString() : new Date().toUTCString();

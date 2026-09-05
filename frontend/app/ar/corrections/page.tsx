@@ -51,7 +51,7 @@ export default function CorrectionsArPage() {
 
             <nav aria-label="ذات صلة" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
                 <Link href="/ar/editorial-policy" className="text-muted hover:text-starta-teal">سياسة التحرير</Link>
-                <Link href="/about" className="text-muted hover:text-starta-teal">من نحن ومصادر البيانات</Link>
+                <Link href="/ar/about" className="text-muted hover:text-starta-teal">من نحن ومصادر البيانات</Link>
                 <a href="/corrections" hrefLang="en" className="text-muted hover:text-starta-teal">Corrections in English</a>
             </nav>
         </PublicPageShell>

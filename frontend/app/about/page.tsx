@@ -14,8 +14,11 @@ import JsonLd from '@/components/seo/JsonLd';
 export const metadata: Metadata = {
     title: 'About Starta Markets — Data Sources & Methodology',
     description:
-        'Starta Markets is a bilingual (Arabic/English) market-intelligence platform for the Egyptian Exchange: live EGX prices, 20 years of financials, mutual-fund NAVs, market news and an AI analyst. How our data works and where it comes from.',
-    alternates: { canonical: '/about' },
+        'Starta Markets is a bilingual (Arabic/English) market-intelligence platform for the Egyptian Exchange: live EGX prices, 20 years of financials, mutual-fund NAVs and market news. How our data works and where it comes from.',
+    alternates: {
+        canonical: '/about',
+        languages: { en: '/about', ar: '/ar/about', 'x-default': '/ar/about' },
+    },
 };
 
 const SOURCES: Array<[string, string]> = [
@@ -28,7 +31,7 @@ const SOURCES: Array<[string, string]> = [
 
 export default function AboutPage() {
     return (
-        <PublicPageShell>
+        <PublicPageShell altHref="/ar/about">
             <JsonLd
                 data={{
                     '@context': 'https://schema.org',
@@ -49,13 +52,13 @@ export default function AboutPage() {
                     the <strong>Egyptian Exchange (EGX)</strong>. It brings together, in one place: live prices and
                     profiles for every listed company, up to 20 years of financial statements, dividend histories,
                     technical indicators and analyst estimates; NAV and performance data for Egyptian mutual funds;
-                    Egyptian market news in both languages; a beginner-friendly investing academy; and an AI market
-                    analyst you can ask about any EGX stock or fund.
+                    Egyptian market news in both languages; and a beginner-friendly investing academy.
                 </p>
-                <p dir="rtl" lang="ar" className="rounded-xl bg-surface p-4 text-main ring-1 ring-slate-200">
-                    <strong>ستارتا ماركتس</strong> منصة ذكاء مالي ثنائية اللغة (عربي/إنجليزي) للبورصة المصرية: أسعار
-                    مباشرة وبيانات مالية تمتد ٢٠ عامًا لكل الشركات المدرجة، وصافي قيمة أصول صناديق الاستثمار المصرية
-                    وأداؤها، وأخبار السوق، وأكاديمية تعليمية للمبتدئين، ومحلل ذكي يجيب عن أسئلتك بالعربية أو الإنجليزية.
+                <p>
+                    <a href="/ar/about" hrefLang="ar" lang="ar" className="font-semibold text-starta-teal hover:underline">
+                        اقرأ هذه الصفحة بالعربية
+                    </a>{' '}
+                    — this page now has a full Arabic twin rather than a single translated paragraph.
                 </p>
             </div>
 

@@ -18,14 +18,17 @@ import { SITE_URL } from '@/lib/seo';
  *  - zero structured data; it now carries the same Dataset shape /markets/egx30
  *    uses, so the index value is machine-readable for answer engines.
  *
- * KNOWN, DELIBERATE LIMITATION — the page's <h1> is `COMI`, the live ticker
- * placeholder, so the heading changes with whatever symbol was last selected.
- * That is a real SEO defect. Fixing it means demoting that <h1> to <h2> and
- * promoting the banner's exchange name, and measurement showed the swap
- * changes the rendered heading (no CSS pins a size for `.display`, so the tag
- * default applies: 32px/h1 vs 24px/h2). The designed page's appearance is not
- * negotiable, so this stays until the fix can be made visually neutral in the
- * stylesheet. Do not "fix" it by editing the tag.
+ * THE LIVE-TICKER <h1> IS FIXED (2026-09-04). The note here used to say the swap
+ * was blocked because "no CSS pins a size for `.display`, so the tag default
+ * applies: 32px/h1 vs 24px/h2". That was wrong: the size never came from
+ * `.display` at all — `market-pulse.css` line 520 pinned `.ticker-row h1` at
+ * 1.42rem. Widening that selector to `h1, h2` made the swap pixel-identical, so
+ * `#selectedSymbol` is now an <h2> and the document gets a real, stable <h1>
+ * describing the page instead of whatever symbol was last selected.
+ *
+ * That <h1> is visually hidden (`.mp-a11y-title`) because the designed layout
+ * has no slot for a title and its appearance is not negotiable. It is an
+ * accessibility fix first: a screen reader announced this page as "COMI".
  */
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +43,7 @@ const COPY = {
         crumb: 'Market Pulse',
         asOf: (v: string) => `EGX 30 as of ${v} (Cairo)`,
         locale: 'en-GB',
+        h1: 'Egyptian Exchange market pulse — EGX 30 index, live share prices and watchlist',
     },
     ar: {
         title: 'البورصة المصرية اليوم — مؤشر EGX 30 والأسهم لحظة بلحظة | Starta Markets',
@@ -48,6 +52,7 @@ const COPY = {
         crumb: 'نبض السوق',
         asOf: (v: string) => `مؤشر EGX 30 حتى ${v} (توقيت القاهرة)`,
         locale: 'ar-EG',
+        h1: 'نبض البورصة المصرية — مؤشر EGX 30 وأسعار الأسهم المباشرة وقائمة المتابعة',
     },
 } as const;
 
@@ -126,7 +131,15 @@ export async function renderMarketPulse(lang: 'en' | 'ar') {
     return renderStaticHub({
         file: 'market-pulse.html',
         lang,
-        replacements: isAr
+        replacements: [
+            // The real page heading. Anchored on a single-line, distinctive
+            // element rather than on indentation — matching hand-formatted HTML
+            // by exact bytes is how a replacement silently no-ops.
+            {
+                find: '<div class="grid-backdrop"></div>',
+                replace: `<h1 class="mp-a11y-title">${esc(t.h1)}</h1><div class="grid-backdrop"></div>`,
+            },
+            ...(isAr
             ? [
                   { find: `<title>${COPY.en.title}</title>`, replace: `<title>${esc(t.title)}</title>` },
                   {
@@ -147,7 +160,8 @@ export async function renderMarketPulse(lang: 'en' | 'ar') {
                       replace: `<meta name="description" content="${esc(t.desc)}">`,
                   },
               ]
-            : [],
+            : []),
+        ],
         injections,
         head:
             (isAr ? langSeedScript('ar') : '') +

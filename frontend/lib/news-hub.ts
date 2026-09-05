@@ -118,7 +118,9 @@ export function renderNewsHub(spec: NewsHubSpec): Promise<Response> {
             headline: sanitizeNewsText(a.headline) || (isAr ? 'تحديث من السوق' : 'Market update'),
             symbol: a.symbol || '',
             published: a.published_at,
-            href: canonicalNewsPath(a.id, a.headline),
+            // Each card targets the article's OWN tree — an Arabic article on the
+            // English hub still links to /ar/News/..., because that is its one URL.
+            href: canonicalNewsPath(a.id, a.headline, (a as { source_section?: string | null }).source_section),
         }))
         .filter((a) => a.id);
 

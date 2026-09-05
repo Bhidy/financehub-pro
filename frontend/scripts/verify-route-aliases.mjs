@@ -332,8 +332,11 @@ const checks = [
     // Those are third-party editorial photos: off-brand, unpredictable, and not
     // ours to republish (a street-market photo once illustrated a CPI story).
     // Every news surface must resolve its image through lib/news-cover.ts.
+    // The implementation moved from page.tsx to renderNewsArticle.tsx when the
+    // Arabic news tree was added (both thin routes delegate to it); this gate
+    // must follow the code, or it silently checks an empty wrapper.
     name: "news article renders the branded cover, never the scraped image",
-    file: "app/News/[id]/page.tsx",
+    file: "app/News/[id]/renderNewsArticle.tsx",
     assert: (text) =>
       /from '@\/lib\/news-cover'/.test(text) &&
       !/src=\{article\.image_url\}/.test(text) &&
@@ -613,7 +616,7 @@ const checks = [
     // put ~510 redirecting URLs into the news sitemap.
     name: "news sitemap builds URLs through canonicalNewsPath (not the raw headline)",
     file: "app/sitemaps/[name]/route.ts",
-    assert: (text) => /canonicalNewsPath\(r\.id, r\.headline\)/.test(text) && !/newsPath\(r\.id, r\.headline\)/.test(text),
+    assert: (text) => /canonicalNewsPath\(r\.id, r\.headline, r\.source_section\)/.test(text) && !/newsPath\(r\.id, r\.headline\)/.test(text),
   },
   {
     name: "news-sitemap.xml and feed.xml also use canonicalNewsPath",
@@ -1020,6 +1023,14 @@ async function assertDesignedShellsIntact() {
     ["public/fund-compare.html", 'data-key="empty_cta">Go back to Funds</a>'],
     ["public/fund-compare.html", '<a href="/Funds" class="btn-primary'],
     ["public/fund-compare.html", 'data-key="hero_title"'],
+    // app/Market-Pulse/route.ts injects the page's real <h1> before this div,
+    // and the CSS rule below is what makes the ticker heading's h1->h2 swap
+    // pixel-identical. Losing either silently returns the page to having a
+    // live ticker as its only <h1>.
+    ["public/market-pulse.html", '<div class="grid-backdrop"></div>'],
+    ["public/market-pulse.html", '<h2 id="selectedSymbol" class="display">'],
+    ["public/assets/market-pulse.css", '.ticker-row h1, .ticker-row h2'],
+    ["public/assets/market-pulse.css", '.mp-a11y-title'],
   ];
   for (const [file, anchor] of SHELL_ANCHORS) {
     let text = "";

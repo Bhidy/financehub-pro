@@ -315,3 +315,7 @@ cached reads the rest of the site uses (`lib/glossary-live-example.ts`), linked 
 the figure and stamped with its date. Rationale: the Arabic definitional SERPs ("ما هو صافي قيمة الأصول")
 are held by machine-translated Investopedia/TradingView/Investor.gov pages with no local example. Fund
 profile titles are absolute (no brand suffix; the fund name is the title).
+
+**Eighth pass (same day).** The Arabic homepage opens with today's 12-month fund leader and the size of the
+ranked universe, linking the money page with its exact Arabic title as anchor text — data from the same
+rows as the ranking page.

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getEgx30Index, getMovers, type Ticker } from '@/lib/public-data';
+import { getEgx30Index, getMovers, getAllFundsRanked, type Ticker } from '@/lib/public-data';
+import { ltrNum } from '@/lib/bidi';
 import { SITE_URL, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
@@ -61,10 +62,17 @@ const HUBS: Array<{ href: string; title: string; desc: string }> = [
 ];
 
 export default async function ArHome() {
-    const [egx30, movers] = await Promise.all([
+    const [egx30, movers, funds] = await Promise.all([
         getEgx30Index().catch(() => null),
         getMovers().catch(() => ({ gainers: [] as Ticker[], losers: [] as Ticker[], active: [] as Ticker[] })),
+        getAllFundsRanked().catch(() => [] as Array<Record<string, unknown>>),
     ]);
+    // The homepage's one funds sentence: today's 12-month leader and the size
+    // of the ranked universe, from the same rows as the ranking page.
+    const ranked = funds.filter((f) => typeof f.return_1y === 'number' && Number.isFinite(f.return_1y as number));
+    const leadFund = ranked[0];
+    const leadFundName = leadFund ? String(leadFund.fund_name || leadFund.fund_name_en || '') : '';
+    const leadFundPct = leadFund ? `${(leadFund.return_1y as number) >= 0 ? '+' : ''}${(leadFund.return_1y as number).toFixed(2)}%` : '';
     const up = (egx30?.change ?? 0) >= 0;
     const topGainers = (movers?.gainers || []).slice(0, 5);
 
@@ -88,6 +96,12 @@ export default async function ArHome() {
                 منصة ستارتا ماركتس لمتابعة <strong>البورصة المصرية (EGX)</strong> بالعربية: أسعار الأسهم المباشرة، ومؤشر EGX30،
                 والأكثر ارتفاعًا وانخفاضًا، وصناديق الاستثمار، وأخبار السوق — محدَّثة كل 15 دقيقة خلال ساعات التداول.
             </p>
+            {leadFund && leadFundName && (
+                <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+                    أفضل صندوق استثمار في مصر خلال آخر 12 شهرًا اليوم: <strong>{leadFundName}</strong> بعائد {ltrNum(leadFundPct)}، من بين {ltrNum(String(ranked.length))} صندوقًا مرتبة آليًا حسب العائد في{' '}
+                    <Link href="/ar/Funds/best-mutual-funds-egypt-2026" className="font-semibold text-starta-teal hover:underline">أفضل صناديق الاستثمار في مصر 2026</Link>.
+                </p>
+            )}
 
             {egx30?.value != null && (
                 <Link href="/ar/markets/egx30" className="mt-6 flex flex-wrap items-baseline gap-3 rounded-2xl border border-border bg-surface px-5 py-4 hover:border-starta-teal/50">

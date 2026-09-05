@@ -24,6 +24,10 @@ const AR_TWIN_ROUTES: string[] = arTwinRoutes.routes;
 export function localizedHref(path: string, lang: Lang | string): string {
     if (lang !== 'ar') return path;
     if (path.startsWith('/ar/') || path === '/ar') return path;
+    // The root is twinned too (/ar is the Arabic homepage) but is not a
+    // prefix in the generated list — without this, every Arabic page's "Home"
+    // link (the highest-weight link on the page) pointed at the English home.
+    if (path === '/' || path === '') return '/ar';
     const twinned = AR_TWIN_ROUTES.some(
         (route) => path === route || path.startsWith(`${route}/`) || path.startsWith(`${route}?`),
     );

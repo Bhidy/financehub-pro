@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getTicker, getTechnicals, getSeasonalitySymbols} from '@/lib/public-data';
-import { SITE_URL, symbolFromArParam, canonicalRedirectTarget, OG_DEFAULTS } from '@/lib/seo';
+import { SITE_URL, symbolFromArParam, canonicalRedirectTarget, OG_DEFAULTS, clampTitle } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
@@ -97,7 +97,7 @@ export async function technicalsMetadata(id: string, lang: Lang): Promise<Metada
     const daily = rows.find((r) => str(r, 'timeframe') === '1D');
     const signal = daily ? signalText(signalKey(num(daily, 'recommend_all')), lang) : null;
 
-    const title = t(TECHNICALS.title(name, symbol), lang);
+    const title = clampTitle([t(TECHNICALS.title(name, symbol), lang), t(TECHNICALS.h1(name, symbol), lang), `${symbol} — ${t(NAV.technicals, lang)}`]);
     let description = t(TECHNICALS.description(name, symbol, signal), lang);
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 

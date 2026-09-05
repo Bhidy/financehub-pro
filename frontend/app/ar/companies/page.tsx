@@ -12,7 +12,7 @@ import { SECURITY_MASTER_SOURCES } from '@/lib/security-master';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'أسهم البورصة المصرية — أسعار الشركات المقيدة',
+    title: 'أسهم البورصة المصرية — الشركات المقيدة',
     description:
         'دليل كامل لجميع الشركات المدرجة في البورصة المصرية (EGX) مرتبة حسب القيمة السوقية — الأسعار المباشرة والقطاعات والقيمة السوقية، محدَّث يوميًا.',
     alternates: {

@@ -44,6 +44,26 @@ export function middleware(request: NextRequest) {
     const host = (request.headers.get('host') ?? '').toLowerCase();
     const url = request.nextUrl.clone();
 
+    // 0) Malformed percent-encoding (a truncated UTF-8 sequence such as %E0%A4)
+    // makes the router's own param decoding throw, which surfaced as a 500 on
+    // every dynamic route family — funds, categories, providers, sectors, news,
+    // symbols (verified live 2026-09-05). It is a bad request, not a server
+    // fault, so it is answered as one before routing.
+    try {
+        decodeURIComponent(url.pathname);
+    } catch {
+        return new NextResponse('Bad Request', { status: 400 });
+    }
+    // 0b) Double-encoded Arabic URLs (`%25D8%25A8…`): no slug of ours contains a
+    // literal "%", so an encoded percent sign is always a second encoding layer.
+    // The route handlers cannot see it — they receive the once-decoded path —
+    // and served the hub as a duplicate 200 at that address (audit 2026-09-05,
+    // seeded by a sitemap that encoded twice). Peel one layer and 308.
+    if (url.pathname.includes('%25')) {
+        const once = url.pathname.replace(/%25/g, '%');
+        return NextResponse.redirect(`${url.origin}${once}${url.search}`, 308);
+    }
+
     // 1) Canonical-host enforcement: *.vercel.app AND www.startamarkets.com
     // (www previously served the full site as a 200 duplicate).
     if (host.endsWith('.vercel.app') || (host !== CANONICAL_HOST && host.endsWith(`.${CANONICAL_HOST}`))) {

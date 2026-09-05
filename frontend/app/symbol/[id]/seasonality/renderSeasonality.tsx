@@ -9,7 +9,7 @@ import {
     type Seasonality,
     type SeasonalMonth,
 } from '@/lib/public-data';
-import { SITE_URL, symbolFromArParam, canonicalRedirectTarget, OG_DEFAULTS } from '@/lib/seo';
+import { SITE_URL, symbolFromArParam, canonicalRedirectTarget, OG_DEFAULTS, clampTitle } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
@@ -81,7 +81,7 @@ export async function seasonalityMetadata(id: string, lang: Lang): Promise<Metad
     const pathAr = symbolTabPath(symbol, 'seasonality', 'ar', ticker.name_ar);
     const canonical = encodeURI(lang === 'ar' ? pathAr : pathEn);
 
-    const title = t(SEASONALITY.title(name, symbol, years), lang);
+    const title = clampTitle([t(SEASONALITY.title(name, symbol, years), lang), t(SEASONALITY.h1(name, symbol), lang), `${symbol} — ${t(NAV.seasonality, lang)}`]);
     let description = t(
         SEASONALITY.description(name, symbol, years, best ? monthLabel(best, lang) : null),
         lang

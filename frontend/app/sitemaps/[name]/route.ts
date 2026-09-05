@@ -225,7 +225,9 @@ async function sectorEntries(): Promise<Entry[]> {
     try {
         official = (await publishableEgxSectors()).flatMap((x) => [
             { loc: absUrl(x.en), changefreq: 'daily', priority: '0.7' },
-            { loc: absUrl(encodeURI(x.ar)), changefreq: 'daily', priority: '0.7' },
+            // absUrl() already percent-encodes the Arabic slug — encoding here too
+            // double-encoded every Arabic hub in the sitemap (audit 2026-09-05).
+            { loc: absUrl(x.ar), changefreq: 'daily', priority: '0.7' },
         ]);
     } catch (error) {
         console.error('[sitemap:sectors] official sectors unavailable:', (error as Error).message);

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getTicker, getHistoryStats, getRecentHistory, getSeasonalitySymbols} from '@/lib/public-data';
-import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS, symbolFromArParam, canonicalRedirectTarget } from '@/lib/seo';
+import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS, symbolFromArParam, canonicalRedirectTarget, clampTitle } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import KeyTerms from '@/components/seo/KeyTerms';
@@ -91,9 +91,11 @@ export async function historyMetadata(id: string, lang: Lang): Promise<Metadata>
     const firstYear = isoDate(stats['first_date'])?.slice(0, 4) ?? null;
     const rowCount = num(stats, 'rows');
 
-    const title = firstYear
-        ? t(HISTORY.titleWithYear(name, symbol, String(firstYear)), lang)
-        : t(HISTORY.title(name, symbol), lang);
+    const title = clampTitle([
+        firstYear ? t(HISTORY.titleWithYear(name, symbol, String(firstYear)), lang) : t(HISTORY.title(name, symbol), lang),
+        t(HISTORY.h1(name, symbol), lang),
+        `${symbol} — ${t(NAV.history, lang)}`,
+    ]);
     let description = `${name} (EGX: ${symbol}) daily stock price history${firstYear ? ` since ${firstYear}` : ''}: open, high, low, close & volume${
         rowCount !== null ? ` for ${rowCount.toLocaleString('en-EG')} trading days` : ''
     }, plus all-time high and low.`;

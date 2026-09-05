@@ -348,16 +348,23 @@ async def suite_nav_write_contract():
     await tr.start()
     try:
         await conn.execute(upd.NAV_DDL)
-        probe = "__QAFUNDNAV__"
-        rows = await conn.fetch(upd.SQL_UPSERT_NAV, [probe], [date(2000, 1, 1)], [1.0],
+        # nav_history.fund_id has a foreign key to mutual_funds (the first run of
+        # this suite failed on it), so the probe borrows a REAL fund id inside the
+        # transaction that is rolled back below, on 19th-century dates no source
+        # can ever publish — nothing is persisted and nothing real is touched.
+        probe = await conn.fetchval("SELECT fund_id FROM mutual_funds ORDER BY fund_id LIMIT 1")
+        if probe is None:
+            skip("nav write-contract (mutual_funds is empty — nothing to borrow)", "no fund id")
+            return
+        rows = await conn.fetch(upd.SQL_UPSERT_NAV, [probe], [date(1900, 1, 1)], [1.0],
                                 "qa", "https://example.invalid/qa.csv")
         check("funds_nav_updater upsert matches nav_history schema (post-migrate)", len(rows) == 1)
-        await conn.execute(lst.SQL_UPSERT_NAV_LIST, probe, date(2000, 1, 2), 1.0, "https://example.invalid/list")
+        await conn.execute(lst.SQL_UPSERT_NAV_LIST, probe, date(1900, 1, 2), 1.0, "https://example.invalid/list")
         check("funds_list_api_sync upsert matches nav_history schema", True)
-        rows = await conn.fetch(eima.SQL_INSERT_NAV_EIMA, [probe], [date(2000, 1, 3)], [1.0], ["qa"], ["https://example.invalid/r.pdf"])
+        rows = await conn.fetch(eima.SQL_INSERT_NAV_EIMA, [probe], [date(1900, 1, 3)], [1.0], ["qa"], ["https://example.invalid/r.pdf"])
         check("eima_backfill insert matches nav_history schema", len(rows) == 1)
         prov = await conn.fetchrow(
-            "SELECT source, source_url, ingested_at FROM nav_history WHERE fund_id = $1 AND date = $2", probe, date(2000, 1, 1))
+            "SELECT source, source_url, ingested_at FROM nav_history WHERE fund_id = $1 AND date = $2", probe, date(1900, 1, 1))
         check("provenance columns round-trip (source, source_url, ingested_at)",
               prov is not None and prov["source"] == "qa" and prov["source_url"] and prov["ingested_at"] is not None)
     except asyncpg.ReadOnlySQLTransactionError:

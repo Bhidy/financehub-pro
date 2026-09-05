@@ -62,6 +62,12 @@ check('"Commercial International Bank Fixed Income Fund Thabat" -> fixed-income'
 check('"ABC Bank Equity Fund 1" -> equity', categoryOfFund({ fund_name_en: 'ABC Bank Equity Fund 1' })?.key ?? null, 'equity');
 check('"Beltone EGX70 EWI Fund B 70" -> index', categoryOfFund({ fund_name_en: 'Beltone EGX70 EWI Fund B 70' })?.key ?? null, 'index');
 check('"CI Asset Management CI ctor Specialized Funds Issuance 2 Technology" -> sector', categoryOfFund({ fund_name_en: 'CI Asset Management CI ctor Specialized Funds Issuance 2 Technology' })?.key ?? null, 'sector');
+// A vendor "equity" type is the superclass: the registered name names the sub-type.
+check('fund_type=equity + "Beltone EGX100 Fund Issuance 2 Meya Meya" -> index', categoryOfFund({ fund_type: 'equity', fund_name_en: 'Beltone EGX100 Fund Issuance 2 Meya Meya' })?.key ?? null, 'index');
+check('fund_type=equity + "Beltone Financial Fund Issuance 3" -> sector', categoryOfFund({ fund_type: 'equity', fund_name_en: 'Beltone Financial Fund Issuance 3' })?.key ?? null, 'sector');
+check('fund_type=equity + "Beltone EGX33 Shariah Issuance 1 Wafra" -> shariah', categoryOfFund({ fund_type: 'equity', fund_name_en: 'Beltone EGX33 Shariah Issuance 1 Wafra' })?.key ?? null, 'shariah');
+check('fund_type=equity + "ABC Bank Equity Fund 1" stays equity', categoryOfFund({ fund_type: 'equity', fund_name_en: 'ABC Bank Equity Fund 1' })?.key ?? null, 'equity');
+check('fund_type=money_market + "… Index …" name keeps the vendor type', categoryOfFund({ fund_type: 'money_market', fund_name_en: 'Some Index Money Market Fund' })?.key ?? null, 'money-market');
 check('"Sanabel Equity Fund Islamic Sharia Compliant" -> shariah (flag wins)', categoryOfFund({ fund_name_en: 'Sanabel Equity Fund Islamic Sharia Compliant' })?.key ?? null, 'shariah');
 check('Arabic "فضة" inside "منخفضة" is NOT silver/gold', categoryOfFund({ fund_name_en: 'Azimut Equity Opportunities Fund Az LV', fund_name: 'صندوق أزيموت لفرص الأسهم منخفضة التقلبات السعرية' })?.key ?? null, 'equity');
 check('"Credit Agricole Egypt Mutual Fund 2" stays uncategorised', categoryOfFund({ fund_name_en: 'Credit Agricole Egypt Mutual Fund 2' }), null);
@@ -93,11 +99,13 @@ console.log('\n[7] production distribution — every category clears the thresho
 // classifier change drops a category below its gate, the page 404s and the
 // sitemap shrinks silently. Here it fails loudly instead.
 // Refreshed 2026-09-05 after the name-fallback classifier (106 funds carried
-// no disclosed type) and the index / sector categories: counts are from the
-// live fund payloads of that day.
+// no disclosed type) and again once a vendor "equity" type learned to defer to
+// an index / sector / Shariah name marker (the vendor files every Beltone
+// EGX100/EGX70/EGX33 index fund as "equity"): counts are from the live fund
+// payloads of that day — 207 current funds, 29 still uncategorised.
 const OBSERVED: Record<string, number> = {
-    equity: 48, 'money-market': 57, 'fixed-income': 29, balanced: 12, shariah: 13, gold: 6,
-    index: 5, sector: 8,
+    equity: 35, 'money-market': 59, 'fixed-income': 29, balanced: 12, shariah: 15, gold: 8,
+    index: 8, sector: 12,
 };
 for (const c of FUND_CATEGORIES) {
     const n = OBSERVED[c.key];

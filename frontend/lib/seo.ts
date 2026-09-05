@@ -213,6 +213,13 @@ export function idFromParam(param: string): number | null {
  * unicode — naive string comparison always mismatches for Arabic slugs and a
  * redirect to a raw-unicode Location header 500s. Returns the encoded redirect
  * target when the request truly differs from canonical, else null.
+ *
+ * Do NOT tighten this to an exact match: on 2026-09-05 that version redirected
+ * every canonical Arabic URL to itself under `next start` (the params really
+ * are encoded there). A double-encoded request (`%25D8%25A8…`) cannot be told
+ * apart here — Vercel hands the function the once-decoded path — so that
+ * duplicate address is handled where the raw path is visible: middleware.ts
+ * (`%25` → 308) and the sitemap (never encode twice).
  */
 export function canonicalRedirectTarget(requestPath: string, canonicalPath: string): string | null {
     let decoded = requestPath;
@@ -225,6 +232,24 @@ export function canonicalRedirectTarget(requestPath: string, canonicalPath: stri
         return null;
     }
     return encodeURI(canonicalPath);
+}
+
+/**
+ * SERP title budget. Google shows ~60 characters; the root layout appends
+ * " | Starta Markets" (17) to every non-absolute title, so a page title that
+ * goes through the template has 43 of its own. clampTitle() takes candidates
+ * from the most specific to the shortest and returns the first that fits — the
+ * long legal names of EGX companies ("Egyptian Kuwaiti Holding Company for …")
+ * pushed 26 sub-tab titles to 67–136 characters (audit 2026-09-05), and a title
+ * that truncates mid-word in the SERP is a title the searcher does not read.
+ * The last candidate is returned even when it overflows, so callers make it
+ * the symbol-based form that always fits.
+ */
+export const TITLE_SUFFIX = ' | Starta Markets';
+export const TITLE_BUDGET = 60;
+export function clampTitle(candidates: string[], budget: number = TITLE_BUDGET - TITLE_SUFFIX.length): string {
+    const list = candidates.filter((c) => typeof c === 'string' && c.trim().length > 0);
+    return list.find((c) => c.length <= budget) ?? list[list.length - 1] ?? '';
 }
 
 /** Escape a string for inclusion in XML text/attribute content. */

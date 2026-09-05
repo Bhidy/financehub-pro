@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getTicker, getFinancialYears, type FinancialYear, getSeasonalitySymbols} from '@/lib/public-data';
-import { SITE_URL, symbolPath, absUrl, symbolFromArParam, canonicalRedirectTarget } from '@/lib/seo';
+import { SITE_URL, symbolPath, absUrl, symbolFromArParam, canonicalRedirectTarget, clampTitle } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
@@ -83,7 +83,7 @@ export async function financialsMetadata(id: string, lang: Lang): Promise<Metada
     const { minYear, maxYear } = yearRange(years);
     const range = minYear !== null && maxYear !== null ? ` ${minYear}–${maxYear}` : '';
     return {
-        title: `${t(FINANCIALS.title(name, symbol), lang)}${range}`,
+        title: clampTitle([`${t(FINANCIALS.title(name, symbol), lang)}${range}`, `${t(FINANCIALS.h1(name, symbol), lang)}${range}`, t(FINANCIALS.h1(name, symbol), lang), `${symbol} — ${t(NAV.financials, lang)}${range}`]),
         description: buildDescription(name, symbol, years.length, minYear, maxYear, lang),
         alternates: {
             // Language-aware. Emitting the English canonical from the ARABIC

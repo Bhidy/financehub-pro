@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { getTicker, getDividendHistory, getDividendSummary, getSeasonalitySymbols} from '@/lib/public-data';
-import { SITE_URL, symbolPath, absUrl, symbolFromArParam, canonicalRedirectTarget } from '@/lib/seo';
+import { SITE_URL, symbolPath, absUrl, symbolFromArParam, canonicalRedirectTarget, clampTitle } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import KeyTerms from '@/components/seo/KeyTerms';
@@ -95,7 +95,7 @@ export async function dividendsMetadata(id: string, lang: Lang): Promise<Metadat
     if (!ticker || (history.length === 0 && divYield === null)) return {};
     const name = (lang === 'ar' ? ticker.name_ar || ticker.name_en : ticker.name_en) || symbol;
     return {
-        title: `${name} (${symbol}) Dividends & Yield`,
+        title: clampTitle([t(DIVIDENDS.title(name, symbol), lang), t(DIVIDENDS.h1(name, symbol), lang), `${symbol} — ${t(NAV.dividends, lang)}`]),
         description: buildDescription(name, symbol, divYield, lang),
         alternates: {
             // Language-aware. Emitting the English canonical from the ARABIC

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getTicker, getStats, getSeasonalitySymbols} from '@/lib/public-data';
-import { SITE_URL, absUrl, symbolFromArParam, canonicalRedirectTarget, OG_DEFAULTS } from '@/lib/seo';
+import { SITE_URL, absUrl, symbolFromArParam, canonicalRedirectTarget, OG_DEFAULTS, clampTitle } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
@@ -127,7 +127,7 @@ export async function statisticsMetadata(id: string, lang: Lang): Promise<Metada
     const pathEn = encodeURI(symbolTabPath(symbol, 'statistics', 'en'));
     const pathAr = encodeURI(symbolTabPath(symbol, 'statistics', 'ar', ticker.name_ar));
     const canonical = lang === 'ar' ? pathAr : pathEn;
-    const title = t(STATISTICS.title(name, symbol), lang);
+    const title = clampTitle([t(STATISTICS.title(name, symbol), lang), t(STATISTICS.h1(name, symbol), lang), `${symbol} — ${t(NAV.statistics, lang)}`]);
     let description = t(STATISTICS.description(name, symbol), lang);
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 

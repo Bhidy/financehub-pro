@@ -255,17 +255,29 @@ export function categoryOfFund(row: {
     const shariah = FUND_CATEGORIES.find((c) => c.key === 'shariah') as FundCategory;
     if (shariah.match(text, isShariah)) return shariah;
     const byType = FUND_CATEGORIES.find((c) => c.key !== 'shariah' && c.match(text, isShariah)) ?? null;
+    // The registered NAME is consulted in two cases, both mechanical and both
+    // in the manager's own words:
+    //  1. No disclosed type at all (106 of the 207 current funds on
+    //     2026-09-05) — the name carries the type verbatim: "HSBC Money Market
+    //     Fund Kol Youm", "Commercial International Bank Fixed Income Fund
+    //     Thabat", "ABC Bank Equity Fund 1".
+    //  2. A vendor type of plain "equity". FRA's own taxonomy separates index
+    //     and sector/thematic funds from equity funds (Q2-2026: equity 39 ·
+    //     index 12 · thematic 8 · sector 4) but the price vendor files all four
+    //     as "equity" — verified 2026-09-05: every Beltone EGX100 / EGX70 /
+    //     EGX33 index fund carried fund_type = 'equity', so the index and
+    //     sector hubs 404'd on their data gate. "Equity" is the superclass; an
+    //     index / sector / Shariah marker in the name names the sub-type.
+    // A name that names no type stays with the vendor type, or uncategorised.
+    const fromName = !byType || byType.key === 'equity'
+        ? classifyFundByName(row as { fund_name?: unknown; fund_name_en?: unknown })
+        : null;
+    if (fromName?.shariah) return shariah;
+    if (fromName && (fromName.type === 'index' || fromName.type === 'sector')) {
+        return FUND_CATEGORIES.find((c) => c.key === fromName.type) ?? byType;
+    }
     if (byType) return byType;
-    // No disclosed type at all (106 of the 207 current funds on 2026-09-05):
-    // fall back to the fund's own registered NAME, which in this market
-    // carries the type verbatim — "HSBC Money Market Fund Kol Youm",
-    // "Commercial International Bank Fixed Income Fund Thabat", "ABC Bank
-    // Equity Fund 1". Still mechanical, still the manager's own words; a name
-    // that names no type stays uncategorised.
-    const fromName = classifyFundByName(row as { fund_name?: unknown; fund_name_en?: unknown });
-    if (fromName.shariah) return shariah;
-    if (fromName.type === 'index' || fromName.type === 'sector') return FUND_CATEGORIES.find((c) => c.key === fromName.type) ?? null;
-    return fromName.type ? FUND_CATEGORIES.find((c) => c.marketplaceType === fromName.type) ?? null : null;
+    return fromName?.type ? FUND_CATEGORIES.find((c) => c.marketplaceType === fromName.type) ?? null : null;
 }
 
 /**

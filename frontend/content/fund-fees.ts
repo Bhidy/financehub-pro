@@ -23,8 +23,8 @@ export const FEES = {
         'مقارنة رسوم صناديق الاستثمار في مصر'
     ),
     title: s(
-        'Mutual Fund Fees in Egypt — Compared by Fund',
-        'رسوم صناديق الاستثمار في مصر — مقارنة لكل صندوق'
+        'Egypt Mutual Fund Fees — Compared by Fund',
+        'رسوم صناديق الاستثمار في مصر لكل صندوق'
     ),
     description: s(
         'Annual management fee for every Egyptian mutual fund that publishes one, grouped by fund type with each category’s median — from official disclosures.',

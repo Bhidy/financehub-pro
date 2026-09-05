@@ -39,7 +39,11 @@ const QUICK = args.includes('--quick');
 // Routes with an /ar twin — the one list the app's localizedHref() uses, so the
 // audit and the site agree on what "twinned" means.
 const AR_TWIN_ROUTES = JSON.parse(readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '../../lib/ar-twin-routes.json'), 'utf8')).routes;
-const isTwinnedEnPath = (p) => AR_TWIN_ROUTES.some((r) => p === r || p.startsWith(`${r}/`));
+// Data downloads (.csv/.xml/.json/.txt/.pdf) are not pages in either language
+// tree — one dataset serves both, and it is noindex — so a link to one is not
+// PageRank leaving the Arabic tree.
+const DATA_FILE = /\.(?:csv|xml|json|txt|pdf|ics)$/i;
+const isTwinnedEnPath = (p) => !DATA_FILE.test(p) && AR_TWIN_ROUTES.some((r) => p === r || p.startsWith(`${r}/`));
 const SAMPLE = Number(flag('sample', QUICK ? 0 : 25));
 const OUT = flag('out', null);
 const FAIL_ON = flag('fail-on', 'critical');
@@ -652,7 +656,7 @@ function selfTest() {
     page('/ar/Funds/category/x', '<h2>Money Market Funds In Egypt</h2><p>NAV 10 SAR</p><time datetime="2026-01-01">1 يناير</time><a href="/">الرئيسية</a><a href="/Funds">كل الصناديق</a>',
         `<link rel="alternate" hreflang="ar" href="${SITE_URL}/ar/Funds/category/x"><link rel="alternate" hreflang="en" href="${SITE_URL}/Funds/category/x"><link rel="alternate" hreflang="x-default" href="${SITE_URL}/ar/Funds/category/x"><link rel="alternate" hreflang="en" href="${SITE_URL}/Funds"><link rel="alternate" hreflang="ar" href="${SITE_URL}/ar/Funds">`);
     // B: clean Arabic fund page — none of those codes may fire.
-    page('/ar/Funds/2662-x', `<h2>صافي قيمة الأصول</h2><p>10 EGP</p><time datetime="${today}">اليوم</time><a href="/ar">الرئيسية</a><a href="/ar/Funds">الصناديق</a><a href="/Funds/2662-x">EN</a>`,
+    page('/ar/Funds/2662-x', `<h2>صافي قيمة الأصول</h2><p>10 EGP</p><time datetime="${today}">اليوم</time><a href="/ar">الرئيسية</a><a href="/ar/Funds">الصناديق</a><a href="/Funds/2662-x">EN</a><a href="/Funds/prices-today.csv">CSV</a>`,
         `<link rel="alternate" hreflang="ar" href="${SITE_URL}/ar/Funds/2662-x"><link rel="alternate" hreflang="en" href="${SITE_URL}/Funds/2662-x"><link rel="alternate" hreflang="x-default" href="${SITE_URL}/ar/Funds/2662-x">`);
     // C: a fund surface with no as-of at all.
     page('/Funds/prices-today', '<p>prices</p>');
@@ -673,7 +677,7 @@ function selfTest() {
         [a.has('WRONG_CURRENCY'), 'A: SAR on a fund surface is detected'],
         [a.has('AR_PAGE_ENGLISH_SUBHEADING'), 'A: English sub-heading on an Arabic page is detected'],
         [a.has('AR_PAGE_LINKS_EN_TREE'), 'A: an Arabic page linking the English tree is detected'],
-        [!b.has('AR_PAGE_LINKS_EN_TREE'), 'B: the language toggle and Arabic links raise nothing'],
+        [!b.has('AR_PAGE_LINKS_EN_TREE'), 'B: the language toggle, Arabic links and a CSV download raise nothing'],
         [!b.has('HREFLANG_DUPLICATE_LANG') && !b.has('DATA_STALE') && !b.has('WRONG_CURRENCY') && !b.has('AR_PAGE_ENGLISH_SUBHEADING') && !b.has('PAGE_NO_ASOF'), 'B: a clean Arabic fund page raises none of them'],
         [c.has('PAGE_NO_ASOF'), 'C: a fund surface with no <time datetime> is detected'],
         [d.has('SSR_COUNT_CONTRADICTION'), 'D: "0 funds matching" above rendered rows is detected'],

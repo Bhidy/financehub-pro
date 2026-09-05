@@ -7,7 +7,7 @@ import { pairIsPublishable } from '@/content/stock-vs';
 import { canonicalPair } from '@/app/companies/vs/[pair]/renderStockVs';
 import ListingStatusPage from '@/components/seo/ListingStatusPage';
 import type { Ticker } from '@/lib/public-data';
-import { SITE_URL, symbolPath, symbolPathAr, symbolFromArParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
+import { SITE_URL, symbolPath, symbolPathAr, symbolFromArParam, canonicalRedirectTarget, absUrl, clampTitle } from '@/lib/seo';
 import { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import SymbolPageClient from '@/app/symbol/[id]/SymbolPageClient';
 import JsonLd from '@/components/seo/JsonLd';
@@ -151,7 +151,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // plus the price truncates in the SERP; drop the price segment first, then
     // the market suffix, before the name itself (audit: 150 TITLE_TOO_LONG).
     const full = `سعر سهم ${name} (${symbol}) اليوم${priceStr ? ` ${priceStr}` : ''} — البورصة المصرية`;
-    const title = full.length <= 60 ? full : `سعر سهم ${name} (${symbol}) اليوم${priceStr ? ` ${priceStr}` : ''}`.length <= 60 ? `سعر سهم ${name} (${symbol}) اليوم${priceStr ? ` ${priceStr}` : ''}` : `سعر سهم ${name} (${symbol}) اليوم`;
+    // Absolute title (no template suffix): the full 60 is the budget; a legal
+    // name too long for even the shortest named form yields to the symbol.
+    const title = clampTitle([
+        full,
+        `سعر سهم ${name} (${symbol}) اليوم${priceStr ? ` ${priceStr}` : ''}`,
+        `سعر سهم ${name} (${symbol}) اليوم`,
+        `سعر سهم ${symbol} اليوم${priceStr ? ` ${priceStr}` : ''} — البورصة المصرية`,
+    ], 60);
     let description = `تابع سعر سهم ${name} (${symbol}) في البورصة المصرية${priceStr ? ` — آخر سعر ${priceStr}` : ''}${ticker.sector_name ? `، قطاع ${sectorAr(ticker.sector_name)}` : ''}. إحصاءات وقوائم مالية وتوزيعات، تحديث كل 15 دقيقة.`;
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 

@@ -99,6 +99,9 @@ export async function renderEgxSector(slug: string, lang: Lang) {
     const sector = findEgxSector(slug);
     if (!sector) notFound();
     const canonicalPath = egxSectorPath(sector, lang);
+    // Any spelling other than the canonical slug — a Latin alias or a stale
+    // form — 308s. (A double-encoded request is peeled by middleware.ts before
+    // it reaches here; the audit found the hub at two addresses on 2026-09-05.)
     const requestPath = `${isAr ? '/ar' : ''}/sectors/egx/${slug}`;
     const target = canonicalRedirectTarget(requestPath, canonicalPath);
     if (target) permanentRedirect(target);

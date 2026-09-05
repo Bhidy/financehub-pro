@@ -960,14 +960,15 @@ const NEWS_WINDOW = 2500;
 const _newsWindowCached = unstable_cache(
     async (): Promise<Array<Record<string, unknown>>> => {
         const result = await db.query(
-            `SELECT id, headline, published_at, source_section, symbol, image_url
+            `SELECT id, headline, published_at, source_section, symbol, image_url,
+                    left(article_body, 400) AS body_head
              FROM market_news
              ORDER BY published_at DESC
              LIMIT $1`,
             [NEWS_WINDOW]
         );
         // Publishable rows only: no off-market stories, one copy per headline.
-        return primaryNewsRows(result.rows as Array<{ id: number; headline: string; symbol: string | null }>) as Array<Record<string, unknown>>;
+        return primaryNewsRows(result.rows as Array<{ id: number; headline: string; symbol: string | null; body_head: string | null }>) as Array<Record<string, unknown>>;
     },
     ['seo:news-window'],
     { revalidate: 900, tags: ['seo-news'] }

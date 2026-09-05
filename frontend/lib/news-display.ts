@@ -169,12 +169,42 @@ export function getNewsBrandedCover(item: any, lang: string = "en", fallbackSymb
 const OFF_MARKET_CODES_RE = /\bSAR\b|\bTASI\b/;
 const OFF_MARKET_NAMES_RE = /\bTadawul\b|\bNomu\b|Saudi (?:Stock )?Exchange/i;
 const OFF_MARKET_AR_RE = /ريال|تداول السعودية|السوق السعودي|\bتاسي\b/;
+// A story whose lede quotes SAR but names no Egyptian marker is a Saudi
+// results story with a neutral headline ("X swings to net loss in H1-26") —
+// 5 of them sat in the feeds with clean headlines (2026-09-05).
+const EGYPT_MARKER_RE = /Egypt|EGX|EGP|Cairo|مصر|جنيه|البورصة المصرية/;
+// The early mover generator (ids 237–415, January 2026) priced EGX movers in
+// "SAR": "Catalyst Partners (CPME) surges 6.71% to 18.3 SAR". Real EGX company,
+// wrong currency label — a data defect, so it is never published either.
+const MISLABELED_MOVER_RE = /\b(?:surges|slides|jumps|drops|gains|falls|climbs|tumbles|rises|sinks)\b.{0,80}?\bto\s+[\d.,]+\s+SAR\b/;
+
+export type NewsSuppression = 'off-market' | 'mislabeled-currency' | null;
+
+/**
+ * Why a story must not be published, or null. Headline first; the body lede
+ * (first 400 chars) only when the headline is silent AND nothing names Egypt.
+ * A story that mapped to an EGX symbol is never off-market — a cross-border
+ * deal by an EGX company is Egypt news — but a mislabeled mover is suppressed
+ * whatever its symbol, because the number on the page is wrong.
+ */
+export function newsSuppressionReason(headline?: string | null, symbol?: string | null, bodyHead?: string | null): NewsSuppression {
+    const h = headline || '';
+    if (MISLABELED_MOVER_RE.test(h)) return 'mislabeled-currency';
+    if (symbol && String(symbol).trim()) return null;
+    if (OFF_MARKET_CODES_RE.test(h) || OFF_MARKET_NAMES_RE.test(h) || OFF_MARKET_AR_RE.test(h)) return 'off-market';
+    const b = (bodyHead || '').slice(0, 400);
+    if (b && OFF_MARKET_CODES_RE.test(b) && !EGYPT_MARKER_RE.test(`${h} ${b}`)) return 'off-market';
+    return null;
+}
 
 /** True for a story about a market other than the EGX that arrived through the Egypt feed. */
-export function isOffMarketNews(headline?: string | null, symbol?: string | null): boolean {
-    if (symbol && String(symbol).trim()) return false;
-    const h = headline || '';
-    return OFF_MARKET_CODES_RE.test(h) || OFF_MARKET_NAMES_RE.test(h) || OFF_MARKET_AR_RE.test(h);
+export function isOffMarketNews(headline?: string | null, symbol?: string | null, bodyHead?: string | null): boolean {
+    return newsSuppressionReason(headline, symbol, bodyHead) === 'off-market';
+}
+
+/** True for any story the site must not publish (off-market or mislabeled). */
+export function isUnpublishableNews(headline?: string | null, symbol?: string | null, bodyHead?: string | null): boolean {
+    return newsSuppressionReason(headline, symbol, bodyHead) !== null;
 }
 
 /** Identity of a story for duplicate detection: sanitized headline, case-folded, punctuation-collapsed. */
@@ -182,12 +212,14 @@ export function newsDedupeKey(headline?: string | null): string {
     return sanitizeNewsText(headline).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 }
 
-type NewsRowLike = { id: number | string; headline?: string | null; symbol?: string | null };
+type NewsRowLike = { id: number | string; headline?: string | null; symbol?: string | null; body_head?: string | null; article_body?: string | null };
 
 /**
  * The publishable subset of a list of news rows, in the caller's order:
- * off-market stories removed, and of several rows sharing a headline only the
- * PRIMARY (lowest id — the first time the story arrived) kept.
+ * unpublishable stories removed (off-market or mislabeled — see
+ * newsSuppressionReason; pass body_head/article_body when the row has it), and
+ * of several rows sharing a headline only the PRIMARY (lowest id — the first
+ * time the story arrived) kept.
  */
 export function primaryNewsRows<T extends NewsRowLike>(rows: T[]): T[] {
     const primary = new Map<string, number>();
@@ -199,7 +231,7 @@ export function primaryNewsRows<T extends NewsRowLike>(rows: T[]): T[] {
         if (cur === undefined || id < cur) primary.set(key, id);
     }
     return rows.filter((r) => {
-        if (isOffMarketNews(r.headline, r.symbol)) return false;
+        if (isUnpublishableNews(r.headline, r.symbol, r.body_head ?? r.article_body)) return false;
         const key = newsDedupeKey(r.headline);
         return !key || primary.get(key) === Number(r.id);
     });

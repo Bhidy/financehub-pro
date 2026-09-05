@@ -433,7 +433,8 @@ async function learnEntries(): Promise<Entry[]> {
 async function newsEntries(): Promise<Entry[]> {
     // Full archive (well under the 50k/sitemap limit; revisit when we approach it).
     const result = await db.query(
-        `SELECT id, headline, published_at, source_section, symbol
+        `SELECT id, headline, published_at, source_section, symbol,
+                left(article_body, 400) AS body_head
          FROM market_news
          ORDER BY published_at DESC
          LIMIT 45000`
@@ -441,7 +442,7 @@ async function newsEntries(): Promise<Entry[]> {
     // primaryNewsRows: no off-market (Saudi) stories, and ONE URL per story —
     // the archive had 185 second copies of re-ingested headlines, each a
     // "Duplicate, Google chose different canonical" row in Search Console.
-    return primaryNewsRows(result.rows as Array<{ id: number; headline: string; symbol: string | null; published_at: string; source_section: string | null }>).map((r: any) => ({
+    return primaryNewsRows(result.rows as Array<{ id: number; headline: string; symbol: string | null; body_head: string | null; published_at: string; source_section: string | null }>).map((r: any) => ({
         // canonicalNewsPath, NOT newsPath(raw): the article page strips
         // dateline prefixes before slugifying, so the raw headline produces a
         // URL that 308s — ~510 sitemap entries were advertising redirects.

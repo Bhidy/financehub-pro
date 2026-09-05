@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         const result = await db.query(
-            `SELECT id, headline, published_at, source_section, symbol
+            `SELECT id, headline, published_at, source_section, symbol,
+                    left(article_body, 400) AS body_head
              FROM market_news
              WHERE published_at >= NOW() - INTERVAL '48 hours'
              ORDER BY published_at DESC
@@ -20,7 +21,7 @@ export async function GET() {
         );
         // Same publishable subset as the archive sitemap: no off-market
         // stories, one URL per story (see primaryNewsRows).
-        const items = primaryNewsRows(result.rows as Array<{ id: number; headline: string; symbol: string | null; published_at: string; source_section: string | null }>)
+        const items = primaryNewsRows(result.rows as Array<{ id: number; headline: string; symbol: string | null; body_head: string | null; published_at: string; source_section: string | null }>)
             .map((r: any) => {
                 const lang = (r.source_section || '').endsWith('/ar') ? 'ar' : 'en';
                 return `  <url>

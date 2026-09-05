@@ -110,7 +110,7 @@ export async function renderMarketPulse(lang: 'en' | 'ar') {
         const [lists, tickers, news] = await Promise.all([
             getMarketLists(10),
             getAllTickers(),
-            getLatestNews(40),
+            getLatestNews(120),
         ]);
         const pct = (v: number | null | undefined) =>
             v === null || v === undefined || !Number.isFinite(v) ? '--' : `${v >= 0 ? '+' : ''}${fmt(v)}%`;

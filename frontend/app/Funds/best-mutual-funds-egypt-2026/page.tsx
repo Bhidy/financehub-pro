@@ -21,7 +21,9 @@ import FundsGuide from '@/components/seo/FundsGuide';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Best Mutual Funds in Egypt 2026 — Ranked by 1-Year Return',
+    // absolute: the layout template appends " | Starta Markets" and pushed
+    // this to 74 chars — the ranked-by clause was the part that truncated.
+    title: { absolute: 'Best Mutual Funds in Egypt 2026 — Ranked by 1-Year Return' },
     description:
         'Egyptian mutual funds ranked by trailing 1-year return, by category: money market, fixed income, equity and balanced. Live NAVs, fees and minimums — updated twice daily.',
     alternates: {

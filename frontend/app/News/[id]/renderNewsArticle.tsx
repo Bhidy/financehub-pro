@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getNewsArticle, getLatestNews, getNewsPrimaryId, type NewsArticle } from '@/lib/public-data';
-import { sanitizeNewsText, newsLang, canonicalNewsPath, isOffMarketNews } from '@/lib/news-display';
+import { sanitizeNewsText, newsLang, canonicalNewsPath, newsSuppressionReason } from '@/lib/news-display';
 import { SITE_URL, newsPath, idFromParam, canonicalRedirectTarget, absUrl, symbolPath, symbolPathAr, type SiteLang } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import PreferredSource from '@/components/seo/PreferredSource';
@@ -57,9 +57,10 @@ export async function newsArticleMetadata(idParam: string, _tree: SiteLang): Pro
     // A later duplicate copy names the FIRST copy (the page 308s there too).
     const primaryId = await getNewsPrimaryId(article);
     const canonical = encodeURI(newsPath(primaryId ?? article.id, headline, lang));
-    // Off-market (Saudi) stories stay reachable but never indexable: a site
-    // whose promise is the Egyptian market must not rank for Aramco.
-    const offMarket = isOffMarketNews(article.headline, article.symbol);
+    // Off-market (Saudi) and mislabeled stories stay reachable but never
+    // indexable: a site whose promise is the Egyptian market must not rank
+    // for Aramco, nor for an EGX mover priced in the wrong currency.
+    const offMarket = newsSuppressionReason(article.headline, article.symbol, article.article_body) !== null;
     return {
         title: headline,
         description,
@@ -111,7 +112,8 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
     if (redirectTarget) {
         permanentRedirect(redirectTarget);
     }
-    const offMarket = isOffMarketNews(article.headline, article.symbol);
+    const suppression = newsSuppressionReason(article.headline, article.symbol, article.article_body);
+    const offMarket = suppression === 'off-market';
 
     const arabic = lang === 'ar';
     const paragraphs = cleanBody(article);
@@ -127,7 +129,7 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
     // Same-language only. The archive is bilingual and an article exists in
     // ONE language, so "latest" on an Arabic page must be Arabic: 24 Arabic
     // articles carried an English headline in this block (audit 2026-09-05).
-    const latest = (await getLatestNews(30)).filter((n) => n.id !== article.id && newsLang(n) === lang).slice(0, 6);
+    const latest = (await getLatestNews(60)).filter((n) => n.id !== article.id && newsLang(n) === lang).slice(0, 6);
 
     const newsJsonLd = {
         '@context': 'https://schema.org',

@@ -16,7 +16,8 @@ import FundsGuide from '@/components/seo/FundsGuide';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'أفضل صناديق الاستثمار في مصر 2026 — مرتبة حسب العائد السنوي',
+    // absolute: بدون لاحقة القالب (" | Starta Markets") التي رفعت العنوان إلى 76 حرفًا.
+    title: { absolute: 'أفضل صناديق الاستثمار في مصر 2026 — مرتبة حسب العائد السنوي' },
     description:
         'صناديق الاستثمار المصرية مرتبة حسب عائد آخر 12 شهرًا، حسب الفئة: أسواق النقد، الدخل الثابت، الأسهم، والمتوازنة. صافي قيمة الأصول والرسوم والحد الأدنى — محدَّث مرتين يوميًا.',
     alternates: {

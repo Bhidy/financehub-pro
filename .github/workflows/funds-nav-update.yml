@@ -31,6 +31,13 @@ on:
   schedule:
     - cron: '0 5 * * 0-4'    # 08:00 Cairo, Sun-Thu (morning, after overnight CSV publish)
     - cron: '0 16 * * 0-4'   # 19:00 Cairo, Sun-Thu (evening, post-close redundancy)
+    # RETRY SLOTS (2026-09-05). GitHub's scheduler drops a large share of fires
+    # on this account: neither Thursday 2026-09-04 run happened, and the site
+    # trailed the source by two published NAVs on Friday morning. Each run is
+    # an idempotent upsert, so a second attempt 90 minutes after each slot
+    # costs nothing when the first fired and recovers the day when it did not.
+    - cron: '30 6 * * 0-4'   # 09:30 Cairo retry
+    - cron: '30 17 * * 0-4'  # 20:30 Cairo retry
   workflow_dispatch:
     inputs:
       scope:
@@ -87,6 +94,10 @@ jobs:
           #   protects nothing. The cadence-aware per-fund signal lives in the
           #   fund_data_quality ledger, where a weekly fund's 7-day interval is its
           #   normal rhythm; the freshness monitor alerts on regression there.
+          # --zero-gain-streak 12, not 6: there are now four slots a day (two
+          #   plus two retries), so the same "three trading days without a new
+          #   NAV date" tolerance is twelve consecutive runs, not six. A retry
+          #   that follows a successful run legitimately learns nothing.
           python backend-core/scripts/funds_nav_updater.py \
             --concurrency 10 --min-updated 100 \
-            --zero-gain-streak 6 --max-stale 190 $EXTRA
+            --zero-gain-streak 12 --max-stale 190 $EXTRA

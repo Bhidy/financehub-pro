@@ -15,6 +15,13 @@ on:
     - cron: '30 15 * * 0-4'       # dividends, post-close
     - cron: '0 2 * * 5'           # symbol-map + logos, weekly (Fri 02:00 UTC)
     - cron: '0 3 * * 5'           # financials (20yr) + fundamentals snapshot, weekly (Fri 03:00 UTC)
+    # RETRY SLOTS for the weekly cycle (2026-09-05): the Friday 03:00 fire was
+    # dropped by GitHub's scheduler on 2026-09-05, the reconciliation job went
+    # red on stale revenue_ttm, and a manual dispatch had to recover the week.
+    # The harvest is an idempotent upsert, so the retries are free when the
+    # first fire happened.
+    - cron: '0 5 * * 5'           # financials + fundamentals retry (Fri 05:00 UTC)
+    - cron: '0 3 * * 6'           # financials + fundamentals retry (Sat 03:00 UTC)
   workflow_dispatch:
     inputs:
       cycle:
@@ -72,6 +79,8 @@ jobs:
               "30 15 * * 0-4")     echo "cycle=dividends" >> "$GITHUB_OUTPUT" ;;
               "0 2 * * 5")         echo "cycle=symbolmap" >> "$GITHUB_OUTPUT" ;;
               "0 3 * * 5")         echo "cycle=financials_and_fundamentals" >> "$GITHUB_OUTPUT" ;;
+              "0 5 * * 5")         echo "cycle=financials_and_fundamentals" >> "$GITHUB_OUTPUT" ;;
+              "0 3 * * 6")         echo "cycle=financials_and_fundamentals" >> "$GITHUB_OUTPUT" ;;
               *)                   echo "cycle=technicals" >> "$GITHUB_OUTPUT" ;;
             esac
           fi

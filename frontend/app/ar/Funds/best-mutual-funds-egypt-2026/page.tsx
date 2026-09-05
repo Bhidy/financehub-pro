@@ -6,6 +6,8 @@ import { SITE_URL, fundPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import FundsGuide from '@/components/seo/FundsGuide';
+import FundsNarrativeSections from '@/components/seo/FundsNarrative';
+import { buildFundsNarrative } from '@/lib/funds-narrative';
 
 /**
  * Arabic twin of /Funds/best-mutual-funds-egypt-2026 — "أفضل صناديق الاستثمار
@@ -88,6 +90,7 @@ export default async function BestFundsArPage() {
         .map((c) => ({ name: c, funds: (buckets.get(c) as FundRow[]).slice(0, 5) }));
 
     const top10 = withReturn.slice(0, 10);
+    const narrative = buildFundsNarrative(withReturn as Array<Record<string, unknown>>, 'ar', asOfHuman);
 
     const itemList = {
         '@context': 'https://schema.org',
@@ -103,6 +106,7 @@ export default async function BestFundsArPage() {
         })),
     };
     const faq = [
+        ...narrative.faq,
         {
             q: 'كيف تُرتَّب هذه الصناديق؟',
             a: `تُرتَّب حصريًا حسب عائد آخر 12 شهرًا المحسوب من تاريخ صافي قيمة الأصول لكل صندوق، مجمّعة حسب الفئة. لا يُطبَّق أي حكم تحريري — تُعاد الجداول تلقائيًا مع تحديث صافي قيمة الأصول (مرتين يوميًا). البيانات بتاريخ ${asOfHuman ?? 'آخر إفصاح'}.`,
@@ -128,6 +132,8 @@ export default async function BestFundsArPage() {
                 {withReturn.length} صندوق استثمار مصري مرتبة <strong>حصريًا حسب عائد آخر 12 شهرًا</strong>، حسب الفئة. تأتي صافي قيمة الأصول والعوائد من الإفصاحات الرسمية لمديري الصناديق وتُحدَّث مرتين يوميًا
                 {asOfHuman && <> — البيانات بتاريخ <time dateTime={asOf as string}>{asOfHuman}</time></>}. الترتيب آلي وليس توصية.
             </p>
+
+            <FundsNarrativeSections lang="ar" n={narrative} />
 
             <section className="mt-8">
                 <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">

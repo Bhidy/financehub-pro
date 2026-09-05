@@ -69,6 +69,14 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
     if (redirectTarget) permanentRedirect(redirectTarget);
     const ar = sectorAr(match.sector_name) || match.sector_name;
     const tickers = (await getAllTickers()).filter((t) => t.sector_name === match.sector_name);
+    // Thin-page fix (audit PAGE_THIN on four Arabic sectors): the sector's
+    // size and its three largest names, from the same rows as the table.
+    const capped = tickers.filter((t) => typeof t.market_cap === 'number' && t.market_cap > 0).sort((a, b) => (b.market_cap as number) - (a.market_cap as number));
+    const totalCap = capped.reduce((a, t) => a + (t.market_cap as number), 0);
+    const bn = (v: number) => (v / 1e9).toFixed(1);
+    const big3 = capped.slice(0, 3);
+    const sectorSummary = tickers.length ? `يضم القطاع ${tickers.length} شركة مقيدة في البورصة المصرية${totalCap > 0 ? ` بقيمة سوقية إجمالية ${bn(totalCap)} مليار جنيه` : ''}${big3.length ? `؛ أكبر شركاته: ${big3.map((t) => `${t.name_ar || t.name_en || t.symbol} (${bn(t.market_cap as number)} مليار جنيه)`).join('، ')}` : ''}.` : '';
+
     const asOf = tickers.reduce<string | null>((mx, t) => (t.last_updated && (!mx || new Date(t.last_updated) > new Date(mx)) ? t.last_updated : mx), null);
     const asOfHuman = asOf ? new Date(asOf).toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }) : null;
 
@@ -93,6 +101,7 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
                 {match.market_cap !== null && Number.isFinite(match.market_cap) && (<> — بإجمالي قيمة سوقية {fmtCap(match.market_cap)} ج.م</>)}.
                 اضغط على أي شركة لعرض ملفها الكامل. محدَّث يوميًا{asOfHuman && <>؛ الأسعار بتاريخ {asOfHuman}</>}.
             </p>
+            {sectorSummary && <p className="mt-3 max-w-3xl leading-relaxed text-muted">{sectorSummary}</p>}
             {sectorDescription(match.sector_name, 'ar') && (
                 <section className="mt-5 max-w-3xl" aria-label="عن هذا القطاع">
                     <h2 className="text-lg font-bold text-main">ماذا يضم قطاع {ar}</h2>

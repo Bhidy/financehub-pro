@@ -191,11 +191,11 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     {arabic ? (
                         <>
                             طبّق ما تعلمته —{' '}
-                            <Link href="/Funds" className="font-semibold text-starta-darkTeal hover:underline">
+                            <Link href={arabic ? '/ar/Funds' : '/Funds'} className="font-semibold text-starta-darkTeal hover:underline">
                                 استكشف صناديق الاستثمار المصرية
                             </Link>{' '}
                             أو{' '}
-                            <Link href="/Funds/Compare" className="font-semibold text-starta-darkTeal hover:underline">
+                            <Link href={arabic ? '/ar/Funds/Compare' : '/Funds/Compare'} className="font-semibold text-starta-darkTeal hover:underline">
                                 قارن بين الصناديق
                             </Link>
                             .
@@ -203,11 +203,11 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     ) : (
                         <>
                             Put it into practice —{' '}
-                            <Link href="/Funds" className="font-semibold text-starta-darkTeal hover:underline">
+                            <Link href={arabic ? '/ar/Funds' : '/Funds'} className="font-semibold text-starta-darkTeal hover:underline">
                                 explore Egyptian mutual funds
                             </Link>{' '}
                             or{' '}
-                            <Link href="/Funds/Compare" className="font-semibold text-starta-darkTeal hover:underline">
+                            <Link href={arabic ? '/ar/Funds/Compare' : '/Funds/Compare'} className="font-semibold text-starta-darkTeal hover:underline">
                                 compare funds side by side
                             </Link>
                             .
@@ -249,7 +249,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     ))}
                 </ul>
                 <p className="mt-4 text-sm">
-                    <Link href="/Learn" className="font-semibold text-starta-darkTeal hover:underline">
+                    <Link href={arabic ? '/ar/Learn' : '/Learn'} className="font-semibold text-starta-darkTeal hover:underline">
                         {arabic ? 'كل دروس التعلّم ←' : 'All learn topics →'}
                     </Link>
                 </p>

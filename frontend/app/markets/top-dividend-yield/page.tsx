@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
     title: 'Highest Dividend Yield Stocks on the EGX — Ranked',
     description:
-        'Egyptian Exchange (EGX) stocks ranked by trailing dividend yield — the highest-yielding EGX shares with live prices, updated daily. Ranking is mechanical, not a recommendation.',
+        'Egyptian Exchange (EGX) stocks ranked by trailing dividend yield — the highest-yielding EGX shares with live prices, updated daily. Ranking is mechanical',
     alternates: {
         canonical: '/markets/top-dividend-yield',
         languages: { en: '/markets/top-dividend-yield', ar: '/ar/markets/top-dividend-yield', 'x-default': '/ar/markets/top-dividend-yield' },

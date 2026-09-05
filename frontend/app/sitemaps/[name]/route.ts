@@ -11,6 +11,7 @@ import learnTopics from '@/content/learn-topics.generated';
 import { GLOSSARY_TERMS } from '@/content/glossary-terms';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { buildProviders, providerPath } from '@/content/fund-providers';
+import { fundIsDormant } from '@/lib/fund-stats';
 import { MARKET_SCREENS, screenPath } from '@/content/market-screens';
 import { NEWS_TOPICS, newsTopicPath } from '@/content/news-topics';
 import { livePublishedTopics } from '@/app/News/renderNewsHubs';
@@ -386,7 +387,11 @@ async function fundProviderEntries(): Promise<Entry[]> {
         return Number.isFinite(t) && (mx === null || t > mx) ? t : mx;
     }, null);
     const iso = lastmod ? new Date(lastmod).toISOString() : null;
-    return buildProviders(rows).flatMap((p) => [
+    // Same universe as the pages: getAllFundsRanked() drops dormant funds
+    // (no NAV for 180 days), so a provider whose only funds are dormant must
+    // not be advertised — /ar/Funds/provider/ميد-بنك was sitemapped and 404'd.
+    const current = rows.filter((r) => !fundIsDormant(r.last_nav_date as string | Date | null));
+    return buildProviders(current).flatMap((p) => [
         { loc: absUrl(providerPath(p, 'en')), lastmod: iso, changefreq: 'daily', priority: '0.8' },
         { loc: absUrl(providerPath(p, 'ar')), lastmod: iso, changefreq: 'daily', priority: '0.8' },
     ]);
@@ -431,11 +436,13 @@ async function learnEntries(): Promise<Entry[]> {
 }
 
 async function newsEntries(): Promise<Entry[]> {
-    // Full archive (well under the 50k/sitemap limit; revisit when we approach it).
+    // Indexable window only (NEWS_INDEX_DAYS in renderNewsArticle): older wire
+    // copy serves noindex,follow and must not be advertised as indexable.
     const result = await db.query(
         `SELECT id, headline, published_at, source_section, symbol,
                 left(article_body, 400) AS body_head
          FROM market_news
+         WHERE published_at >= NOW() - INTERVAL '120 days'
          ORDER BY published_at DESC
          LIMIT 45000`
     );

@@ -78,7 +78,7 @@ export async function generateMetadata({
     const description = clampDescription(`${lead} — live prices and market caps, updated daily.`);
 
     return {
-        title: `${match.sector_name} Stocks on the EGX — Prices & Market Caps`,
+        title: { absolute: `${match.sector_name} Stocks on the EGX — Prices & Market Caps` },
         description,
         // AR canonical carries the Arabic-name slug; x-default = Arabic (site default).
         alternates: {
@@ -105,6 +105,14 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
     if (!match) notFound();
 
     const tickers = (await getAllTickers()).filter((t) => t.sector_name === match.sector_name);
+    // Thin-page fix (audit PAGE_THIN on four Arabic sectors): the sector's
+    // size and its three largest names, from the same rows as the table.
+    const capped = tickers.filter((t) => typeof t.market_cap === 'number' && t.market_cap > 0).sort((a, b) => (b.market_cap as number) - (a.market_cap as number));
+    const totalCap = capped.reduce((a, t) => a + (t.market_cap as number), 0);
+    const bn = (v: number) => (v / 1e9).toFixed(1);
+    const big3 = capped.slice(0, 3);
+    const sectorSummary = tickers.length ? `The sector has ${tickers.length} companies listed on the EGX${totalCap > 0 ? ` with a combined market value of EGP ${bn(totalCap)} billion` : ''}${big3.length ? `; the largest are ${big3.map((t) => `${t.name_en || t.symbol} (EGP ${bn(t.market_cap as number)} bn)`).join(', ')}` : ''}.` : '';
+
     const asOf = tickers.reduce<string | null>((mx, t) => {
         return t.last_updated && (!mx || new Date(t.last_updated) > new Date(mx)) ? t.last_updated : mx;
     }, null);
@@ -159,6 +167,7 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
                 . Click any company for its full profile: price chart, key statistics, financial statements,
                 dividends, technicals and news. Updated daily{asOfHuman && <>; prices as of {asOfHuman}</>}.
             </p>
+            {sectorSummary && <p className="mt-3 max-w-3xl leading-relaxed text-muted">{sectorSummary}</p>}
             {sectorDescription(match.sector_name, 'en') && (
                 <section className="mt-5 max-w-3xl" aria-label="About this sector">
                     <h2 className="text-lg font-bold text-main">What the {match.sector_name} sector covers</h2>

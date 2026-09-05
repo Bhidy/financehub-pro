@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
     title: 'EGX 30 Index Today — Live Value, Change & Constituents',
     description:
-        'The EGX 30 — the Egyptian Exchange benchmark index — live value, daily change, 52-week range and its 30 constituent companies. Updated through the EGX trading day.',
+        'The EGX 30 — the Egyptian Exchange benchmark index — live value, daily change, 52-week range and its 30 constituent companies.',
     alternates: {
         canonical: '/markets/egx30',
         languages: { en: '/markets/egx30', ar: '/ar/markets/egx30', 'x-default': '/ar/markets/egx30' },

@@ -68,7 +68,9 @@ export async function generateMetadata(
     // claim of freshness the page does not qualify.
     const title = `${name} (${symbol}) Stock Price${price ? ` — ${price}` : ''}`;
     return {
-        title,
+        // absolute: the layout template appends the brand and pushed these to
+        // 90+ characters; the company name and price are what the searcher reads.
+        title: { absolute: title },
         description,
         alternates: {
             canonical: symbolPath(symbol),

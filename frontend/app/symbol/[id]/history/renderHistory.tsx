@@ -97,6 +97,12 @@ export async function historyMetadata(id: string, lang: Lang): Promise<Metadata>
     let description = `${name} (EGX: ${symbol}) daily stock price history${firstYear ? ` since ${firstYear}` : ''}: open, high, low, close & volume${
         rowCount !== null ? ` for ${rowCount.toLocaleString('en-EG')} trading days` : ''
     }, plus all-time high and low.`;
+    if (lang === 'ar') {
+        // The Arabic page carried the English sentence when the company had no
+        // Arabic name upstream, which made the two languages share one meta
+        // description (audit DUPLICATE_DESCRIPTION, /symbol/ALRA/history).
+        description = `${name} (${symbol}): سجل أسعار السهم اليومي في البورصة المصرية${firstYear ? ` منذ ${firstYear}` : ''} — الافتتاح والأعلى والأدنى والإغلاق وحجم التداول${rowCount !== null ? ` لـ ${rowCount.toLocaleString('en-EG')} جلسة` : ''}، مع أعلى وأدنى سعر تاريخي.`;
+    }
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 
     return {

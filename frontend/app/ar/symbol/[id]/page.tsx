@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ltrNum } from '@/lib/bidi';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getTicker, getStats, getCompanyProfile, getSectorPeers } from '@/lib/public-data';
@@ -141,7 +142,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 
     return {
-        title,
+        title: { absolute: title },
         description,
         alternates: {
             // Arabic canonical carries the Arabic company slug (built by the
@@ -346,6 +347,15 @@ export default async function ArabicSymbolPage({ params }: Props) {
                         <span className="text-sm text-muted">قطاع {sectorAr(ticker.sector_name)}</span>
                     )}
                 </p>
+                {ticker.last_price !== null && (
+                    <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
+                        <strong>ما هو سعر سهم {name} اليوم؟</strong> آخر سعر لسهم {symbol} هو {ltrNum(`${cur} ${fmtNum(ticker.last_price) ?? ''}`)}
+                        {typeof ticker.change_percent === 'number' ? ` (${ltrNum(`${ticker.change_percent >= 0 ? '+' : ''}${ticker.change_percent.toFixed(2)}%`)} خلال الجلسة)` : ''}
+                        {typeof ticker.market_cap === 'number' && ticker.market_cap > 0 ? `، بقيمة سوقية ${ltrNum((ticker.market_cap / 1e9).toFixed(2))} مليار ${cur}` : ''}
+                        {typeof ticker.pe_ratio === 'number' && ticker.pe_ratio > 0 ? `، ومضاعف ربحية ${ltrNum(fmtNum(ticker.pe_ratio) ?? '')}` : ''}
+                        {typeof ticker.dividend_yield === 'number' && ticker.dividend_yield > 0 ? `، وعائد توزيعات ${ltrNum(`${ticker.dividend_yield.toFixed(2)}%`)}` : ''}.
+                    </p>
+                )}
 
                 {presentRows.length > 0 && (
                     <section className="mt-8">

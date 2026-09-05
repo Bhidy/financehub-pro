@@ -6,6 +6,8 @@ import { SITE_URL, fundPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import FundsGuide from '@/components/seo/FundsGuide';
+import FundsNarrativeSections from '@/components/seo/FundsNarrative';
+import { buildFundsNarrative } from '@/lib/funds-narrative';
 
 /**
  * /Funds/best-mutual-funds-egypt-2026 — the master plan's first editorial
@@ -109,6 +111,7 @@ export default async function BestFundsPage() {
         .map((c) => ({ name: c, funds: (buckets.get(c) as FundRow[]).slice(0, 5) }));
 
     const top10 = withReturn.slice(0, 10);
+    const narrative = buildFundsNarrative(withReturn as Array<Record<string, unknown>>, 'en', asOfHuman);
 
     const itemList = {
         '@context': 'https://schema.org',
@@ -125,6 +128,7 @@ export default async function BestFundsPage() {
     };
 
     const faq = [
+        ...narrative.faq,
         {
             q: 'How are these funds ranked?',
             a: `Purely by trailing 1-year return computed from each fund's published NAV history, grouped by category. No editorial judgment is applied — the tables re-rank automatically as NAVs update (twice daily). Data as of ${asOfHuman ?? 'the latest NAV publication'}.`,
@@ -155,6 +159,8 @@ export default async function BestFundsPage() {
             <p className="mt-1 text-sm text-muted" dir="rtl" lang="ar">
                 أفضل صناديق الاستثمار في مصر ٢٠٢٦ — ترتيب آلي حسب عائد آخر ١٢ شهرًا لكل فئة، ببيانات محدثة مرتين يوميًا من إفصاحات مديري الصناديق. الترتيب معلوماتي وليس توصية استثمارية.
             </p>
+
+            <FundsNarrativeSections lang="en" n={narrative} />
 
             <section className="mt-8">
                 <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">

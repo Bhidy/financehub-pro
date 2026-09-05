@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
     title: 'Largest Companies on the EGX by Market Cap — Ranked',
     description:
-        'The biggest companies on the Egyptian Exchange (EGX) ranked by market capitalisation — the largest Egyptian listed stocks with live prices, updated daily. Ranking is mechanical, not a recommendation.',
+        'The biggest companies on the Egyptian Exchange (EGX) ranked by market capitalisation — the largest Egyptian listed stocks with live prices, updated daily.',
     alternates: {
         canonical: '/markets/largest-companies',
         languages: { en: '/markets/largest-companies', ar: '/ar/markets/largest-companies', 'x-default': '/ar/markets/largest-companies' },

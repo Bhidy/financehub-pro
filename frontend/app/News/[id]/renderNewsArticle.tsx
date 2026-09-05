@@ -25,6 +25,9 @@ import { newsCoverPath, newsCoverUrl } from '@/lib/news-cover';
  * slugged canonical; unknown ids are real 404s.
  */
 
+/** Days an article stays indexable — see the robots note in newsArticleMetadata. */
+export const NEWS_INDEX_DAYS = 120;
+
 function cleanBody(article: NewsArticle): string[] {
     const body = sanitizeNewsText(article.article_body || '') || '';
     return body
@@ -61,6 +64,7 @@ export async function newsArticleMetadata(idParam: string, _tree: SiteLang): Pro
     // indexable: a site whose promise is the Egyptian market must not rank
     // for Aramco, nor for an EGX mover priced in the wrong currency.
     const offMarket = newsSuppressionReason(article.headline, article.symbol, article.article_body) !== null;
+    const ageDays = (Date.now() - new Date(article.published_at).getTime()) / 86_400_000;
     return {
         title: headline,
         description,
@@ -68,7 +72,13 @@ export async function newsArticleMetadata(idParam: string, _tree: SiteLang): Pro
         alternates: { canonical, types: { 'application/rss+xml': arabic ? '/ar/feed.xml' : '/feed.xml' } },
         // max-image-preview:large is required for Google Discover / Top Stories
         // large-thumbnail eligibility (2026-07-03 audit gap).
-        robots: offMarket
+        // SYNDICATED-CONTENT POLICY (2026-09-05): the feed is wire copy the
+        // originating publishers also index. Fresh items earn clicks on
+        // earnings queries; the 4,000-URL archive does not, and thousands of
+        // duplicate wire stories weigh on how the whole site is judged. An
+        // article stays indexable for NEWS_INDEX_DAYS, then serves
+        // noindex,follow — reachable, linked, out of the index.
+        robots: offMarket || ageDays > NEWS_INDEX_DAYS
             ? { index: false, follow: true }
             : { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
         openGraph: {

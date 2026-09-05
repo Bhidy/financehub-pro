@@ -263,3 +263,28 @@ notice is a standalone server function). The post-deploy guard had not sampled a
 MONEY_PAGES list now includes one per language. The "Similar funds" query joined `fund_peers` on a
 column that never existed; it now resolves peers by name. Read runtime errors with
 `npx vercel logs <deployment id> --json` — the table view truncates the message.
+
+## 2026-09-05 — fifth pass: what the SERPs and AI engines actually reward
+
+**Research (owner's browser, Egypt, Arabic).** For "أفضل صناديق الاستثمار في مصر 2026" the first result is
+a narrative ranking; Google's snippet for it names a fund and its return in prose. We sat around #8 with
+the meta description as our snippet, and none of the People-also-ask questions (best 5, best daily-yield
+fund, Islamic funds, dollar funds, how to buy) had an answer on the page. Symbol queries ("سعر سهم …")
+are won by pages whose first sentence answers "what is the price today" with price, change, market cap
+and P/E. Perplexity cited banks and Mubasher, not us.
+
+**Shipped.** `lib/funds-narrative.ts` + `components/seo/FundsNarrative.tsx`: the money pages open with a
+data sentence naming the leaders and their returns, then "best 5", "best daily-yield (money market)",
+"Shariah-compliant", "dollar funds" and "how to buy", with the PAA questions merged into the FAQPage —
+all regenerated from the ranked rows, both languages. Symbol pages (EN + AR) open with the price
+sentence. Sector pages state size and the three largest names. The funds guide cites FRA and EGX.
+
+**Syndicated-news policy.** Wire copy stays indexable for `NEWS_INDEX_DAYS` (120), then serves
+`noindex,follow`; the news sitemap advertises that window only. Rationale: fresh items earn the
+earnings-query clicks, the archive does not, and thousands of duplicate wire stories weigh on site
+quality. Reverse by raising the constant in `renderNewsArticle.tsx` and the interval in the sitemap.
+
+**Template hygiene.** Symbol and sector titles are absolute (no brand suffix; symbol titles had reached
+90+ characters); fund descriptions clamp at 158; the audit's TITLE_TOO_LONG skips entity-named templates
+(news, fund profiles, comparison pairs) where the name is the title. The provider sitemap now uses the
+same dormant-free universe as the pages (one sitemapped 404 removed).

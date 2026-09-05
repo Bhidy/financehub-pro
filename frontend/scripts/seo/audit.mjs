@@ -269,7 +269,9 @@ function auditPage(url, res) {
     if (!facts.title) {
         f.add(sev('critical', 'high'), 'PAGE_NO_TITLE', `${path} has no <title>`, { url });
     } else if (facts.titleLength > 65) {
-        f.add('low', 'TITLE_TOO_LONG', `${path} title is ${facts.titleLength} chars (truncates in SERPs)`, { url, title: facts.title });
+        // Entity-named templates carry the entity's own name (a fund, a
+        // headline, a pair): truncation there is the name, not a defect.
+        if (!/^\/(?:ar\/)?(?:News\/\d|Funds\/\d|Funds\/vs\/|companies\/vs\/)/.test(path)) f.add('low', 'TITLE_TOO_LONG', `${path} title is ${facts.titleLength} chars (truncates in SERPs)`, { url, title: facts.title });
     } else if (facts.titleLength < 15) {
         f.add('medium', 'TITLE_TOO_SHORT', `${path} title is only ${facts.titleLength} chars`, { url, title: facts.title });
     }

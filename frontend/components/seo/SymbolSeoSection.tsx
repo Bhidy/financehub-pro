@@ -246,6 +246,18 @@ export default function SymbolSeoSection({
                         {name} ({symbol}) trades on the Egyptian Exchange (EGX){ticker.sector_name ? ` in the ${ticker.sector_name} sector` : ''}
                         {asOf ? `. Last updated ${asOf} (Cairo time).` : '.'}
                     </p>
+                    {/* Answer-first: the sentence a searcher asked for, in the words
+                        they used. Every figure is the page's own data. */}
+                    {ticker.last_price !== null && (
+                        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                            <strong>What is {name}’s share price today?</strong> {symbol} last traded at {cur} {fmtNum(ticker.last_price)}
+                            {typeof ticker.change_percent === 'number' ? ` (${ticker.change_percent >= 0 ? '+' : ''}${ticker.change_percent.toFixed(2)}% on the day)` : ''}
+                            {typeof ticker.market_cap === 'number' && ticker.market_cap > 0 ? `, for a market value of ${cur} ${(ticker.market_cap / 1e9).toFixed(2)} billion` : ''}
+                            {typeof ticker.pe_ratio === 'number' && ticker.pe_ratio > 0 ? `, a P/E of ${fmtNum(ticker.pe_ratio)}` : ''}
+                            {typeof ticker.dividend_yield === 'number' && ticker.dividend_yield > 0 ? ` and a dividend yield of ${ticker.dividend_yield.toFixed(2)}%` : ''}
+                            {perf?.low_52w != null && perf?.high_52w != null ? `. Its 52-week range is ${cur} ${fmtNum(perf.low_52w)} to ${fmtNum(perf.high_52w)}` : ''}.
+                        </p>
+                    )}
                 </div>
 
                 {/* Multi-horizon performance — a block every ranker carries. */}

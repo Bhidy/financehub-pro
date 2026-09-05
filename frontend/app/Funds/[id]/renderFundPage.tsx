@@ -133,7 +133,8 @@ export async function fundMetadata(idParam: string, lang: Lang): Promise<Metadat
             ? `${name}: ${bits.join(', ')}. Full fees, performance and strategy.`
             : `${name} — NAV history, returns, fees and strategy on Starta Markets.`;
     }
-    if (description.length > 300) description = `${description.slice(0, 297).trimEnd()}…`;
+    // 158: Google shows ~155–160 characters; the audit flagged 28 fund pages.
+    if (description.length > 158) description = `${description.slice(0, 155).trimEnd()}…`;
 
     const title = lang === 'ar' ? `${name} — صافي قيمة الأصول والعوائد والرسوم` : `${name} — NAV, Returns & Fees`;
     const canonical = lang === 'ar' ? canonicalAr : canonicalEn;

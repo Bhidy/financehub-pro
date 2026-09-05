@@ -70,7 +70,17 @@ export default function FundsGuide({
                     </div>
                 ))}
 
-                <p className="mt-8 text-sm">
+                <p className="mt-6 text-xs leading-relaxed text-muted">
+                    {isAr ? 'المصادر: ' : 'Sources: '}
+                    {isAr
+                        ? 'إفصاحات مديري الصناديق (صافي قيمة الأصول والرسوم)، '
+                        : 'fund managers’ published NAV and fee disclosures, '}
+                    <a href="https://fra.gov.eg" rel="noopener" className="underline decoration-dotted hover:text-starta-darkTeal">{isAr ? 'الهيئة العامة للرقابة المالية' : 'Financial Regulatory Authority (FRA)'}</a>
+                    {isAr ? ' (تراخيص الصناديق)، ' : ' (fund licensing), '}
+                    <a href="https://www.egx.com.eg" rel="noopener" className="underline decoration-dotted hover:text-starta-darkTeal">{isAr ? 'البورصة المصرية' : 'the Egyptian Exchange'}</a>
+                    {isAr ? ' (بيانات السوق).' : ' (market data).'}
+                </p>
+                <p className="mt-3 text-sm">
                     <a href={isAr ? '/ar/methodology' : '/methodology'} className="font-semibold text-starta-darkTeal hover:underline">
                         {isAr ? 'المنهجية الكاملة: مصادر البيانات وطريقة حساب العوائد والمخاطر ←' : 'Full methodology: data sources and how returns and risk are computed →'}
                     </a>

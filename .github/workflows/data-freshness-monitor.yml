@@ -52,6 +52,18 @@ jobs:
       - name: Probe price freshness
         id: check
         run: |
+          # WINDOW AT RUN TIME (2026-09-05). The cron restricts this to 07-14 UTC,
+          # but the single self-hosted runner queues serially and GitHub starts
+          # scheduled runs late: the 14:45 fire on 2026-09-03 executed at 16:15,
+          # found the post-close refresh 78 minutes old, and paged "DATA STALE"
+          # on a healthy pipeline. A run that starts outside the window has
+          # nothing to judge — say so and stop, before any probe.
+          H=$(date -u +%H); D=$(date -u +%u)   # %u: 1=Mon … 7=Sun; EGX trades Sun-Thu
+          if [ "$D" = "5" ] || [ "$D" = "6" ] || [ "$H" -lt 7 ] || [ "$H" -ge 15 ]; then
+            echo "outside the EGX ingestion window (UTC hour $H, weekday $D) — a late-started run cannot judge freshness; skipping"
+            { echo "age_min=n/a"; echo "last_status=skipped"; echo "reason=outside window"; echo "stale=0"; } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           # --retry kills the blip-page class: a transient network/TLS hiccup must
           # not page; a backend that stays unreachable across retries must.
           FR=$(curl -s --max-time 20 --retry 2 --retry-delay 5 --retry-all-errors "$API/api/v1/admin/data/freshness" || echo '{}')

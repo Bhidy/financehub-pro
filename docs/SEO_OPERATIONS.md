@@ -288,3 +288,12 @@ quality. Reverse by raising the constant in `renderNewsArticle.tsx` and the inte
 90+ characters); fund descriptions clamp at 158; the audit's TITLE_TOO_LONG skips entity-named templates
 (news, fund profiles, comparison pairs) where the name is the title. The provider sitemap now uses the
 same dormant-free universe as the pages (one sitemapped 404 removed).
+
+**Same-day follow-ups.** (1) The money pages' own `categoryOf` read `fund_type_en`/`classification_en`,
+which are empty in the data — every fund was "Other", so the money-market, fixed-income, equity and
+balanced sections had never rendered. They now delegate to `categoryOfFund()` in `content/fund-categories.ts`
+(snake_case `fund_type` codes), which the category hubs already used. Any new classification must go
+through that one function. (2) Provider hubs open with the bank's fund count and its best 12-month
+performer. (3) The news sitemap deduplicates against the whole archive before applying the 120-day
+window (a later copy whose original is older was advertised and 308'd). Verified: an article from May
+2026 serves `noindex, follow`; the news sitemap dropped from 4,350 to ~2,980 URLs.

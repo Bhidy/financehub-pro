@@ -58,8 +58,9 @@ function categoryOf(r: FundRow): string {
 }
 
 const CATEGORY_KEY_TO_NAME: Record<string, string> = {
-    'money_market': 'Money Market Funds',
-    'fixed_income': 'Fixed Income Funds',
+    // The shared matcher's keys are HYPHENATED ('money-market', 'fixed-income').
+    'money-market': 'Money Market Funds',
+    'fixed-income': 'Fixed Income Funds',
     'equity': 'Equity Funds',
     'balanced': 'Balanced Funds',
     'shariah': 'Shariah-Compliant Funds',

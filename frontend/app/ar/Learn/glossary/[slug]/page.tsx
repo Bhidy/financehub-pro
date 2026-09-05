@@ -110,7 +110,7 @@ export default async function GlossaryTermArabicPage({ params }: Props) {
                 <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">
                     {term.ar.term}
                 </h1>
-                <p dir="ltr" lang="en" className="mt-1 text-start text-lg font-semibold text-starta-teal">
+                <p dir="ltr" lang="en" className="mt-1 text-start text-lg font-semibold text-starta-darkTeal">
                     {term.en.term}
                 </p>
 
@@ -146,7 +146,7 @@ export default async function GlossaryTermArabicPage({ params }: Props) {
                                     <Link
                                         href={l.href}
                                         prefetch={false}
-                                        className="font-semibold text-starta-teal hover:underline"
+                                        className="font-semibold text-starta-darkTeal hover:underline"
                                     >
                                         {l.ar} ←
                                     </Link>
@@ -165,7 +165,7 @@ export default async function GlossaryTermArabicPage({ params }: Props) {
                             <Link
                                 href={encodeURI(glossaryPath(t.slug, t.ar.term, 'ar'))}
                                 prefetch={false}
-                                className="inline-block rounded-full border border-border bg-surface px-3.5 py-1.5 text-sm font-medium text-main transition-colors hover:border-teal-300 hover:text-starta-teal"
+                                className="inline-block rounded-full border border-border bg-surface px-3.5 py-1.5 text-sm font-medium text-main transition-colors hover:border-teal-300 hover:text-starta-darkTeal"
                             >
                                 {t.ar.term}
                             </Link>
@@ -176,7 +176,7 @@ export default async function GlossaryTermArabicPage({ params }: Props) {
                     <Link
                         href="/ar/Learn/glossary"
                         prefetch={false}
-                        className="font-semibold text-starta-teal hover:underline"
+                        className="font-semibold text-starta-darkTeal hover:underline"
                     >
                         كل مصطلحات القاموس ←
                     </Link>

@@ -198,7 +198,7 @@ export default function RiskMethodology({ lang }: { lang: Lang }) {
                                         {cats.map((x, i) => (
                                             <span key={x.href}>
                                                 {i > 0 && '، '}
-                                                <Link className="font-medium text-starta-teal hover:underline" href={x.href}>
+                                                <Link className="font-medium text-starta-darkTeal hover:underline" href={x.href}>
                                                     {x.label}
                                                 </Link>
                                             </span>

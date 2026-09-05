@@ -332,7 +332,7 @@ export function renderMethodology(lang: 'en' | 'ar') {
 
             <nav aria-label={isAr ? 'المحتويات' : 'Contents'} className="mt-6 flex flex-wrap gap-x-4 gap-y-1 text-sm">
                 {t.sections.map((s) => (
-                    <a key={s.id} href={`#${s.id}`} className="text-muted hover:text-starta-teal">
+                    <a key={s.id} href={`#${s.id}`} className="text-muted hover:text-starta-darkTeal">
                         {s.h}
                     </a>
                 ))}
@@ -389,7 +389,7 @@ export function renderMethodology(lang: 'en' | 'ar') {
 
             <nav aria-label={isAr ? 'صفحات ذات صلة' : 'Related'} className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
                 {t.related.map((r) => (
-                    <Link key={r.href} href={r.href} prefetch={false} className="text-muted hover:text-starta-teal">
+                    <Link key={r.href} href={r.href} prefetch={false} className="text-muted hover:text-starta-darkTeal">
                         {r.label}
                     </Link>
                 ))}

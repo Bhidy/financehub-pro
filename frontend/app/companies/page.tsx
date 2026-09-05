@@ -86,11 +86,11 @@ export default async function CompaniesPage() {
             </p>
 
             <nav aria-label="EGX rankings" className="mt-5 flex flex-wrap gap-2 text-sm">
-                <Link href="/markets/largest-companies" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">Largest by market cap</Link>
-                <Link href="/markets/top-dividend-yield" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">Highest dividend yield</Link>
-                <Link href="/markets/lowest-pe-stocks" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">Lowest P/E</Link>
-                <Link href="/markets/movers" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">Top movers</Link>
-                <Link href="/markets/egx30" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">EGX 30 index</Link>
+                <Link href="/markets/largest-companies" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">Largest by market cap</Link>
+                <Link href="/markets/top-dividend-yield" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">Highest dividend yield</Link>
+                <Link href="/markets/lowest-pe-stocks" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">Lowest P/E</Link>
+                <Link href="/markets/movers" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">Top movers</Link>
+                <Link href="/markets/egx30" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">EGX 30 index</Link>
             </nav>
 
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
@@ -111,7 +111,7 @@ export default async function CompaniesPage() {
                             <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5 text-muted">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-teal">
+                                    <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-darkTeal">
                                         {t.name_en || t.symbol}
                                     </Link>
                                     {t.name_ar && (
@@ -119,7 +119,7 @@ export default async function CompaniesPage() {
                                     )}
                                 </td>
                                 <td className="px-4 py-2.5 font-mono font-semibold text-muted">
-                                    <Link href={symbolPath(t.symbol)} className="hover:text-starta-teal">{t.symbol}</Link>
+                                    <Link href={symbolPath(t.symbol)} className="hover:text-starta-darkTeal">{t.symbol}</Link>
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 text-right font-semibold">

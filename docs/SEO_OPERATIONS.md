@@ -184,3 +184,39 @@ property in Search Console, then store the JSON key as that repo secret.
 - Re-run the adversarial production audit (the 5-auditor pattern: findings-recheck, JSON-LD validation, regression, edge-defects, search/AI readiness).
 - Competitor battlecard refresh: english.mubasher.info (structural gap), stockanalysis.com (template parity), zeed.tech (funds).
 - Review Vercel deploy quota usage (rate limit ≈ hit at ~15 deploys/day — batch PRs).
+
+## 2026-09-05 — third pass: news purity, duplicate canon, contrast, GSC access
+
+**News market purity.** The Egypt pulse feed carries Saudi-market stories
+(Aramco, Flynas, BinDawood, Americana …) that the ingester tags
+`source_country='EG'` with `symbol=NULL`; 99 were live, indexable and in the
+sitemap. `isOffMarketNews(headline, symbol)` in `lib/news-display.ts` is the
+one rule (currency/index codes `SAR`/`TASI`, `Tadawul`/`Nomu`/"Saudi Exchange",
+Arabic `ريال`/`تداول السعودية`; a mapped EGX symbol always wins). Off-market
+stories are dropped from both news sitemaps, the hub window, the feeds and the
+Market Pulse block, and the article page serves them `noindex,follow` with a
+visible archive note.
+
+**Duplicate copies.** The feed re-ingests stories under new ids (117 headline
+groups, 185 extra URLs — the "Duplicate, Google chose different canonical" row).
+`primaryNewsRows()` keeps the lowest id per `newsDedupeKey()` (sanitized,
+case-folded headline) in every list, and the article page 308s every later copy
+to the first via `getNewsPrimaryId()`; its metadata names the first as canonical.
+Gate: `npm run verify:news` (`scripts/test-news-purity.ts`), part of `verify:all`.
+
+**Contrast.** Lighthouse (mobile, AR money page) went 88 → 96 after the pass-2
+fixes; the last failure was brand-teal link text (#14B8A6 on white, 2.4:1).
+All server-rendered pages now use `text-starta-darkTeal` (#0F766E, 5.5:1);
+`.dark .text-starta-darkTeal` swaps to the accent so dark mode holds. Client
+components and the designed pages were left untouched.
+
+**Search Console access.** `starta-seo-reader@starta-search-console.iam.gserviceaccount.com`
+is now a **Full** user on the `https://startamarkets.com/` property (added
+2026-09-05). Remaining owner step: create the JSON key in GCP → IAM → Service
+Accounts → Keys, then `gh secret set GSC_SERVICE_ACCOUNT_JSON < key.json`;
+`seo-daily.yml` picks it up on the next run and `scripts/seo/gsc.mjs` starts
+writing the Search Console slice of the command-center report.
+
+**URL inspection (spot check).** `/ar/Learn/glossary/السيولة` — "URL is on
+Google", indexed, breadcrumbs valid; the glossary duplicate-canonical rows are
+not a page-level defect on this URL.

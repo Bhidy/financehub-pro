@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
 import { absUrl, xmlEscape } from '@/lib/seo';
-import { canonicalNewsPath, sanitizeNewsText } from '@/lib/news-display';
+import { canonicalNewsPath, sanitizeNewsText, primaryNewsRows } from '@/lib/news-display';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,13 +12,15 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         const result = await db.query(
-            `SELECT id, headline, published_at, source_section
+            `SELECT id, headline, published_at, source_section, symbol
              FROM market_news
              WHERE published_at >= NOW() - INTERVAL '48 hours'
              ORDER BY published_at DESC
              LIMIT 1000`
         );
-        const items = result.rows
+        // Same publishable subset as the archive sitemap: no off-market
+        // stories, one URL per story (see primaryNewsRows).
+        const items = primaryNewsRows(result.rows as Array<{ id: number; headline: string; symbol: string | null; published_at: string; source_section: string | null }>)
             .map((r: any) => {
                 const lang = (r.source_section || '').endsWith('/ar') ? 'ar' : 'en';
                 return `  <url>

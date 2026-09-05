@@ -261,7 +261,7 @@ export async function renderTechnicals(id: string, lang: Lang) {
                 <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
                     {siblings.map((sib) => (
                         <li key={sib.href}>
-                            <Link href={sib.href} prefetch={false} className="text-starta-teal hover:underline">
+                            <Link href={sib.href} prefetch={false} className="text-starta-darkTeal hover:underline">
                                 {sib.label}
                             </Link>
                         </li>

@@ -78,7 +78,7 @@ export default async function SectorsArPage() {
                         {sectors.map((s) => (
                             <tr key={s.sector_name} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5">
-                                    <Link href={encodeURI(sectorPath(s.sector_name, sectorAr(s.sector_name), 'ar'))} className="font-semibold text-main hover:text-starta-teal">
+                                    <Link href={encodeURI(sectorPath(s.sector_name, sectorAr(s.sector_name), 'ar'))} className="font-semibold text-main hover:text-starta-darkTeal">
                                         {sectorAr(s.sector_name) || s.sector_name}
                                     </Link>
                                 </td>
@@ -91,9 +91,9 @@ export default async function SectorsArPage() {
             </div>
 
             <nav aria-label="استكشف" className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/ar/companies" className="text-muted hover:text-starta-teal">جميع الشركات</Link>
-                <Link href="/ar/markets/movers" className="text-muted hover:text-starta-teal">الأكثر نشاطًا</Link>
-                <a href="/sectors" hrefLang="en" className="text-muted hover:text-starta-teal">EGX sectors in English</a>
+                <Link href="/ar/companies" className="text-muted hover:text-starta-darkTeal">جميع الشركات</Link>
+                <Link href="/ar/markets/movers" className="text-muted hover:text-starta-darkTeal">الأكثر نشاطًا</Link>
+                <a href="/sectors" hrefLang="en" className="text-muted hover:text-starta-darkTeal">EGX sectors in English</a>
             </nav>
         </PublicPageShell>
     );

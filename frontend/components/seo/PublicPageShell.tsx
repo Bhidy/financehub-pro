@@ -199,7 +199,7 @@ export default function PublicPageShell({
                                     key={item.key}
                                     href={localizedHref(item.href, lang)}
                                     prefetch={false}
-                                    className="hover:text-starta-teal transition-colors"
+                                    className="hover:text-starta-darkTeal transition-colors"
                                     data-key={item.key}
                                 >
                                     {lang === 'en' ? item.en : item.ar}
@@ -262,29 +262,29 @@ export default function PublicPageShell({
                         <div className="space-y-4">
                             <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col1}</h4>
                             <ul className="space-y-2.5 text-sm">
-                                <li><Link href="/" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.home}</Link></li>
-                                <li><Link href={localizedHref('/Funds', lang)} prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.funds}</Link></li>
+                                <li><Link href="/" prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.home}</Link></li>
+                                <li><Link href={localizedHref('/Funds', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.funds}</Link></li>
                             </ul>
                         </div>
                         <div className="space-y-4">
                             <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col2}</h4>
                             <ul className="space-y-2.5 text-sm">
-                                <li><Link href={localizedHref('/News', lang)} prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.news}</Link></li>
-                                <li><Link href={localizedHref('/Learn', lang)} prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.learn}</Link></li>
+                                <li><Link href={localizedHref('/News', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.news}</Link></li>
+                                <li><Link href={localizedHref('/Learn', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.learn}</Link></li>
                             </ul>
                         </div>
                         <div className="space-y-4">
                             <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col3}</h4>
                             <ul className="space-y-2.5 text-sm">
-                                <li><Link href={localizedHref('/Calculators', lang)} prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.calculators}</Link></li>
-                                <li><Link href={localizedHref('/RiskAssessment', lang)} prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.risk}</Link></li>
-                                <li><Link href="/register" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.account}</Link></li>
-                                <li><Link href="/login" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.login}</Link></li>
+                                <li><Link href={localizedHref('/Calculators', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.calculators}</Link></li>
+                                <li><Link href={localizedHref('/RiskAssessment', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.risk}</Link></li>
+                                <li><Link href="/register" prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.account}</Link></li>
+                                <li><Link href="/login" prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.login}</Link></li>
                             </ul>
                         </div>
                         <div className="space-y-4">
                             <ul className="space-y-2.5 text-sm">
-                                <li><a href="mailto:support@startamarkets.com" className="text-muted hover:text-starta-teal transition-colors font-medium">support@startamarkets.com</a></li>
+                                <li><a href="mailto:support@startamarkets.com" className="text-muted hover:text-starta-darkTeal transition-colors font-medium">support@startamarkets.com</a></li>
                             </ul>
                         </div>
                     </div>
@@ -297,14 +297,14 @@ export default function PublicPageShell({
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted font-mono pt-4 border-t border-border/80">
                         <div>{f.copy}</div>
                         <div className="flex flex-wrap gap-6">
-                            <Link href={localizedHref('/companies', lang)} prefetch={false} className="hover:text-starta-teal transition-colors">{f.companies}</Link>
-                            <Link href={localizedHref('/about', lang)} prefetch={false} className="hover:text-starta-teal transition-colors">{f.about}</Link>
-                            <Link href={lang === 'ar' ? '/ar/editorial-policy' : '/editorial-policy'} prefetch={false} className="hover:text-starta-teal transition-colors">{f.editorial}</Link>
-                            <Link href={lang === 'ar' ? '/ar/corrections' : '/corrections'} prefetch={false} className="hover:text-starta-teal transition-colors">{f.corrections}</Link>
-                            <Link href={lang === 'ar' ? '/ar/methodology' : '/methodology'} prefetch={false} className="hover:text-starta-teal transition-colors">{f.methodology}</Link>
-                            <Link href={localizedHref('/contact', lang)} prefetch={false} className="hover:text-starta-teal transition-colors">{f.contact}</Link>
-                            <Link href="/privacy" prefetch={false} className="hover:text-starta-teal transition-colors">{f.privacy}</Link>
-                            <Link href="/terms" prefetch={false} className="hover:text-starta-teal transition-colors">{f.terms}</Link>
+                            <Link href={localizedHref('/companies', lang)} prefetch={false} className="hover:text-starta-darkTeal transition-colors">{f.companies}</Link>
+                            <Link href={localizedHref('/about', lang)} prefetch={false} className="hover:text-starta-darkTeal transition-colors">{f.about}</Link>
+                            <Link href={lang === 'ar' ? '/ar/editorial-policy' : '/editorial-policy'} prefetch={false} className="hover:text-starta-darkTeal transition-colors">{f.editorial}</Link>
+                            <Link href={lang === 'ar' ? '/ar/corrections' : '/corrections'} prefetch={false} className="hover:text-starta-darkTeal transition-colors">{f.corrections}</Link>
+                            <Link href={lang === 'ar' ? '/ar/methodology' : '/methodology'} prefetch={false} className="hover:text-starta-darkTeal transition-colors">{f.methodology}</Link>
+                            <Link href={localizedHref('/contact', lang)} prefetch={false} className="hover:text-starta-darkTeal transition-colors">{f.contact}</Link>
+                            <Link href="/privacy" prefetch={false} className="hover:text-starta-darkTeal transition-colors">{f.privacy}</Link>
+                            <Link href="/terms" prefetch={false} className="hover:text-starta-darkTeal transition-colors">{f.terms}</Link>
                         </div>
                     </div>
                 </div>
@@ -322,7 +322,7 @@ export function Breadcrumbs({ items }: { items: Array<{ href?: string; label: st
                     <li key={i} className="flex items-center gap-1.5">
                         {i > 0 && <span aria-hidden className="opacity-50">/</span>}
                         {item.href ? (
-                            <Link href={item.href} prefetch={false} className="transition-colors hover:text-starta-teal">
+                            <Link href={item.href} prefetch={false} className="transition-colors hover:text-starta-darkTeal">
                                 {item.label}
                             </Link>
                         ) : (

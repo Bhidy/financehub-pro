@@ -71,7 +71,7 @@ export default function FundsGuide({
                 ))}
 
                 <p className="mt-8 text-sm">
-                    <a href={isAr ? '/ar/methodology' : '/methodology'} className="font-semibold text-starta-teal hover:underline">
+                    <a href={isAr ? '/ar/methodology' : '/methodology'} className="font-semibold text-starta-darkTeal hover:underline">
                         {isAr ? 'المنهجية الكاملة: مصادر البيانات وطريقة حساب العوائد والمخاطر ←' : 'Full methodology: data sources and how returns and risk are computed →'}
                     </a>
                 </p>

@@ -96,7 +96,7 @@ export default async function LargestCompaniesPage() {
                             <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-teal">{t.name_en || t.symbol}</Link>
+                                    <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_en || t.symbol}</Link>
                                     <span className="ml-1.5 font-mono text-xs text-muted">{t.symbol}</span>
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
@@ -109,7 +109,7 @@ export default async function LargestCompaniesPage() {
             </div>
 
             <p className="mt-6 text-sm text-muted">
-                Browse <Link href="/companies" className="font-semibold text-starta-teal hover:underline">all EGX companies</Link>, the <Link href="/markets/egx30" className="font-semibold text-starta-teal hover:underline">EGX 30 index</Link>, or the <Link href="/markets/top-dividend-yield" className="font-semibold text-starta-teal hover:underline">highest dividend-yield stocks</Link>.
+                Browse <Link href="/companies" className="font-semibold text-starta-darkTeal hover:underline">all EGX companies</Link>, the <Link href="/markets/egx30" className="font-semibold text-starta-darkTeal hover:underline">EGX 30 index</Link>, or the <Link href="/markets/top-dividend-yield" className="font-semibold text-starta-darkTeal hover:underline">highest dividend-yield stocks</Link>.
             </p>
             <p className="mt-4 text-xs text-muted">Source: Egyptian Exchange via TradingView. Market capitalisation is stated in EGP. Prices in EGP unless a currency code is shown.</p>
         </PublicPageShell>

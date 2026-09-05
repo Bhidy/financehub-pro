@@ -77,7 +77,7 @@ export default async function TopDividendYieldArPage() {
                             <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-teal">{t.name_ar || t.name_en || t.symbol}</Link>
+                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_ar || t.name_en || t.symbol}</Link>
                                     <span className="ml-1.5 font-mono text-xs text-muted" dir="ltr">{t.symbol}</span>
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
@@ -90,7 +90,7 @@ export default async function TopDividendYieldArPage() {
             </div>
 
             <p className="mt-6 text-sm text-muted">
-                اطّلع على <Link href="/ar/markets/dividend-calendar" className="font-semibold text-starta-teal hover:underline">مواعيد توزيعات الأرباح</Link> أو <Link href="/ar/markets/largest-companies" className="font-semibold text-starta-teal hover:underline">أكبر الشركات حسب القيمة السوقية</Link> أو <Link href="/ar/markets/lowest-pe-stocks" className="font-semibold text-starta-teal hover:underline">الأقل مكرر ربحية</Link> أو تصفّح <Link href="/ar/companies" className="font-semibold text-starta-teal hover:underline">جميع الشركات</Link>.
+                اطّلع على <Link href="/ar/markets/dividend-calendar" className="font-semibold text-starta-darkTeal hover:underline">مواعيد توزيعات الأرباح</Link> أو <Link href="/ar/markets/largest-companies" className="font-semibold text-starta-darkTeal hover:underline">أكبر الشركات حسب القيمة السوقية</Link> أو <Link href="/ar/markets/lowest-pe-stocks" className="font-semibold text-starta-darkTeal hover:underline">الأقل مكرر ربحية</Link> أو تصفّح <Link href="/ar/companies" className="font-semibold text-starta-darkTeal hover:underline">جميع الشركات</Link>.
             </p>
             <p className="mt-4 text-xs text-muted">المصدر: البورصة المصرية عبر TradingView. عائد التوزيع محسوب على آخر 12 شهرًا مقابل السعر الحالي. تُستبعد العوائد التي تتجاوز 100% باعتبارها غير متكررة أو أثر بيانات (كالتوزيعات الخاصة). الأسعار بالجنيه المصري ما لم يُذكر رمز عملة آخر.</p>
         </PublicPageShell>

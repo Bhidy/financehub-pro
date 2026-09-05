@@ -438,6 +438,13 @@
    scripts/verify-route-aliases.mjs fails the build if this block returns. */
 
 /* Manual Dark Mode Toggle */
+/* Link/label text set in the brand teal on server-rendered pages uses the
+   dark teal (#0F766E, 5.5:1 on white) — Lighthouse flagged #14B8A6 on white
+   at 2.4:1 (2026-09-05). In dark mode the same class swaps to the bright
+   accent so the contrast holds on the dark ground. Text only: backgrounds
+   keep their token. */
+.dark .text-starta-darkTeal { color: var(--color-starta-accent); }
+
 .dark {
   --background: #1A222C;
   --foreground: #AEB7C0;

@@ -166,7 +166,7 @@ export async function renderMarketScreen(slug: string, lang: 'en' | 'ar') {
                                 <tr key={r.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                     <td className="px-4 py-2.5 text-muted">{i + 1}</td>
                                     <td className="px-4 py-2.5">
-                                        <Link href={linkFor(r)} prefetch={false} className="font-semibold text-main hover:text-starta-teal">
+                                        <Link href={linkFor(r)} prefetch={false} className="font-semibold text-main hover:text-starta-darkTeal">
                                             {(isAr ? r.name_ar || r.name_en : r.name_en) || r.symbol}
                                         </Link>
                                         <span className="ms-2 text-xs text-muted" dir="ltr">{r.symbol}</span>
@@ -198,7 +198,7 @@ export async function renderMarketScreen(slug: string, lang: 'en' | 'ar') {
                             <Link
                                 href={screenPath(s, lang)}
                                 prefetch={false}
-                                className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-teal"
+                                className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-darkTeal"
                             >
                                 {isAr ? s.h1Ar : s.h1En}
                             </Link>
@@ -208,7 +208,7 @@ export async function renderMarketScreen(slug: string, lang: 'en' | 'ar') {
                         <Link
                             href={isAr ? '/ar/markets/movers' : '/markets/movers'}
                             prefetch={false}
-                            className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-teal"
+                            className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-darkTeal"
                         >
                             {isAr ? 'حركة السوق اليوم' : 'EGX movers today'}
                         </Link>

@@ -89,7 +89,7 @@ export default async function LargestCompaniesArPage() {
                             <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-teal">{t.name_ar || t.name_en || t.symbol}</Link>
+                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_ar || t.name_en || t.symbol}</Link>
                                     <span className="ml-1.5 font-mono text-xs text-muted" dir="ltr">{t.symbol}</span>
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
@@ -102,7 +102,7 @@ export default async function LargestCompaniesArPage() {
             </div>
 
             <p className="mt-6 text-sm text-muted">
-                تصفّح <Link href="/ar/companies" className="font-semibold text-starta-teal hover:underline">جميع شركات البورصة المصرية</Link> أو <Link href="/ar/markets/egx30" className="font-semibold text-starta-teal hover:underline">مؤشر EGX30</Link> أو <Link href="/ar/markets/top-dividend-yield" className="font-semibold text-starta-teal hover:underline">أعلى الأسهم توزيعًا</Link>.
+                تصفّح <Link href="/ar/companies" className="font-semibold text-starta-darkTeal hover:underline">جميع شركات البورصة المصرية</Link> أو <Link href="/ar/markets/egx30" className="font-semibold text-starta-darkTeal hover:underline">مؤشر EGX30</Link> أو <Link href="/ar/markets/top-dividend-yield" className="font-semibold text-starta-darkTeal hover:underline">أعلى الأسهم توزيعًا</Link>.
             </p>
             <p className="mt-4 text-xs text-muted">المصدر: البورصة المصرية عبر TradingView. القيمة السوقية بالجنيه المصري. الأسعار بالجنيه المصري ما لم يُذكر رمز عملة آخر.</p>
         </PublicPageShell>

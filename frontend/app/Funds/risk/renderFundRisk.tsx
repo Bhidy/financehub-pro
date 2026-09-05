@@ -179,7 +179,7 @@ export async function renderFundRisk(lang: 'en' | 'ar') {
                                 {perCategory.map((x) => (
                                     <tr key={x.c.key} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                         <th scope="row" className={`px-4 py-2.5 font-semibold ${isAr ? 'text-right' : 'text-left'}`}>
-                                            <Link href={encodeURI(categoryPath(x.c, lang))} prefetch={false} className="text-main hover:text-starta-teal">
+                                            <Link href={encodeURI(categoryPath(x.c, lang))} prefetch={false} className="text-main hover:text-starta-darkTeal">
                                                 {isAr ? x.c.nameAr : x.c.nameEn}
                                             </Link>
                                         </th>
@@ -223,7 +223,7 @@ export async function renderFundRisk(lang: 'en' | 'ar') {
                                     <tr key={x.r.fund_id} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                         <td className={`px-4 py-2.5 text-muted ${isAr ? 'text-right' : 'text-left'}`}>{i + 1}</td>
                                         <th scope="row" className={`px-4 py-2.5 font-semibold ${isAr ? 'text-right' : 'text-left'}`}>
-                                            <Link href={encodeURI(fundPath(x.r.fund_id, str(x.f, 'fund_name_en'), str(x.f, 'fund_name'), lang))} prefetch={false} className="text-main hover:text-starta-teal">
+                                            <Link href={encodeURI(fundPath(x.r.fund_id, str(x.f, 'fund_name_en'), str(x.f, 'fund_name'), lang))} prefetch={false} className="text-main hover:text-starta-darkTeal">
                                                 {nameOf(x)}
                                             </Link>
                                         </th>
@@ -275,7 +275,7 @@ export async function renderFundRisk(lang: 'en' | 'ar') {
                     </li>
                 </ul>
                 <p className="mt-4 text-sm">
-                    <Link href={isAr ? '/ar/methodology' : '/methodology'} prefetch={false} className="font-semibold text-starta-teal hover:underline">
+                    <Link href={isAr ? '/ar/methodology' : '/methodology'} prefetch={false} className="font-semibold text-starta-darkTeal hover:underline">
                         {isAr ? 'المنهجية الكاملة ←' : 'Full methodology →'}
                     </Link>
                 </p>
@@ -304,7 +304,7 @@ export async function renderFundRisk(lang: 'en' | 'ar') {
                 <ul className="mt-4 flex flex-wrap gap-2">
                     {siblings.map((s) => (
                         <li key={s.href}>
-                            <Link href={s.href} prefetch={false} className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-teal">
+                            <Link href={s.href} prefetch={false} className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-darkTeal">
                                 {s.label}
                             </Link>
                         </li>

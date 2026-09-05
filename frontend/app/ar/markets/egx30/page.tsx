@@ -135,7 +135,7 @@ export default async function Egx30ArPage() {
                                     <tr key={c.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                         <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                         <td className="px-4 py-2.5">
-                                            <Link href={`/ar/symbol/${c.symbol}`} className="font-semibold text-main hover:text-starta-teal">
+                                            <Link href={`/ar/symbol/${c.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">
                                                 {c.name_ar || c.name_en || c.symbol} <span dir="ltr" className="text-muted">({c.symbol})</span>
                                             </Link>
                                         </td>
@@ -164,9 +164,9 @@ export default async function Egx30ArPage() {
             </section>
 
             <nav aria-label="استكشف" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/ar/companies" className="text-muted hover:text-starta-teal">جميع شركات البورصة المصرية</Link>
-                <Link href="/ar/markets/movers" className="text-muted hover:text-starta-teal">الأكثر ارتفاعًا وانخفاضًا</Link>
-                <a href="/markets/egx30" hrefLang="en" className="text-muted hover:text-starta-teal">EGX 30 in English</a>
+                <Link href="/ar/companies" className="text-muted hover:text-starta-darkTeal">جميع شركات البورصة المصرية</Link>
+                <Link href="/ar/markets/movers" className="text-muted hover:text-starta-darkTeal">الأكثر ارتفاعًا وانخفاضًا</Link>
+                <a href="/markets/egx30" hrefLang="en" className="text-muted hover:text-starta-darkTeal">EGX 30 in English</a>
             </nav>
         </PublicPageShell>
     );

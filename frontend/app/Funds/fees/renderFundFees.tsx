@@ -179,7 +179,7 @@ export async function renderFundFees(lang: Lang) {
                         return (
                             <tr key={String(f.fund_id)} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <th scope="row" className={`px-4 py-2.5 font-semibold ${isAr ? 'text-right' : 'text-left'}`}>
-                                    <Link href={href} prefetch={false} className="text-starta-teal hover:underline">
+                                    <Link href={href} prefetch={false} className="text-starta-darkTeal hover:underline">
                                         {name}
                                     </Link>
                                 </th>
@@ -267,7 +267,7 @@ export async function renderFundFees(lang: Lang) {
                             <Link
                                 href={encodeURI(categoryPath(c, lang))}
                                 prefetch={false}
-                                className="text-starta-teal hover:underline"
+                                className="text-starta-darkTeal hover:underline"
                             >
                                 {isAr ? `كل ${c.nameAr}` : `All ${c.nameEn}`}
                             </Link>
@@ -330,7 +330,7 @@ export async function renderFundFees(lang: Lang) {
             <nav aria-label={isAr ? 'روابط ذات صلة' : 'Related'} className="mt-8 border-t border-border pt-5">
                 <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
                     <li>
-                        <Link href={isAr ? '/ar/Funds' : '/Funds'} prefetch={false} className="text-starta-teal hover:underline">
+                        <Link href={isAr ? '/ar/Funds' : '/Funds'} prefetch={false} className="text-starta-darkTeal hover:underline">
                             {isAr ? 'كل صناديق الاستثمار' : 'All mutual funds'}
                         </Link>
                     </li>
@@ -338,7 +338,7 @@ export async function renderFundFees(lang: Lang) {
                         <Link
                             href={isAr ? '/ar/Funds/prices-today' : '/Funds/prices-today'}
                             prefetch={false}
-                            className="text-starta-teal hover:underline"
+                            className="text-starta-darkTeal hover:underline"
                         >
                             {isAr ? 'أسعار الوثائق اليوم' : 'Fund prices today'}
                         </Link>
@@ -347,7 +347,7 @@ export async function renderFundFees(lang: Lang) {
                         <Link
                             href={isAr ? '/ar/Funds/best-mutual-funds-egypt-2026' : '/Funds/best-mutual-funds-egypt-2026'}
                             prefetch={false}
-                            className="text-starta-teal hover:underline"
+                            className="text-starta-darkTeal hover:underline"
                         >
                             {isAr ? 'أفضل صناديق الاستثمار' : 'Best performing funds'}
                         </Link>

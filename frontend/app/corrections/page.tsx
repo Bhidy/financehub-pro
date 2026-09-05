@@ -55,16 +55,16 @@ export default function CorrectionsPage() {
                     </h2>
                     <p className="mt-2">
                         Spotted something that looks wrong — a price, a financial figure, a fund NAV, or a fact in an
-                        article? Email <a href="mailto:corrections@startamarkets.com" className="font-semibold text-starta-teal hover:underline">corrections@startamarkets.com</a> with
+                        article? Email <a href="mailto:corrections@startamarkets.com" className="font-semibold text-starta-darkTeal hover:underline">corrections@startamarkets.com</a> with
                         the page URL and what you believe is incorrect. Please include a source if you have one. We review every report.
                     </p>
                 </section>
             </div>
 
             <nav aria-label="Related" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/editorial-policy" className="text-muted hover:text-starta-teal">Editorial policy</Link>
-                <Link href="/about" className="text-muted hover:text-starta-teal">About &amp; data sources</Link>
-                <a href="/ar/corrections" lang="ar" hrefLang="ar" className="text-muted hover:text-starta-teal">سياسة التصحيحات بالعربية</a>
+                <Link href="/editorial-policy" className="text-muted hover:text-starta-darkTeal">Editorial policy</Link>
+                <Link href="/about" className="text-muted hover:text-starta-darkTeal">About &amp; data sources</Link>
+                <a href="/ar/corrections" lang="ar" hrefLang="ar" className="text-muted hover:text-starta-darkTeal">سياسة التصحيحات بالعربية</a>
             </nav>
         </PublicPageShell>
     );

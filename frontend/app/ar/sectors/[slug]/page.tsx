@@ -117,10 +117,10 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
                             <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-teal">{t.name_ar || t.name_en || t.symbol}</Link>
+                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_ar || t.name_en || t.symbol}</Link>
                                 </td>
                                 <td className="px-4 py-2.5 font-mono font-semibold text-muted" dir="ltr">
-                                    <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-teal">{t.symbol}</Link>
+                                    <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-darkTeal">{t.symbol}</Link>
                                 </td>
                                 <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
                                 <td className={`px-4 py-2.5 font-semibold tabular-nums ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'}`} dir="ltr">{t.change_percent !== null ? `${t.change_percent >= 0 ? '+' : ''}${t.change_percent.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—'}</td>
@@ -132,9 +132,9 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
             </div>
 
             <nav aria-label="استكشف" className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/ar/sectors" className="text-muted hover:text-starta-teal">كل القطاعات</Link>
-                <Link href="/ar/companies" className="text-muted hover:text-starta-teal">جميع الشركات</Link>
-                <a href={`/sectors/${slugify(match.sector_name)}`} hrefLang="en" className="text-muted hover:text-starta-teal">This sector in English</a>
+                <Link href="/ar/sectors" className="text-muted hover:text-starta-darkTeal">كل القطاعات</Link>
+                <Link href="/ar/companies" className="text-muted hover:text-starta-darkTeal">جميع الشركات</Link>
+                <a href={`/sectors/${slugify(match.sector_name)}`} hrefLang="en" className="text-muted hover:text-starta-darkTeal">This sector in English</a>
             </nav>
         </PublicPageShell>
     );

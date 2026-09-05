@@ -50,10 +50,10 @@ export default function EditorialPolicyArPage() {
             </div>
 
             <nav aria-label="ذات صلة" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/ar/about" className="text-muted hover:text-starta-teal">من نحن ومصادر البيانات</Link>
-                <Link href="/ar/methodology" className="text-muted hover:text-starta-teal">المنهجية</Link>
-                <Link href="/ar/corrections" className="text-muted hover:text-starta-teal">سياسة التصحيحات</Link>
-                <a href="/editorial-policy" hrefLang="en" className="text-muted hover:text-starta-teal">Editorial policy in English</a>
+                <Link href="/ar/about" className="text-muted hover:text-starta-darkTeal">من نحن ومصادر البيانات</Link>
+                <Link href="/ar/methodology" className="text-muted hover:text-starta-darkTeal">المنهجية</Link>
+                <Link href="/ar/corrections" className="text-muted hover:text-starta-darkTeal">سياسة التصحيحات</Link>
+                <a href="/editorial-policy" hrefLang="en" className="text-muted hover:text-starta-darkTeal">Editorial policy in English</a>
             </nav>
         </PublicPageShell>
     );

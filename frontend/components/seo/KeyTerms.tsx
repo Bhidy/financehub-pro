@@ -38,7 +38,7 @@ export default function KeyTerms({
                     return (
                         <div key={g.slug} className="rounded-xl border border-border bg-surface p-4">
                             <dt className="font-bold text-main">
-                                <Link href={encodeURI(glossaryPath(g.slug, g.ar.term, lang))} prefetch={false} className="hover:text-starta-teal">
+                                <Link href={encodeURI(glossaryPath(g.slug, g.ar.term, lang))} prefetch={false} className="hover:text-starta-darkTeal">
                                     {term}
                                 </Link>
                             </dt>

@@ -5,7 +5,7 @@ import { pairIsPublishable } from '@/content/stock-vs';
 import { riskEligible, MIN_RISK_ROWS } from '@/lib/fund-stats';
 import { rankFundPairs } from '@/lib/fund-pairs';
 import { SITE_URL, absUrl, fundPath, symbolPath, symbolPathAr, slugify, learnPath, glossaryPath, sectorPath } from '@/lib/seo';
-import { canonicalNewsPath } from '@/lib/news-display';
+import { canonicalNewsPath, primaryNewsRows } from '@/lib/news-display';
 import { sectorAr } from '@/content/sector-names-ar';
 import learnTopics from '@/content/learn-topics.generated';
 import { GLOSSARY_TERMS } from '@/content/glossary-terms';
@@ -433,12 +433,15 @@ async function learnEntries(): Promise<Entry[]> {
 async function newsEntries(): Promise<Entry[]> {
     // Full archive (well under the 50k/sitemap limit; revisit when we approach it).
     const result = await db.query(
-        `SELECT id, headline, published_at, source_section
+        `SELECT id, headline, published_at, source_section, symbol
          FROM market_news
          ORDER BY published_at DESC
          LIMIT 45000`
     );
-    return result.rows.map((r: any) => ({
+    // primaryNewsRows: no off-market (Saudi) stories, and ONE URL per story —
+    // the archive had 185 second copies of re-ingested headlines, each a
+    // "Duplicate, Google chose different canonical" row in Search Console.
+    return primaryNewsRows(result.rows as Array<{ id: number; headline: string; symbol: string | null; published_at: string; source_section: string | null }>).map((r: any) => ({
         // canonicalNewsPath, NOT newsPath(raw): the article page strips
         // dateline prefixes before slugifying, so the raw headline produces a
         // URL that 308s — ~510 sitemap entries were advertising redirects.

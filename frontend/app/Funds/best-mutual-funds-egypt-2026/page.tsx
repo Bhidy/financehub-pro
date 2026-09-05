@@ -179,7 +179,7 @@ export default async function BestFundsPage() {
                                     <tr key={String(f.fund_id)} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                         <td className="px-4 py-2.5 text-muted">{i + 1}</td>
                                         <td className="px-4 py-2.5">
-                                            <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'))} className="font-semibold text-main hover:text-starta-teal">
+                                            <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'))} className="font-semibold text-main hover:text-starta-darkTeal">
                                                 {name}
                                             </Link>
                                             {str(f, 'fund_name') && str(f, 'fund_name_en') && (
@@ -198,11 +198,11 @@ export default async function BestFundsPage() {
                 </div>
                 <p className="mt-3 text-sm text-muted">
                     Want a side-by-side view? Open the interactive{' '}
-                    <Link href="/Funds/Compare" className="font-semibold text-starta-teal hover:underline">fund comparison tool</Link>
+                    <Link href="/Funds/Compare" className="font-semibold text-starta-darkTeal hover:underline">fund comparison tool</Link>
                     {top10.length >= 2 && (
                         <>
                             {' '}or jump straight to a head-to-head:{' '}
-                            <Link href={vsHref(top10[0], top10[1])} className="font-semibold text-starta-teal hover:underline">
+                            <Link href={vsHref(top10[0], top10[1])} className="font-semibold text-starta-darkTeal hover:underline">
                                 {shortName(top10[0])} vs {shortName(top10[1])}
                             </Link>
                         </>
@@ -237,7 +237,7 @@ export default async function BestFundsPage() {
                                     return (
                                         <tr key={String(f.fund_id)} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                             <td className="px-4 py-2.5">
-                                                <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'))} className="font-semibold text-main hover:text-starta-teal">
+                                                <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'))} className="font-semibold text-main hover:text-starta-darkTeal">
                                                     {name}
                                                 </Link>
                                             </td>
@@ -258,7 +258,7 @@ export default async function BestFundsPage() {
                             {pairsOf(sec.funds.slice(0, 3)).map(([a, b], i) => (
                                 <span key={vsHref(a, b)}>
                                     {i > 0 && <span aria-hidden> · </span>}
-                                    <Link href={vsHref(a, b)} className="font-medium text-starta-teal hover:underline">
+                                    <Link href={vsHref(a, b)} className="font-medium text-starta-darkTeal hover:underline">
                                         {shortName(a)} vs {shortName(b)}
                                     </Link>
                                 </span>
@@ -300,9 +300,9 @@ export default async function BestFundsPage() {
                     ))}
                 </dl>
                 <p className="mt-6 text-sm">
-                    <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">Browse all Egyptian mutual funds →</Link>
+                    <Link href="/Funds" className="font-semibold text-starta-darkTeal hover:underline">Browse all Egyptian mutual funds →</Link>
                     {' · '}
-                    <Link href="/Learn/glossary/nav" className="font-semibold text-starta-teal hover:underline">What is NAV?</Link>
+                    <Link href="/Learn/glossary/nav" className="font-semibold text-starta-darkTeal hover:underline">What is NAV?</Link>
                 </p>
             </section>
             <FundsGuide lang="en" extraFaq={faq} />

@@ -87,7 +87,7 @@ export default function GlossaryIndexArabicPage() {
                             <Link
                                 href={encodeURI(glossaryPath(t.slug, t.ar.term, 'ar'))}
                                 prefetch={false}
-                                className="font-bold text-main hover:text-starta-teal"
+                                className="font-bold text-main hover:text-starta-darkTeal"
                             >
                                 {t.ar.term}
                             </Link>
@@ -103,11 +103,11 @@ export default function GlossaryIndexArabicPage() {
 
                 <p className="mt-10 rounded-xl border border-teal-100 bg-teal-50 p-4 text-[1.05rem] leading-relaxed text-main">
                     تريد الدروس الكاملة وراء هذه المصطلحات؟{' '}
-                    <Link href="/ar/Learn" prefetch={false} className="font-semibold text-starta-teal hover:underline">
+                    <Link href="/ar/Learn" prefetch={false} className="font-semibold text-starta-darkTeal hover:underline">
                         زر أكاديمية التعلّم
                     </Link>{' '}
                     أو{' '}
-                    <Link href="/ar/Funds" prefetch={false} className="font-semibold text-starta-teal hover:underline">
+                    <Link href="/ar/Funds" prefetch={false} className="font-semibold text-starta-darkTeal hover:underline">
                         استكشف صناديق الاستثمار
                     </Link>
                     .

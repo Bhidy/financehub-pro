@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getNewsArticle, getLatestNews, type NewsArticle } from '@/lib/public-data';
-import { sanitizeNewsText, newsLang, canonicalNewsPath } from '@/lib/news-display';
+import { getNewsArticle, getLatestNews, getNewsPrimaryId, type NewsArticle } from '@/lib/public-data';
+import { sanitizeNewsText, newsLang, canonicalNewsPath, isOffMarketNews } from '@/lib/news-display';
 import { SITE_URL, newsPath, idFromParam, canonicalRedirectTarget, absUrl, symbolPath, symbolPathAr, type SiteLang } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import PreferredSource from '@/components/seo/PreferredSource';
@@ -54,7 +54,12 @@ export async function newsArticleMetadata(idParam: string, _tree: SiteLang): Pro
     const arabic = lang === 'ar';
     // Canonical is ALWAYS the article's own-language URL, whichever tree was
     // requested — so the wrong-tree form never presents itself as canonical.
-    const canonical = encodeURI(newsPath(article.id, headline, lang));
+    // A later duplicate copy names the FIRST copy (the page 308s there too).
+    const primaryId = await getNewsPrimaryId(article);
+    const canonical = encodeURI(newsPath(primaryId ?? article.id, headline, lang));
+    // Off-market (Saudi) stories stay reachable but never indexable: a site
+    // whose promise is the Egyptian market must not rank for Aramco.
+    const offMarket = isOffMarketNews(article.headline, article.symbol);
     return {
         title: headline,
         description,
@@ -62,7 +67,9 @@ export async function newsArticleMetadata(idParam: string, _tree: SiteLang): Pro
         alternates: { canonical, types: { 'application/rss+xml': arabic ? '/ar/feed.xml' : '/feed.xml' } },
         // max-image-preview:large is required for Google Discover / Top Stories
         // large-thumbnail eligibility (2026-07-03 audit gap).
-        robots: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+        robots: offMarket
+            ? { index: false, follow: true }
+            : { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
         openGraph: {
             type: 'article',
             title: headline,
@@ -92,10 +99,19 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
     // Includes the WRONG-TREE case: /ar/News/{english-article} 308s to
     // /News/{...} and vice versa, so each article has exactly one live URL.
     const requestedPath = `${tree === 'ar' ? '/ar' : ''}/News/${idParam}`;
+    // DUPLICATE COPIES: the feed re-ingests a story under a new id (117
+    // headline groups, 185 extra URLs, measured 2026-09-05). Every later copy
+    // 308s to the first, so one story has one URL everywhere.
+    const primaryId = await getNewsPrimaryId(article);
+    if (primaryId) {
+        const primaryPath = newsPath(primaryId, headline, lang);
+        permanentRedirect(canonicalRedirectTarget(requestedPath, primaryPath) || encodeURI(primaryPath));
+    }
     const redirectTarget = canonicalRedirectTarget(requestedPath, canonicalPath);
     if (redirectTarget) {
         permanentRedirect(redirectTarget);
     }
+    const offMarket = isOffMarketNews(article.headline, article.symbol);
 
     const arabic = lang === 'ar';
     const paragraphs = cleanBody(article);
@@ -180,7 +196,7 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
                     {article.symbol && (
                         <>
                             {' · '}
-                            <Link href={encodeURI(arabic ? symbolPathAr(article.symbol.toUpperCase()) : symbolPath(article.symbol.toUpperCase()))} className="font-semibold text-starta-teal hover:underline">
+                            <Link href={encodeURI(arabic ? symbolPathAr(article.symbol.toUpperCase()) : symbolPath(article.symbol.toUpperCase()))} className="font-semibold text-starta-darkTeal hover:underline">
                                 {article.symbol.toUpperCase()}
                             </Link>
                         </>
@@ -198,6 +214,14 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
                     /* Half the previous height: 16/9 -> 32/9, cropped not squashed. */
                     className="mt-5 aspect-[32/9] w-full rounded-xl border border-border object-cover"
                 />
+
+                {offMarket && (
+                    <p className="mt-5 rounded-lg border border-border bg-surface-secondary px-4 py-3 text-sm text-muted" role="note">
+                        {arabic
+                            ? 'هذا الخبر يخص سوقًا خارج البورصة المصرية، ويُحتفظ به في الأرشيف للرجوع إليه فقط وليس جزءًا من تغطيتنا للسوق المصري.'
+                            : 'This story concerns a market outside the Egyptian Exchange. It is kept in the archive for reference and is not part of our Egypt coverage.'}
+                    </p>
+                )}
 
                 <div className="prose mt-6 max-w-none text-[1.05rem] leading-relaxed">
                     {paragraphs.map((p, i) => (
@@ -224,7 +248,7 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
                         </h2>
                         <Link
                             href={arabic ? '/ar/News' : '/News'}
-                            className="shrink-0 text-xs font-bold uppercase tracking-[0.18em] text-starta-teal hover:underline"
+                            className="shrink-0 text-xs font-bold uppercase tracking-[0.18em] text-starta-darkTeal hover:underline"
                         >
                             {arabic ? 'كل الأخبار' : 'All news'}
                         </Link>
@@ -255,10 +279,10 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
                                         className="aspect-[16/9] w-full object-cover"
                                     />
                                     <div className="flex flex-1 flex-col gap-2 p-4">
-                                        <span className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-starta-teal">
+                                        <span className="text-[0.62rem] font-bold uppercase tracking-[0.18em] text-starta-darkTeal">
                                             {arabic ? 'أخبار السوق' : 'Market news'}
                                         </span>
-                                        <h3 className="line-clamp-3 text-sm font-bold leading-snug text-main transition-colors group-hover:text-starta-teal">
+                                        <h3 className="line-clamp-3 text-sm font-bold leading-snug text-main transition-colors group-hover:text-starta-darkTeal">
                                             {h}
                                         </h3>
                                         {when && <span className="mt-auto pt-1 text-xs text-muted">{when}</span>}

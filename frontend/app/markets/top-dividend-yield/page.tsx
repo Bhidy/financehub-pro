@@ -93,7 +93,7 @@ export default async function TopDividendYieldPage() {
                             <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-teal">{t.name_en || t.symbol}</Link>
+                                    <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_en || t.symbol}</Link>
                                     <span className="ml-1.5 font-mono text-xs text-muted">{t.symbol}</span>
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
@@ -106,7 +106,7 @@ export default async function TopDividendYieldPage() {
             </div>
 
             <p className="mt-6 text-sm text-muted">
-                See the <Link href="/markets/dividend-calendar" className="font-semibold text-starta-teal hover:underline">EGX dividend calendar</Link> for upcoming ex-dates, the <Link href="/markets/largest-companies" className="font-semibold text-starta-teal hover:underline">largest companies by market cap</Link>, the <Link href="/markets/lowest-pe-stocks" className="font-semibold text-starta-teal hover:underline">lowest-P/E value stocks</Link>, or browse <Link href="/companies" className="font-semibold text-starta-teal hover:underline">all EGX companies</Link>.
+                See the <Link href="/markets/dividend-calendar" className="font-semibold text-starta-darkTeal hover:underline">EGX dividend calendar</Link> for upcoming ex-dates, the <Link href="/markets/largest-companies" className="font-semibold text-starta-darkTeal hover:underline">largest companies by market cap</Link>, the <Link href="/markets/lowest-pe-stocks" className="font-semibold text-starta-darkTeal hover:underline">lowest-P/E value stocks</Link>, or browse <Link href="/companies" className="font-semibold text-starta-darkTeal hover:underline">all EGX companies</Link>.
             </p>
             <p className="mt-4 text-xs text-muted">Source: Egyptian Exchange via TradingView. Dividend yield is trailing (last 12 months) over the current price. Yields above 100% are excluded as non-recurring or data artifacts (e.g. special distributions), not repeatable yields. Prices in EGP unless a currency code is shown.</p>
         </PublicPageShell>

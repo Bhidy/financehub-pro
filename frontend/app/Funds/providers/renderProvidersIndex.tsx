@@ -190,7 +190,7 @@ export async function renderProvidersIndex(lang: 'en' | 'ar') {
                         {stats.map((s) => (
                             <tr key={s.p.slug} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <th scope="row" className={`px-4 py-2.5 font-semibold ${isAr ? 'text-right' : 'text-left'}`}>
-                                    <Link href={encodeURI(providerPath(s.p, lang))} prefetch={false} className="text-main hover:text-starta-teal">
+                                    <Link href={encodeURI(providerPath(s.p, lang))} prefetch={false} className="text-main hover:text-starta-darkTeal">
                                         {isAr ? s.p.nameAr : s.p.nameEn}
                                     </Link>
                                 </th>
@@ -201,7 +201,7 @@ export async function renderProvidersIndex(lang: 'en' | 'ar') {
                                 <td className={`px-4 py-2.5 text-xs ${isAr ? 'text-right' : 'text-left'}`}>
                                     {s.best ? (
                                         <>
-                                            <Link href={encodeURI(fundPath(s.best.fund_id as number, str(s.best, 'fund_name_en'), str(s.best, 'fund_name'), lang))} prefetch={false} className="font-semibold text-main hover:text-starta-teal">
+                                            <Link href={encodeURI(fundPath(s.best.fund_id as number, str(s.best, 'fund_name_en'), str(s.best, 'fund_name'), lang))} prefetch={false} className="font-semibold text-main hover:text-starta-darkTeal">
                                                 {fundName(s.best, lang)}
                                             </Link>{' '}
                                             <span className="text-muted">({pctSigned(num(s.best, 'return_1y'))})</span>
@@ -231,7 +231,7 @@ export async function renderProvidersIndex(lang: 'en' | 'ar') {
                     ))}
                 </dl>
                 <p className="mt-4 text-sm">
-                    <Link href={isAr ? '/ar/methodology' : '/methodology'} prefetch={false} className="font-semibold text-starta-teal hover:underline">
+                    <Link href={isAr ? '/ar/methodology' : '/methodology'} prefetch={false} className="font-semibold text-starta-darkTeal hover:underline">
                         {isAr ? 'المنهجية: مصادر البيانات وطريقة حساب العوائد ←' : 'Methodology: data sources and how returns are computed →'}
                     </Link>
                 </p>
@@ -245,7 +245,7 @@ export async function renderProvidersIndex(lang: 'en' | 'ar') {
                 <ul className="mt-4 flex flex-wrap gap-2">
                     {siblings.map((s) => (
                         <li key={s.href}>
-                            <Link href={s.href} prefetch={false} className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-teal">
+                            <Link href={s.href} prefetch={false} className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-darkTeal">
                                 {s.label}
                             </Link>
                         </li>

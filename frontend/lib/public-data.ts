@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { db } from '@/lib/db-server';
 import { matchAssetManager } from './asset-managers';
 import { fundIsDormant } from './fund-stats';
+import { primaryNewsRows, newsDedupeKey, sanitizeNewsText, likeEscape } from './news-display';
 
 /**
  * EGX-ONLY GATE for every PUBLIC / indexable surface.
@@ -57,13 +58,38 @@ export const getNewsArticle = cache(async (id: number): Promise<NewsArticle | nu
 });
 
 export const getLatestNews = cache(async (limit = 6): Promise<NewsArticle[]> => {
+    // Over-fetch, then keep only publishable rows (no off-market stories, one
+    // copy per headline) — see primaryNewsRows(). A LIMIT applied before that
+    // filter would hand callers short lists on days the feed re-ingests.
     const result = await db.query(
         `SELECT id, symbol, headline, url, published_at, article_body,
                 image_url, source_section, source_country
          FROM market_news ORDER BY published_at DESC LIMIT $1`,
-        [limit]
+        [limit * 2 + 20]
     );
-    return result.rows as NewsArticle[];
+    return primaryNewsRows(result.rows as NewsArticle[]).slice(0, limit);
+});
+
+/**
+ * The id of the PRIMARY copy of a story when `article` is a later duplicate,
+ * else null. The feed re-ingests stories under new ids; the article page 308s
+ * every later copy to the first, and its metadata names the first as
+ * canonical. Candidates come from a headline-prefix ILIKE and are confirmed
+ * with the same newsDedupeKey() the lists use, so page and lists agree.
+ */
+export const getNewsPrimaryId = cache(async (article: { id: number; headline?: string | null }): Promise<number | null> => {
+    const key = newsDedupeKey(article.headline);
+    if (!key) return null;
+    const prefix = sanitizeNewsText(article.headline).slice(0, 40);
+    if (!prefix) return null;
+    const result = await db.query(
+        `SELECT id, headline FROM market_news
+         WHERE id < $1 AND headline ILIKE $2
+         ORDER BY id ASC LIMIT 20`,
+        [article.id, `%${likeEscape(prefix)}%`]
+    );
+    const hit = (result.rows as Array<{ id: number; headline: string }>).find((r) => newsDedupeKey(r.headline) === key);
+    return hit ? Number(hit.id) : null;
 });
 
 export type Ticker = {
@@ -613,9 +639,9 @@ export const getSymbolNews = cache(async (symbol: string, limit = 5): Promise<Ne
                 source_section, source_country
          FROM market_news WHERE UPPER(symbol) = $1
          ORDER BY published_at DESC LIMIT $2`,
-        [symbol.toUpperCase(), limit]
+        [symbol.toUpperCase(), limit * 2]
     );
-    return result.rows as NewsArticle[];
+    return primaryNewsRows(result.rows as NewsArticle[]).slice(0, limit);
 });
 
 /** All-time price range + row count for the history page summary. */
@@ -940,7 +966,8 @@ const _newsWindowCached = unstable_cache(
              LIMIT $1`,
             [NEWS_WINDOW]
         );
-        return result.rows as Array<Record<string, unknown>>;
+        // Publishable rows only: no off-market stories, one copy per headline.
+        return primaryNewsRows(result.rows as Array<{ id: number; headline: string; symbol: string | null }>) as Array<Record<string, unknown>>;
     },
     ['seo:news-window'],
     { revalidate: 900, tags: ['seo-news'] }

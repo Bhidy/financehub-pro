@@ -73,7 +73,7 @@ function CalendarTable({ rows, emptyText }: { rows: CalendarRow[]; emptyText: st
                         <tr key={r.key} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                             <td className="px-4 py-2.5 font-semibold text-main tabular-nums" dir="ltr">{r.exDate ?? '—'}</td>
                             <td className="px-4 py-2.5">
-                                <Link href={`/ar/symbol/${r.symbol}`} className="font-semibold text-main hover:text-starta-teal">{r.nameAr || r.nameEn || r.symbol}</Link>
+                                <Link href={`/ar/symbol/${r.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">{r.nameAr || r.nameEn || r.symbol}</Link>
                             </td>
                             <td className="px-4 py-2.5 font-semibold tabular-nums text-main" dir="ltr">{fmtAmount(r.amount)}{r.amount !== null && r.currency ? ` ${r.currency}` : ''}</td>
                             <td className="px-4 py-2.5 text-muted tabular-nums" dir="ltr">{r.payDate ?? '—'}</td>
@@ -128,7 +128,7 @@ export default async function DividendCalendarArPage() {
             </section>
 
             <p className="mt-6 text-sm text-muted">
-                تصفح <Link href="/ar/companies" className="font-semibold text-starta-teal hover:underline">دليل أسهم البورصة المصرية</Link> أو <Link href="/ar/markets/top-dividend-yield" className="font-semibold text-starta-teal hover:underline">أعلى الأسهم توزيعًا</Link> أو <Link href="/ar/markets/movers" className="font-semibold text-starta-teal hover:underline">الأكثر نشاطًا</Link> اليوم.
+                تصفح <Link href="/ar/companies" className="font-semibold text-starta-darkTeal hover:underline">دليل أسهم البورصة المصرية</Link> أو <Link href="/ar/markets/top-dividend-yield" className="font-semibold text-starta-darkTeal hover:underline">أعلى الأسهم توزيعًا</Link> أو <Link href="/ar/markets/movers" className="font-semibold text-starta-darkTeal hover:underline">الأكثر نشاطًا</Link> اليوم.
             </p>
 
             <section className="mt-10 border-t border-border pt-6">

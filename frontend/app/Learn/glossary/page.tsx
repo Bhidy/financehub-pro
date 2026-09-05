@@ -88,7 +88,7 @@ export default function GlossaryIndexPage() {
                         <Link
                             href={`${PATH}/${t.slug}`}
                             prefetch={false}
-                            className="font-bold text-main hover:text-starta-teal"
+                            className="font-bold text-main hover:text-starta-darkTeal"
                         >
                             {t.en.term}
                         </Link>
@@ -104,11 +104,11 @@ export default function GlossaryIndexPage() {
 
             <p className="mt-10 rounded-xl border border-teal-100 bg-teal-50 p-4 text-[1.05rem] leading-relaxed text-main">
                 Want the full lessons behind these terms?{' '}
-                <Link href="/Learn" prefetch={false} className="font-semibold text-starta-teal hover:underline">
+                <Link href="/Learn" prefetch={false} className="font-semibold text-starta-darkTeal hover:underline">
                     Visit the Learn academy
                 </Link>{' '}
                 or{' '}
-                <Link href="/Funds" prefetch={false} className="font-semibold text-starta-teal hover:underline">
+                <Link href="/Funds" prefetch={false} className="font-semibold text-starta-darkTeal hover:underline">
                     explore the mutual funds
                 </Link>
                 .

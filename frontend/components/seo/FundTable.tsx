@@ -98,7 +98,7 @@ export function FundTable({
                                     <Link
                                         href={encodeURI(fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), lang))}
                                         prefetch={false}
-                                        className="font-semibold text-main hover:text-starta-teal"
+                                        className="font-semibold text-main hover:text-starta-darkTeal"
                                     >
                                         {fundDisplayName(f, lang)}
                                     </Link>

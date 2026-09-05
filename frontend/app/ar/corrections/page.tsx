@@ -44,15 +44,15 @@ export default function CorrectionsArPage() {
                         <span aria-hidden className="inline-block h-4 w-1 rounded-full bg-starta-teal" />الإبلاغ عن خطأ محتمل
                     </h2>
                     <p className="mt-2">
-                        لاحظت شيئًا يبدو خاطئًا — سعرًا أو رقمًا ماليًا أو صافي قيمة أصول صندوق أو معلومة في مقال؟ راسلنا على <a href="mailto:corrections@startamarkets.com" className="font-semibold text-starta-teal hover:underline">corrections@startamarkets.com</a> مع رابط الصفحة وما تعتقد أنه غير صحيح، وأرفق مصدرًا إن وُجد. نراجع كل بلاغ.
+                        لاحظت شيئًا يبدو خاطئًا — سعرًا أو رقمًا ماليًا أو صافي قيمة أصول صندوق أو معلومة في مقال؟ راسلنا على <a href="mailto:corrections@startamarkets.com" className="font-semibold text-starta-darkTeal hover:underline">corrections@startamarkets.com</a> مع رابط الصفحة وما تعتقد أنه غير صحيح، وأرفق مصدرًا إن وُجد. نراجع كل بلاغ.
                     </p>
                 </section>
             </div>
 
             <nav aria-label="ذات صلة" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/ar/editorial-policy" className="text-muted hover:text-starta-teal">سياسة التحرير</Link>
-                <Link href="/ar/about" className="text-muted hover:text-starta-teal">من نحن ومصادر البيانات</Link>
-                <a href="/corrections" hrefLang="en" className="text-muted hover:text-starta-teal">Corrections in English</a>
+                <Link href="/ar/editorial-policy" className="text-muted hover:text-starta-darkTeal">سياسة التحرير</Link>
+                <Link href="/ar/about" className="text-muted hover:text-starta-darkTeal">من نحن ومصادر البيانات</Link>
+                <a href="/corrections" hrefLang="en" className="text-muted hover:text-starta-darkTeal">Corrections in English</a>
             </nav>
         </PublicPageShell>
     );

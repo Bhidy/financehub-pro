@@ -275,7 +275,7 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
     const sideHead = (S: Side) => (
         <div className="flex-1 rounded-xl border border-border bg-surface p-4">
             <div className="text-xs font-bold uppercase tracking-wide text-muted">{S.symbol}</div>
-            <Link href={S.path} prefetch={false} className="mt-1 block text-base font-extrabold leading-snug text-starta-teal hover:underline">
+            <Link href={S.path} prefetch={false} className="mt-1 block text-base font-extrabold leading-snug text-starta-darkTeal hover:underline">
                 {S.name}
             </Link>
             <div className="mt-2 text-lg font-extrabold tabular-nums text-main">
@@ -428,7 +428,7 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
                     <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
                         {peers.map((p) => (
                             <li key={p.symbol}>
-                                <Link href={vsPath(A.symbol, p.symbol, lang)} prefetch={false} className="text-starta-teal hover:underline">
+                                <Link href={vsPath(A.symbol, p.symbol, lang)} prefetch={false} className="text-starta-darkTeal hover:underline">
                                     {A.symbol} {isAr ? 'مقابل' : 'vs'} {p.symbol}
                                 </Link>
                             </li>
@@ -440,13 +440,13 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
             <nav aria-label={t(STOCKVS.companyPages, lang)} className="mt-6 border-t border-border pt-5">
                 <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
                     <li>
-                        <Link href={A.path} prefetch={false} className="text-starta-teal hover:underline">{A.name}</Link>
+                        <Link href={A.path} prefetch={false} className="text-starta-darkTeal hover:underline">{A.name}</Link>
                     </li>
                     <li>
-                        <Link href={B.path} prefetch={false} className="text-starta-teal hover:underline">{B.name}</Link>
+                        <Link href={B.path} prefetch={false} className="text-starta-darkTeal hover:underline">{B.name}</Link>
                     </li>
                     <li>
-                        <Link href={isAr ? '/ar/companies' : '/companies'} prefetch={false} className="text-starta-teal hover:underline">
+                        <Link href={isAr ? '/ar/companies' : '/companies'} prefetch={false} className="text-starta-darkTeal hover:underline">
                             {isAr ? 'كل شركات البورصة' : 'All EGX companies'}
                         </Link>
                     </li>

@@ -106,16 +106,16 @@ export default function AboutArPage() {
             <h2 className="mt-10 text-xl font-bold text-main">تواصل معنا</h2>
             <p className="mt-3 max-w-3xl leading-relaxed text-main">
                 للأسئلة أو التصحيحات أو الشراكات:{' '}
-                <Link href="/ar/contact" className="font-semibold text-starta-teal hover:underline">اتصل بنا</Link>. أو تصفّح{' '}
-                <Link href="/ar/companies" className="font-semibold text-starta-teal hover:underline">دليل شركات البورصة المصرية</Link>، و
-                <Link href="/ar/Funds" className="font-semibold text-starta-teal hover:underline">صناديق الاستثمار</Link>، و
-                <Link href="/ar/Learn" className="font-semibold text-starta-teal hover:underline">أكاديمية ستارتا</Link>.
+                <Link href="/ar/contact" className="font-semibold text-starta-darkTeal hover:underline">اتصل بنا</Link>. أو تصفّح{' '}
+                <Link href="/ar/companies" className="font-semibold text-starta-darkTeal hover:underline">دليل شركات البورصة المصرية</Link>، و
+                <Link href="/ar/Funds" className="font-semibold text-starta-darkTeal hover:underline">صناديق الاستثمار</Link>، و
+                <Link href="/ar/Learn" className="font-semibold text-starta-darkTeal hover:underline">أكاديمية ستارتا</Link>.
             </p>
 
             <nav aria-label="ذات صلة" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/ar/editorial-policy" className="text-muted hover:text-starta-teal">سياسة التحرير</Link>
-                <Link href="/ar/corrections" className="text-muted hover:text-starta-teal">سياسة التصحيحات</Link>
-                <a href="/about" hrefLang="en" lang="en" className="text-muted hover:text-starta-teal">About in English</a>
+                <Link href="/ar/editorial-policy" className="text-muted hover:text-starta-darkTeal">سياسة التحرير</Link>
+                <Link href="/ar/corrections" className="text-muted hover:text-starta-darkTeal">سياسة التصحيحات</Link>
+                <a href="/about" hrefLang="en" lang="en" className="text-muted hover:text-starta-darkTeal">About in English</a>
             </nav>
         </PublicPageShell>
     );

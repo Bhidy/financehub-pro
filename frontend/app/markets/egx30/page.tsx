@@ -162,7 +162,7 @@ export default async function Egx30Page() {
                                     <tr key={c.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                         <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                         <td className="px-4 py-2.5">
-                                            <Link href={symbolPath(c.symbol)} className="font-semibold text-main hover:text-starta-teal">
+                                            <Link href={symbolPath(c.symbol)} className="font-semibold text-main hover:text-starta-darkTeal">
                                                 {c.name_en || c.symbol} <span className="text-muted">({c.symbol})</span>
                                             </Link>
                                         </td>
@@ -191,10 +191,10 @@ export default async function Egx30Page() {
             </section>
 
             <nav aria-label="Explore" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/companies" className="text-muted hover:text-starta-teal">All EGX companies</Link>
-                <Link href="/markets/movers" className="text-muted hover:text-starta-teal">Top movers</Link>
-                <Link href="/sectors" className="text-muted hover:text-starta-teal">Sectors</Link>
-                <a href="/ar/markets/egx30" lang="ar" hrefLang="ar" className="text-muted hover:text-starta-teal">مؤشر EGX30 بالعربية</a>
+                <Link href="/companies" className="text-muted hover:text-starta-darkTeal">All EGX companies</Link>
+                <Link href="/markets/movers" className="text-muted hover:text-starta-darkTeal">Top movers</Link>
+                <Link href="/sectors" className="text-muted hover:text-starta-darkTeal">Sectors</Link>
+                <a href="/ar/markets/egx30" lang="ar" hrefLang="ar" className="text-muted hover:text-starta-darkTeal">مؤشر EGX30 بالعربية</a>
             </nav>
         </PublicPageShell>
     );

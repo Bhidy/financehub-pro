@@ -247,7 +247,7 @@ export async function renderNavHistory(id: string, lang: Lang) {
             <p className="mt-4 max-w-3xl text-xs leading-relaxed text-muted">{t(NAVHIST.sourceNote, lang)}</p>
 
             <nav className="mt-8 border-t border-border pt-5">
-                <Link href={encodeURI(basePath(fund, lang))} prefetch={false} className="text-sm font-semibold text-starta-teal hover:underline">
+                <Link href={encodeURI(basePath(fund, lang))} prefetch={false} className="text-sm font-semibold text-starta-darkTeal hover:underline">
                     {isAr ? `العودة إلى صفحة ${name}` : `Back to ${name}`}
                 </Link>
             </nav>

@@ -143,3 +143,69 @@ export function getNewsBrandedCover(item: any, lang: string = "en", fallbackSymb
     const l = lang === "ar" ? "ar" : "en";
     return `/assets/news-covers/${l}-generic.webp`;
 }
+
+/* ------------------------------------------------------------------------
+ * MARKET PURITY + DUPLICATE CANON FOR NEWS (2026-09-05)
+ *
+ * Two archive defects measured on the live sitemap:
+ *   1. 99 Saudi-market stories (Aramco, Flynas, BinDawood, Americana …)
+ *      published as Egypt news. The Egypt pulse feed carries them, the
+ *      ingester tags everything source_country='EG', and because they match
+ *      no EGX ticker they arrive with symbol=NULL. The tell is the currency:
+ *      an EGX story quotes EGP, these quote SAR (or name Tadawul / TASI).
+ *      A story that DID map to an EGX symbol is never off-market, whatever
+ *      the headline says — a cross-border deal by an EGX company is Egypt news.
+ *   2. 117 headline groups re-ingested under a second id (185 extra URLs):
+ *      identical stories with two live canonical URLs, which is exactly the
+ *      "Duplicate, Google chose different canonical" row in Search Console.
+ *
+ * ONE function decides both, and every emitter — the news sitemaps, the hubs
+ * (window), the feeds, the Market Pulse block and the article page — goes
+ * through it, so no list can link to a copy the page itself 308s away.
+ * ---------------------------------------------------------------------- */
+
+// Case-sensitive on purpose: "SAR"/"TASI" are currency and index codes; a
+// case-insensitive match would fire on ordinary words.
+const OFF_MARKET_CODES_RE = /\bSAR\b|\bTASI\b/;
+const OFF_MARKET_NAMES_RE = /\bTadawul\b|\bNomu\b|Saudi (?:Stock )?Exchange/i;
+const OFF_MARKET_AR_RE = /ريال|تداول السعودية|السوق السعودي|\bتاسي\b/;
+
+/** True for a story about a market other than the EGX that arrived through the Egypt feed. */
+export function isOffMarketNews(headline?: string | null, symbol?: string | null): boolean {
+    if (symbol && String(symbol).trim()) return false;
+    const h = headline || '';
+    return OFF_MARKET_CODES_RE.test(h) || OFF_MARKET_NAMES_RE.test(h) || OFF_MARKET_AR_RE.test(h);
+}
+
+/** Identity of a story for duplicate detection: sanitized headline, case-folded, punctuation-collapsed. */
+export function newsDedupeKey(headline?: string | null): string {
+    return sanitizeNewsText(headline).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+
+type NewsRowLike = { id: number | string; headline?: string | null; symbol?: string | null };
+
+/**
+ * The publishable subset of a list of news rows, in the caller's order:
+ * off-market stories removed, and of several rows sharing a headline only the
+ * PRIMARY (lowest id — the first time the story arrived) kept.
+ */
+export function primaryNewsRows<T extends NewsRowLike>(rows: T[]): T[] {
+    const primary = new Map<string, number>();
+    for (const r of rows) {
+        const key = newsDedupeKey(r.headline);
+        if (!key) continue;
+        const id = Number(r.id);
+        const cur = primary.get(key);
+        if (cur === undefined || id < cur) primary.set(key, id);
+    }
+    return rows.filter((r) => {
+        if (isOffMarketNews(r.headline, r.symbol)) return false;
+        const key = newsDedupeKey(r.headline);
+        return !key || primary.get(key) === Number(r.id);
+    });
+}
+
+/** Escape a string for use inside a SQL LIKE/ILIKE pattern. */
+export function likeEscape(value: string): string {
+    return value.replace(/[\\%_]/g, (m) => `\\${m}`);
+}

@@ -232,7 +232,7 @@ export async function renderPricesToday(lang: 'en' | 'ar') {
                                         <Link
                                             href={encodeURI(fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), lang))}
                                             prefetch={false}
-                                            className="text-main hover:text-starta-teal"
+                                            className="text-main hover:text-starta-darkTeal"
                                         >
                                             {fundName(f, lang)}
                                         </Link>
@@ -285,14 +285,14 @@ export async function renderPricesToday(lang: 'en' | 'ar') {
                 <ul className="mt-4 flex flex-wrap gap-2">
                     {liveCategories.map((c) => (
                         <li key={c.key}>
-                            <Link href={encodeURI(categoryPath(c, lang))} prefetch={false} className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-teal">
+                            <Link href={encodeURI(categoryPath(c, lang))} prefetch={false} className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-darkTeal">
                                 {isAr ? c.nameAr : c.nameEn}
                             </Link>
                         </li>
                     ))}
                     {providers.map((p) => (
                         <li key={p.slug}>
-                            <Link href={encodeURI(providerPath(p, lang))} prefetch={false} className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-teal">
+                            <Link href={encodeURI(providerPath(p, lang))} prefetch={false} className="inline-block rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-darkTeal">
                                 {isAr ? p.nameAr : p.nameEn}
                             </Link>
                         </li>

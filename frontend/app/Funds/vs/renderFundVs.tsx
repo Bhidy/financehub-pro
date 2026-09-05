@@ -326,10 +326,10 @@ export async function renderFundVs(pair: string, lang: Lang) {
                         <tr className="border-b border-border bg-panel/40 text-left text-xs font-bold uppercase tracking-wide text-muted">
                             <th scope="col" className="px-4 py-3">{t(FUNDVS.metric, lang)}</th>
                             <th scope="col" className="px-4 py-3">
-                                <Link href={A.path} className="normal-case tracking-normal text-main hover:text-starta-teal">{A.name}</Link>
+                                <Link href={A.path} className="normal-case tracking-normal text-main hover:text-starta-darkTeal">{A.name}</Link>
                             </th>
                             <th scope="col" className="px-4 py-3">
-                                <Link href={B.path} className="normal-case tracking-normal text-main hover:text-starta-teal">{B.name}</Link>
+                                <Link href={B.path} className="normal-case tracking-normal text-main hover:text-starta-darkTeal">{B.name}</Link>
                             </th>
                         </tr>
                     </thead>
@@ -360,9 +360,9 @@ export async function renderFundVs(pair: string, lang: Lang) {
             </p>
 
             <nav aria-label={isAr ? 'صفحات الصناديق' : 'Fund profiles'} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-teal-700">
-                <Link href={A.path} className="hover:text-starta-teal hover:underline">{A.name} profile →</Link>
-                <Link href={B.path} className="hover:text-starta-teal hover:underline">{B.name} profile →</Link>
-                <Link href="/Funds" className="hover:text-starta-teal hover:underline">{t(FUNDVS.allFunds, lang)} →</Link>
+                <Link href={A.path} className="hover:text-starta-darkTeal hover:underline">{A.name} profile →</Link>
+                <Link href={B.path} className="hover:text-starta-darkTeal hover:underline">{B.name} profile →</Link>
+                <Link href="/Funds" className="hover:text-starta-darkTeal hover:underline">{t(FUNDVS.allFunds, lang)} →</Link>
             </nav>
 
             <p className="mt-8 border-t border-border pt-4 text-xs text-muted">

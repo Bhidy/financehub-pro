@@ -68,11 +68,11 @@ export default async function CompaniesArPage() {
             </p>
 
             <nav aria-label="تصنيفات البورصة المصرية" className="mt-5 flex flex-wrap gap-2 text-sm">
-                <Link href="/ar/markets/largest-companies" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">الأكبر حسب القيمة السوقية</Link>
-                <Link href="/ar/markets/top-dividend-yield" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">أعلى توزيعات الأرباح</Link>
-                <Link href="/ar/markets/lowest-pe-stocks" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">الأقل مكرر ربحية</Link>
-                <Link href="/ar/markets/movers" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">الأكثر نشاطًا</Link>
-                <Link href="/ar/markets/egx30" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-teal">مؤشر EGX30</Link>
+                <Link href="/ar/markets/largest-companies" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">الأكبر حسب القيمة السوقية</Link>
+                <Link href="/ar/markets/top-dividend-yield" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">أعلى توزيعات الأرباح</Link>
+                <Link href="/ar/markets/lowest-pe-stocks" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">الأقل مكرر ربحية</Link>
+                <Link href="/ar/markets/movers" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">الأكثر نشاطًا</Link>
+                <Link href="/ar/markets/egx30" className="rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">مؤشر EGX30</Link>
             </nav>
 
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
@@ -93,12 +93,12 @@ export default async function CompaniesArPage() {
                             <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-teal">
+                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">
                                         {t.name_ar || t.name_en || t.symbol}
                                     </Link>
                                 </td>
                                 <td className="px-4 py-2.5 font-mono font-semibold text-muted" dir="ltr">
-                                    <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-teal">{t.symbol}</Link>
+                                    <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-darkTeal">{t.symbol}</Link>
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{sectorAr(t.sector_name) || '—'}</td>
                                 <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">
@@ -119,10 +119,10 @@ export default async function CompaniesArPage() {
             </p>
 
             <nav aria-label="استكشف" className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/ar/sectors" className="text-muted hover:text-starta-teal">القطاعات</Link>
-                <Link href="/ar/markets/movers" className="text-muted hover:text-starta-teal">الأكثر ارتفاعًا وانخفاضًا</Link>
-                <Link href="/ar/markets/egx30" className="text-muted hover:text-starta-teal">مؤشر EGX30</Link>
-                <a href="/companies" hrefLang="en" className="text-muted hover:text-starta-teal">EGX companies in English</a>
+                <Link href="/ar/sectors" className="text-muted hover:text-starta-darkTeal">القطاعات</Link>
+                <Link href="/ar/markets/movers" className="text-muted hover:text-starta-darkTeal">الأكثر ارتفاعًا وانخفاضًا</Link>
+                <Link href="/ar/markets/egx30" className="text-muted hover:text-starta-darkTeal">مؤشر EGX30</Link>
+                <a href="/companies" hrefLang="en" className="text-muted hover:text-starta-darkTeal">EGX companies in English</a>
             </nav>
         </PublicPageShell>
     );

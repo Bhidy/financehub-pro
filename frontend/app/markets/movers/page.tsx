@@ -61,7 +61,7 @@ function MoversTable({ rows, showVolume = false }: { rows: Ticker[]; showVolume?
                     {rows.map((t) => (
                         <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                             <td className="px-4 py-2.5">
-                                <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-teal">
+                                <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-darkTeal">
                                     {t.name_en || t.symbol}
                                 </Link>
                                 {t.name_ar && (
@@ -69,7 +69,7 @@ function MoversTable({ rows, showVolume = false }: { rows: Ticker[]; showVolume?
                                 )}
                             </td>
                             <td className="px-4 py-2.5 font-mono font-semibold text-muted">
-                                <Link href={symbolPath(t.symbol)} className="hover:text-starta-teal">{t.symbol}</Link>
+                                <Link href={symbolPath(t.symbol)} className="hover:text-starta-darkTeal">{t.symbol}</Link>
                             </td>
                             <td className="px-4 py-2.5 text-right font-semibold">{fmtPrice(t.last_price)}{t.last_price !== null && t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}</td>
                             <td className={`px-4 py-2.5 text-right font-semibold ${
@@ -140,8 +140,8 @@ export default async function MoversPage() {
             </section>
 
             <p className="mt-6 text-sm text-muted">
-                Browse the full <Link href="/companies" className="font-semibold text-starta-teal hover:underline">EGX listed companies directory</Link> or
-                companies <Link href="/sectors" className="font-semibold text-starta-teal hover:underline">by sector</Link>.
+                Browse the full <Link href="/companies" className="font-semibold text-starta-darkTeal hover:underline">EGX listed companies directory</Link> or
+                companies <Link href="/sectors" className="font-semibold text-starta-darkTeal hover:underline">by sector</Link>.
             </p>
 
             <p className="mt-4 text-xs text-muted">

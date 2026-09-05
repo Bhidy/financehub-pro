@@ -174,7 +174,7 @@ export function renderContact(lang: Lang) {
                 {t.channels.map((c) => (
                     <div key={c.label} className="rounded-xl border border-border bg-surface p-4">
                         <h3 className="text-sm font-bold text-main">{c.label}</h3>
-                        <a href={`mailto:${c.email}`} className="mt-2 block break-all font-semibold text-starta-teal hover:underline">
+                        <a href={`mailto:${c.email}`} className="mt-2 block break-all font-semibold text-starta-darkTeal hover:underline">
                             {c.email}
                         </a>
                         <p className="mt-1 text-sm text-muted">{c.note}</p>
@@ -193,22 +193,22 @@ export function renderContact(lang: Lang) {
             {h2(t.policiesH2, 'policies')}
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">{t.policiesLede}</p>
             <nav aria-label={t.policiesH2} className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold">
-                <Link href={p('/editorial-policy', '/ar/editorial-policy')} className="text-muted hover:text-starta-teal">
+                <Link href={p('/editorial-policy', '/ar/editorial-policy')} className="text-muted hover:text-starta-darkTeal">
                     {t.links.editorial}
                 </Link>
-                <Link href={p('/corrections', '/ar/corrections')} className="text-muted hover:text-starta-teal">
+                <Link href={p('/corrections', '/ar/corrections')} className="text-muted hover:text-starta-darkTeal">
                     {t.links.corrections}
                 </Link>
-                <Link href={p('/about', '/ar/about')} className="text-muted hover:text-starta-teal">
+                <Link href={p('/about', '/ar/about')} className="text-muted hover:text-starta-darkTeal">
                     {t.links.about}
                 </Link>
-                <Link href="/privacy" className="text-muted hover:text-starta-teal">
+                <Link href="/privacy" className="text-muted hover:text-starta-darkTeal">
                     {t.links.privacy}
                 </Link>
-                <Link href="/terms" className="text-muted hover:text-starta-teal">
+                <Link href="/terms" className="text-muted hover:text-starta-darkTeal">
                     {t.links.terms}
                 </Link>
-                <a href={alt} hrefLang={isAr ? 'en' : 'ar'} lang={isAr ? 'en' : 'ar'} className="text-muted hover:text-starta-teal">
+                <a href={alt} hrefLang={isAr ? 'en' : 'ar'} lang={isAr ? 'en' : 'ar'} className="text-muted hover:text-starta-darkTeal">
                     {t.altLabel}
                 </a>
             </nav>

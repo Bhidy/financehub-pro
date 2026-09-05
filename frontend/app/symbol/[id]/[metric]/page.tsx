@@ -646,7 +646,7 @@ export default async function MetricPage({ params }: Props) {
                                             ) : (
                                                 <Link
                                                     href={`${symbolPath(row.symbol)}/${slug}`}
-                                                    className="font-semibold text-teal-700 hover:text-starta-teal hover:underline"
+                                                    className="font-semibold text-teal-700 hover:text-starta-darkTeal hover:underline"
                                                 >
                                                     {row.name} ({row.symbol})
                                                 </Link>
@@ -667,26 +667,26 @@ export default async function MetricPage({ params }: Props) {
             </p>
 
             <nav aria-label={`More on ${symbol}`} className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-teal-700">
-                <Link href={symbolPath(symbol)} className="hover:text-starta-teal hover:underline">
+                <Link href={symbolPath(symbol)} className="hover:text-starta-darkTeal hover:underline">
                     {symbol} Overview
                 </Link>
                 {siblingMetrics.map((s) => (
-                    <Link key={s} href={`${symbolPath(symbol)}/${s}`} className="hover:text-starta-teal hover:underline">
+                    <Link key={s} href={`${symbolPath(symbol)}/${s}`} className="hover:text-starta-darkTeal hover:underline">
                         {METRIC_LABEL[s]}
                     </Link>
                 ))}
                 {years.length > 0 && (
-                    <Link href={`${symbolPath(symbol)}/financials`} className="hover:text-starta-teal hover:underline">
+                    <Link href={`${symbolPath(symbol)}/financials`} className="hover:text-starta-darkTeal hover:underline">
                         Financials
                     </Link>
                 )}
-                <Link href={`${symbolPath(symbol)}/dividends`} className="hover:text-starta-teal hover:underline">
+                <Link href={`${symbolPath(symbol)}/dividends`} className="hover:text-starta-darkTeal hover:underline">
                     Dividends
                 </Link>
-                <Link href={`${symbolPath(symbol)}/technicals`} className="hover:text-starta-teal hover:underline">
+                <Link href={`${symbolPath(symbol)}/technicals`} className="hover:text-starta-darkTeal hover:underline">
                     Technicals
                 </Link>
-                <Link href={`${symbolPath(symbol)}/history`} className="hover:text-starta-teal hover:underline">
+                <Link href={`${symbolPath(symbol)}/history`} className="hover:text-starta-darkTeal hover:underline">
                     Price History
                 </Link>
             </nav>

@@ -138,7 +138,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
             </div>
             )}
             <article lang={lang} className="learn-article">
-                <p className="text-sm font-semibold text-starta-teal">
+                <p className="text-sm font-semibold text-starta-darkTeal">
                     {content.category}
                     <span className="font-normal text-muted"> · {content.readTime}</span>
                 </p>
@@ -191,11 +191,11 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     {arabic ? (
                         <>
                             طبّق ما تعلمته —{' '}
-                            <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">
+                            <Link href="/Funds" className="font-semibold text-starta-darkTeal hover:underline">
                                 استكشف صناديق الاستثمار المصرية
                             </Link>{' '}
                             أو{' '}
-                            <Link href="/Funds/Compare" className="font-semibold text-starta-teal hover:underline">
+                            <Link href="/Funds/Compare" className="font-semibold text-starta-darkTeal hover:underline">
                                 قارن بين الصناديق
                             </Link>
                             .
@@ -203,11 +203,11 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     ) : (
                         <>
                             Put it into practice —{' '}
-                            <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">
+                            <Link href="/Funds" className="font-semibold text-starta-darkTeal hover:underline">
                                 explore Egyptian mutual funds
                             </Link>{' '}
                             or{' '}
-                            <Link href="/Funds/Compare" className="font-semibold text-starta-teal hover:underline">
+                            <Link href="/Funds/Compare" className="font-semibold text-starta-darkTeal hover:underline">
                                 compare funds side by side
                             </Link>
                             .
@@ -241,7 +241,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                         <li key={t.slug}>
                             <Link
                                 href={encodeURI(learnPath(t.slug, t.ar.title, lang))}
-                                className="text-sm font-medium text-main hover:text-starta-teal"
+                                className="text-sm font-medium text-main hover:text-starta-darkTeal"
                             >
                                 {(arabic ? t.ar : t.en).title}
                             </Link>
@@ -249,7 +249,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
                     ))}
                 </ul>
                 <p className="mt-4 text-sm">
-                    <Link href="/Learn" className="font-semibold text-starta-teal hover:underline">
+                    <Link href="/Learn" className="font-semibold text-starta-darkTeal hover:underline">
                         {arabic ? 'كل دروس التعلّم ←' : 'All learn topics →'}
                     </Link>
                 </p>

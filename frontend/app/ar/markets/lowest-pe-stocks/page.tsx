@@ -82,12 +82,12 @@ export default async function LowestPeStocksArPage() {
                             <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-teal">{t.name_ar || t.name_en || t.symbol}</Link>
+                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_ar || t.name_en || t.symbol}</Link>
                                     <span className="ml-1.5 font-mono text-xs text-muted" dir="ltr">{t.symbol}</span>
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
-                                <td className="px-4 py-2.5 font-bold tabular-nums text-starta-teal" dir="ltr">{(t.pe_ratio as number).toLocaleString('en-EG', { maximumFractionDigits: 2 })}</td>
+                                <td className="px-4 py-2.5 font-bold tabular-nums text-starta-darkTeal" dir="ltr">{(t.pe_ratio as number).toLocaleString('en-EG', { maximumFractionDigits: 2 })}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -95,7 +95,7 @@ export default async function LowestPeStocksArPage() {
             </div>
 
             <p className="mt-6 text-sm text-muted">
-                اطّلع على <Link href="/ar/markets/largest-companies" className="font-semibold text-starta-teal hover:underline">أكبر شركات البورصة المصرية</Link> أو <Link href="/ar/markets/top-dividend-yield" className="font-semibold text-starta-teal hover:underline">أعلى الأسهم توزيعًا</Link> أو تصفّح <Link href="/ar/companies" className="font-semibold text-starta-teal hover:underline">جميع الشركات</Link>.
+                اطّلع على <Link href="/ar/markets/largest-companies" className="font-semibold text-starta-darkTeal hover:underline">أكبر شركات البورصة المصرية</Link> أو <Link href="/ar/markets/top-dividend-yield" className="font-semibold text-starta-darkTeal hover:underline">أعلى الأسهم توزيعًا</Link> أو تصفّح <Link href="/ar/companies" className="font-semibold text-starta-darkTeal hover:underline">جميع الشركات</Link>.
             </p>
             <p className="mt-4 text-xs text-muted">المصدر: البورصة المصرية عبر TradingView. مكرر الربحية محسوب على آخر 12 شهرًا مقابل السعر الحالي. الأسعار بالجنيه المصري ما لم يُذكر رمز عملة آخر.</p>
         </PublicPageShell>

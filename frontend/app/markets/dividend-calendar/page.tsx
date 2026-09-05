@@ -124,7 +124,7 @@ function CalendarTable({ rows, emptyText }: { rows: CalendarRow[]; emptyText: st
                         <tr key={r.key} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                             <td className="px-4 py-2.5 font-semibold text-main">{r.exDate ?? '—'}</td>
                             <td className="px-4 py-2.5">
-                                <Link href={symbolPath(r.symbol)} className="font-semibold text-main hover:text-starta-teal">
+                                <Link href={symbolPath(r.symbol)} className="font-semibold text-main hover:text-starta-darkTeal">
                                     {r.nameEn || r.symbol}
                                 </Link>
                                 {r.nameAr && (
@@ -261,8 +261,8 @@ export default async function DividendCalendarPage() {
             </section>
 
             <p className="mt-6 text-sm text-muted">
-                Browse the full <Link href="/companies" className="font-semibold text-starta-teal hover:underline">EGX listed companies directory</Link> or
-                today&apos;s <Link href="/markets/movers" className="font-semibold text-starta-teal hover:underline">EGX movers</Link> and the <Link href="/markets/top-dividend-yield" className="font-semibold text-starta-teal hover:underline">highest dividend-yield stocks</Link>.
+                Browse the full <Link href="/companies" className="font-semibold text-starta-darkTeal hover:underline">EGX listed companies directory</Link> or
+                today&apos;s <Link href="/markets/movers" className="font-semibold text-starta-darkTeal hover:underline">EGX movers</Link> and the <Link href="/markets/top-dividend-yield" className="font-semibold text-starta-darkTeal hover:underline">highest dividend-yield stocks</Link>.
             </p>
 
             <section className="mt-10 border-t border-border pt-6">

@@ -49,10 +49,10 @@ function MoversTable({ rows, showVolume = false }: { rows: Ticker[]; showVolume?
                     {rows.map((t) => (
                         <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                             <td className="px-4 py-2.5">
-                                <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-teal">{t.name_ar || t.name_en || t.symbol}</Link>
+                                <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_ar || t.name_en || t.symbol}</Link>
                             </td>
                             <td className="px-4 py-2.5 font-mono font-semibold text-muted" dir="ltr">
-                                <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-teal">{t.symbol}</Link>
+                                <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-darkTeal">{t.symbol}</Link>
                             </td>
                             <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{fmtPrice(t.last_price)}{t.last_price !== null && t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}</td>
                             <td className={`px-4 py-2.5 font-semibold tabular-nums ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'}`} dir="ltr">{fmtChange(t.change_percent)}</td>
@@ -86,7 +86,7 @@ export default async function MoversArPage() {
             <section className="mt-8"><h2 className="text-xl font-bold text-main">الأكثر نشاطًا حسب الحجم</h2><MoversTable rows={active} showVolume /></section>
 
             <p className="mt-6 text-sm text-muted">
-                تصفح <Link href="/ar/companies" className="font-semibold text-starta-teal hover:underline">دليل أسهم البورصة المصرية</Link> أو الشركات <Link href="/ar/sectors" className="font-semibold text-starta-teal hover:underline">حسب القطاع</Link>.
+                تصفح <Link href="/ar/companies" className="font-semibold text-starta-darkTeal hover:underline">دليل أسهم البورصة المصرية</Link> أو الشركات <Link href="/ar/sectors" className="font-semibold text-starta-darkTeal hover:underline">حسب القطاع</Link>.
             </p>
         </PublicPageShell>
     );

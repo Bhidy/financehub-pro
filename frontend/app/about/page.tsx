@@ -55,7 +55,7 @@ export default function AboutPage() {
                     Egyptian market news in both languages; and a beginner-friendly investing academy.
                 </p>
                 <p>
-                    <a href="/ar/about" hrefLang="ar" lang="ar" className="font-semibold text-starta-teal hover:underline">
+                    <a href="/ar/about" hrefLang="ar" lang="ar" className="font-semibold text-starta-darkTeal hover:underline">
                         اقرأ هذه الصفحة بالعربية
                     </a>{' '}
                     — this page now has a full Arabic twin rather than a single translated paragraph.
@@ -101,10 +101,10 @@ export default function AboutPage() {
 
             <h2 className="mt-10 text-xl font-bold text-main">Contact</h2>
             <p className="mt-3 max-w-3xl leading-relaxed text-main">
-                Questions, corrections or partnerships: <Link href="/contact" className="font-semibold text-starta-teal hover:underline">contact us</Link>. Explore the{' '}
-                <Link href="/companies" className="font-semibold text-starta-teal hover:underline">EGX companies directory</Link>,{' '}
-                <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">mutual funds</Link> or the{' '}
-                <Link href="/Learn" className="font-semibold text-starta-teal hover:underline">investing academy</Link>.
+                Questions, corrections or partnerships: <Link href="/contact" className="font-semibold text-starta-darkTeal hover:underline">contact us</Link>. Explore the{' '}
+                <Link href="/companies" className="font-semibold text-starta-darkTeal hover:underline">EGX companies directory</Link>,{' '}
+                <Link href="/Funds" className="font-semibold text-starta-darkTeal hover:underline">mutual funds</Link> or the{' '}
+                <Link href="/Learn" className="font-semibold text-starta-darkTeal hover:underline">investing academy</Link>.
             </p>
         </PublicPageShell>
     );

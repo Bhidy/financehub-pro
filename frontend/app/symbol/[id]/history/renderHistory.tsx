@@ -246,7 +246,7 @@ export async function renderHistory(id: string, lang: Lang) {
 
             <p className="mt-4 text-sm text-muted">
                 The full price history{firstIso ? ` back to ${humanDate(firstIso)}` : ''} is available on the{' '}
-                <Link href={overviewPath} className="font-semibold text-starta-teal hover:underline">
+                <Link href={overviewPath} className="font-semibold text-starta-darkTeal hover:underline">
                     interactive {symbol} chart
                 </Link>
                 .
@@ -261,7 +261,7 @@ export async function renderHistory(id: string, lang: Lang) {
                 <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
                     {siblings.map((s) => (
                         <li key={s.href}>
-                            <Link href={s.href} className="text-starta-teal hover:underline">
+                            <Link href={s.href} className="text-starta-darkTeal hover:underline">
                                 {s.label}
                             </Link>
                         </li>

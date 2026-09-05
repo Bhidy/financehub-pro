@@ -92,7 +92,7 @@ export default async function SectorsPage() {
                                 <td className="px-4 py-2.5">
                                     <Link
                                         href={`/sectors/${slugify(s.sector_name)}`}
-                                        className="font-semibold text-main hover:text-starta-teal"
+                                        className="font-semibold text-main hover:text-starta-darkTeal"
                                     >
                                         {s.sector_name}
                                     </Link>
@@ -107,7 +107,7 @@ export default async function SectorsPage() {
 
             <p className="mt-4 text-xs text-muted">
                 Source: Egyptian Exchange via TradingView, updated daily. Market caps in Egyptian pounds. See also
-                the full <Link href="/companies" className="text-starta-teal hover:underline">EGX listed companies directory</Link>.
+                the full <Link href="/companies" className="text-starta-darkTeal hover:underline">EGX listed companies directory</Link>.
             </p>
         </PublicPageShell>
     );

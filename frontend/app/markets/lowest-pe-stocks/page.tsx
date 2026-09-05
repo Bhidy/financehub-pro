@@ -88,12 +88,12 @@ export default async function LowestPeStocksPage() {
                             <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-teal">{t.name_en || t.symbol}</Link>
+                                    <Link href={symbolPath(t.symbol)} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_en || t.symbol}</Link>
                                     <span className="ml-1.5 font-mono text-xs text-muted">{t.symbol}</span>
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
-                                <td className="px-4 py-2.5 text-right font-bold tabular-nums text-starta-teal">{(t.pe_ratio as number).toLocaleString('en-EG', { maximumFractionDigits: 2 })}</td>
+                                <td className="px-4 py-2.5 text-right font-bold tabular-nums text-starta-darkTeal">{(t.pe_ratio as number).toLocaleString('en-EG', { maximumFractionDigits: 2 })}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -101,7 +101,7 @@ export default async function LowestPeStocksPage() {
             </div>
 
             <p className="mt-6 text-sm text-muted">
-                See the <Link href="/markets/largest-companies" className="font-semibold text-starta-teal hover:underline">largest EGX companies by market cap</Link>, the <Link href="/markets/top-dividend-yield" className="font-semibold text-starta-teal hover:underline">highest dividend-yield stocks</Link>, or browse <Link href="/companies" className="font-semibold text-starta-teal hover:underline">all EGX companies</Link>.
+                See the <Link href="/markets/largest-companies" className="font-semibold text-starta-darkTeal hover:underline">largest EGX companies by market cap</Link>, the <Link href="/markets/top-dividend-yield" className="font-semibold text-starta-darkTeal hover:underline">highest dividend-yield stocks</Link>, or browse <Link href="/companies" className="font-semibold text-starta-darkTeal hover:underline">all EGX companies</Link>.
             </p>
             <p className="mt-4 text-xs text-muted">Source: Egyptian Exchange via TradingView. P/E is trailing (last 12 months) over the current price. Prices in EGP unless a currency code is shown.</p>
         </PublicPageShell>

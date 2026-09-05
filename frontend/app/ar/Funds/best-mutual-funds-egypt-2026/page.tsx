@@ -152,7 +152,7 @@ export default async function BestFundsArPage() {
                                     <tr key={String(f.fund_id)} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                         <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                         <td className="px-4 py-2.5">
-                                            <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), 'ar')} className="font-semibold text-main hover:text-starta-teal">
+                                            <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), 'ar')} className="font-semibold text-main hover:text-starta-darkTeal">
                                                 {arName(f)}
                                             </Link>
                                         </td>
@@ -192,7 +192,7 @@ export default async function BestFundsArPage() {
                                     return (
                                         <tr key={String(f.fund_id)} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                             <td className="px-4 py-2.5">
-                                                <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), 'ar')} className="font-semibold text-main hover:text-starta-teal">{arName(f)}</Link>
+                                                <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), 'ar')} className="font-semibold text-main hover:text-starta-darkTeal">{arName(f)}</Link>
                                             </td>
                                             <td className="px-4 py-2.5 font-bold text-emerald-700 tabular-nums" dir="ltr">{fmtPct(num(f, 'return_1y'))}</td>
                                             <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtPct(num(f, 'return_3y'))}</td>
@@ -230,9 +230,9 @@ export default async function BestFundsArPage() {
             </section>
 
             <nav aria-label="استكشف" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
-                <Link href="/ar/Funds" className="text-muted hover:text-starta-teal">كل صناديق الاستثمار</Link>
-                <Link href="/ar/companies" className="text-muted hover:text-starta-teal">أسهم البورصة المصرية</Link>
-                <a href="/Funds/best-mutual-funds-egypt-2026" hrefLang="en" className="text-muted hover:text-starta-teal">Best funds in English</a>
+                <Link href="/ar/Funds" className="text-muted hover:text-starta-darkTeal">كل صناديق الاستثمار</Link>
+                <Link href="/ar/companies" className="text-muted hover:text-starta-darkTeal">أسهم البورصة المصرية</Link>
+                <a href="/Funds/best-mutual-funds-egypt-2026" hrefLang="en" className="text-muted hover:text-starta-darkTeal">Best funds in English</a>
             </nav>
             <FundsGuide lang="ar" extraFaq={faq} />
         </PublicPageShell>

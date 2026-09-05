@@ -20,7 +20,7 @@ export async function GET(
                     cci20, adx, mom, recommend_all, recommend_ma, recommend_other,
                     ema50, ema200, sma50, sma200, updated_at
              FROM egx_technicals
-             WHERE UPPER(symbol) = $1
+             WHERE symbol = $1
              ORDER BY CASE timeframe
                  WHEN '60' THEN 1 WHEN '240' THEN 2 WHEN '1D' THEN 3 WHEN '1W' THEN 4 ELSE 5 END`,
             [symbol.toUpperCase()]

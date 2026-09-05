@@ -378,6 +378,71 @@ async def suite_nav_write_contract():
 
 
 # --------------------------------------------------------------------------- #
+# 14.3 / company-page read path: plans + the upper-case symbol invariant
+# --------------------------------------------------------------------------- #
+PAGE_QUERIES = {
+    "performance (ohlc_data, 1400 newest closes)":
+        "SELECT date, close FROM ohlc_data WHERE symbol = $1 AND close IS NOT NULL ORDER BY date DESC LIMIT 1400",
+    "history (ohlc_data, 60 newest rows)":
+        "SELECT date, open, high, low, close, volume FROM ohlc_data WHERE symbol = $1 ORDER BY date DESC LIMIT 60",
+    "technicals (egx_technicals)":
+        "SELECT timeframe, rsi FROM egx_technicals WHERE symbol = $1",
+    "news (market_news, 5 newest)":
+        "SELECT id, headline FROM market_news WHERE symbol = $1 ORDER BY published_at DESC LIMIT 5",
+    "stats (stock_stats_view, one symbol)":
+        "SELECT * FROM stock_stats_view WHERE symbol = $1",
+    "financials (egx_financials)":
+        "SELECT fiscal_year FROM egx_financials WHERE symbol = $1 ORDER BY fiscal_year DESC",
+}
+SYMBOL_TABLES = ["ohlc_data", "market_news", "egx_technicals", "egx_financials", "dividend_history", "egx_dividends"]
+
+
+async def suite_symbol_page_plans():
+    """The company page ran every per-symbol read as `WHERE UPPER(symbol) = $1`,
+    which no (symbol, …) index can serve — a sequential scan of ohlc_data per
+    page view (2026-09-05 latency audit). The frontend now compares `symbol`
+    directly; that is only correct while every stored symbol is upper-case, so
+    this suite asserts the invariant on each table and prints EXPLAIN ANALYZE
+    for the page's queries (both spellings) so the plan change is on record."""
+    if not DATABASE_URL:
+        print("\n14.3 COMPANY-PAGE READ PATH: skipped (no DATABASE_URL)")
+        return
+    import asyncpg
+    print("\n14.3 COMPANY-PAGE READ PATH (plans + upper-case symbol invariant)")
+    try:
+        conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0, command_timeout=60)
+    except (asyncpg.CannotConnectNowError, asyncpg.PostgresConnectionError,
+            OSError, asyncio.TimeoutError) as e:
+        skip("company-page read path (DB unreachable — transient infra)", type(e).__name__)
+        return
+    try:
+        for t in SYMBOL_TABLES:
+            try:
+                n = await conn.fetchval(f"SELECT COUNT(*) FROM {t} WHERE symbol <> UPPER(symbol)")
+                check(f"{t}: every stored symbol is upper-case", n == 0, f"{n} non-upper-case rows")
+            except asyncpg.UndefinedTableError:
+                skip(f"{t}: table absent in this schema", "not audited")
+        for sym in ("COMI", "TMGH"):
+            for label, sql in PAGE_QUERIES.items():
+                for form, q in (("symbol = $1", sql), ("UPPER(symbol) = $1", sql.replace("WHERE symbol = $1", "WHERE UPPER(symbol) = $1"))):
+                    try:
+                        plan = await conn.fetch(f"EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) {q}", sym)
+                        lines = [r[0] for r in plan]
+                        total = next((l for l in lines if l.startswith("Execution Time")), "?")
+                        scan = next((l.strip() for l in lines if "Seq Scan" in l or "Index" in l), "?")
+                        print(f"    {sym} · {label} · {form}: {total} | {scan[:90]}")
+                    except Exception as e:  # noqa: BLE001 — informational
+                        print(f"    {sym} · {label} · {form}: EXPLAIN failed: {type(e).__name__}: {e}")
+        idx = await conn.fetch("SELECT tablename, indexname, indexdef FROM pg_indexes WHERE tablename = ANY($1::text[]) ORDER BY tablename, indexname", SYMBOL_TABLES)
+        for r in idx:
+            print(f"    index {r['tablename']}.{r['indexname']}: {r['indexdef'][:110]}")
+        missing = [t for t in SYMBOL_TABLES if not any(r['tablename'] == t and '(symbol' in r['indexdef'] for r in idx)]
+        check("every per-symbol table has an index led by symbol", not missing, f"missing on: {missing}")
+    finally:
+        await conn.close()
+
+
+# --------------------------------------------------------------------------- #
 # 14.1 / live: validate the real TV client's own gates
 # --------------------------------------------------------------------------- #
 async def suite_live():
@@ -450,6 +515,7 @@ async def main(suite: str):
         await suite_write_contract()        # DB dry-run: SQL vs live schema
         await suite_fund_write_contract()   # DB dry-run: fund_risk_metrics + fund_feedback
         await suite_nav_write_contract()    # DB dry-run: nav_history provenance writers
+        await suite_symbol_page_plans()     # DB read path: plans + upper-case symbol invariant
     if suite in ("all", "live"):
         await suite_live()
     if suite in ("all", "dataquality"):

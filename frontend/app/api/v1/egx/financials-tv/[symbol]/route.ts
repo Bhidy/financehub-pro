@@ -15,7 +15,7 @@ export async function GET(
             `SELECT fiscal_year, revenue, gross_profit, ebitda, net_income,
                     eps_diluted, free_cash_flow, total_assets, total_debt, dps
              FROM egx_financials
-             WHERE UPPER(symbol) = $1 AND period_type = 'annual'
+             WHERE symbol = $1 AND period_type = 'annual'
              ORDER BY fiscal_year ASC`,
             [symbol.toUpperCase()]
         );

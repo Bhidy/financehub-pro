@@ -29,7 +29,7 @@ export async function GET(
                 source,
                 last_updated
              FROM market_tickers
-             WHERE UPPER(symbol) = $1`,
+             WHERE symbol = $1`,
             [symbol.toUpperCase()]
         );
 

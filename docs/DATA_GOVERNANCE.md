@@ -138,6 +138,14 @@ Gate: `npm run verify:ssr` (`scripts/test-ssr-truth.ts`). Live: `SSR_COUNT_CONTR
   `eu-central-1` and the audience is in Egypt — every SSR query crossed the Atlantic (company page
   TTFB 1.3 s, fund profile 2.7 s, measured 2026-09-05). `frontend/vercel.json` pins `regions: ["fra1"]`;
   the post-deploy verifier asserts `x-vercel-id` carries `fra1::fra1` and page latency.
+* **Sargable predicates:** every per-symbol read (`ohlc_data`, `market_news`, `egx_technicals`,
+  `egx_financials`, `dividend_history`, `egx_dividends`) compared `UPPER(symbol) = $1`, which none of the
+  `(symbol, …)` indexes can serve — a sequential scan of ohlc_data per company-page view and per
+  sub-tab (the COMI/TMGH outliers of 3–5 s). The call sites already upper-case the parameter, so the
+  predicate is now `symbol = $1`; `qa/egx_audit.py` suite 14.3 asserts the stored symbols ARE
+  upper-case on each table, asserts a symbol-led index exists, and prints `EXPLAIN ANALYZE` for the
+  page's queries in both spellings on every CI run. `getPerformance()` and `getStats()` are cached
+  per symbol for 15 minutes (tag `seo-tickers`), like the stats map.
 
 ## Follow-ups not done in this pass
 

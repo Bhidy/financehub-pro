@@ -233,12 +233,15 @@ const STATS_NUM_FIELDS = [
 ];
 
 /** Key statistics (stock_stats_view — already absolute EGP). */
-export const getStats = cache(async (symbol: string): Promise<Record<string, number | string | null> | null> => {
-    const result = await db.query(`SELECT * FROM stock_stats_view WHERE symbol = $1`, [symbol.toUpperCase()]);
-    const row = result.rows[0] || null;
-    return row ? (toNum(row, STATS_NUM_FIELDS) as Record<string, number | string | null>) : null;
-});
-
+const _statsCached = unstable_cache(
+    async (symbol: string): Promise<Record<string, number | string | null> | null> => {
+        const result = await db.query(`SELECT * FROM stock_stats_view WHERE symbol = $1`, [symbol]);
+        return result.rows[0] ? (toNum(result.rows[0] as Record<string, unknown>, STATS_NUM_FIELDS) as Record<string, number | string | null>) : null;
+    },
+    ['seo:stats:v1'],
+    { revalidate: 900, tags: ['seo-tickers'] }
+);
+export const getStats = cache((symbol: string): Promise<Record<string, number | string | null> | null> => _statsCached(symbol.toUpperCase()));
 /**
  * Key statistics for EVERY EGX symbol, keyed by ticker — the read the sitemap
  * needs to apply the comparison page's own row gate. The stock-comparisons
@@ -496,7 +499,7 @@ export const getFinancialYears = cache(async (symbol: string): Promise<Financial
     const result = await db.query(
         `SELECT fiscal_year, revenue, gross_profit, ebitda, net_income,
                 eps_diluted, free_cash_flow, total_assets, total_debt, dps
-         FROM egx_financials WHERE UPPER(symbol) = $1 ORDER BY fiscal_year DESC`,
+         FROM egx_financials WHERE symbol = $1 ORDER BY fiscal_year DESC`,
         [symbol.toUpperCase()]
     );
     return result.rows.map((r: Record<string, unknown>) =>
@@ -508,7 +511,7 @@ export const getFinancialYears = cache(async (symbol: string): Promise<Financial
 export const getDividendHistory = cache(async (symbol: string): Promise<Array<Record<string, unknown>>> => {
     const result = await db.query(
         `SELECT ex_date, dividend_amount, record_date, pay_date, currency
-         FROM dividend_history WHERE UPPER(symbol) = $1 ORDER BY ex_date DESC LIMIT 50`,
+         FROM dividend_history WHERE symbol = $1 ORDER BY ex_date DESC LIMIT 50`,
         [symbol.toUpperCase()]
     );
     return result.rows.map((r: Record<string, unknown>) => toNum(r, ['dividend_amount']));
@@ -520,7 +523,7 @@ export const getDividendSummary = cache(async (symbol: string): Promise<Record<s
         `SELECT symbol, div_yield, amount_recent, ex_date_recent, payment_date_recent,
                 amount_upcoming, ex_date_upcoming, payment_date_upcoming,
                 frequency, payout_ratio_ttm, continuous_growth
-         FROM egx_dividends WHERE UPPER(symbol) = $1`,
+         FROM egx_dividends WHERE symbol = $1`,
         [symbol.toUpperCase()]
     );
     const row = result.rows[0] || null;
@@ -534,7 +537,7 @@ export const getTechnicals = cache(async (symbol: string): Promise<Array<Record<
                 cci20, adx, mom, recommend_all, recommend_ma, recommend_other,
                 ema50, ema200, sma50, sma200, updated_at
          FROM egx_technicals
-         WHERE UPPER(symbol) = $1
+         WHERE symbol = $1
          ORDER BY CASE timeframe
              WHEN '60' THEN 1 WHEN '240' THEN 2 WHEN '1D' THEN 3 WHEN '1W' THEN 4 ELSE 5 END`,
         [symbol.toUpperCase()]
@@ -548,7 +551,7 @@ export const getTechnicals = cache(async (symbol: string): Promise<Array<Record<
 export const getRecentHistory = cache(async (symbol: string, limit = 60): Promise<Array<Record<string, unknown>>> => {
     const result = await db.query(
         `SELECT date, open, high, low, close, volume
-         FROM ohlc_data WHERE UPPER(symbol) = $1 ORDER BY date DESC LIMIT $2`,
+         FROM ohlc_data WHERE symbol = $1 ORDER BY date DESC LIMIT $2`,
         [symbol.toUpperCase(), limit]
     );
     return result.rows.map((r: Record<string, unknown>) => toNum(r, ['open', 'high', 'low', 'close', 'volume']));
@@ -569,11 +572,24 @@ export type SymbolPerformance = {
     horizons: Array<{ label: string; pct: number | null }>;
 };
 
-export const getPerformance = cache(async (symbol: string): Promise<SymbolPerformance | null> => {
+// Company-page data layer (2026-09-05 latency pass). Every read below used to run
+// `WHERE UPPER(symbol) = $1`, which cannot use the (symbol, date) indexes — a
+// sequential scan of ohlc_data (480k+ rows) per page view, repeated on every
+// sub-tab. The stored symbols ARE upper-case (asserted by qa/egx_audit.py
+// 14.3), so the predicate is now sargable, and the heavy per-symbol reads are
+// cached for 15 minutes (tag seo-tickers) — the same window the stats map uses.
+const _performanceCached = unstable_cache(
+    async (symbol: string): Promise<SymbolPerformance | null> => _getPerformanceUncached(symbol),
+    ['seo:performance:v1'],
+    { revalidate: 900, tags: ['seo-tickers'] }
+);
+export const getPerformance = cache((symbol: string): Promise<SymbolPerformance | null> => _performanceCached(symbol.toUpperCase()));
+
+async function _getPerformanceUncached(symbol: string): Promise<SymbolPerformance | null> {
     const result = await db.query(
         `WITH h AS (
             SELECT date, close FROM ohlc_data
-            WHERE UPPER(symbol) = $1 AND close IS NOT NULL
+            WHERE symbol = $1 AND close IS NOT NULL
             ORDER BY date DESC LIMIT 1400
         )
         SELECT
@@ -623,7 +639,7 @@ export const getPerformance = cache(async (symbol: string): Promise<SymbolPerfor
             { label: '5Y', pct: oldestOldEnough ? pct(r.ref_oldest) : null },
         ],
     };
-});
+}
 
 /**
  * EGX 30 index quote for the /markets/egx30 SSR page. Reads the internal
@@ -707,7 +723,7 @@ export const getSymbolNews = cache(async (symbol: string, limit = 5): Promise<Ne
     const result = await db.query(
         `SELECT id, symbol, headline, url, published_at, article_body, image_url,
                 source_section, source_country
-         FROM market_news WHERE UPPER(symbol) = $1
+         FROM market_news WHERE symbol = $1
          ORDER BY published_at DESC LIMIT $2`,
         [symbol.toUpperCase(), limit * 2]
     );
@@ -725,7 +741,7 @@ const _historyStatsCached = unstable_cache(
         const result = await db.query(
             `SELECT COUNT(*)::int AS rows, MIN(date) AS first_date, MAX(date) AS last_date,
                     MIN(low) AS all_time_low, MAX(high) AS all_time_high
-             FROM ohlc_data WHERE UPPER(symbol) = $1`,
+             FROM ohlc_data WHERE symbol = $1`,
             [symbol.toUpperCase()]
         );
         const row = result.rows[0] || null;

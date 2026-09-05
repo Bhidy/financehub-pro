@@ -23,7 +23,7 @@ export async function GET(
                 adj_close,
                 volume
              FROM ohlc_data 
-             WHERE UPPER(symbol) = $1
+             WHERE symbol = $1
              ORDER BY date DESC
              LIMIT $2`,
             [symbol, limit]

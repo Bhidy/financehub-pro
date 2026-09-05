@@ -18,7 +18,7 @@ export async function GET(
                     rec_buy, rec_over, rec_hold, rec_under, rec_sell, rec_total,
                     eps_fcst_next_fq, rev_fcst_next_fq, eps_fcst_next_fy, updated_at
              FROM egx_estimates
-             WHERE UPPER(symbol) = $1`,
+             WHERE symbol = $1`,
             [symbol.toUpperCase()]
         );
 

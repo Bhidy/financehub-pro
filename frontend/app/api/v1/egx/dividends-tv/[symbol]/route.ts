@@ -18,7 +18,7 @@ export async function GET(
                     amount_upcoming, ex_date_upcoming, payment_date_upcoming,
                     frequency, payout_ratio_ttm, continuous_growth, updated_at
              FROM egx_dividends
-             WHERE UPPER(symbol) = $1`,
+             WHERE symbol = $1`,
             [symbol.toUpperCase()]
         );
         if (result.rows.length === 0) {

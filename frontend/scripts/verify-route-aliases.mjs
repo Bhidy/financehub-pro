@@ -1002,6 +1002,12 @@ async function assertDesignedShellsIntact() {
   const SHELL_ANCHORS = [
     ["public/marketplace.html", '<title>Funds Marketplace | Starta Markets</title>'],
     ["public/marketplace.html", '<link rel="canonical" href="https://startamarkets.com/Funds">'],
+    // lib/fund-hub.ts REMOVES these three on every category/provider hub so
+    // each page declares exactly ONE hreflang cluster. If the shell's lines
+    // change, the removal silently no-ops and 82 hubs regress to two clusters.
+    ["public/marketplace.html", '<link rel="alternate" hreflang="en" href="https://startamarkets.com/Funds">'],
+    ["public/marketplace.html", '<link rel="alternate" hreflang="ar" href="https://startamarkets.com/ar/Funds">'],
+    ["public/marketplace.html", '<link rel="alternate" hreflang="x-default" href="https://startamarkets.com/ar/Funds">'],
     ["public/marketplace.html", '<meta property="og:url" content="https://startamarkets.com/Funds">'],
     ["public/marketplace.html", '<meta property="og:title" content="Funds Marketplace | Starta Markets">'],
     ["public/marketplace.html", '<meta property="og:locale" content="en_US">'],
@@ -1357,6 +1363,11 @@ async function run() {
       "app/markets/renderMarketScreen.tsx",
       "app/symbol/[id]/seasonality/renderSeasonality.tsx",
       "lib/funds-hub-render.ts",
+      // League tables + the helper every one of them formats through.
+      "lib/fund-stats.ts",
+      "app/Funds/providers/renderProvidersIndex.tsx",
+      "app/Funds/categories/renderCategoriesIndex.tsx",
+      "app/Funds/risk/renderFundRisk.tsx",
     ];
     for (const rel of bilingualNumericRenderers) {
       let text;

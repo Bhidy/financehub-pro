@@ -42,6 +42,11 @@ debug_*.png
 !frontend/lib/learn-image-sizes.json
 # Approved manager logo map — the build reads it.
 !frontend/lib/manager-logos.json
+# SEO operating-system data files read by scripts/seo/*.mjs AND by tests:
+# the experiment ledger was silently untracked for weeks, so the Monday CI
+# review ran against an empty ledger.
+!frontend/content/seo-experiments.json
+!frontend/content/search-intent-map.json
 system_backup_*
 
 # --- repo hygiene (2026-06 cleanup) ---

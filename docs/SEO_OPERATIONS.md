@@ -52,6 +52,41 @@ To enable: create a Google Cloud service account, enable the Search Console
 API, add the service-account email as a user on the `https://startamarkets.com/`
 property in Search Console, then store the JSON key as that repo secret.
 
+## Added 2026-09-05 — the operating-system pass against the master spec
+
+**Defects found live and fixed (all gated so they cannot return):**
+
+| Defect | Fix | Gate |
+|---|---|---|
+| 82 category/provider hubs emitted TWO hreflang clusters (their own + the shell's `/Funds` triple) | `lib/fund-hub.ts` strips the shell's three lines | `verify:routes` anchors the lines; `verify:arhub` asserts one entry per language on a rendered hub; the live audit's `HREFLANG_DUPLICATE_LANG` |
+| Arabic fund pages linked the ENGLISH `/Funds` hub (breadcrumb, "all funds", footer, compare) | lang-aware links; the shell footer uses `localizedHref()` | audit `AR_*` checks; `verify:routes` language integrity |
+| Fund detail schema thinner than the hub schema for the SAME fund | one `investmentFundNode()` (lib/funds-hub-render.ts) for hubs and the page + `WebPage.dateModified` = NAV date | — |
+| Two `FAQPage` blocks on each money page | `FundsGuide extraFaq` composes ONE FAQPage | — |
+| `/Funds` titled "Funds Marketplace" | head-term title/description via route replacement (shell bytes untouched) | anchors |
+| `/feed.xml` mixed both languages under `<language>en`; `/ar/feed.xml` 404; no RSS autodiscovery anywhere | `lib/news-feed.ts` renders one feed per language (language decided by `newsLang()`); autodiscovery `<link>` on hubs + articles | — |
+| Experiment ledger (`content/seo-experiments.json`) was gitignored → CI reviewed an empty ledger | `.gitignore` exception, committed | `verify:inputs` pattern |
+
+**New surfaces (all EN+AR, data-gated, sitemapped, cross-linked):**
+
+| URL | What it is | Gate |
+|---|---|---|
+| `/Funds/providers` · `/ar/Funds/providers` | provider league table — every bank/asset manager: fund count, categories, median 1Y, best fund, lowest fee | ≥3 providers (`MIN_FUNDS_PER_PROVIDER`) |
+| `/Funds/categories` · `/ar/Funds/categories` | category performance — count, median 1Y/YTD, best/worst fund, median fee, definitions | ≥2 live categories |
+| `/Funds/risk` · `/ar/Funds/risk` | risk league table from `fund_risk_metrics` — volatility, max drawdown, downside deviation, CAGR, per-category medians | `riskEligible()` in `lib/fund-stats.ts`, shared with the sitemap; ≥10 rows |
+| `/methodology` · `/ar/methodology` | sources + cadence, return/risk formulas with their tolerances, quality grades, missing-is-never-zero, currency rules, automated checks — every statement read off the producing code | — |
+
+**Search-intent map** — `content/search-intent-map.json`: one cluster → one URL per language, priority, competitor URL. `scripts/seo/serp.mjs` reads its queries from it; `verify:intents` fails the build if a target is not a real route or two clusters share a URL.
+
+**Audit engine additions** (`scripts/seo/audit.mjs`, all proven by `--selftest`, wired into `verify:all`): `HREFLANG_DUPLICATE_LANG` (high), `HREFLANG_NOT_RECIPROCAL` / `HREFLANG_ALTERNATE_NOT_200` (high, money pages), `DATA_STALE` (medium >21d, high >60d on fund surfaces), `PAGE_NO_ASOF` (medium), `WRONG_CURRENCY` (high — "SAR" on a fund/company surface), `HOST_ALIAS_INDEXABLE` (critical — www / the Vercel project host answering 200), `AR_PAGE_ENGLISH_SUBHEADING` (low), `PAGES_SLOW` (medium, p90 > 4 s). Three more sitemap segments are sampled (`fund-categories`, `fund-providers`, `stock-comparisons`) and the new pages are money pages.
+
+**Command center** — `scripts/seo/report.mjs` now opens with a KPI table (footprint, health, TTFB, Google/Bing search, competitor coverage lead + head-to-head depth, answer-engine access, rankings, AI citations, near-duplicates, experiments). Every KPI that cannot be measured says so in its own row; `seo-daily.yml` passes every intelligence output to it.
+
+**Owner actions that unlock the dark half (no code can substitute):**
+1. `GSC_SERVICE_ACCOUNT_JSON` repo secret (service account added to the `https://startamarkets.com/` property) → rankings, CTR gaps, cannibalisation, decay.
+2. `SERP_PROVIDER` + `SERP_API_KEY` (DataForSEO or SerpApi) → competitor positions for the 30 intent clusters.
+3. `BING_WEBMASTER_API_KEY` → Bing search performance; export the AI Performance CSV monthly and run `node scripts/seo/bing.mjs --import-ai <file>` → AI citations.
+4. Off-page: press coverage / referring domains (the site has 0 independent referring domains; the domain is 7 months old).
+
 ## Invariants the gates now hold (do not break these)
 
 - **`/ar/Funds` is a real Arabic hub, not a redirect.** It 308'd to the English
@@ -68,6 +103,9 @@ property in Search Console, then store the JSON key as that repo secret.
 - **Fund category pages are data-gated** at `MIN_FUNDS_TO_PUBLISH`, and the
   sitemap applies the same threshold — the page's 404 gate and the sitemap must
   provably agree.
+- **Category/provider hubs declare ONE hreflang cluster.** `lib/fund-hub.ts` removes the marketplace shell's own `/Funds` triple; the three lines are anchored in `verify:routes` and the rendered output is asserted by `verify:arhub`.
+- **Every Arabic page links Arabic hubs.** The shell footer and the fund page build hub/compare links through `localizedHref()` / `lang`, never a bare `/Funds`.
+- **One feed per language.** `/feed.xml` is English, `/ar/feed.xml` is Arabic, both decided by `newsLang()`.
 - **Sitemap `lastmod` is observed, not generated.** The index reports the real
   max data timestamp per segment. Reverting it to `new Date()` makes every
   child claim to change on every fetch, which search engines discount.

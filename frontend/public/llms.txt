@@ -21,6 +21,12 @@
 - [Funds marketplace](https://startamarkets.com/Funds): Egyptian mutual funds with NAV, returns and fees, in Arabic and English
 - [Best-performing funds 2026](https://startamarkets.com/Funds/best-mutual-funds-egypt-2026): ranked by trailing 1-year return with methodology
 - [Fund comparisons](https://startamarkets.com/Funds/vs/2662-vs-2666): side-by-side NAV/returns/fees (pattern: /Funds/vs/{id}-vs-{id})
+- [Fund prices today](https://startamarkets.com/Funds/prices-today): every fund's latest unit NAV with its own as-of date, alphabetical (Arabic: /ar/Funds/prices-today)
+- [Fund categories compared](https://startamarkets.com/Funds/categories): funds per category with median 1-year and YTD returns and median management fee (Arabic: /ar/Funds/categories); per-category pages: /Funds/category/{money-market|fixed-income|equity|gold|balanced|shariah}
+- [Fund providers league table](https://startamarkets.com/Funds/providers): every bank and asset manager with fund count, median 1-year return, best fund and lowest fee (Arabic: /ar/Funds/providers); per-provider pages: /Funds/provider/{slug}
+- [Fund risk league table](https://startamarkets.com/Funds/risk): annualized volatility, maximum drawdown, downside deviation and CAGR for every fund with enough NAV history, least volatile first (Arabic: /ar/Funds/risk)
+- [Fund fees compared](https://startamarkets.com/Funds/fees): management, subscription and redemption fees side by side (Arabic: /ar/Funds/fees)
+- [Compare two funds](https://startamarkets.com/Funds/Compare): interactive comparison tool (Arabic: /ar/Funds/Compare)
 
 ## Arabic (العربية)
 - [البورصة المصرية اليوم](https://startamarkets.com/ar): Arabic market hub — live EGX30, prices, movers, funds, news
@@ -29,7 +35,12 @@
 
 ## News
 - [EGX market news](https://startamarkets.com/News): Arabic and English coverage of the Egyptian market, ~30 articles/day
-- [RSS feed](https://startamarkets.com/feed.xml): latest EGX news as RSS 2.0
+- [RSS feed (English)](https://startamarkets.com/feed.xml): latest English EGX news as RSS 2.0
+- [RSS feed (Arabic)](https://startamarkets.com/ar/feed.xml): latest Arabic EGX news as RSS 2.0
+
+## Methodology and trust
+- [Methodology](https://startamarkets.com/methodology): data sources and refresh cadence, how every return and risk figure is computed (window anchors, cadence-aware volatility, drawdown, CAGR), the per-fund data-quality grades, the missing-vs-zero rule and the currency rules (Arabic: /ar/methodology)
+- [Editorial policy](https://startamarkets.com/editorial-policy) · [Corrections](https://startamarkets.com/corrections) · [About](https://startamarkets.com/about)
 
 ## Full data extract
 - [llms-full.txt](https://startamarkets.com/llms-full.txt): current EGX30 value, top-25 companies with prices/PE/yield, top-10 funds, and all glossary definitions (EN+AR) — quotable figures with as-of timestamps

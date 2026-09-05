@@ -11,6 +11,7 @@
  *
  *   node scripts/seo/report.mjs --audit audit.json --gsc gsc.json --out report.md
  *   node scripts/seo/report.mjs --audit audit.json --notify
+ *   node scripts/seo/report.mjs --audit a.json --gsc g.json --competitor c.json --serp s.json --bing b.json --duplicates d.json --experiments ../content/seo-experiments.json
  */
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
@@ -77,7 +78,100 @@ const ACTION_FOR = {
     ROBOTS_AI_BOT_MISSING: 'Add an explicit allow stanza for this answer-engine crawler.',
 };
 
-function buildMarkdown(audit, gsc) {
+/* ── command center ──────────────────────────────────────────────────────── */
+
+const UNMEASURED = (why) => `unmeasured — ${why}`;
+
+/**
+ * Executive KPIs, one table, every source named. The rule: a KPI that cannot
+ * be measured says so in its own row — it is never blank, never zero, never
+ * estimated. The daily job archived competitor, ranking, Bing and duplicate
+ * outputs for weeks without a single one reaching the brief; this is where
+ * they surface.
+ */
+function commandCenter(audit, gsc, { competitor, serp, bing, duplicates, experiments }) {
+    const rows = [];
+    const add = (kpi, value, source) => rows.push([kpi, value, source]);
+
+    add('Indexable footprint', `${audit.indexableFootprint} URLs`, 'sitemaps');
+    add('SEO health', `${audit.healthScore}/100 over ${audit.urlsAudited} URLs (${audit.counts.critical} critical · ${audit.counts.high} high)`, 'audit');
+    if (audit.timing) add('Time to last byte', `p50 ${audit.timing.p50} ms · p90 ${audit.timing.p90} ms (${audit.timing.count} pages)`, 'audit');
+    else add('Time to last byte', UNMEASURED('fewer than 10 timed pages'), 'audit');
+
+    if (gsc?.configured && !gsc.error) {
+        const t = gsc.totals;
+        add('Google search', `${t.clicks} clicks · ${t.impressions} impressions · ${t.ctr}% CTR (${gsc.window.days}d)`, 'Search Console');
+        add('Striking distance (pos 4–20)', `${gsc.strikingDistance?.length ?? 0} queries`, 'Search Console');
+    } else {
+        add('Google search', UNMEASURED(gsc ? gsc.reason || gsc.error || 'not configured' : 'no GSC run'), 'Search Console');
+    }
+
+    if (competitor?.coverage) {
+        const lead = competitor.coverage.leader || {};
+        const keys = Object.keys(lead).filter((k) => lead[k] !== null);
+        const ours = keys.filter((k) => lead[k] === 'starta');
+        const theirs = keys.filter((k) => lead[k] === 'competitor');
+        add('Coverage lead vs competitor', `${ours.length}/${keys.length} clusters${theirs.length ? ` — behind on ${theirs.join(', ')}` : ''}`, `competitor.mjs (${competitor.competitor})`);
+        for (const h of competitor.headToHead || []) {
+            const a = h.starta, b = h.competitor;
+            if (!a?.reachable && !b?.reachable) continue;
+            const f = (x, k) => (typeof x?.[k] === 'number' ? x[k] : '—');
+            add(`Head-to-head · ${h.intent}`, `words ${f(a, 'words')} vs ${f(b, 'words')} · headings ${f(a, 'headings')} vs ${f(b, 'headings')} · links ${f(a, 'internalLinks')} vs ${f(b, 'internalLinks')}`, 'competitor.mjs');
+        }
+        const access = (r) => {
+            if (!r?.named) return 'n/a';
+            const e = Object.entries(r.named);
+            const blocked = e.filter(([, v]) => v === false).map(([k]) => k);
+            return blocked.length ? `${e.length - blocked.length}/${e.length} bots allowed (blocks ${blocked.join(', ')})` : `all ${e.length} named bots allowed`;
+        };
+        add('Answer-engine access', `starta: ${access(competitor.aiAccess?.starta)} · competitor: ${access(competitor.aiAccess?.competitor)}`, 'robots.txt');
+    } else {
+        add('Coverage lead vs competitor', UNMEASURED('competitor scorecard not run or competitor unreachable'), 'competitor.mjs');
+    }
+
+    if (serp?.configured && Array.isArray(serp.rankings)) {
+        const host = 'startamarkets.com';
+        const pos = serp.rankings.map((r) => r.positions?.[host]?.position).filter((p) => typeof p === 'number');
+        add('Rankings', `${pos.filter((p) => p <= 3).length} top-3 · ${pos.filter((p) => p <= 10).length} top-10 · ${pos.length}/${serp.rankings.length} tracked queries ranked`, `serp.mjs (${serp.provider || 'provider'})`);
+    } else {
+        add('Rankings', UNMEASURED('no licensed SERP provider configured (SERP_PROVIDER/SERP_API_KEY)'), 'serp.mjs');
+    }
+
+    if (bing?.searchPerformance?.configured) {
+        const t = bing.searchPerformance.totals || {};
+        add('Bing search', `${t.clicks ?? '—'} clicks · ${t.impressions ?? '—'} impressions`, 'Bing Webmaster API');
+    } else {
+        add('Bing search', UNMEASURED(bing?.searchPerformance?.reason || 'BING_WEBMASTER_API_KEY not set'), 'Bing Webmaster API');
+    }
+    if (bing?.aiCitations?.configured) {
+        add('AI citations (Bing/Copilot)', `${bing.aiCitations.totalCitations} citations across ${bing.aiCitations.citedPages} pages`, 'Bing AI Performance export');
+    } else {
+        add('AI citations (Bing/Copilot)', UNMEASURED('dashboard-only; import the CSV with bing.mjs --import-ai'), 'Bing AI Performance');
+    }
+
+    if (duplicates?.counts) {
+        const parts = Object.entries(duplicates.counts).map(([k, v]) => `${v} ${k}`);
+        add('Near-duplicate content (news sample)', parts.length ? parts.join(' · ') : 'none found', 'duplicates.mjs');
+    } else {
+        add('Near-duplicate content (news sample)', UNMEASURED('duplicate scan not run'), 'duplicates.mjs');
+    }
+
+    if (Array.isArray(experiments?.experiments)) {
+        const today = new Date().toISOString().slice(0, 10);
+        const open = experiments.experiments.filter((e) => e.status === 'open');
+        const due = open.filter((e) => e.reviewAfter && e.reviewAfter <= today);
+        add('Experiments', `${open.length} open · ${due.length} due for measurement`, 'content/seo-experiments.json');
+    } else {
+        add('Experiments', UNMEASURED('ledger not supplied'), 'experiments.mjs');
+    }
+
+    const L = ['## Command center', '', '| KPI | Value | Source |', '|---|---|---|'];
+    for (const [k, v, src] of rows) L.push(`| ${k} | ${v} | ${src} |`);
+    L.push('');
+    return L;
+}
+
+function buildMarkdown(audit, gsc, extra = {}) {
     const L = [];
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
     L.push(`# SEO Intelligence Report — ${now} UTC`);
@@ -95,6 +189,7 @@ function buildMarkdown(audit, gsc) {
     L.push(`|---|---|---|---|`);
     L.push(`| ${c.critical} | ${c.high} | ${c.medium} | ${c.low} |`);
     L.push('');
+    L.push(...commandCenter(audit, gsc, extra));
 
     const groups = groupFindings(audit.findings);
     const blocking = groups.filter((g) => g.severity === 'critical' || g.severity === 'high');
@@ -177,7 +272,7 @@ function buildMarkdown(audit, gsc) {
 }
 
 /** Discord digest: the headline plus only what needs a human. */
-function buildDigest(audit, gsc) {
+function buildDigest(audit, gsc, extra = {}) {
     if (!audit) return '⚠️ **SEO audit produced no report** — the job failed before writing findings.';
     const c = audit.counts;
     const icon = c.critical > 0 ? '🔴' : c.high > 0 ? '🟠' : '🟢';
@@ -191,13 +286,31 @@ function buildDigest(audit, gsc) {
     } else if (gsc && !gsc.configured) {
         lines.push('ℹ️ Search Console not configured — no search-performance section in this report.');
     }
+    const lead = extra.competitor?.coverage?.leader;
+    if (lead) {
+        const keys = Object.keys(lead).filter((k) => lead[k] !== null);
+        const behind = keys.filter((k) => lead[k] === 'competitor');
+        lines.push(`🏁 Coverage lead ${keys.length - behind.length}/${keys.length} clusters vs ${String(extra.competitor.competitor || '').replace(/^https?:\/\//, '')}${behind.length ? ` — behind on ${behind.join(', ')}` : ''}`);
+    }
+    if (Array.isArray(extra.experiments?.experiments)) {
+        const today = new Date().toISOString().slice(0, 10);
+        const due = extra.experiments.experiments.filter((e) => e.status === 'open' && e.reviewAfter && e.reviewAfter <= today);
+        if (due.length) lines.push(`🧪 ${due.length} experiment(s) due for measurement — run scripts/seo/experiments.mjs due`);
+    }
     return lines.join('\n');
 }
 
 async function main() {
     const audit = readJson(val('audit', null));
     const gsc = readJson(val('gsc', null));
-    const md = buildMarkdown(audit, gsc);
+    const extra = {
+        competitor: readJson(val('competitor', null)),
+        serp: readJson(val('serp', null)),
+        bing: readJson(val('bing', null)),
+        duplicates: readJson(val('duplicates', null)),
+        experiments: readJson(val('experiments', null)),
+    };
+    const md = buildMarkdown(audit, gsc, extra);
     const out = val('out', null);
     if (out) {
         writeFileSync(out, md);
@@ -206,7 +319,7 @@ async function main() {
         console.log(md);
     }
     if (NOTIFY) {
-        const r = await notifyDiscord(buildDigest(audit, gsc));
+        const r = await notifyDiscord(buildDigest(audit, gsc, extra));
         console.log(`[seo-report] discord: ${r.sent ? 'sent' : `not sent (${r.reason || r.status})`}`);
     }
 }

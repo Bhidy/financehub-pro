@@ -108,6 +108,15 @@ export function extractHtmlFacts(html) {
         h1: [],
         h2Count: 0,
         hreflang: {},
+        /** hreflang entries PER LANGUAGE — two tags for one language is a
+         *  conflicting cluster (the defect that shipped on 82 hub pages). */
+        hreflangCount: {},
+        /** Every <time datetime> on the page — the as-of/freshness signal. */
+        timeDates: [],
+        /** <h2>/<h3> text, for language-integrity checks below the H1. */
+        subheadings: [],
+        /** Visible text (scripts/styles stripped). */
+        text: '',
         ogTitle: null,
         ogImage: null,
         jsonLd: [],
@@ -154,7 +163,14 @@ export function extractHtmlFacts(html) {
             // hand-written tags use `hreflang`. Accept both or we would report a
             // false "missing hreflang" on every App Router page.
             const hl = attr(tag, 'hreflang') || attr(tag, 'hrefLang');
-            if (hl) facts.hreflang[hl.toLowerCase()] = href.trim();
+            if (hl) {
+                const key = hl.toLowerCase();
+                // COUNT, do not just overwrite. The old `facts.hreflang[key] =
+                // href` silently kept the last tag, which is precisely how two
+                // clusters on one page (own + shell's) stayed invisible.
+                facts.hreflangCount[key] = (facts.hreflangCount[key] || 0) + 1;
+                if (!(key in facts.hreflang)) facts.hreflang[key] = href.trim();
+            }
         }
     }
 
@@ -169,6 +185,12 @@ export function extractHtmlFacts(html) {
         if (text) facts.h1.push(text);
     }
     facts.h2Count = (html.match(/<h2\b/gi) || []).length;
+    for (const m of html.matchAll(/<h[23]\b[^>]*>([\s\S]*?)<\/h[23]>/gi)) {
+        const text = stripTags(m[1]).trim();
+        if (text) facts.subheadings.push(text);
+    }
+    // React renders `dateTime` as `datetime`; hand-written shells use the same.
+    for (const m of html.matchAll(/<time\b[^>]*datetime=["']([^"']+)["']/gi)) facts.timeDates.push(m[1]);
 
     for (const m of html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
         const raw = m[1].trim();
@@ -179,13 +201,12 @@ export function extractHtmlFacts(html) {
         }
     }
 
-    facts.wordCount = stripTags(
+    facts.text = stripTags(
         html
             .replace(/<script[\s\S]*?<\/script>/gi, ' ')
             .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    )
-        .split(/\s+/)
-        .filter(Boolean).length;
+    );
+    facts.wordCount = facts.text.split(/\s+/).filter(Boolean).length;
 
     facts.internalLinks = [...html.matchAll(/<a\b[^>]*href=["']([^"']+)["']/gi)].filter(
         ([, href]) => href.startsWith('/') || href.startsWith(SITE_URL)

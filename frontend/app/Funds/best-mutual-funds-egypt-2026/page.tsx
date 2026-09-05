@@ -136,16 +136,10 @@ export default async function BestFundsPage() {
             a: 'Fund NAVs, returns and fees come from the fund managers’ official disclosures, refreshed twice daily on Starta Markets.',
         },
     ];
-    const faqJsonLd = {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
-    };
 
     return (
         <PublicPageShell altHref="/ar/Funds/best-mutual-funds-egypt-2026">
             <JsonLd data={itemList} />
-            <JsonLd data={faqJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/Funds', label: 'Mutual Funds' }, { label: 'Best Funds in Egypt 2026' }], SITE_URL)} />
             <Breadcrumbs items={[{ href: '/', label: 'Home' }, { href: '/Funds', label: 'Mutual Funds' }, { label: 'Best Funds in Egypt 2026' }]} />
 
@@ -311,7 +305,7 @@ export default async function BestFundsPage() {
                     <Link href="/Learn/glossary/nav" className="font-semibold text-starta-teal hover:underline">What is NAV?</Link>
                 </p>
             </section>
-            <FundsGuide lang="en" />
+            <FundsGuide lang="en" extraFaq={faq} />
         </PublicPageShell>
     );
 }

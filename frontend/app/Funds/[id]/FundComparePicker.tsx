@@ -124,7 +124,7 @@ export default function FundComparePicker({
     const go = () => {
         if (!selected.length) return;
         const ids = [String(currentId), ...selected].join(',');
-        window.location.href = `/Funds/Compare?ids=${encodeURIComponent(ids)}&lang=${lang}`;
+        window.location.href = `${lang === 'ar' ? '/ar' : ''}/Funds/Compare?ids=${encodeURIComponent(ids)}&lang=${lang}`;
     };
 
     return (

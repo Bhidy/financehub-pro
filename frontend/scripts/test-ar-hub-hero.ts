@@ -14,6 +14,7 @@
  * the cause is a changed shell, a broken regex or a dropped option.
  */
 import { renderStaticHub } from '@/lib/static-hub';
+import { renderFundHub } from '@/lib/fund-hub';
 
 const HERO_AR = 'الصناديق الاستثمارية';
 
@@ -50,6 +51,30 @@ const ok = (cond: boolean, label: string, got?: unknown) => {
     const htmlTag = /<html[^>]*>/.exec(html)?.[0] ?? '';
     ok(/lang="ar"/.test(htmlTag), 'lang="ar"', htmlTag.slice(0, 80));
     ok(/dir="rtl"/.test(htmlTag), 'dir="rtl"');
+
+    console.log('\n[4] a category/provider hub declares exactly ONE hreflang cluster');
+    // marketplace.html carries the /Funds hub's own triple; the shared hub
+    // renderer must strip it, or every category/provider page ships two
+    // clusters (verified live 2026-09-05 on all 82 hubs).
+    const hub = await renderFundHub({
+        lang: 'ar',
+        canonical: '/ar/Funds/category/test',
+        altPath: '/Funds/category/test',
+        title: 't',
+        description: 'd',
+        heading: 'h',
+        intro: 'i',
+        funds: [{ fund_id: 1, fund_name: 'صندوق', fund_name_en: 'Fund', latest_nav: 10, currency: 'EGP', return_1y: 1, return_ytd: 1 }],
+        crumbs: [{ name: 'x' }],
+        cacheSeconds: 0,
+    });
+    const hubHtml = await hub.text();
+    const perLang = (l: string) => (hubHtml.match(new RegExp(`hreflang="${l}"`, 'g')) || []).length;
+    ok(perLang('en') === 1, 'exactly one hreflang="en"', perLang('en'));
+    ok(perLang('ar') === 1, 'exactly one hreflang="ar"', perLang('ar'));
+    ok(perLang('x-default') === 1, 'exactly one hreflang="x-default"', perLang('x-default'));
+    ok(!hubHtml.includes('hreflang="en" href="https://startamarkets.com/Funds">'), "the shell's /Funds alternates were removed");
+    ok((hubHtml.match(/rel="canonical"/g) || []).length === 1, 'exactly one canonical');
 
     if (failed > 0) {
         console.error(`\nFAIL: Arabic hub hero — ${failed} problem(s).`);

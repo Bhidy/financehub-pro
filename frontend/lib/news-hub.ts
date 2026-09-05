@@ -1,4 +1,5 @@
 import { renderStaticHub, esc, escUrl, jsonLdScript, langSeedScript } from '@/lib/static-hub';
+import { rssAutodiscoveryLink } from '@/lib/news-feed';
 import { canonicalNewsPath, sanitizeNewsText } from '@/lib/news-display';
 import { SITE_URL, absUrl } from '@/lib/seo';
 
@@ -240,6 +241,10 @@ export function renderNewsHub(spec: NewsHubSpec): Promise<Response> {
             { id: 'newsGrid', html: gridHtml },
         ],
         head:
+            // Feed autodiscovery: no page on the site advertised the RSS feed,
+            // so readers and aggregators had to know the URL. One link per
+            // language, pointing at that language's own feed.
+            rssAutodiscoveryLink(spec.lang) +
             langSeedScript(spec.lang) +
             (collection ? jsonLdScript(collection) : '') +
             jsonLdScript(breadcrumb),

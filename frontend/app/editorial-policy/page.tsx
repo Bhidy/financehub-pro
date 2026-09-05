@@ -87,6 +87,7 @@ export default function EditorialPolicyPage() {
 
             <nav aria-label="Related" className="mt-10 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
                 <Link href="/about" className="text-muted hover:text-starta-teal">About &amp; data sources</Link>
+                <Link href="/methodology" className="text-muted hover:text-starta-teal">Data &amp; calculation methodology</Link>
                 <Link href="/corrections" className="text-muted hover:text-starta-teal">Corrections policy</Link>
                 <Link href="/contact" className="text-muted hover:text-starta-teal">Contact</Link>
                 <a href="/ar/editorial-policy" lang="ar" hrefLang="ar" className="text-muted hover:text-starta-teal">سياسة التحرير بالعربية</a>

@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "experiments": [
+    {
+      "id": "ar-hub-headings-2026-09",
+      "status": "open",
+      "opened": "2026-09-04",
+      "reviewAfter": "2026-10-02",
+      "hypothesis": "Server-rendering Arabic H1s on the designed hubs increases AI-answer citations, because the answer engines robots.txt invites do not execute JS and were indexing English headings on lang=ar pages.",
+      "urls": [
+        "/ar/Funds",
+        "/ar/News",
+        "/ar/Learn"
+      ],
+      "change": "heroText server-renders the shells' own Arabic dictionary values; keepKey preserves the in-place toggle. Shipped 06f3bb6..f529823.",
+      "expected": "Bing AI citation share for Arabic fund queries rises; Arabic hub positions hold or improve. Refuted if citation share is flat after 28d with citations imported.",
+      "baseline": {
+        "arPageEnglishHeadings": 3,
+        "healthScore": 98.2,
+        "bingCitations": "unmeasured"
+      },
+      "result": null,
+      "outcome": null,
+      "note": null
+    },
+    {
+      "id": "compare-hub-depth-2026-09",
+      "status": "open",
+      "opened": "2026-09-04",
+      "reviewAfter": "2026-10-02",
+      "hypothesis": "The comparison hub lost to snduk on headings, internal links and structured data — not word count. Giving it server-rendered comparison paths, an Arabic twin and JSON-LD should win the مقارنة صناديق الاستثمار cluster.",
+      "urls": [
+        "/Funds/Compare",
+        "/ar/Funds/Compare"
+      ],
+      "change": "Static rewrite replaced by Route Handlers; empty state carries grouped /Funds/vs links + FAQ; ItemList/FAQPage/BreadcrumbList added; /ar twin created.",
+      "expected": "Internal links 25->60+, headings 5->12+, JSON-LD 0->3 types (all verifiable immediately); an Arabic comparison URL starts receiving impressions. Refuted if the Arabic twin gets no impressions in 28d.",
+      "baseline": {
+        "words": 199,
+        "headings": 5,
+        "internalLinks": 25,
+        "jsonLdTypes": 0,
+        "arabicTwin": "absent"
+      },
+      "result": null,
+      "outcome": null,
+      "note": null
+    }
+  ]
+}

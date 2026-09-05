@@ -115,16 +115,10 @@ export default async function BestFundsArPage() {
             a: 'تأتي صافي قيمة الأصول والعوائد والرسوم من الإفصاحات الرسمية لمديري الصناديق، وتُحدَّث مرتين يوميًا على ستارتا ماركتس.',
         },
     ];
-    const faqJsonLd = {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
-    };
 
     return (
         <PublicPageShell lang="ar" altHref="/Funds/best-mutual-funds-egypt-2026">
             <JsonLd data={itemList} />
-            <JsonLd data={faqJsonLd} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'أفضل صناديق الاستثمار في مصر' }], SITE_URL)} />
             <Breadcrumbs items={[{ href: '/', label: 'الرئيسية' }, { label: 'أفضل صناديق الاستثمار في مصر' }]} />
 
@@ -240,7 +234,7 @@ export default async function BestFundsArPage() {
                 <Link href="/ar/companies" className="text-muted hover:text-starta-teal">أسهم البورصة المصرية</Link>
                 <a href="/Funds/best-mutual-funds-egypt-2026" hrefLang="en" className="text-muted hover:text-starta-teal">Best funds in English</a>
             </nav>
-            <FundsGuide lang="ar" />
+            <FundsGuide lang="ar" extraFaq={faq} />
         </PublicPageShell>
     );
 }

@@ -460,7 +460,7 @@ export default function FundPageClient(props: FundClientData) {
                             <p className="ax-pending mt-5">{t.similarFundsEmpty}</p>
                         )}
                         <p className="mt-5 text-sm">
-                            <Link href="/Funds" className="font-semibold text-starta-teal hover:underline">
+                            <Link href={lang === 'ar' ? '/ar/Funds' : '/Funds'} className="font-semibold text-starta-teal hover:underline">
                                 {t.allFunds} →
                             </Link>
                         </p>

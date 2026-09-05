@@ -11,6 +11,7 @@
  *   node scripts/seo/audit.mjs --sample 40         # URLs sampled per segment
  *   node scripts/seo/audit.mjs --out report.json
  *   node scripts/seo/audit.mjs --fail-on high      # exit 1 at/above this severity
+ *   node scripts/seo/audit.mjs --selftest          # prove the checks fire on known-bad HTML
  *
  * Exit codes: 0 clean (or below threshold) · 1 findings at/above --fail-on ·
  * 2 the audit itself could not run (never conflated with "the site is fine").
@@ -51,10 +52,28 @@ const MONEY_PAGES = [
     '/Market-Pulse', '/Calculators', '/ar/Calculators',
     '/RiskAssessment', '/ar/RiskAssessment',
     '/about', '/editorial-policy', '/corrections', '/contact',
+    '/Funds/prices-today', '/ar/Funds/prices-today', '/Funds/fees', '/ar/Funds/fees',
+    '/Funds/providers', '/ar/Funds/providers', '/Funds/categories', '/ar/Funds/categories',
+    '/Funds/risk', '/ar/Funds/risk', '/methodology', '/ar/methodology',
 ];
 
+/** Fund surfaces — every one shows NAV-dated figures, so it must say WHEN. */
+const FUND_TEMPLATES = /^\/(ar\/)?Funds(\/|$)/;
+/** Company/market surfaces — EGP (or a line's real USD), never SAR. */
+const COMPANY_TEMPLATES = /^\/(ar\/)?(symbol|companies|markets|sectors)(\/|$)/;
+/** Templates that render an as-of <time datetime> by contract. */
+const ASOF_REQUIRED = /^\/(ar\/)?Funds(\/(best-mutual-funds[^/]*|prices-today|category\/[^/]+|provider\/[^/]+|providers|categories|risk))?$/;
+/** Hosts that must never answer 200 with the site: a 200 here is a second, indexable copy. */
+const HOST_ALIASES = ['https://www.startamarkets.com/', 'https://finhub-pro.vercel.app/'];
+const DAY = 86_400_000;
+
 /** Segments sampled for template-level regressions (the long tail). */
-const SEGMENTS = ['companies', 'ar-companies', 'metrics', 'sectors', 'funds', 'comparisons', 'learn', 'glossary', 'news'];
+const SEGMENTS = [
+    'companies', 'ar-companies', 'metrics', 'sectors', 'funds', 'comparisons', 'learn', 'glossary', 'news',
+    // Never sampled before 2026-09-05: the 82 category/provider hubs carried a
+    // double hreflang cluster for weeks and no run could see it.
+    'fund-categories', 'fund-providers', 'stock-comparisons',
+];
 
 /** Templates that must carry structured data, and the @type that proves it. */
 const REQUIRED_SCHEMA = [
@@ -98,6 +117,27 @@ async function auditCrawlPolicy() {
         }
     }
     return robots;
+}
+
+/* ── host aliases ────────────────────────────────────────────────────────── */
+
+async function auditHostAliases() {
+    // The middleware 308s every non-canonical host to the apex. If that ever
+    // regresses, the whole site is served twice — once on www, once on the
+    // Vercel project URL — and search engines split the signal between them.
+    for (const origin of HOST_ALIASES) {
+        const res = await httpGet(origin, { redirect: 'manual', retries: 1 });
+        if (res.status === 0) {
+            f.add('low', 'HOST_ALIAS_UNREACHABLE', `${origin} could not be fetched (decommissioned hosts are fine)`, { origin });
+            continue;
+        }
+        const location = res.headers.location || '';
+        if (res.status === 200) {
+            f.add('critical', 'HOST_ALIAS_INDEXABLE', `${origin} serves the site with a 200 instead of redirecting to the canonical host`, { origin });
+        } else if (res.status >= 300 && res.status < 400 && !/^https:\/\/startamarkets\.com(\/|$)/.test(location)) {
+            f.add('high', 'HOST_ALIAS_WRONG_TARGET', `${origin} redirects to ${location || '(no location)'} rather than the canonical host`, { origin, location });
+        }
+    }
 }
 
 /* ── sitemap layer ───────────────────────────────────────────────────────── */
@@ -316,6 +356,62 @@ function auditPage(url, res) {
         }
     }
 
+    // ONE hreflang entry per language. Two <link> tags for one language is a
+    // conflicting cluster — Google treats it as untrustworthy and can discard
+    // every annotation on the page. 82 category/provider hubs shipped exactly
+    // this (their own triple plus the shell's /Funds triple) and the previous
+    // extractor overwrote the duplicate, so nothing could see it.
+    const dupLangs = Object.entries(facts.hreflangCount || {}).filter(([, n]) => n > 1).map(([l, n]) => `${l}×${n}`);
+    if (dupLangs.length) {
+        f.add('high', 'HREFLANG_DUPLICATE_LANG',
+            `${path} declares more than one hreflang alternate for the same language (${dupLangs.join(', ')})`,
+            { url, counts: facts.hreflangCount });
+    }
+
+    // Sub-headings on Arabic pages. The H1 check above catches the headline;
+    // the designed shells translate their <h2>/<h3> client-side, so a non-JS
+    // crawler can still index English section headings inside a lang="ar"
+    // document. Reported at `low` and aggregated per page: proper nouns and
+    // tickers legitimately appear, so this is a visibility signal, not a page.
+    if (isAr && facts.subheadings?.length) {
+        const english = facts.subheadings.filter((h) => {
+            const arabic = (h.match(/[\u0600-\u06FF]/g) || []).length;
+            const latin = (h.match(/[A-Za-z]/g) || []).length;
+            return arabic === 0 && latin >= 12 && h.trim().split(/\s+/).length >= 3;
+        });
+        if (english.length) {
+            f.add('low', 'AR_PAGE_ENGLISH_SUBHEADING',
+                `${path} has ${english.length} English <h2>/<h3> heading(s) in an Arabic document, e.g. "${english[0].slice(0, 60)}"`,
+                { url, count: english.length, examples: english.slice(0, 3) });
+        }
+    }
+
+    // FRESHNESS. Every fund surface shows NAV-dated figures and carries an
+    // as-of <time datetime> by contract. A page with none is not saying WHEN;
+    // a page whose newest date is weeks old is showing frozen data as current
+    // — the failure mode that ran for thirteen months with every alarm green.
+    // Thresholds sit above the weekly cadence 54 funds publish on, so a normal
+    // publication rhythm cannot page anyone.
+    const newest = (facts.timeDates || []).map((d) => Date.parse(d)).filter(Number.isFinite).reduce((a, b) => Math.max(a, b), -Infinity);
+    if (ASOF_REQUIRED.test(path) && !Number.isFinite(newest)) {
+        f.add('medium', 'PAGE_NO_ASOF', `${path} shows dated financial figures but carries no as-of <time datetime>`, { url });
+    }
+    if (FUND_TEMPLATES.test(path) && Number.isFinite(newest)) {
+        const ageDays = Math.floor((Date.now() - newest) / DAY);
+        if (ageDays > 60) {
+            f.add('high', 'DATA_STALE', `${path}: newest as-of date on the page is ${ageDays} days old — frozen data presented as current`, { url, ageDays, newest: new Date(newest).toISOString().slice(0, 10) });
+        } else if (ageDays > 21) {
+            f.add('medium', 'DATA_STALE', `${path}: newest as-of date on the page is ${ageDays} days old`, { url, ageDays, newest: new Date(newest).toISOString().slice(0, 10) });
+        }
+    }
+
+    // CURRENCY. No EGX line trades in Saudi riyal; a "SAR" on a fund or
+    // company surface is the Tadawul-residue mislabel that once put SAR prices
+    // on the indexable company pages and fed AI engines a wrong currency.
+    if ((FUND_TEMPLATES.test(path) || COMPANY_TEMPLATES.test(path)) && /\bSAR\b/.test(facts.text || '')) {
+        f.add('high', 'WRONG_CURRENCY', `${path} renders "SAR" on an Egyptian fund/company surface`, { url });
+    }
+
     // Structured data must parse and must describe the template it is on.
     if (facts.jsonLdErrors.length) {
         f.add('high', 'JSONLD_PARSE_ERROR', `${path} has ${facts.jsonLdErrors.length} unparseable JSON-LD block(s)`, { url, errors: facts.jsonLdErrors });
@@ -357,6 +453,18 @@ function auditPage(url, res) {
 /* ── cross-page defects ──────────────────────────────────────────────────── */
 
 function auditCrossPage() {
+    // TTFB budget, in aggregate. Per-URL timings under our own concurrency are
+    // noisy (a burst of six requests once produced six false criticals), so
+    // the distribution is what gets judged, never a single sample.
+    const ms = pages.filter((p) => p.status === 200 && p.ms > 0).map((p) => p.ms).sort((a, b) => a - b);
+    if (ms.length >= 10) {
+        const q = (k) => ms[Math.min(ms.length - 1, Math.floor(k * ms.length))];
+        const timing = { count: ms.length, p50: q(0.5), p90: q(0.9), max: ms[ms.length - 1] };
+        pages.timing = timing;
+        if (timing.p90 > 4000) {
+            f.add('medium', 'PAGES_SLOW', `p90 time-to-last-byte across ${timing.count} pages is ${timing.p90} ms (p50 ${timing.p50} ms) — above the 4 s budget`, timing);
+        }
+    }
     // One aggregate finding for the whole uncacheable set.
     if (uncacheable.length) {
         const pct = Math.round((uncacheable.length / Math.max(pages.length, 1)) * 100);
@@ -392,6 +500,79 @@ function auditCrossPage() {
     }
 }
 
+/* ── hreflang reciprocity ────────────────────────────────────────────────── */
+
+async function auditReciprocity() {
+    // A one-way hreflang is ignored entirely. For every MONEY page that
+    // declares a twin, fetch the twin and confirm it points back at this URL.
+    // Bounded to money pages: it is one extra fetch per URL.
+    const money = pages.filter((p) => p.status === 200 && MONEY_PAGES.includes(p.path) && p.hreflang?.en && p.hreflang?.ar);
+    await mapLimit(money, 4, async (p) => {
+        const isAr = p.path === '/ar' || p.path.startsWith('/ar/');
+        const twin = isAr ? p.hreflang.en : p.hreflang.ar;
+        const myLang = isAr ? 'ar' : 'en';
+        const res = await httpGet(twin, { redirect: 'follow', retries: 1 });
+        if (res.status !== 200) {
+            f.add('high', 'HREFLANG_ALTERNATE_NOT_200', `${p.path} declares alternate ${twin} which returned ${res.status || 'network error'}`, { url: p.url, twin, status: res.status });
+            return;
+        }
+        const back = extractHtmlFacts(res.body).hreflang[myLang];
+        let matches = false;
+        try { matches = !!back && decodeURIComponent(new URL(back, SITE_URL).pathname) === decodeURIComponent(p.path); } catch { /* ignore */ }
+        if (!matches) {
+            f.add('high', 'HREFLANG_NOT_RECIPROCAL', `${p.path} → ${twin.replace(SITE_URL, '')} does not point back (its hreflang=${myLang} is ${back || 'absent'})`, { url: p.url, twin, back: back || null });
+        }
+    });
+}
+
+/* ── self-test ───────────────────────────────────────────────────────────── */
+
+/**
+ * Prove the checks fire. A crawler that reports "0 findings" on a site with
+ * two hreflang clusters per hub is indistinguishable from a clean site, which
+ * is exactly what happened before 2026-09-05. Runs in verify:all.
+ */
+function selfTest() {
+    const today = new Date().toISOString().slice(0, 10);
+    const page = (path, body, extraHead = '') =>
+        auditPage(`${SITE_URL}${path}`, {
+            status: 200, ms: 100, headers: {},
+            body: `<!doctype html><html lang="${path.startsWith('/ar') ? 'ar' : 'en'}" dir="${path.startsWith('/ar') ? 'rtl' : 'ltr'}"><head><title>عنوان تجريبي طويل بما يكفي للاختبار</title><meta name="description" content="وصف تجريبي"><link rel="canonical" href="${SITE_URL}${path}">${extraHead}</head><body><h1>صناديق</h1>${body}</body></html>`,
+        });
+
+    // A: duplicate cluster + stale as-of + SAR + English sub-heading.
+    page('/ar/Funds/category/x', '<h2>Money Market Funds In Egypt</h2><p>NAV 10 SAR</p><time datetime="2026-01-01">1 يناير</time>',
+        `<link rel="alternate" hreflang="ar" href="${SITE_URL}/ar/Funds/category/x"><link rel="alternate" hreflang="en" href="${SITE_URL}/Funds/category/x"><link rel="alternate" hreflang="x-default" href="${SITE_URL}/ar/Funds/category/x"><link rel="alternate" hreflang="en" href="${SITE_URL}/Funds"><link rel="alternate" hreflang="ar" href="${SITE_URL}/ar/Funds">`);
+    // B: clean Arabic fund page — none of those codes may fire.
+    page('/ar/Funds/2662-x', `<h2>صافي قيمة الأصول</h2><p>10 EGP</p><time datetime="${today}">اليوم</time>`,
+        `<link rel="alternate" hreflang="ar" href="${SITE_URL}/ar/Funds/2662-x"><link rel="alternate" hreflang="en" href="${SITE_URL}/Funds/2662-x"><link rel="alternate" hreflang="x-default" href="${SITE_URL}/ar/Funds/2662-x">`);
+    // C: a fund surface with no as-of at all.
+    page('/Funds/prices-today', '<p>prices</p>');
+
+    const codesFor = (path) => new Set(f.all().filter((x) => (x.evidence?.url || '') === `${SITE_URL}${path}`).map((x) => x.code));
+    const a = codesFor('/ar/Funds/category/x');
+    const b = codesFor('/ar/Funds/2662-x');
+    const c = codesFor('/Funds/prices-today');
+    const expect = [
+        [a.has('HREFLANG_DUPLICATE_LANG'), 'A: duplicate hreflang per language is detected'],
+        [a.has('DATA_STALE'), 'A: stale as-of date is detected'],
+        [a.has('WRONG_CURRENCY'), 'A: SAR on a fund surface is detected'],
+        [a.has('AR_PAGE_ENGLISH_SUBHEADING'), 'A: English sub-heading on an Arabic page is detected'],
+        [!b.has('HREFLANG_DUPLICATE_LANG') && !b.has('DATA_STALE') && !b.has('WRONG_CURRENCY') && !b.has('AR_PAGE_ENGLISH_SUBHEADING') && !b.has('PAGE_NO_ASOF'), 'B: a clean Arabic fund page raises none of them'],
+        [c.has('PAGE_NO_ASOF'), 'C: a fund surface with no <time datetime> is detected'],
+    ];
+    let failed = 0;
+    for (const [ok, label] of expect) {
+        if (!ok) failed++;
+        console.log(`  ${ok ? 'ok  ' : 'FAIL'} ${label}`);
+    }
+    if (failed) {
+        console.error(`\n[seo-audit] SELFTEST FAIL — ${failed} check(s) did not fire as expected`);
+        process.exit(1);
+    }
+    console.log('\n[seo-audit] SELFTEST PASS');
+}
+
 /* ── runner ──────────────────────────────────────────────────────────────── */
 
 function sampleEvenly(arr, n) {
@@ -403,10 +584,12 @@ function sampleEvenly(arr, n) {
 }
 
 async function main() {
+    if (args.includes('--selftest')) return selfTest();
     const started = Date.now();
     console.log(`[seo-audit] target=${SITE_URL} mode=${QUICK ? 'quick' : 'full'} sample=${SAMPLE}`);
 
     await auditCrawlPolicy();
+    await auditHostAliases();
     const { entriesBySegment } = await auditSitemaps();
 
     const targets = new Set(MONEY_PAGES.map((p) => SITE_URL + p));
@@ -445,6 +628,7 @@ async function main() {
         auditPage(url, res);
     });
 
+    await auditReciprocity();
     auditCrossPage();
 
     const counts = f.countBy();
@@ -458,6 +642,7 @@ async function main() {
         sitemapTotals: Object.fromEntries(Object.entries(entriesBySegment).map(([k, v]) => [k, v.length])),
         indexableFootprint: Object.values(entriesBySegment).reduce((a, v) => a + v.length, 0),
         healthScore: score,
+        timing: pages.timing || null,
         counts,
         findings: f.all(),
         pages: pages.map((p) => ({

@@ -116,6 +116,48 @@ export function fundsHubRows(funds: Row[], lang: 'en' | 'ar'): string {
 }
 
 /**
+ * THE fund entity node — schema.org InvestmentFund — built ONCE for every
+ * surface that describes a fund: the hub ItemLists AND the fund's own page.
+ *
+ * Before this the detail page emitted a thinner node than the hubs emitted for
+ * the SAME fund (name, url, currency only) while the category page beside it
+ * carried the numeric NAV, the management fee and the provider. Two shapes for
+ * one entity is exactly the drift a shared builder exists to prevent.
+ *
+ * Every value here is visible on the page that emits it, and nothing is
+ * emitted unless it is real: a missing NAV yields no MonetaryAmount, not a 0.
+ * `@id` is the page URL plus `#fund`, so the hub item and the detail page
+ * describe one reconcilable entity.
+ */
+export function investmentFundNode(f: Row, lang: 'en' | 'ar', path?: string): Record<string, unknown> {
+    const href = path ?? fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), lang);
+    const name = fundName(f, lang);
+    const other = lang === 'ar' ? str(f, 'fund_name_en') : str(f, 'fund_name');
+    const item: Record<string, unknown> = {
+        '@type': 'InvestmentFund',
+        '@id': `${absUrl(href)}#fund`,
+        name,
+        url: absUrl(href),
+    };
+    if (other && other !== name) item.alternateName = other;
+    const provider = str(f, 'manager_name_en') || str(f, 'issuer_en');
+    if (provider) item.provider = { '@type': 'Organization', name: provider };
+    const navValue = num(f, 'latest_nav');
+    const currency = str(f, 'currency') || 'EGP';
+    if (navValue !== null) {
+        item.currency = currency;
+        item.amount = { '@type': 'MonetaryAmount', currency, value: navValue };
+    } else if (str(f, 'currency')) {
+        item.currency = currency;
+    }
+    const fee = num(f, 'fee_management');
+    if (fee !== null) item.annualPercentageRate = fee;
+    const isin = str(f, 'isin');
+    if (isin) item.identifier = { '@type': 'PropertyValue', propertyID: 'ISIN', value: isin };
+    return item;
+}
+
+/**
  * CollectionPage + ItemList of InvestmentFund entities WITH numeric NAV.
  * Competing Egyptian fund sites publish name-only lists, so machine-readable
  * fund performance is the uncontested schema surface — but a value is emitted
@@ -133,24 +175,7 @@ export function fundsHubItemList(funds: Row[], lang: 'en' | 'ar', path: string, 
             '@type': 'ItemList',
             numberOfItems: funds.length,
             itemListOrder: 'https://schema.org/ItemListOrderDescending',
-            itemListElement: funds.map((f, i) => {
-                const navValue = num(f, 'latest_nav');
-                const currency = str(f, 'currency') || 'EGP';
-                const item: Record<string, unknown> = {
-                    '@type': 'InvestmentFund',
-                    name: fundName(f, lang),
-                    url: absUrl(fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), lang)),
-                };
-                const provider = str(f, 'manager_name_en') || str(f, 'issuer_en');
-                if (provider) item.provider = { '@type': 'Organization', name: provider };
-                if (navValue !== null) {
-                    item.currency = currency;
-                    item.amount = { '@type': 'MonetaryAmount', currency, value: navValue };
-                }
-                const fee = num(f, 'fee_management');
-                if (fee !== null) item.annualPercentageRate = fee;
-                return { '@type': 'ListItem', position: i + 1, item };
-            }),
+            itemListElement: funds.map((f, i) => ({ '@type': 'ListItem', position: i + 1, item: investmentFundNode(f, lang) })),
         },
     };
 }

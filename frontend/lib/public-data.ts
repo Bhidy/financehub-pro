@@ -712,6 +712,68 @@ const _allFundsRankedCached = unstable_cache(
 export const getAllFundsRanked = cache((): Promise<Array<Record<string, unknown>>> => _allFundsRankedCached());
 
 /**
+ * FUND RISK LEAGUE TABLE — the aggregate view of fund_risk_metrics.
+ *
+ * The backend recomputes volatility, drawdown, downside deviation and CAGR
+ * for every fund daily (compute_fund_metrics.py, audited math), and until now
+ * the site published them ONLY on each fund's own page: no URL answered "which
+ * Egyptian funds are least volatile", a question competitors answer with a
+ * broken drawdown figure. One cached read; the join to names/categories is
+ * done in JS against getAllFundsRanked() so no second SQL join can drift.
+ *
+ * `analytics_suppressed` rows are carried so callers can EXCLUDE them — the
+ * backend flags cash-fund redenomination artifacts there, and a league table
+ * that ranked one of them would publish a false extreme.
+ */
+export type FundRiskRow = {
+    fund_id: number;
+    volatility_annual: number | null;
+    max_drawdown: number | null;
+    downside_deviation: number | null;
+    cagr: number | null;
+    inception_years: number | null;
+    positive_periods_pct: number | null;
+    worst_period: number | null;
+    points: number | null;
+    latest_date: string | null;
+    analytics_suppressed: boolean;
+};
+
+const _fundRiskCached = unstable_cache(
+    async (): Promise<FundRiskRow[]> => {
+        const result = await db.query(
+            `SELECT fund_id, volatility_annual, max_drawdown, downside_deviation, cagr,
+                    inception_years, positive_periods_pct, worst_period, points, latest_date,
+                    analytics_suppressed
+             FROM fund_risk_metrics
+             WHERE fund_id ~ '^[0-9]+$'`
+        );
+        return result.rows.map((r: Record<string, unknown>) => {
+            toNum(r, ['volatility_annual', 'max_drawdown', 'downside_deviation', 'cagr', 'inception_years', 'positive_periods_pct', 'worst_period', 'points']);
+            const d = r.latest_date;
+            const latest = d instanceof Date ? d.toISOString().slice(0, 10) : d ? String(d).slice(0, 10) : null;
+            return {
+                fund_id: Number(r.fund_id),
+                volatility_annual: r.volatility_annual as number | null,
+                max_drawdown: r.max_drawdown as number | null,
+                downside_deviation: r.downside_deviation as number | null,
+                cagr: r.cagr as number | null,
+                inception_years: r.inception_years as number | null,
+                positive_periods_pct: r.positive_periods_pct as number | null,
+                worst_period: r.worst_period as number | null,
+                points: r.points as number | null,
+                latest_date: latest,
+                analytics_suppressed: r.analytics_suppressed === true || r.analytics_suppressed === 't',
+            };
+        });
+    },
+    ['seo:fund-risk'],
+    { revalidate: 900, tags: ['seo-funds'] }
+);
+
+export const getFundRiskTable = cache((): Promise<FundRiskRow[]> => _fundRiskCached());
+
+/**
  * MARKET SCREENER LISTS — one query, six ranked slices.
  *
  * Each slice answers a DIFFERENT search intent, so each gets its own page:

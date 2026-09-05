@@ -58,6 +58,19 @@ export function renderFundHub(spec: FundHubSpec): Promise<Response> {
                     `<link rel="alternate" hreflang="${isAr ? 'en' : 'ar'}" href="https://startamarkets.com${encodeURI(spec.altPath)}">` +
                     `<link rel="alternate" hreflang="x-default" href="https://startamarkets.com${encodeURI(isAr ? spec.canonical : spec.altPath)}">`,
             },
+            // The shell also ships the /Funds hub's OWN hreflang triple (placed
+            // there by scripts/inject-seo-heads.mjs). Left in place, every
+            // category and provider hub declared TWO clusters — its own, plus
+            // en=/Funds, ar=/ar/Funds, x-default=/ar/Funds — two different URLs
+            // for one language on one page. Google treats conflicting
+            // annotations as untrustworthy and can drop the whole cluster, so 82
+            // hub pages were forfeiting their language signal. Verified live
+            // 2026-09-05; scripts/test-ar-hub-hero.ts asserts one entry per
+            // language on a rendered hub, and verify-route-aliases anchors the
+            // three lines so a reformatted shell cannot silently bring them back.
+            { find: '<link rel="alternate" hreflang="en" href="https://startamarkets.com/Funds">', replace: '' },
+            { find: '<link rel="alternate" hreflang="ar" href="https://startamarkets.com/ar/Funds">', replace: '' },
+            { find: '<link rel="alternate" hreflang="x-default" href="https://startamarkets.com/ar/Funds">', replace: '' },
             {
                 find: '<meta property="og:url" content="https://startamarkets.com/Funds">',
                 replace: `<meta property="og:url" content="https://startamarkets.com${encodeURI(spec.canonical)}">`,

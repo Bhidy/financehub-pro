@@ -58,7 +58,8 @@ export async function newsArticleMetadata(idParam: string, _tree: SiteLang): Pro
     return {
         title: headline,
         description,
-        alternates: { canonical },
+        // types: RSS autodiscovery for the article's own language feed.
+        alternates: { canonical, types: { 'application/rss+xml': arabic ? '/ar/feed.xml' : '/feed.xml' } },
         // max-image-preview:large is required for Google Discover / Top Stories
         // large-thumbnail eligibility (2026-07-03 audit gap).
         robots: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },

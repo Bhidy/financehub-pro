@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
-import { getMarketLists, getSeasonalitySymbols, getAllFundsRanked } from '@/lib/public-data';
+import { getMarketLists, getSeasonalitySymbols, getAllFundsRanked, getFundRiskTable } from '@/lib/public-data';
+import { riskEligible, MIN_RISK_ROWS } from '@/lib/fund-stats';
 import { rankFundPairs } from '@/lib/fund-pairs';
 import { SITE_URL, absUrl, fundPath, symbolPath, symbolPathAr, slugify, learnPath, glossaryPath, sectorPath } from '@/lib/seo';
 import { canonicalNewsPath } from '@/lib/news-display';
@@ -52,6 +53,15 @@ async function coreEntries(): Promise<Entry[]> {
         ['/ar/Funds/fees', 'weekly', '0.8'],
         ['/Funds/Compare', 'daily', '0.6'],
         ['/ar/Funds/Compare', 'daily', '0.6'], // Arabic twin (previously had no URL at all)
+        // The three league tables above the category/provider clusters — the
+        // datasets no competitor publishes (provider stats, category medians,
+        // per-fund risk). /Funds/risk is added below, gated on its own rows.
+        ['/Funds/providers', 'daily', '0.7'],
+        ['/ar/Funds/providers', 'daily', '0.7'],
+        ['/Funds/categories', 'daily', '0.7'],
+        ['/ar/Funds/categories', 'daily', '0.7'],
+        ['/methodology', 'monthly', '0.5'],
+        ['/ar/methodology', 'monthly', '0.5'],
         ['/Market-Pulse', 'hourly', '0.9'],
         ['/ar/Market-Pulse', 'daily', '0.7'], // Arabic twin (previously a hard 404)
         ['/Learn', 'weekly', '0.8'],
@@ -104,6 +114,19 @@ async function coreEntries(): Promise<Entry[]> {
         }
     } catch (error) {
         console.error('[sitemap:core] news topics unavailable:', (error as Error).message);
+    }
+
+    // RISK LEAGUE TABLE — advertised only when enough funds clear the SAME
+    // eligibility rule the page applies (lib/fund-stats riskEligible), so the
+    // sitemap and the page's notFound gate provably agree.
+    try {
+        const risk = await getFundRiskTable();
+        if (risk.filter(riskEligible).length >= MIN_RISK_ROWS) {
+            hubs.push(['/Funds/risk', 'daily', '0.7']);
+            hubs.push(['/ar/Funds/risk', 'daily', '0.7']);
+        }
+    } catch (error) {
+        console.error('[sitemap:core] fund risk table unavailable:', (error as Error).message);
     }
 
     // MARKET SCREENS — advertised only when the screen currently has enough

@@ -7,6 +7,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import FundPageClient, { type FundClientData } from './FundPageClient';
 import { fundLabels, fundTypeLabel, riskLabel, freqLabel, type Lang } from './fund-i18n';
 import { fundLogo } from '@/lib/fund-logos';
+import { investmentFundNode } from '@/lib/funds-hub-render';
 import { buildFundAnalytics, type AnalyticsInput } from '@/lib/fund-analytics';
 
 /**
@@ -419,7 +420,7 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
     // no-JS / open-in-new-tab fallback: the bilingual compare tool pre-seeded with
     // the closest peer, in the current language.
     const compareHref =
-        peers.length > 0 ? peers[0].compareHref : `/Funds/Compare?ids=${fund.fund_id}&lang=${lang}`;
+        peers.length > 0 ? peers[0].compareHref : `${lang === 'ar' ? '/ar' : ''}/Funds/Compare?ids=${fund.fund_id}&lang=${lang}`;
 
     return {
         t,
@@ -498,7 +499,7 @@ async function resolvePeers(fund: Fund, lang: Lang): Promise<FundClientData['pee
     // localStorage by the shell, so the tool renders correctly even without the param.
     return peers.map((p) => ({
         ...p,
-        compareHref: `/Funds/Compare?ids=${Math.min(myId, p.id)},${Math.max(myId, p.id)}&lang=${lang}`,
+        compareHref: `${lang === 'ar' ? '/ar' : ''}/Funds/Compare?ids=${Math.min(myId, p.id)},${Math.max(myId, p.id)}&lang=${lang}`,
     }));
 }
 
@@ -517,26 +518,41 @@ export async function renderFundPage(idParam: string, lang: Lang) {
 
     const crumbs =
         lang === 'ar'
-            ? [{ href: '/ar', label: 'الرئيسية' }, { href: '/Funds', label: 'الصناديق الاستثمارية' }, { label: name }]
+            ? [{ href: '/ar', label: 'الرئيسية' }, { href: '/ar/Funds', label: 'الصناديق الاستثمارية' }, { label: name }]
             : [{ href: '/', label: 'Home' }, { href: '/Funds', label: 'Mutual Funds' }, { label: name }];
     const crumbLd =
         lang === 'ar'
-            ? [{ url: '/ar', label: 'الرئيسية' }, { url: '/Funds', label: 'الصناديق الاستثمارية' }, { label: name }]
+            ? [{ url: '/ar', label: 'الرئيسية' }, { url: '/ar/Funds', label: 'الصناديق الاستثمارية' }, { label: name }]
             : [{ url: '/', label: 'Home' }, { url: '/Funds', label: 'Mutual Funds' }, { label: name }];
 
+    // ONE builder for the fund entity, shared with every hub's ItemList
+    // (lib/funds-hub-render.ts). This page used to emit a thinner node than the
+    // hubs emitted FOR THE SAME FUND — name, url and currency only — while the
+    // category page beside it carried the numeric NAV, the fee and the
+    // provider. The page that actually shows those figures now describes them;
+    // every value is visible above and none is emitted unless real.
     const fundJsonLd: Record<string, unknown> = {
         '@context': 'https://schema.org',
-        '@type': 'InvestmentFund',
-        name,
-        ...(data.nameAr && data.nameAr !== name ? { alternateName: data.nameAr } : {}),
+        ...investmentFundNode(fund as Record<string, unknown>, lang, canonicalPath),
+    };
+    // The page itself, dated by the NAV it shows. dateModified is a WebPage
+    // property, not an InvestmentFund one, so it lives on this node.
+    const pageJsonLd: Record<string, unknown> = {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        '@id': absUrl(canonicalPath),
         url: absUrl(canonicalPath),
-        ...(str(fund, 'issuer_en') ? { provider: { '@type': 'Organization', name: str(fund, 'issuer_en') } } : {}),
-        ...(str(fund, 'currency') ? { currency: str(fund, 'currency') } : {}),
+        name: lang === 'ar' ? `${name} — صافي قيمة الأصول والعوائد والرسوم` : `${name} — NAV, Returns & Fees`,
+        inLanguage: lang === 'ar' ? 'ar-EG' : 'en',
+        isPartOf: { '@id': `${SITE_URL}/#website` },
+        ...(data.navDateIso ? { dateModified: data.navDateIso } : {}),
+        mainEntity: { '@id': `${absUrl(canonicalPath)}#fund` },
     };
 
     return (
         <PublicPageShell lang={lang} altHref={altHref} wide persistLang>
             <JsonLd data={fundJsonLd} />
+            <JsonLd data={pageJsonLd} />
             <JsonLd data={breadcrumbJsonLd(crumbLd, SITE_URL)} />
             {data.faqs.length > 0 && (
                 <JsonLd

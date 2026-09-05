@@ -49,7 +49,7 @@ const FOOTER_LABELS: Record<Lang, Record<string, string>> = {
         copy: '© 2026 Starta Markets. All Rights Reserved.',
         companies: 'EGX Companies', about: 'About', contact: 'Contact',
         privacy: 'Privacy Policy', terms: 'Terms of Service',
-        editorial: 'Editorial Policy', corrections: 'Corrections',
+        editorial: 'Editorial Policy', corrections: 'Corrections', methodology: 'Methodology',
     },
     ar: {
         desc: 'منصة الصناديق الاستثمارية في السوق المصري بالعربية والإنجليزية: أسعار موثّقة لصافي قيمة الوحدة، ومقارنة وبطاقات تقييم للصناديق، وأخبار السوق، وأكاديمية تعليمية، وحاسبات استثمارية.',
@@ -63,7 +63,7 @@ const FOOTER_LABELS: Record<Lang, Record<string, string>> = {
         copy: '© 2026 ستارتا ماركتس. جميع الحقوق محفوظة.',
         companies: 'الشركات المدرجة', about: 'من نحن', contact: 'اتصل بنا',
         privacy: 'سياسة الخصوصية', terms: 'شروط الاستخدام',
-        editorial: 'سياسة التحرير', corrections: 'التصحيحات',
+        editorial: 'سياسة التحرير', corrections: 'التصحيحات', methodology: 'المنهجية',
     },
 };
 
@@ -98,8 +98,10 @@ const AR_TWIN_ROUTES = arTwinRoutes.routes;
  * Language-safe internal href — the shell-side single source of truth.
  * Server pages carry the language IN the URL, so an Arabic page linking a bare
  * EN path silently flips the user to English (the exact bug this prevents).
- * Static single-URL pages (/, /Funds, /News, /Learn) keep language via
- * localStorage/persistLang and must NOT be prefixed.
+ * `/` stays as-is (the root serves by stored preference). /Funds, /News and
+ * /Learn HAVE server-rendered Arabic twins now (app/ar/{Funds,News,Learn}/route.ts) and are
+ * prefixed like any other twinned route — the footer used to hand-write them
+ * and dropped every Arabic reader onto the English hubs.
  */
 // Re-exported from lib/localized-href so this shell and SiteNav share ONE
 // implementation. A second copy is how the lists drifted in the first place.
@@ -249,7 +251,7 @@ export default function PublicPageShell({
                             <p className="text-sm text-muted leading-relaxed">{f.desc}</p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full lg:w-auto">
-                            <Link href="/Funds" prefetch={false} className="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase">
+                            <Link href={localizedHref('/Funds', lang)} prefetch={false} className="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold tracking-widest uppercase">
                                 <span>{f.cta}</span>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m9 18 6-6-6-6" /></svg>
                             </Link>
@@ -261,14 +263,14 @@ export default function PublicPageShell({
                             <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col1}</h4>
                             <ul className="space-y-2.5 text-sm">
                                 <li><Link href="/" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.home}</Link></li>
-                                <li><Link href="/Funds" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.funds}</Link></li>
+                                <li><Link href={localizedHref('/Funds', lang)} prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.funds}</Link></li>
                             </ul>
                         </div>
                         <div className="space-y-4">
                             <h4 className="text-xs font-mono text-muted uppercase tracking-[0.2em] font-semibold">{f.col2}</h4>
                             <ul className="space-y-2.5 text-sm">
-                                <li><Link href="/News" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.news}</Link></li>
-                                <li><Link href="/Learn" prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.learn}</Link></li>
+                                <li><Link href={localizedHref('/News', lang)} prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.news}</Link></li>
+                                <li><Link href={localizedHref('/Learn', lang)} prefetch={false} className="text-muted hover:text-starta-teal transition-colors font-medium">{f.learn}</Link></li>
                             </ul>
                         </div>
                         <div className="space-y-4">
@@ -295,11 +297,12 @@ export default function PublicPageShell({
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-muted font-mono pt-4 border-t border-border/80">
                         <div>{f.copy}</div>
                         <div className="flex flex-wrap gap-6">
-                            <Link href="/companies" prefetch={false} className="hover:text-starta-teal transition-colors">{f.companies}</Link>
-                            <Link href="/about" prefetch={false} className="hover:text-starta-teal transition-colors">{f.about}</Link>
+                            <Link href={localizedHref('/companies', lang)} prefetch={false} className="hover:text-starta-teal transition-colors">{f.companies}</Link>
+                            <Link href={localizedHref('/about', lang)} prefetch={false} className="hover:text-starta-teal transition-colors">{f.about}</Link>
                             <Link href={lang === 'ar' ? '/ar/editorial-policy' : '/editorial-policy'} prefetch={false} className="hover:text-starta-teal transition-colors">{f.editorial}</Link>
                             <Link href={lang === 'ar' ? '/ar/corrections' : '/corrections'} prefetch={false} className="hover:text-starta-teal transition-colors">{f.corrections}</Link>
-                            <Link href="/contact" prefetch={false} className="hover:text-starta-teal transition-colors">{f.contact}</Link>
+                            <Link href={lang === 'ar' ? '/ar/methodology' : '/methodology'} prefetch={false} className="hover:text-starta-teal transition-colors">{f.methodology}</Link>
+                            <Link href={localizedHref('/contact', lang)} prefetch={false} className="hover:text-starta-teal transition-colors">{f.contact}</Link>
                             <Link href="/privacy" prefetch={false} className="hover:text-starta-teal transition-colors">{f.privacy}</Link>
                             <Link href="/terms" prefetch={false} className="hover:text-starta-teal transition-colors">{f.terms}</Link>
                         </div>

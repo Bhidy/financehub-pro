@@ -32,6 +32,8 @@
  * data, not code — override with --queries pointing at a JSON array.
  */
 import { writeFileSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { SITE_URL, nowIso, sleep } from './lib.mjs';
 
 const arg = (name, dflt = null) => {
@@ -59,20 +61,20 @@ const TRACKED = [
     'tradingview.com',
 ];
 
-const DEFAULT_QUERIES = [
-    { q: 'صناديق الاستثمار في مصر', intent: 'funds-directory', lang: 'ar' },
-    { q: 'أفضل صناديق الاستثمار في مصر', intent: 'funds-ranking', lang: 'ar' },
-    { q: 'أسعار وثائق صناديق الاستثمار اليوم', intent: 'fund-prices', lang: 'ar' },
-    { q: 'مقارنة صناديق الاستثمار', intent: 'fund-compare', lang: 'ar' },
-    { q: 'أفضل صندوق نقدي في مصر', intent: 'category-money-market', lang: 'ar' },
-    { q: 'صناديق بنك مصر', intent: 'provider-hub', lang: 'ar' },
-    { q: 'صناديق استثمار البنك الأهلي', intent: 'provider-hub', lang: 'ar' },
-    { q: 'الصناديق المتوافقة مع الشريعة في مصر', intent: 'category-shariah', lang: 'ar' },
-    { q: 'البورصة المصرية اليوم', intent: 'market-today', lang: 'ar' },
-    { q: 'ما هو صندوق الاستثمار', intent: 'learn', lang: 'ar' },
-    { q: 'egypt mutual funds', intent: 'funds-directory', lang: 'en' },
-    { q: 'egx 30 index', intent: 'index', lang: 'en' },
-];
+/**
+ * The query set IS the search-intent map (content/search-intent-map.json):
+ * one cluster, one canonical URL per language. This file no longer carries a
+ * list of its own, so the tracked queries cannot drift from the pages built
+ * to answer them; scripts/test-intent-map.mjs gates the map on every build.
+ */
+const INTENT_MAP = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'content', 'search-intent-map.json');
+function defaultQueries() {
+    const map = JSON.parse(readFileSync(INTENT_MAP, 'utf8'));
+    return map.clusters.flatMap((c) => [
+        { q: c.ar, intent: c.id, lang: 'ar', target: c.targetAr, priority: c.priority },
+        { q: c.en, intent: c.id, lang: 'en', target: c.targetEn, priority: c.priority },
+    ]);
+}
 
 /* ────────────────────────── providers ──────────────────────────
  * Each returns a normalised array: [{ position, url, domain, title }].
@@ -120,7 +122,7 @@ const PROVIDERS = { dataforseo: fetchDataForSeo, serpapi: fetchSerpApi };
 async function main() {
     const queries = (() => {
         const f = arg('queries');
-        if (!f) return DEFAULT_QUERIES;
+        if (!f) return defaultQueries();
         try {
             return JSON.parse(readFileSync(f, 'utf8'));
         } catch (e) {

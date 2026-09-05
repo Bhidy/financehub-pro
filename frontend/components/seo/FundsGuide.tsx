@@ -9,7 +9,19 @@ import JsonLd from '@/components/seo/JsonLd';
  * Headings carry stable ids so the sections are linkable and so an answer
  * engine quoting one can cite the exact anchor.
  */
-export default function FundsGuide({ lang }: { lang: 'en' | 'ar' }) {
+export default function FundsGuide({
+    lang,
+    extraFaq = [],
+}: {
+    lang: 'en' | 'ar';
+    /**
+     * The page's own Q&A (methodology, sources), merged into THIS component's
+     * FAQPage. Both money pages used to emit their own FAQPage block AND this
+     * one — two FAQPage entities on one URL, which Google's guidance treats as
+     * one page's FAQ split in two. One document, one FAQPage.
+     */
+    extraFaq?: Array<{ q: string; a: string }>;
+}) {
     const isAr = lang === 'ar';
 
     // Each section becomes a Q&A pair for answer engines: the heading is the
@@ -17,11 +29,18 @@ export default function FundsGuide({ lang }: { lang: 'en' | 'ar' }) {
     const faq = {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
-        mainEntity: FUNDS_GUIDE.map((s) => ({
-            '@type': 'Question',
-            name: isAr ? s.headingAr : s.headingEn,
-            acceptedAnswer: { '@type': 'Answer', text: (isAr ? s.bodyAr : s.bodyEn).join(' ') },
-        })),
+        mainEntity: [
+            ...extraFaq.map((x) => ({
+                '@type': 'Question',
+                name: x.q,
+                acceptedAnswer: { '@type': 'Answer', text: x.a },
+            })),
+            ...FUNDS_GUIDE.map((s) => ({
+                '@type': 'Question',
+                name: isAr ? s.headingAr : s.headingEn,
+                acceptedAnswer: { '@type': 'Answer', text: (isAr ? s.bodyAr : s.bodyEn).join(' ') },
+            })),
+        ],
     };
 
     return (
@@ -51,7 +70,12 @@ export default function FundsGuide({ lang }: { lang: 'en' | 'ar' }) {
                     </div>
                 ))}
 
-                <p className="mt-8 text-xs leading-relaxed text-muted">
+                <p className="mt-8 text-sm">
+                    <a href={isAr ? '/ar/methodology' : '/methodology'} className="font-semibold text-starta-teal hover:underline">
+                        {isAr ? 'المنهجية الكاملة: مصادر البيانات وطريقة حساب العوائد والمخاطر ←' : 'Full methodology: data sources and how returns and risk are computed →'}
+                    </a>
+                </p>
+                <p className="mt-4 text-xs leading-relaxed text-muted">
                     {isAr
                         ? 'هذا القسم تعريفي ويشرح آلية عمل الصناديق. وهو لا يمثل توصية بشراء أو بيع أي صندوق ولا مشورة استثمارية، ولا يأخذ في الاعتبار ظروفك المالية. الأداء السابق لا يضمن النتائج المستقبلية.'
                         : 'This section is explanatory and describes how funds work. It is not a recommendation to buy or sell any fund, is not investment advice, and does not account for your circumstances. Past performance does not guarantee future results.'}

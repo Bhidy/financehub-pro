@@ -69,6 +69,8 @@ export async function renderProviderHub(slug: string, lang: 'en' | 'ar'): Promis
         `${baseTitle} | Starta Markets`,
         baseTitle,
         isAr ? `صناديق ${name} — الأسعار والعوائد` : `${name} Funds — NAVs & Returns`,
+        isAr ? `صناديق ${name} — الأسعار` : `${name} Funds — NAVs`,
+        isAr ? `صناديق ${name}` : `${name} Funds`,
     ], 60);
     const description = clampDescription(isAr
         ? `أسعار وثائق صناديق ${name} وعوائدها ورسوم الإدارة، محدثة من الإفصاحات الرسمية${asOf ? ` حتى ${asOf}` : ''}.`

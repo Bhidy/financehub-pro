@@ -484,7 +484,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const name = ticker.name_en || symbol;
     const view = buildView(slug, ticker, stats, years);
     return {
-        title: clampTitle([`${name} (${symbol}) ${view.label}`, `${symbol} ${view.label}`]),
+        // Long legal names overflow the 43-char budget (60 minus the brand
+        // suffix); the fallbacks keep the metric AND the market — a bare
+        // "ADPC EPS" was flagged TITLE_TOO_SHORT by the audit (2026-09-05).
+        title: clampTitle([
+            `${name} (${symbol}) ${view.label}`,
+            `${name} ${view.label}`,
+            `${symbol} ${view.label} — Egyptian Exchange (EGX)`,
+            `${symbol} ${view.label} — EGX`,
+        ]),
         description: clampDescription(view.description),
         alternates: { canonical: `${symbolPath(symbol)}/${slug}` },
     };

@@ -277,7 +277,15 @@ export default function SymbolSeoSection({
                         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                             <strong>What is {name}’s share price today?</strong> {symbol} last traded at {cur} {fmtNum(ticker.last_price)}
                             {typeof ticker.change_percent === 'number' ? ` (${ticker.change_percent >= 0 ? '+' : ''}${ticker.change_percent.toFixed(2)}% on the day)` : ''}
-                            {typeof ticker.market_cap === 'number' && ticker.market_cap > 0 ? `, for a market value of ${cur} ${(ticker.market_cap / 1e9).toFixed(2)} billion` : ''}
+                            {/* MARKET CAP IS ALWAYS EGP — never the quote currency. market_cap is stored
+                                and formatted in Egyptian pounds (the stats table above uses fmtEgp,
+                                and every sector page states "Market caps in Egyptian pounds"), but this
+                                sentence interpolated `cur`, the QUOTE currency. On the ~10 EGX lines
+                                carrying a USD quote label that published "a market value of USD 42.14
+                                billion" for GPPL beside a table reading "EGP 42.14B" — the same number,
+                                two currencies, on one indexable page, wrong by ~50x. Same class as the
+                                SAR->EGP sanitizer in public-data.ts (audit 2026-09-05). */}
+                            {typeof ticker.market_cap === 'number' && ticker.market_cap > 0 ? `, for a market value of EGP ${(ticker.market_cap / 1e9).toFixed(2)} billion` : ''}
                             {typeof ticker.pe_ratio === 'number' && ticker.pe_ratio > 0 ? `, a P/E of ${fmtNum(ticker.pe_ratio)}` : ''}
                             {typeof ticker.dividend_yield === 'number' && ticker.dividend_yield > 0 ? ` and a dividend yield of ${ticker.dividend_yield.toFixed(2)}%` : ''}
                             {perf?.low_52w != null && perf?.high_52w != null ? `. Its 52-week range is ${cur} ${fmtNum(perf.low_52w)} to ${fmtNum(perf.high_52w)}` : ''}.

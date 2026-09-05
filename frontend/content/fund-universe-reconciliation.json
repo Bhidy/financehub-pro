@@ -43,8 +43,8 @@
   }
  },
  "starta": {
-  "current_priced_funds": 200,
-  "dormant_funds_with_pages": 14,
+  "current_priced_funds": 207,
+  "dormant_funds_with_pages": 7,
   "dormant_fund_ids": [
    "2702",
    "2705",
@@ -52,40 +52,35 @@
    "2740",
    "2746",
    "5810",
-   "5975",
-   "6404",
-   "6475",
-   "6479",
-   "6480",
-   "6482",
-   "6483",
-   "6488"
+   "5975"
   ],
   "total_fund_pages": 214,
   "by_category": {
-   "unclassified": 98,
-   "money-market": 26,
-   "fixed-income": 20,
-   "equity": 39,
-   "balanced": 10,
+   "unclassified": 30,
+   "money-market": 59,
+   "equity": 65,
+   "fixed-income": 29,
+   "balanced": 12,
    "shariah": 4,
-   "gold": 3
+   "gold": 8
   },
   "by_currency": {
-   "EGP": 200
+   "EGP": 192,
+   "USD": 13,
+   "EUR": 2
   },
   "universe_rule": "a NAV published within 180 days and at least 2 NAV points (lib/fund-stats.ts: DORMANT_DAYS, MIN_NAV_POINTS)"
  },
  "delta": {
-  "fra_in_scope_minus_starta_pages": -5,
+  "fra_in_scope_minus_starta_current": 2,
   "explanation": [
    "15 FRA issuances are vehicle types Starta does not price (private-equity, real-estate, fund-of-funds, ETF) — they publish no public unit price to track.",
-   "14 Starta fund pages are dormant (no NAV for 180+ days: matured target-date funds, frozen sources) and are excluded from the current universe but kept as history.",
-   "-5 in-scope FRA issuances are not yet individually reconcilable: the FRA reports type totals, and recent launches (15 new funds in Q2 2026 per the FRA) publish their first NAVs with a lag. New funds enter the directory automatically once a manager publishes at least two NAVs."
+   "7 Starta fund pages are dormant (no NAV for 180+ days: matured target-date funds, frozen sources); they are history, outside both the regulator's live count and Starta's current universe.",
+   "2 in-scope FRA issuances are not yet individually reconcilable: the FRA reports type totals, and recent launches (15 new funds in Q2 2026 per the FRA) publish their first NAVs with a lag. New funds enter the directory automatically once a manager publishes at least two NAVs."
   ]
  },
  "statement": {
-  "en": "Starta prices 200 publicly offered Egyptian mutual funds with a current NAV (plus 14 dormant funds kept as history). The Financial Regulatory Authority counted 224 funds by issuance at end-June 2026, of which 15 are private-equity, real-estate, fund-of-funds or ETF vehicles with no public unit price; the remaining gap (-5) is recent launches and type-level differences the regulator's report does not itemise.",
-  "ar": "تنشر ستارتا أسعار 200 صندوق استثمار مصري مطروحًا للجمهور بصافي قيمة أصول حديث (إضافةً إلى 14 صناديق متوقفة تُحفَظ كسجل). وأحصت الهيئة العامة للرقابة المالية 224 صندوقًا بإصداراتها في نهاية يونيو 2026، منها 15 صناديق ملكية خاصة وعقارية وقابضة ومؤشرات متداولة لا تُنشر أسعار وثائقها للجمهور؛ والفارق المتبقي (-5) إصدارات حديثة وفروق تصنيف لا يفصّلها تقرير الهيئة."
+  "en": "Starta prices 207 publicly offered Egyptian mutual funds with a current NAV (plus 7 dormant funds kept as history). The Financial Regulatory Authority counted 224 funds by issuance at end-June 2026, of which 15 are private-equity, real-estate, fund-of-funds or ETF vehicles with no public unit price, leaving 209 in scope; the remaining gap (2) is recent launches and type-level differences the regulator's report does not itemise.",
+  "ar": "تنشر ستارتا أسعار 207 صندوق استثمار مصري مطروحًا للجمهور بصافي قيمة أصول حديث (إضافةً إلى 7 صناديق متوقفة تُحفَظ كسجل). وأحصت الهيئة العامة للرقابة المالية 224 صندوقًا بإصداراتها في نهاية يونيو 2026، منها 15 صندوقًا من صناديق الملكية الخاصة والصناديق العقارية والقابضة والمؤشرات المتداولة التي لا تُنشر أسعار وثائقها للجمهور؛ فيبقى 209 إصدارًا داخل النطاق؛ والفارق المتبقي (2) إصدارات حديثة وفروق تصنيف لا يفصّلها تقرير الهيئة."
  }
 }

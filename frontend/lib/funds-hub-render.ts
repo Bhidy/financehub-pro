@@ -113,7 +113,7 @@ export function fundsHubRows(funds: Row[], lang: 'en' | 'ar'): string {
     // (scripts/fund-universe-reconcile.mjs), never from prose.
     const fra = reconciliation.fra;
     const coverage = isAr
-        ? ` تُحصي الهيئة العامة للرقابة المالية ${esc(String(fra.total_by_issuance))} صندوقًا بإصداراتها في نهاية يونيو 2026، منها ${esc(String(fra.out_of_scope.count))} صناديق ملكية خاصة وعقارية وقابضة ومؤشرات متداولة لا تُنشر أسعار وثائقها للجمهور — <a href="/ar/methodology#coverage">تفاصيل المطابقة</a>.`
+        ? ` تُحصي الهيئة العامة للرقابة المالية ${esc(String(fra.total_by_issuance))} صندوقًا بإصداراتها في نهاية يونيو 2026، منها ${esc(String(fra.out_of_scope.count))} صندوقًا من صناديق الملكية الخاصة والصناديق العقارية والقابضة والمؤشرات المتداولة التي لا تُنشر أسعار وثائقها للجمهور — <a href="/ar/methodology#coverage">تفاصيل المطابقة</a>.`
         : ` The Financial Regulatory Authority counted ${esc(String(fra.total_by_issuance))} funds by issuance at end-June 2026, ${esc(String(fra.out_of_scope.count))} of them private-equity, real-estate, fund-of-funds or ETF vehicles with no public unit price — <a href="/methodology#coverage">coverage reconciliation</a>.`;
     const intro =
         `<p style="grid-column:1/-1;margin:0 0 .25rem;font-size:.85rem" ${isAr ? 'dir="rtl" lang="ar"' : ''}>` +

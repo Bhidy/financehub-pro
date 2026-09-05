@@ -59,6 +59,10 @@ export async function GET(request: Request) {
             // its real `as_of_date`, so an older NAV is never presented as
             // current. (Compare-by-ids path above is exempt so a direct link
             // still resolves.)
+            // Only funds that HAVE a page: the six Decypha-era symbolic ids
+            // (EGYABC2, EGY_NEW_BRS, …) are duplicates of numeric funds whose
+            // /Funds/{id} URL 404s. The pre-render applies the same rule.
+            whereClause += ` AND CAST(f.fund_id AS TEXT) ~ '^[0-9]+$'`;
             whereClause += ` AND (SELECT COUNT(*) FROM nav_history WHERE fund_id = f.fund_id) >= ${MIN_NAV_POINTS}`;
             whereClause += ` AND (SELECT MAX(date) FROM nav_history WHERE fund_id = f.fund_id) >= (CURRENT_DATE - INTERVAL '${DORMANT_DAYS} days')`;
         }

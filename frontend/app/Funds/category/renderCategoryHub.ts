@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { ltrNum } from '@/lib/bidi';
 import { getAllFundsRanked } from '@/lib/public-data';
 import { renderFundHub } from '@/lib/fund-hub';
 import {
@@ -28,6 +29,17 @@ export async function renderCategoryHub(slug: string, lang: 'en' | 'ar'): Promis
     }
     const funds = all.filter((f) => categoryOfFund(f)?.key === cat.key);
     if (funds.length < MIN_FUNDS_TO_PUBLISH) notFound();
+    // Answer-first lead (2026-09-05): the category's size and its best
+    // 12-month performer, from the same ranked rows the table shows.
+    const leadRow = funds.find((f) => typeof f.return_1y === 'number' && Number.isFinite(f.return_1y as number));
+    const leadName = leadRow ? String((isAr ? leadRow.fund_name || leadRow.fund_name_en : leadRow.fund_name_en || leadRow.fund_name) || '') : '';
+    const leadRet = leadRow ? (leadRow.return_1y as number) : null;
+    const leadPct = leadRet !== null ? `${leadRet >= 0 ? '+' : ''}${leadRet.toFixed(2)}%` : '';
+    const lead = leadRow && leadName
+        ? isAr
+            ? `تضم فئة ${cat.nameAr} ${funds.length} صندوقًا في مصر؛ أفضلها أداءً خلال آخر 12 شهرًا «${leadName}» بعائد ${ltrNum(leadPct)}. `
+            : `${cat.nameEn} in Egypt: ${funds.length} funds; the best performer over the last 12 months is ${leadName} at ${leadPct}. `
+        : '';
 
     return renderFundHub({
         lang,
@@ -36,7 +48,7 @@ export async function renderCategoryHub(slug: string, lang: 'en' | 'ar'): Promis
         title: `${isAr ? cat.titleAr : cat.titleEn} | Starta Markets`,
         description: isAr ? cat.descriptionAr : cat.descriptionEn,
         heading: `${isAr ? cat.nameAr : cat.nameEn}${isAr ? ' في مصر' : ' in Egypt'}`,
-        intro: isAr ? cat.introAr : cat.introEn,
+        intro: lead + (isAr ? cat.introAr : cat.introEn),
         funds,
         marketplaceType: cat.marketplaceType || undefined,
         crumbs: [

@@ -136,7 +136,12 @@ export async function fundMetadata(idParam: string, lang: Lang): Promise<Metadat
     // 158: Google shows ~155–160 characters; the audit flagged 28 fund pages.
     if (description.length > 158) description = `${description.slice(0, 155).trimEnd()}…`;
 
-    const title = lang === 'ar' ? `${name} — صافي قيمة الأصول والعوائد والرسوم` : `${name} — NAV, Returns & Fees`;
+    // Query-shaped (2026-09-05): searchers type "سعر وثيقة صندوق X اليوم" /
+    // "X fund price today"; the title leads with that and carries the NAV.
+    const navForTitle = typeof fund.latest_nav === 'number' && Number.isFinite(fund.latest_nav) ? fmtNav(fund.latest_nav) : null;
+    const title = lang === 'ar'
+        ? `سعر وثيقة ${name} اليوم${navForTitle ? ` ${navForTitle} جنيه` : ''} — العائد والرسوم`
+        : `${name} unit price today${navForTitle ? ` — EGP ${navForTitle}` : ''}, returns & fees`;
     const canonical = lang === 'ar' ? canonicalAr : canonicalEn;
     return {
         title,
@@ -360,6 +365,13 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
     const faqs: Array<{ q: string; a: string }> = [];
     if (nav !== null && navDateIso) {
         const dh = humanDate(navDateIso, lang);
+        // The People-also-ask form of the question, first; the NAV question stays.
+        const r1y = num(fund, 'return_1y');
+        faqs.push(
+            lang === 'ar'
+                ? { q: `ما هو سعر وثيقة ${name} اليوم؟`, a: `سعر وثيقة ${name} هو ${fmtNav(nav)} جنيه مصري بتاريخ ${dh}${r1y !== null ? `، وعائده خلال آخر 12 شهرًا ${r1y >= 0 ? '+' : ''}${r1y.toFixed(2)}%` : ''}. يُحدَّث السعر مع كل إفصاح جديد لصافي قيمة الأصول.` }
+                : { q: `What is ${name}'s unit price today?`, a: `${name}'s unit price is EGP ${fmtNav(nav)} as of ${dh}${r1y !== null ? `, with a ${r1y >= 0 ? '+' : ''}${r1y.toFixed(2)}% return over the last 12 months` : ''}. The price updates with every NAV disclosure.` }
+        );
         faqs.push(
             lang === 'ar'
                 ? { q: `ما هو أحدث صافي قيمة أصول ${name}؟`, a: `بلغ أحدث صافي قيمة أصول ${name} ${fmtNav(nav)} جنيه مصري كما في ${dh}.` }

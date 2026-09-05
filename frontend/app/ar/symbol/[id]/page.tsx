@@ -133,7 +133,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const name = ticker.name_ar || ticker.name_en || symbol;
     const cur = ticker.currency || 'EGP';
-    const priceStr = ticker.last_price !== null ? `${cur} ${fmtNum(ticker.last_price)}` : null;
+    // Arabic searchers write the currency as a word: "141 جنيه", not "EGP 141".
+    const priceStr = ticker.last_price !== null ? (cur === 'EGP' ? `${fmtNum(ticker.last_price)} جنيه` : `${cur} ${fmtNum(ticker.last_price)}`) : null;
     // The live price in the title: 25,066 impressions on the Arabic company
     // pages over three months, 55 clicks (0.22%) at position 8.6 — the query
     // is "سعر سهم X" and the answer belongs in the title, as the incumbents do.
@@ -349,9 +350,9 @@ export default async function ArabicSymbolPage({ params }: Props) {
                 </p>
                 {ticker.last_price !== null && (
                     <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
-                        <strong>ما هو سعر سهم {name} اليوم؟</strong> آخر سعر لسهم {symbol} هو {ltrNum(`${cur} ${fmtNum(ticker.last_price) ?? ''}`)}
+                        <strong>ما هو سعر سهم {name} اليوم؟</strong> آخر سعر لسهم {symbol} هو {ltrNum(`${fmtNum(ticker.last_price) ?? ''}`)} {cur === 'EGP' ? 'جنيه' : cur}
                         {typeof ticker.change_percent === 'number' ? ` (${ltrNum(`${ticker.change_percent >= 0 ? '+' : ''}${ticker.change_percent.toFixed(2)}%`)} خلال الجلسة)` : ''}
-                        {typeof ticker.market_cap === 'number' && ticker.market_cap > 0 ? `، بقيمة سوقية ${ltrNum((ticker.market_cap / 1e9).toFixed(2))} مليار ${cur}` : ''}
+                        {typeof ticker.market_cap === 'number' && ticker.market_cap > 0 ? `، بقيمة سوقية ${ltrNum((ticker.market_cap / 1e9).toFixed(2))} مليار ${cur === 'EGP' ? 'جنيه' : cur}` : ''}
                         {typeof ticker.pe_ratio === 'number' && ticker.pe_ratio > 0 ? `، ومضاعف ربحية ${ltrNum(fmtNum(ticker.pe_ratio) ?? '')}` : ''}
                         {typeof ticker.dividend_yield === 'number' && ticker.dividend_yield > 0 ? `، وعائد توزيعات ${ltrNum(`${ticker.dividend_yield.toFixed(2)}%`)}` : ''}.
                     </p>

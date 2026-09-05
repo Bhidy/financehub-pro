@@ -297,3 +297,12 @@ through that one function. (2) Provider hubs open with the bank's fund count and
 performer. (3) The news sitemap deduplicates against the whole archive before applying the 120-day
 window (a later copy whose original is older was advertised and 308'd). Verified: an article from May
 2026 serves `noindex, follow`; the news sitemap dropped from 4,350 to ~2,980 URLs.
+
+**Sixth pass (same day).** Fund profile titles now take the query shape — Arabic "سعر وثيقة {الصندوق} اليوم
+{NAV} جنيه — العائد والرسوم", English "{Fund} unit price today — EGP {NAV}, returns & fees" — and each fund
+page's first FAQ is "ما هو سعر وثيقة … اليوم؟" with the NAV, date and 12-month return (feeds the FAQPage
+schema). Arabic symbol titles and answer sentences write the currency as a word ("141 جنيه"). Category
+hubs open with the category's size and its best 12-month performer, like the provider hubs. Money pages
+verified live with every category section rendering. Lab performance on the Arabic money page (desktop
+Chrome, unthrottled): LCP 809 ms (TTFB 174 ms), CLS 0 — no performance work needed; PSI's daily quota was
+exhausted so mobile field/lab numbers were not measured.

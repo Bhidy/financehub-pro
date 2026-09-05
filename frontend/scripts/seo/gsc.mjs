@@ -126,8 +126,15 @@ export async function collectGsc({ days = 28 } = {}) {
                 }),
                 { clicks: 0, impressions: 0 }
             );
-        const tNow = totals(queriesNow);
-        const tPrev = totals(queriesPrev);
+        // Totals come from the PAGE dimension. The query dimension omits the
+        // queries Google anonymises — for a long-tail site that is most of
+        // them: the first live run summed 9 clicks / 1,802 impressions from
+        // query rows while Search Console showed 299 / 104K for the same 28
+        // days. Page rows carry every click. Query rows still drive the
+        // striking-distance, CTR-gap and cannibalisation tables below.
+        const tNow = totals(pagesNow);
+        const tPrev = totals(pagesPrev);
+        const tQueriesNow = totals(queriesNow);
 
         const index = (rows) => new Map(rows.map((r) => [r.keys[0], r]));
         const prevQ = index(queriesPrev);
@@ -246,7 +253,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         else if (r.error) console.error(`[gsc] ERROR — ${r.error}`);
         else
             console.log(
-                `[gsc] ${r.totals.clicks} clicks / ${r.totals.impressions} impressions over ${r.window.days}d; ` +
+                `[gsc] ${r.totals.clicks} clicks / ${r.totals.impressions} impressions over ${r.window.days}d;  — ${tQueriesNow.clicks} of those clicks sit on visible (non-anonymised) queries` +
                     `${r.strikingDistance.length} striking-distance queries, ${r.ctrOpportunities.length} CTR gaps, ${r.cannibalization.length} cannibalisations`
             );
     });

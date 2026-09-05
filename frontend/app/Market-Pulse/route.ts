@@ -2,6 +2,7 @@ import { renderStaticHub, esc, escUrl, jsonLdScript, hreflangLinks, langSeedScri
 import { getEgx30Index, getMarketLists, getAllTickers, getLatestNews } from '@/lib/public-data';
 import { SITE_URL, symbolPath, symbolPathAr } from '@/lib/seo';
 import { canonicalNewsPath, newsLang, sanitizeNewsText } from '@/lib/news-display';
+import { ltrNum } from '@/lib/bidi';
 
 /**
  * /Market-Pulse — the designed watchlist + charting tool.
@@ -144,10 +145,41 @@ export async function renderMarketPulse(lang: 'en' | 'ar') {
         if (tickers.length) {
             injections.push({ id: 'totalStocks', html: esc(tickers.length.toLocaleString('en-EG')), mode: 'replace' as const });
             injections.push({ id: 'breadthCount', html: esc(`${adv.toLocaleString('en-EG')} / ${dec.toLocaleString('en-EG')}`), mode: 'replace' as const });
-            const reading = isAr
-                ? `${adv} سهماً مرتفعاً مقابل ${dec} منخفضاً من أصل ${tickers.length} ورقة مقيدة${value !== null ? `؛ مؤشر EGX 30 عند ${fmt(value)} (${pct(changePct)})` : ''}${asOf ? ` — حتى ${asOf}` : ''}.`
-                : `${adv} advancers against ${dec} decliners across ${tickers.length} listed securities${value !== null ? `; EGX 30 at ${fmt(value)} (${pct(changePct)})` : ''}${asOf ? ` — as of ${asOf}` : ''}.`;
-            injections.push({ id: 'marketReading', html: esc(reading), mode: 'insert' as const });
+            // The reading is the one place on this page where the numbers are
+            // put into words for a reader: breadth, the session's leader and
+            // laggard, the busiest name, and how the figures are produced.
+            // Every fact is already on the page as a number; nothing is added
+            // that the data does not say. Signed numbers are LTR-isolated in
+            // Arabic (see lib/bidi.ts — "-2.55%" otherwise renders "2.55%-").
+            const num = (v: string) => (isAr ? ltrNum(v) : v);
+            const nameOf = (x: { symbol: string; name_en?: string | null; name_ar?: string | null }) =>
+                ((isAr ? x.name_ar || x.name_en : x.name_en || x.name_ar) || x.symbol).trim();
+            const top = lists.gainers[0];
+            const bottom = lists.losers[0];
+            const busiest = lists.active.find((x) => !/^EG[A-Z0-9]{10}$/.test(x.symbol)) || lists.active[0];
+            const ratio = dec > 0 ? (adv / dec).toFixed(2) : null;
+            const parts: string[] = [];
+            parts.push(
+                isAr
+                    ? `${num(String(adv))} سهماً مرتفعاً مقابل ${num(String(dec))} منخفضاً من أصل ${num(String(tickers.length))} ورقة مقيدة${value !== null ? `؛ مؤشر EGX 30 عند ${num(fmt(value))} (${num(pct(changePct))})` : ''}${asOf ? ` — حتى ${asOf}` : ''}.`
+                    : `${adv} advancers against ${dec} decliners across ${tickers.length} listed securities${value !== null ? `; EGX 30 at ${fmt(value)} (${pct(changePct)})` : ''}${asOf ? ` — as of ${asOf}` : ''}.`
+            );
+            if (ratio) {
+                parts.push(isAr ? `بلغت نسبة الاتساع ${num(ratio)} سهماً مرتفعاً لكل سهم منخفض.` : `Breadth ran at ${ratio} advancers per decliner.`);
+            }
+            if (top && bottom) {
+                parts.push(
+                    isAr
+                        ? `تصدّر ${nameOf(top)} (${top.symbol}) قائمة الرابحين بنسبة ${num(pct(top.change_percent))}، وكان ${nameOf(bottom)} (${bottom.symbol}) الأضعف بنسبة ${num(pct(bottom.change_percent))}${busiest ? `، بينما كان ${nameOf(busiest)} (${busiest.symbol}) الأنشط من حيث حجم التداول` : ''}.`
+                        : `${nameOf(top)} (${top.symbol}) led the gainers at ${pct(top.change_percent)}, ${nameOf(bottom)} (${bottom.symbol}) was the weakest at ${pct(bottom.change_percent)}${busiest ? `, and ${nameOf(busiest)} (${busiest.symbol}) was the most active by volume` : ''}.`
+                );
+            }
+            parts.push(
+                isAr
+                    ? 'تُحسب حركة الأسهم واتساع السوق وشريط الأسعار من آخر إغلاق رسمي للبورصة المصرية وتُحدَّث كل يوم تداول؛ النسب المئوية تغيرات يومية بالجنيه المصري، والمؤشر هو مؤشر EGX 30 السعري.'
+                    : 'Movers, breadth and the tape are computed from the latest official EGX close and refreshed every trading day; percentages are day-on-day changes in EGP, and the index is the EGX 30 price index.'
+            );
+            injections.push({ id: 'marketReading', html: esc(parts.join(' ')), mode: 'insert' as const });
         }
 
         const items = news.filter((a) => newsLang(a) === lang).slice(0, 3);

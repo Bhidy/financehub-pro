@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
+import { EGX_ONLY } from '@/lib/public-data';
 
 // Single source of truth: compute EGX market stats directly from Supabase
 // (was proxying to the Hetzner backend). Same output keys as the backend.
@@ -14,11 +15,11 @@ export async function GET() {
                 COUNT(CASE WHEN change_percent < 0 THEN 1 END) AS losers,
                 COUNT(CASE WHEN change_percent = 0 THEN 1 END) AS unchanged,
                 COALESCE(SUM(volume), 0) AS total_volume
-            FROM market_tickers WHERE market_code = 'EGX'
+            FROM market_tickers WHERE market_code = 'EGX' AND ${EGX_ONLY}
         `);
         const ohlc = await db.query(
             `SELECT COUNT(*) AS c FROM ohlc_data
-             WHERE symbol IN (SELECT symbol FROM market_tickers WHERE market_code = 'EGX')`);
+             WHERE symbol IN (SELECT symbol FROM market_tickers WHERE market_code = 'EGX' AND ${EGX_ONLY})`);
         const fin = await db.query(
             `SELECT COUNT(*) AS c FROM financial_statements WHERE symbol ~ '^[A-Z]+$'`);
 

@@ -288,6 +288,11 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
+          // No page uses these device APIs; deny them site-wide (audit 2026-09-05).
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+          },
         ],
       },
     ];

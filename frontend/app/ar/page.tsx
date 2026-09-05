@@ -22,16 +22,12 @@ export const metadata: Metadata = {
         'تابع البورصة المصرية (EGX) اليوم: مؤشر EGX30 المباشر، أسعار الأسهم، الأكثر ارتفاعًا وانخفاضًا، صناديق الاستثمار، وأخبار السوق — بالعربية، محدَّث كل 15 دقيقة.',
     alternates: {
         canonical: '/ar',
-        // ABSOLUTE, with the trailing slash: Next.js resolves the relative '/'
-        // against metadataBase down to the bare origin ("https://startamarkets.com"),
-        // while the static home page emits "https://startamarkets.com/". Two
-        // different strings are two different URLs to a crawler, so the pair
-        // was not reciprocal and the whole hreflang cluster could be ignored.
-        languages: {
-            en: 'https://startamarkets.com/',
-            ar: 'https://startamarkets.com/ar',
-            'x-default': 'https://startamarkets.com/',
-        },
+        // hreflang is rendered as explicit <link> elements in the page (below):
+        // Next.js 16 rewrote the absolute origin URL ("https://startamarkets.com/")
+        // to href="" for both the en and x-default alternates — verified live on
+        // 2026-09-05 — so the pair was not reciprocal and the whole cluster
+        // could be ignored. x-default is Arabic, the site's default language,
+        // as on every other page pair.
     },
     openGraph: {
             ...OG_DEFAULTS,
@@ -78,6 +74,10 @@ export default async function ArHome() {
 
     return (
         <PublicPageShell lang="ar" altHref="/">
+            {/* Explicit, absolute hreflang cluster (see metadata note above). */}
+            <link rel="alternate" hrefLang="en" href={`${SITE_URL}/`} />
+            <link rel="alternate" hrefLang="ar" href={`${SITE_URL}/ar`} />
+            <link rel="alternate" hrefLang="x-default" href={`${SITE_URL}/ar`} />
             <JsonLd data={breadcrumbJsonLd([{ label: 'البورصة المصرية اليوم' }], SITE_URL)} />
             <JsonLd
                 data={{

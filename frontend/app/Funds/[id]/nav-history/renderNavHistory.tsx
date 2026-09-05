@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getFund, getFundNavHistory, type NavPoint } from '@/lib/public-data';
-import { SITE_URL, absUrl, fundPath, idFromParam, canonicalRedirectTarget, OG_DEFAULTS } from '@/lib/seo';
+import { SITE_URL, absUrl, fundPath, idFromParam, canonicalRedirectTarget, OG_DEFAULTS, clampTitle } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { NAVHIST, t, type Lang } from '@/content/symbol-pages-i18n';
@@ -97,7 +97,8 @@ export async function navHistoryMetadata(id: string, lang: Lang): Promise<Metada
     const pathAr = encodeURI(`${basePath(fund, 'ar')}/nav-history`);
     const canonical = lang === 'ar' ? pathAr : pathEn;
 
-    const title = t(NAVHIST.title(name), lang);
+    // Goes through the root template (+17 chars): the long form only when it fits.
+    const title = clampTitle([t(NAVHIST.title(name), lang), t(NAVHIST.h1(name), lang)]);
     let description = t(NAVHIST.description(name, from, to, points.length), lang);
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 

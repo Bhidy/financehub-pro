@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
+import { applyReturnHierarchy } from '@/lib/public-data';
+import { fundCurrency } from '@/lib/fund-stats';
 
 export async function GET(
     request: Request,
@@ -50,7 +52,20 @@ export async function GET(
             row.risk_metrics = rm.rows[0] ?? null;
         } catch { row.risk_metrics = null; }
 
-        return NextResponse.json(row);
+        // ONE return engine, ONE denomination rule, ONE as-of contract — the same
+        // three the list endpoint and the SSR profile apply. Raw funds_view rows
+        // carry the legacy return family (often NULL) and the vendor's "EGP" on
+        // USD/EUR funds; on 2026-09-05 this endpoint answered currency=EGP and
+        // return_1y=null for funds the list endpoint priced in USD at +81.50%.
+        const shaped = applyReturnHierarchy({ ...row }, (row.risk_metrics as Record<string, unknown> | null) ?? null);
+        const asOf = shaped.last_nav_date ?? shaped.last_update_date ?? null;
+        const asOfMs = asOf ? Date.parse(String(asOf)) : NaN;
+        return NextResponse.json({
+            ...shaped,
+            currency: fundCurrency(shaped),
+            as_of_date: asOf,
+            is_stale: Number.isFinite(asOfMs) ? Date.now() - asOfMs > 10 * 86_400_000 : false,
+        });
     } catch (error: any) {
         return apiError('/funds/[id]', error);
     }

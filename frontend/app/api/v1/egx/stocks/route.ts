@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { db, numerify } from '@/lib/db-server';
+import { EGX_ONLY } from '@/lib/public-data';
 
 // Single source of truth: read EGX stocks straight from Supabase (market_tickers,
 // the live TradingView-updated quote table) — same as every other stock/fund read.
@@ -19,7 +20,10 @@ export async function GET(request: Request) {
 
     try {
         const params: string[] = [];
-        let whereClause = `WHERE market_code = 'EGX'`;
+        // Listing authority (2026-09-05): the vendor universe carries delisted and
+        // never-listed lines (GTHE, IRAX, NCGC …) with prices; only register-listed
+        // securities are publishable — same allow-list as every page.
+        let whereClause = `WHERE market_code = 'EGX' AND ${EGX_ONLY}`;
         if (sector) {
             params.push(sector);
             whereClause += ` AND sector_name = $${params.length}`;

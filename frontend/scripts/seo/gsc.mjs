@@ -255,7 +255,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         else if (r.error) console.error(`[gsc] ERROR — ${r.error}`);
         else
             console.log(
-                `[gsc] ${r.totals.clicks} clicks / ${r.totals.impressions} impressions over ${r.window.days}d;  — ${r.totals.visibleQueryClicks ?? 0} of those clicks sit on visible (non-anonymised) queries` +
+                `[gsc] ${r.totals.clicks} clicks / ${r.totals.impressions} impressions over ${r.window.days}d; ` +
                     `${r.strikingDistance.length} striking-distance queries, ${r.ctrOpportunities.length} CTR gaps, ${r.cannibalization.length} cannibalisations`
             );
     });

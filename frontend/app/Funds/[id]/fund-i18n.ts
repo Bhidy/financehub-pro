@@ -89,6 +89,13 @@ export type FundLabels = {
     similarFunds: string;
     similarFundsUniverse: string;
     source: string;
+    sourcePage: string;
+    sourcePageMeta: string;
+    recentNavTitle: string;
+    recentNavDate: string;
+    recentNavValue: string;
+    recentNavChange: string;
+    lastIngested: string;
     fundFaq: string;
     faqTitle: string;
     // hero
@@ -185,6 +192,13 @@ const EN: FundLabels = {
     similarFunds: 'Similar funds in the same asset class',
     similarFundsUniverse: 'Other funds in the same universe',
     source: 'Source (latest NAV)',
+    sourcePage: 'Fund page at the data source',
+    sourcePageMeta: 'Mubasher · opens in a new tab',
+    recentNavTitle: 'Latest published NAVs',
+    recentNavDate: 'Date',
+    recentNavValue: 'NAV',
+    recentNavChange: 'Change',
+    lastIngested: 'Last ingested',
     fundFaq: 'Fund FAQ',
     faqTitle: 'Frequently asked questions',
     latestNav: 'Latest NAV',
@@ -379,6 +393,13 @@ const AR: FundLabels = {
     similarFunds: 'صناديق مشابهة من نفس فئة الأصول',
     similarFundsUniverse: 'صناديق أخرى من نفس السوق',
     source: 'المصدر (آخر قيمة)',
+    sourcePage: 'صفحة الصندوق لدى مصدر البيانات',
+    sourcePageMeta: 'مباشر · تفتح في نافذة جديدة',
+    recentNavTitle: 'آخر القيم المنشورة لصافي قيمة الأصول',
+    recentNavDate: 'التاريخ',
+    recentNavValue: 'صافي قيمة الأصول',
+    recentNavChange: 'التغير',
+    lastIngested: 'آخر إدخال',
     fundFaq: 'الأسئلة الشائعة',
     faqTitle: 'الأسئلة الأكثر شيوعًا',
     latestNav: 'أحدث صافي قيمة الأصول',

@@ -5,7 +5,7 @@ import { getAllFundsRanked } from '@/lib/public-data';
 import { SITE_URL, absUrl, fundPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
-import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath, type FundCategory } from '@/content/fund-categories';
+import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath, type FundCategory, FUND_TAXONOMY_OVERRIDES } from '@/content/fund-categories';
 import { fundName, fundsAsOf } from '@/lib/funds-hub-render';
 import { num, str, median, pctSigned, pct, type Row } from '@/lib/fund-stats';
 
@@ -35,6 +35,9 @@ type CategoryStats = {
     worst: Row | null;
     medianFee: number | null;
 };
+
+/** Funds whose vendor type is replaced by a documented override (content/fund-taxonomy-overrides.json). */
+const overrideCount = FUND_TAXONOMY_OVERRIDES.filter((o) => o.disposition === 'override').length;
 
 export function categoriesMetadata(lang: 'en' | 'ar'): Metadata {
     const isAr = lang === 'ar';
@@ -186,7 +189,9 @@ export async function renderCategoriesIndex(lang: 'en' | 'ar') {
                         {isAr ? '— البيانات كما في' : '— data as of'} <time dateTime={asOf.iso}>{asOf.human}</time>
                     </>
                 )}
-                . {isAr ? 'التصنيف يقرأ نوع كل صندوق كما أفصح عنه مديره.' : 'Classification reads each fund’s own disclosed type.'}
+                . {isAr
+                    ? `التصنيف يقرأ نوع كل صندوق كما أفصح عنه مديره؛ وحيث يخالف تصنيف المزوّد نشرة الصندوق يُطبَّق تصحيح موثّق بدليله (${overrideCount} ${overrideCount === 1 ? 'صندوق' : 'صناديق'} حاليًا، انظر المنهجية).`
+                    : `Classification reads each fund’s own disclosed type; where the vendor’s type contradicts the fund’s prospectus, a documented, evidence-backed override applies (${overrideCount} fund${overrideCount === 1 ? '' : 's'} today — see the methodology).`}
             </p>
 
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">

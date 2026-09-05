@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import { FUND_TAXONOMY_OVERRIDES } from '@/content/fund-categories';
+/** Arabic names of the asset classes, for the classification table. */
+const CLASS_AR: Record<string, string> = { money_market: 'أسواق نقد', fixed_income: 'دخل ثابت', equity: 'أسهم', balanced: 'متوازن', gold: 'ذهب' };
 import reconciliation from '@/content/fund-universe-reconciliation.json';
 import { SECURITY_MASTER_SOURCES } from '@/lib/security-master';
 import { DORMANT_DAYS, MIN_NAV_POINTS, QUOTE_STALE_DAYS } from '@/lib/fund-stats';
@@ -165,6 +168,24 @@ const EN: { title: string; description: string; h1: string; lede: string; sectio
             },
         },
         {
+            id: 'classification',
+            h: 'How funds are classified',
+            paragraphs: [
+                'A fund’s category comes from the type its manager disclosed to the price vendor (money market, fixed income, equity, balanced, gold). When no type is disclosed, the fund’s own registered name is read for the type words it carries — "Money Market", "Fixed Income", "Equity", an EGX index, a sector — in either language; a name that names no type leaves the fund uncategorised rather than guessed.',
+                `When the vendor’s type contradicts the fund’s prospectus or its issuer’s own description, the vendor is not trusted: a documented override replaces it, and every override cites the document it rests on (content/fund-taxonomy-overrides.json). ${FUND_TAXONOMY_OVERRIDES.filter((o) => o.disposition === 'override').length} funds carry such an override today; they are listed below. A reviewed case where the vendor is right is recorded too, so the same question is not reopened.`,
+                'Asset class, strategy and Shariah compliance are separate properties. An index fund is an equity fund with an index strategy; an Islamic money-market fund is a money-market fund that is Shariah-compliant. The category pages keep one canonical page per fund (a Shariah-compliant fund’s canonical hub is the Shariah page); the fund page’s "similar funds" module and the public API use the asset class. A fund whose registered name contradicts its disclosed type and has no recorded disposition is flagged by the daily live audit until someone reads its prospectus.',
+            ],
+            table: {
+                head: ['Fund', 'Vendor type', 'Classified as', 'Evidence'],
+                rows: FUND_TAXONOMY_OVERRIDES.map((o) => [
+                    o.fund_name_en,
+                    o.vendor_type ?? '—',
+                    o.disposition === 'override' ? `${o.primary_asset_class.replace('_', ' ')} (override)` : `${o.primary_asset_class.replace('_', ' ')} (vendor confirmed)`,
+                    o.evidence.length ? o.evidence.map((u) => { try { return new URL(u).hostname; } catch { return u; } }).join(', ') : 'registered name',
+                ]),
+            },
+        },
+        {
             id: 'ranking-eligibility',
             h: 'Who is ranked on the best-funds pages',
             bullets: [
@@ -323,6 +344,24 @@ const AR: typeof EN = {
             table: {
                 head: ['نوع الصندوق لدى الهيئة (الربع الثاني 2026)', 'الإصدارات', 'مُسعَّر هنا؟'],
                 rows: reconciliation.fra.out_of_scope.types.map((t) => [t.type_ar, String(t.count), 'لا — لا يُنشر سعر وثيقة للجمهور']),
+            },
+        },
+        {
+            id: 'classification',
+            h: 'كيف تُصنَّف الصناديق',
+            paragraphs: [
+                'تأتي فئة الصندوق من النوع الذي أفصح عنه مديره لمزوّد الأسعار (أسواق نقد، دخل ثابت، أسهم، متوازن، ذهب). وعندما لا يُفصَح عن نوع، يُقرأ الاسم المسجَّل للصندوق بحثًا عن كلمات النوع التي يحملها — «النقدي»، «الدخل الثابت»، «الأسهم»، مؤشر من مؤشرات البورصة، قطاع — بأي من اللغتين؛ والاسم الذي لا يسمّي نوعًا يترك الصندوق بلا فئة بدلًا من تخمينها.',
+                `وعندما يخالف نوع المزوّد نشرة اكتتاب الصندوق أو وصف الجهة المُصدِرة له، لا يُؤخذ برأي المزوّد: يُطبَّق تصحيح موثّق يستبدله، ويستند كل تصحيح إلى الوثيقة التي بُني عليها (content/fund-taxonomy-overrides.json). يحمل ${FUND_TAXONOMY_OVERRIDES.filter((o) => o.disposition === 'override').length} صناديق تصحيحًا من هذا النوع اليوم، وهي مدرجة أدناه. وتُسجَّل أيضًا الحالة التي رُوجعت وتبيّن فيها صواب المزوّد حتى لا يُعاد فتح السؤال نفسه.`,
+                'فئة الأصول والاستراتيجية والتوافق مع الشريعة خصائص منفصلة. فصندوق المؤشرات صندوق أسهم باستراتيجية مؤشر، وصندوق أسواق النقد الإسلامي صندوق أسواق نقد متوافق مع الشريعة. تحتفظ صفحات الفئات بصفحة أساسية واحدة لكل صندوق (الصفحة الأساسية للصندوق المتوافق مع الشريعة هي صفحة الصناديق الإسلامية)، بينما تستخدم وحدة «صناديق مشابهة» في صفحة الصندوق وواجهة البيانات العامة فئة الأصول. والصندوق الذي يخالف اسمه المسجَّل نوعه المُفصَح عنه دون قرار مسجَّل يُبلِّغ عنه التدقيق اليومي للموقع حتى تُقرأ نشرته.',
+            ],
+            table: {
+                head: ['الصندوق', 'نوع المزوّد', 'صُنِّف كـ', 'الدليل'],
+                rows: FUND_TAXONOMY_OVERRIDES.map((o) => [
+                    o.fund_name,
+                    o.vendor_type ?? '—',
+                    o.disposition === 'override' ? `${CLASS_AR[o.primary_asset_class] ?? o.primary_asset_class} (تصحيح موثّق)` : `${CLASS_AR[o.primary_asset_class] ?? o.primary_asset_class} (تأكيد المزوّد)`,
+                    o.evidence.length ? o.evidence.map((u) => { try { return new URL(u).hostname; } catch { return u; } }).join('، ') : 'الاسم المسجَّل',
+                ]),
             },
         },
         {

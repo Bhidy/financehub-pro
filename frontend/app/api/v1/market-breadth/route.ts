@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
+import { EGX_ONLY } from '@/lib/public-data';
 
 export async function GET() {
     try {
@@ -21,7 +22,7 @@ export async function GET() {
                 ROUND(SUM(CASE WHEN change_percent > 0 THEN volume ELSE 0 END)::numeric, 0) AS advance_volume,
                 ROUND(SUM(CASE WHEN change_percent < 0 THEN volume ELSE 0 END)::numeric, 0) AS decline_volume
             FROM market_tickers
-            WHERE last_price IS NOT NULL AND market_code = 'EGX'
+            WHERE last_price IS NOT NULL AND market_code = 'EGX' AND ${EGX_ONLY}
         `);
         return NextResponse.json(r.rows);
     } catch (error: any) {

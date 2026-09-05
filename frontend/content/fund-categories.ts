@@ -62,9 +62,9 @@ export const FUND_CATEGORIES: FundCategory[] = [
         titleEn: 'Money Market Funds in Egypt — NAVs, Returns & Fees',
         titleAr: 'صناديق أسواق النقد في مصر — الأسعار والعوائد والرسوم',
         descriptionEn:
-            'Every Egyptian money market (liquidity) fund with its live NAV, trailing returns, management fee and minimum subscription. Updated twice daily from manager disclosures.',
+            'Egyptian money market (liquidity) funds that publish a NAV — each with its live NAV, trailing returns, management fee and minimum subscription. Updated twice daily from manager disclosures.',
         descriptionAr:
-            'كل صناديق أسواق النقد (السيولة النقدية) في مصر مع صافي قيمة الأصول والعوائد التاريخية ورسوم الإدارة والحد الأدنى للاشتراك. يتم التحديث مرتين يومياً من إفصاحات مديري الصناديق.',
+            'صناديق أسواق النقد (السيولة النقدية) المصرية التي تنشر صافي قيمة أصولها، مع صافي قيمة الأصول والعوائد التاريخية ورسوم الإدارة والحد الأدنى للاشتراك. يتم التحديث مرتين يومياً من إفصاحات مديري الصناديق.',
         introEn:
             'Money market funds — also called liquidity funds — invest in short-dated instruments such as treasury bills, time deposits and short-term debt. They are the lowest-volatility category in the Egyptian market and are typically used for capital held for short periods. The table lists every money market fund covered on this site with its own reported NAV and trailing returns.',
         introAr:
@@ -152,9 +152,9 @@ export const FUND_CATEGORIES: FundCategory[] = [
         titleEn: 'Index Funds in Egypt — EGX30, EGX33 & EGX70 Trackers',
         titleAr: 'صناديق المؤشرات في مصر — EGX30 وEGX33 وEGX70',
         descriptionEn:
-            'Every Egyptian index fund that tracks an EGX benchmark (EGX30, EGX33 Shariah, EGX35 LV, EGX70 EWI, EGX100) with its NAV, trailing returns and fees. Updated twice daily.',
+            'Egyptian index funds tracking an EGX benchmark (EGX30, EGX33 Shariah, EGX35 LV, EGX70 EWI, EGX100) that publish a NAV, with trailing returns and fees. Updated twice daily.',
         descriptionAr:
-            'كل صناديق المؤشرات في مصر التي تتبع مؤشرات البورصة (EGX30 وEGX33 الشرعي وEGX35 وEGX70 وEGX100) مع صافي قيمة الأصول والعوائد والرسوم. تحديث مرتين يومياً.',
+            'صناديق المؤشرات المصرية التي تتبع مؤشرات البورصة (EGX30 وEGX33 الشرعي وEGX35 وEGX70 وEGX100) وتنشر صافي قيمة أصولها، مع العوائد والرسوم. تحديث مرتين يومياً.',
         introEn:
             'Index funds hold the constituents of a published Egyptian Exchange index — EGX30, EGX33 Shariah, EGX35 Low Volatility, EGX70 Equal-Weight or EGX100 — in the index’s own weights, so their net asset value follows the benchmark rather than a manager’s stock selection, typically at a lower management fee than an actively managed equity fund. The regulator counted 12 index funds by issuance at end-June 2026. Every index fund covered on this site is listed below with its reported NAV and trailing returns.',
         introAr:

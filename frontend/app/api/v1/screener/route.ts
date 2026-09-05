@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api-error';
 import { db } from '@/lib/db-server';
+import { EGX_ONLY } from '@/lib/public-data';
 
 // Force dynamic to prevent Vercel caching
 export const dynamic = 'force-dynamic';
@@ -20,7 +21,7 @@ export async function GET(request: Request) {
         // CRITICAL: Start with stocks that have price data
         let query = `
             SELECT * FROM market_tickers 
-            WHERE last_price IS NOT NULL
+            WHERE last_price IS NOT NULL AND ${EGX_ONLY}
         `;
         const params: any[] = [];
         let paramIndex = 1;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
+import { EGX_ONLY } from '@/lib/public-data';
 
 export async function GET(
     request: NextRequest,
@@ -29,7 +30,7 @@ export async function GET(
                 source,
                 last_updated
              FROM market_tickers
-             WHERE symbol = $1`,
+             WHERE symbol = $1 AND ${EGX_ONLY}`,
             [symbol.toUpperCase()]
         );
 

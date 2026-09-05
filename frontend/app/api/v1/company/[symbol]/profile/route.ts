@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
+import { EGX_ONLY } from '@/lib/public-data';
+import { isPublishable } from '@/lib/security-master';
 
 // Handle requests for /api/v1/company/[symbol]/profile
 export async function GET(
@@ -15,12 +17,17 @@ export async function GET(
     const cleanSymbol = symbol.trim().toUpperCase();
     const symBase = cleanSymbol.replace('.CA', '');
     const symCA = `${symBase}.CA`;
+    // Fail-closed on the listing master: a Saudi or delisted symbol is not an
+    // EGX company profile (7010 STC answered a full profile until 2026-09-06).
+    if (!isPublishable(symBase)) {
+        return NextResponse.json({ error: 'Company not found' }, { status: 404 });
+    }
 
     try {
         // Parallel fetch for speed: Profile + Ticker Data + Overview Statistics
         const [profileRes, tickerRes, statsRes] = await Promise.all([
             db.query(`SELECT * FROM company_profiles WHERE symbol = $1 OR symbol = $2 LIMIT 1`, [symBase, symCA]),
-            db.query(`SELECT * FROM market_tickers WHERE symbol = $1 OR symbol = $2 LIMIT 1`, [symBase, symCA]),
+            db.query(`SELECT * FROM market_tickers WHERE (symbol = $1 OR symbol = $2) AND ${EGX_ONLY} LIMIT 1`, [symBase, symCA]),
             db.query(`SELECT * FROM stock_stats_view WHERE symbol = $1 OR symbol = $2 LIMIT 1`, [symBase, symCA])
         ]);
 

@@ -166,7 +166,7 @@ export default async function BestFundsPage() {
 
             <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Best-Performing Mutual Funds in Egypt (2026)</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">
-                <span data-metric="ranked_fund_count">{withReturn.length}</span> of <span data-metric="current_fund_count">{funds.length}</span> Egyptian mutual funds with a current NAV are eligible and ranked <strong>purely by trailing 1-year return</strong> computed from published NAV history, by
+                <span data-metric="ranked_fund_count" data-as-of={asOf ?? undefined}>{withReturn.length}</span> of <span data-metric="current_fund_count" data-as-of={asOf ?? undefined}>{funds.length}</span> Egyptian mutual funds with a current NAV are eligible and ranked <strong>purely by trailing 1-year return</strong> computed from published NAV history, by
                 category. NAVs and returns come from official fund-manager disclosures and refresh twice daily
                 {asOfHuman && <> — data as of <time dateTime={asOf as string}>{asOfHuman}</time></>}. Rankings are
                 mechanical, not recommendations.

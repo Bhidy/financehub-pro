@@ -127,6 +127,14 @@ const EN_FUNCTION_WORDS = new Set([
     'than', 'only', 'which', 'this', 'these', 'those', 'its', 'their', 'per', 'during', 'between', 'against', 'over', 'also',
     'because', 'while', 'when', 'where', 'here', 'there', 'each', 'every', 'any', 'some', 'may', 'can', 'will', 'should', 'would',
 ]);
+/** Flatten a JSON-LD payload (graphs, arrays, nesting) into its object nodes. */
+function jsonLdNodes(node, acc = []) {
+    if (!node || typeof node !== 'object') return acc;
+    if (Array.isArray(node)) { for (const n of node) jsonLdNodes(n, acc); return acc; }
+    if (node['@type']) acc.push(node);
+    for (const v of Object.values(node)) if (v && typeof v === 'object') jsonLdNodes(v, acc);
+    return acc;
+}
 export function englishSentenceRuns(text) {
     const runs = [];
     let run = [];
@@ -475,6 +483,28 @@ function auditPage(url, res) {
         }
     }
 
+    // JSON-LD = VISIBLE FACTS. Every InvestmentFund node that carries a NAV
+    // (amount.value) is matched to the visible NAV tagged for the same fund
+    // (data-metric="latest_nav" data-entity=id). A structured-data figure that
+    // disagrees with the page is a false fact served to machines only.
+    const visibleNav = new Map((facts.metrics || []).filter((m) => m.key === 'latest_nav' && m.entity).map((m) => [String(m.entity), Number(m.value.replace(/[^0-9.\-]/g, ''))]));
+    if (visibleNav.size) {
+        const mismatches = [];
+        for (const node of jsonLdNodes(facts.jsonLd)) {
+            if (node['@type'] !== 'InvestmentFund') continue;
+            const id = /\/Funds\/(\d+)-/.exec(String(node.url || node['@id'] || ''));
+            const value = node.amount && typeof node.amount === 'object' ? Number(node.amount.value) : NaN;
+            if (!id || !Number.isFinite(value) || !visibleNav.has(id[1])) continue;
+            const shown = visibleNav.get(id[1]);
+            if (Number.isFinite(shown) && Math.abs(shown - value) > 0.00051) mismatches.push({ fund: id[1], jsonLd: value, visible: shown });
+        }
+        if (mismatches.length) {
+            f.add('high', 'JSONLD_VISIBLE_MISMATCH',
+                `${path} publishes ${mismatches.length} InvestmentFund NAV(s) in JSON-LD that differ from the visible figure (fund ${mismatches[0].fund}: ${mismatches[0].jsonLd} vs ${mismatches[0].visible})`,
+                { url, mismatches: mismatches.slice(0, 10) });
+        }
+    }
+
     // hreflang reciprocity: a declared alternate must exist, be canonical, and
     // point back. A one-way hreflang is ignored entirely by Google.
     const hl = facts.hreflang;
@@ -671,6 +701,7 @@ function auditCrossPage() {
     // "facts" for one metric on one domain (2026-09-05). Values are compared
     // in canonical form (lib.mjs normalizeMetricValue).
     const byMetric = new Map();
+    const asOfByMetric = new Map();
     for (const p of pages) {
         if (p.status !== 200) continue;
         for (const m of p.metrics || []) {
@@ -679,15 +710,25 @@ function auditCrossPage() {
             const values = byMetric.get(k);
             if (!values.has(m.value)) values.set(m.value, []);
             values.get(m.value).push(p.path);
+            if (!asOfByMetric.has(k)) asOfByMetric.set(k, new Map());
+            const a = asOfByMetric.get(k);
+            if (!a.has(m.value)) a.set(m.value, []);
+            if (!a.get(m.value).includes(m.asOf ?? null)) a.get(m.value).push(m.asOf ?? null);
         }
     }
     for (const [k, values] of byMetric) {
         if (values.size < 2) continue;
         const [entity, key] = k.split('::');
         const shown = [...values.entries()].map(([v, ps]) => `${v} on ${ps[0]}`).join(' vs ');
-        f.add('high', 'METRIC_DRIFT_ACROSS_SURFACES',
-            `${key}${entity !== '*' ? ` for ${entity}` : ''} prints ${values.size} different values across surfaces: ${shown}`,
-            { key, entity: entity === '*' ? null : entity, values: Object.fromEntries([...values.entries()].map(([v, ps]) => [v, ps.slice(0, 6)])) });
+        // Two values with two DIFFERENT as-of dates is a freshness lag between
+        // caches (medium) — the metric contract includes as_of. Two values for
+        // the same as-of, or without an as-of to tell them apart, is drift (high).
+        const asOfs = asOfByMetric.get(k) || new Map();
+        const distinctAsOf = new Set([...asOfs.values()].flat());
+        const lag = distinctAsOf.size === values.size && ![...distinctAsOf].includes(null);
+        f.add(lag ? 'medium' : 'high', lag ? 'METRIC_ASOF_LAG' : 'METRIC_DRIFT_ACROSS_SURFACES',
+            `${key}${entity !== '*' ? ` for ${entity}` : ''} prints ${values.size} different values across surfaces${lag ? ' — each with its own as-of date (a cache refreshing behind another)' : ''}: ${shown}`,
+            { key, entity: entity === '*' ? null : entity, values: Object.fromEntries([...values.entries()].map(([v, ps]) => [v, ps.slice(0, 6)])), asOf: Object.fromEntries([...asOfs.entries()]) });
     }
 }
 
@@ -823,6 +864,15 @@ function selfTest() {
     page('/ar/metric-c', '<div data-metric="return_1y" data-entity="2734"><span>81.50%</span></div>');
     // G: English prose and English row labels inside an Arabic comparison page.
     page('/ar/Funds/vs/1-vs-2', '<p>خلال آخر سنة، حقق الصندوق عائداً قدره ⁦+10.00%⁩ (البيانات كما في 1 September 2026). Annual management fees are ⁦1.00%⁩ and ⁦2.00%⁩ respectively.</p><table><tr><th>YTD return</th><td>293.6 EGP (as of 2026-08-26)</td></tr><tr><th>1-month return</th></tr><tr><th>1-year return</th></tr></table>');
+    // H: same metric, two values, two as-of dates → a lag, not a drift.
+    page('/ar/lag-a', '<p><span data-metric="lead_fund_return_1y" data-as-of="2026-09-01">+81.50%</span></p>');
+    page('/lag-b', '<p><span data-metric="lead_fund_return_1y" data-as-of="2026-09-02">+81.62%</span></p>');
+    // I: JSON-LD InvestmentFund NAV vs the visible NAV for the same fund.
+    page('/Funds/9-x', '<p><span data-metric="latest_nav" data-entity="9">802.43</span> EGP</p><p><span data-metric="latest_nav" data-entity="8">١٠٠٫٥</span></p>',
+        `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': [
+            { '@type': 'InvestmentFund', url: `${SITE_URL}/Funds/9-x`, amount: { '@type': 'MonetaryAmount', currency: 'EGP', value: 802.43 } },
+            { '@type': 'InvestmentFund', url: `${SITE_URL}/Funds/8-y`, amount: { '@type': 'MonetaryAmount', currency: 'EGP', value: 99.9 } },
+        ] })}</script>`);
     auditCrossPage();
 
     const codesFor = (path) => new Set(f.all().filter((x) => (x.evidence?.url || '') === `${SITE_URL}${path}`).map((x) => x.code));
@@ -847,6 +897,10 @@ function selfTest() {
         [e.has('SECURITY_MASTER_UNVERIFIED_SYMBOL'), 'E: a directory link to a non-publishable symbol (GTHE) is detected'],
         [f.all().some((x) => x.code === 'METRIC_DRIFT_ACROSS_SURFACES' && x.evidence?.key === 'ranked_fund_count'), 'F: one data-metric printing two values on two pages is detected (bidi marks ignored)'],
         [!f.all().some((x) => x.code === 'METRIC_DRIFT_ACROSS_SURFACES' && x.evidence?.key === 'return_1y'), 'F: "+81.50%" and "81.50%" for the same entity compare equal'],
+        [f.all().some((x) => x.code === 'METRIC_ASOF_LAG' && x.evidence?.key === 'lead_fund_return_1y'), 'H: two values with two as-of dates are reported as a lag, not a drift'],
+        [!f.all().some((x) => x.code === 'METRIC_DRIFT_ACROSS_SURFACES' && x.evidence?.key === 'lead_fund_return_1y'), 'H: …and not also as a drift'],
+        [f.all().some((x) => x.code === 'JSONLD_VISIBLE_MISMATCH' && x.evidence?.mismatches?.[0]?.fund === '8'), 'I: a JSON-LD NAV that differs from the visible NAV (Arabic digits) is detected'],
+        [!f.all().some((x) => x.code === 'JSONLD_VISIBLE_MISMATCH' && x.evidence?.mismatches?.some((m) => m.fund === '9')), 'I: an equal JSON-LD NAV raises nothing'],
         [g.has('AR_PAGE_ENGLISH_SENTENCE'), 'G: an English sentence inside Arabic prose is detected'],
         [g.has('AR_PAGE_ENGLISH_UI_LABELS'), 'G: English comparison row labels on an Arabic page are detected'],
         [!a.has('AR_PAGE_ENGLISH_SENTENCE') && !b.has('AR_PAGE_ENGLISH_SENTENCE') && !d.has('AR_PAGE_ENGLISH_SENTENCE'), 'A/B/D: Arabic pages carrying English proper nouns, labels or a toggle raise no sentence leak'],

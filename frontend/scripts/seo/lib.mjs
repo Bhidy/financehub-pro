@@ -237,7 +237,8 @@ export function extractHtmlFacts(html) {
     // wrap a differently-named child (<div data-metric><span>…</span></div>).
     for (const m of noScript.matchAll(/<([a-z][a-z0-9]*)\b([^>]*?\sdata-metric=["']([^"']+)["'][^>]*)>([\s\S]*?)<\/\1>/gi)) {
         const entity = attr(`<x ${m[2]}>`, 'data-entity');
-        facts.metrics.push({ key: m[3], entity: entity || null, value: normalizeMetricValue(stripTags(m[4])) });
+        const asOf = attr(`<x ${m[2]}>`, 'data-as-of');
+        facts.metrics.push({ key: m[3], entity: entity || null, asOf: asOf || null, value: normalizeMetricValue(stripTags(m[4])) });
     }
 
     return facts;
@@ -255,7 +256,9 @@ export function normalizeMetricValue(s) {
     return String(s)
         .replace(/[⁦-⁩‎‏؜]/g, '')
         .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
-        .replace(/[\s,]+/g, '')
+        // Arabic decimal (U+066B) and thousands (U+066C) separators — ar-EG number formatting.
+        .replace(/٫/g, '.')
+        .replace(/[\s,٬]+/g, '')
         .replace(/^\+/, '')
         .trim();
 }

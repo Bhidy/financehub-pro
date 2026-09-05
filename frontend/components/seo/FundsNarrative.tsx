@@ -3,7 +3,7 @@ import type { FundsNarrative, NarrativeItem, Lang } from '@/lib/funds-narrative'
 import { pct } from '@/lib/funds-narrative';
 
 /** The answer-first sections of the money pages. Server component; all data. */
-export default function FundsNarrativeSections({ lang, n }: { lang: Lang; n: FundsNarrative }) {
+export default function FundsNarrativeSections({ lang, n, asOfIso = null }: { lang: Lang; n: FundsNarrative; asOfIso?: string | null }) {
     const ar = lang === 'ar';
     const H = ({ children }: { children: React.ReactNode }) => (
         <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
@@ -24,6 +24,7 @@ export default function FundsNarrativeSections({ lang, n }: { lang: Lang; n: Fun
                     <strong
                         className={x.ret1y !== null && x.ret1y < 0 ? 'text-red-700' : 'text-emerald-700'}
                         data-metric={lead && i === 0 ? 'lead_fund_return_1y' : undefined}
+                        data-as-of={lead && i === 0 ? asOfIso ?? undefined : undefined}
                     >
                         {pct(x.ret1y, lang)}
                     </strong>

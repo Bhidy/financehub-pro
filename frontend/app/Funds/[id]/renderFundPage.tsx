@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getAllFundsRanked, getFund, getFundPeers, type Fund } from '@/lib/public-data';
+import { getAllFundsRanked, getFund, getFundPeers, getFundRecentNav, type Fund, type NavPoint } from '@/lib/public-data';
 import { SITE_URL, fundPath, idFromParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
@@ -164,7 +164,34 @@ export async function fundMetadata(idParam: string, lang: Lang): Promise<Metadat
     };
 }
 
-function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang): FundClientData {
+/** The fund's page at the primary data source, only when it is a real Mubasher URL. */
+function sourcePageUrl(fund: Fund): string | null {
+    const raw = str(fund, 'profile_url');
+    if (!raw) return null;
+    try {
+        const u = new URL(raw);
+        return u.protocol === 'https:' && /(^|\.)mubasher\.info$/.test(u.hostname) ? u.toString() : null;
+    } catch {
+        return null;
+    }
+}
+
+/** Newest-first NAV rows for the collapsed history table: date, NAV, change vs the previous observation. */
+function recentNavRows(points: NavPoint[], lang: Lang): FundClientData['recentNav'] {
+    return points.map((p, i) => {
+        const prev = points[i + 1];
+        const change = prev && prev.nav > 0 ? ((p.nav / prev.nav) - 1) * 100 : null;
+        return {
+            date: p.date,
+            dateHuman: humanDate(p.date, lang),
+            nav: fmtNav(p.nav),
+            changePct: change !== null ? `${change > 0 ? '+' : ''}${change.toFixed(2)}%` : null,
+            negative: change !== null && change < 0,
+        };
+    });
+}
+
+function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang, recent: NavPoint[] = []): FundClientData {
     const t = fundLabels(lang);
     const { nameEn, nameAr, name, manager, nav, navDateIso } = basics(fund, lang);
     const currencyRaw = str(fund, 'currency') || 'EGP';
@@ -495,6 +522,14 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
         riskStats,
         platforms,
         prospectusUrl,
+        sourceUrl: sourcePageUrl(fund),
+        recentNav: recentNavRows(recent, lang),
+        recentNavIngested: (() => {
+            const ing = recent.find((p) => p.ingested_at)?.ingested_at ?? null;
+            if (!ing) return null;
+            const d = new Date(ing);
+            return Number.isNaN(d.getTime()) ? null : d.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Cairo' });
+        })(),
         tradingRows,
         strategy,
         objective,
@@ -600,8 +635,8 @@ export async function renderFundPage(idParam: string, lang: Lang) {
     const redirectTarget = canonicalRedirectTarget(requestPath, canonicalPath);
     if (redirectTarget) permanentRedirect(redirectTarget);
 
-    const peers = await resolvePeers(fund, lang);
-    const data = buildClientData(fund, peers, lang);
+    const [peers, recent] = await Promise.all([resolvePeers(fund, lang), getFundRecentNav(Number(fund.fund_id), 12)]);
+    const data = buildClientData(fund, peers, lang, recent);
     const altHref = encodeURI(lang === 'ar' ? canonicalEn : canonicalAr);
 
     const crumbs =

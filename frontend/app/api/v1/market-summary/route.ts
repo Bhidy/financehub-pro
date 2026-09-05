@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db-server";
+import { EGX_ONLY } from '@/lib/public-data';
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +86,9 @@ export async function GET() {
                 FROM market_tickers
                 WHERE last_price IS NOT NULL
                   AND market_code = 'EGX'
+                  -- Listing allow-list: the EGX30 index line, GTHE and alias/rights
+                  -- lines are market_code='EGX' but are not listed companies.
+                  AND ${EGX_ONLY}
             `),
             // Breadth computed LIVE from market_tickers (TradingView). Was reading the
             // stale `market_breadth` table (frozen since 2025-12). new_highs/lows use
@@ -96,7 +100,7 @@ export async function GET() {
                     COUNT(CASE WHEN high_52w IS NOT NULL AND last_price >= high_52w * 0.98 THEN 1 END) as new_highs,
                     COUNT(CASE WHEN low_52w IS NOT NULL AND last_price <= low_52w * 1.02 THEN 1 END) as new_lows
                 FROM market_tickers
-                WHERE last_price IS NOT NULL AND market_code = 'EGX'
+                WHERE last_price IS NOT NULL AND market_code = 'EGX' AND ${EGX_ONLY}
             `),
             // EGX30 stored by TV harvester cycle (symbol='EGX30', market_code='EGX')
             db.query(`

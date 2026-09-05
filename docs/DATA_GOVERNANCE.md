@@ -191,6 +191,15 @@ Gate: `npm run verify:ssr` (`scripts/test-ssr-truth.ts`). Live: `SSR_COUNT_CONTR
   per-request queries at 250 ms, prints the ILIKE and the API search scan for the record, and checks
   the `market_news` indexes (`published_at DESC`, `(symbol, published_at DESC)`).
 
+**Second pass (2026-09-06).** The gate now scans EVERY `app/api/**` route plus `lib/ai-service.ts`
+(`verify:routes` walks the tree instead of a fixed file list). Found and gated: `/api/v1/tickers`
+(served 273 Saudi rows and 284 non-publishable symbols incl. 2222 Aramco, 1120 Al Rajhi, 7010 STC),
+`/api/v1/screener` (18 non-publishable), `/api/v1/sectors` (counted Saudi companies per sector),
+`/api/v1/egx/stock/{symbol}` and `/api/v1/company/{symbol}/profile` (answered Saudi/delisted symbols —
+now 404, fail-closed on `isPublishable`), `/api/v1/market-summary` and `/api/v1/market-breadth`
+(counted the EGX30 index line, GTHE and alias/rights lines as stocks), and all eight `market_tickers`
+reads in the AI chat's tools (`resolveSymbol` also accepted any bare 4-digit Tadawul code).
+
 ## 7. Cross-surface metric contract — one fact, one value (chief re-audit, 2026-09-05)
 
 The Arabic homepage said "114 funds ranked" while the ranking page said 102 of 207: the homepage
@@ -203,7 +212,11 @@ audit (`scripts/seo/audit.mjs`, `METRIC_DRIFT_ACROSS_SURFACES`, high) fails when
 `+` neutralised). Tagged today: `ranked_fund_count` and `current_fund_count` (AR home, both ranking
 pages), `lead_fund_return_1y` (AR home, both ranking narratives), `return_1y` per fund (ranking tables,
 fund profile 1Y card). Tag any new surface that prints one of these; never print a metric from a
-second query path.
+second query path. Every tag also carries `data-as-of` (the rows' newest NAV date): two values with two
+different as-of dates are reported as `METRIC_ASOF_LAG` (medium — one cache refreshing behind another),
+two values for one as-of as drift (high). `latest_nav` is tagged on the fund hero and the ranking table
+NAV cells so `JSONLD_VISIBLE_MISMATCH` (high) can prove every InvestmentFund `amount.value` in JSON-LD
+equals the visible NAV for the same fund.
 
 Also new in the live audit: `AR_PAGE_ENGLISH_SENTENCE` (English prose inside an Arabic document —
 6+ Latin tokens with 2+ lowercase function words), `FOREIGN_LEGACY_ROUTE_LIVE` /
@@ -221,6 +234,17 @@ en-GB dates and a whole English fee sentence on `/ar/Funds/vs/*`.
   market funds" style hub would be a new intent page, not a re-mapping.
 * Taxonomy conflicts are reviewed one by one as `FUND_TAXONOMY_CONFLICT` reports them; each needs a
   prospectus-backed entry in `content/fund-taxonomy-overrides.json`.
+* 30 current funds have NO asset class (no vendor type, no type word in the registered name — e.g.
+  "Credit Agricole Egypt Mutual Fund 2", "Suez Canal Bank Fund 1", the Azimut target-maturity USD
+  issuances, the charitable funds). They are absent from every category hub and from "similar funds".
+  Their disclosed investment policy (`investment_strategy`) often names the class ("90% in listed
+  shares", "treasury bills and deposits"); classifying from that text is inference from prose, so it
+  should land as evidence-backed override entries (or a reviewed `strategy` source with its own
+  confidence), not as a silent matcher. The API reports the count as `taxonomy.unclassified`.
+* Fund pages now show the source page (Mubasher fund URL) and the latest 12 published NAVs
+  (collapsed, server-rendered); per-point `source_url`/`ingested_at` stay on the NAV-history page.
+* `/api/proxy/*` and `/api/egx/*` forward to the FastAPI backend, whose own endpoints are not gated by
+  this repo's security master.
 
 * `nav_history` provenance (`source`, `source_url`, `ingested_at`) is live in the writers and the
   schema (self-migrating `NAV_DDL`, CI probe 14.1e); rows written before 2026-09-05 stay

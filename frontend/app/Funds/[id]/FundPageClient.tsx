@@ -47,6 +47,11 @@ export type FundClientData = {
     riskStats: NullableStat[];
     platforms: Array<{ name: string; logo: string | null }>;
     prospectusUrl: string | null;
+    /** The fund's page at the primary data source (Mubasher) — provenance the reader can follow. */
+    sourceUrl: string | null;
+    /** Newest-first latest published NAVs, server-rendered so the history is crawlable without the chart. */
+    recentNav: Array<{ date: string; dateHuman: string; nav: string; changePct: string | null; negative: boolean }>;
+    recentNavIngested: string | null;
     tradingRows: LabelValue[];
     strategy: string | null;
     objective: string | null;
@@ -128,6 +133,9 @@ export default function FundPageClient(props: FundClientData) {
         riskStats,
         platforms,
         prospectusUrl,
+        sourceUrl,
+        recentNav,
+        recentNavIngested,
         tradingRows,
         strategy,
         objective,
@@ -201,7 +209,7 @@ export default function FundPageClient(props: FundClientData) {
                             <div className="summary-card rounded-[1.6rem] p-5">
                                 <div className={MICRO}>{t.latestNav}</div>
                                 <div className="mt-3 text-3xl font-display font-bold tracking-[-0.03em] text-main sm:text-4xl">
-                                    {navText ?? '—'}
+                                    <span data-metric="latest_nav" data-entity={String(fundId)} data-as-of={navDateIso ?? undefined}>{navText ?? '—'}</span>
                                     {navText && <span className="mx-1.5 text-base font-semibold text-muted">{currency}</span>}
                                 </div>
                                 <p className="mt-2 text-sm text-muted">
@@ -263,6 +271,33 @@ export default function FundPageClient(props: FundClientData) {
                     <p className="mt-3 text-sm text-muted">
                         <a href={historyHref} className="font-semibold text-starta-darkTeal hover:underline">{t.fullHistory}</a>
                     </p>
+                    {/* The latest published NAVs as server-rendered text (collapsed): the
+                        chart is drawn client-side from the API, so without this a crawler
+                        saw only "loading" where the history is. Additive; the chart is untouched. */}
+                    {recentNav.length >= 2 && (
+                        <details className="mt-3 rounded-[1.1rem] border border-border/60 bg-surface/60 px-4 py-3">
+                            <summary className="cursor-pointer text-sm font-semibold text-main">{t.recentNavTitle}</summary>
+                            <table className="mt-3 w-full text-sm">
+                                <thead>
+                                    <tr className="text-[0.68rem] uppercase tracking-[0.18em] text-muted">
+                                        <th scope="col" className="py-1 text-start font-semibold">{t.recentNavDate}</th>
+                                        <th scope="col" className="py-1 text-end font-semibold">{t.recentNavValue}</th>
+                                        <th scope="col" className="py-1 text-end font-semibold">{t.recentNavChange}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {recentNav.map((r) => (
+                                        <tr key={r.date} className="border-t border-border/40">
+                                            <td className="py-1.5 text-muted"><time dateTime={r.date}>{r.dateHuman}</time></td>
+                                            <td className="py-1.5 text-end font-semibold tabular-nums text-main" dir="ltr">{r.nav}</td>
+                                            <td className={`py-1.5 text-end tabular-nums ${r.negative ? 'text-red-500' : 'text-main'}`} dir="ltr">{r.changePct ?? '—'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {recentNavIngested && <p className="mt-2 text-xs text-muted">{t.lastIngested}: {recentNavIngested}</p>}
+                        </details>
+                    )}
                 </div>
             </section>
 
@@ -283,6 +318,7 @@ export default function FundPageClient(props: FundClientData) {
                                         className="mt-3 text-xl font-display font-bold tracking-[-0.03em]"
                                         data-metric={p.label === '1Y' ? 'return_1y' : undefined}
                                         data-entity={p.label === '1Y' ? String(fundId) : undefined}
+                                        data-as-of={p.label === '1Y' ? navDateIso ?? undefined : undefined}
                                     >
                                         <MaybeSigned value={p.value} negative={p.negative} />
                                     </div>
@@ -457,9 +493,26 @@ export default function FundPageClient(props: FundClientData) {
                                             <span className="block text-xs text-muted">{t.prospectusMeta}</span>
                                         </span>
                                     </a>
-                                ) : (
-                                    <p className="ax-pending mt-3">{t.dataPending}</p>
+                                ) : null}
+                                {sourceUrl && (
+                                    <a
+                                        href={sourceUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer nofollow"
+                                        className="doc-link mt-3 flex items-center gap-3 rounded-[1.1rem] p-4"
+                                    >
+                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-starta-teal/10 text-starta-teal">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                            </svg>
+                                        </span>
+                                        <span>
+                                            <span className="block text-sm font-semibold text-main">{t.sourcePage}</span>
+                                            <span className="block text-xs text-muted">{t.sourcePageMeta}</span>
+                                        </span>
+                                    </a>
                                 )}
+                                {!prospectusUrl && !sourceUrl && <p className="ax-pending mt-3">{t.dataPending}</p>}
                             </div>
                         </div>
 

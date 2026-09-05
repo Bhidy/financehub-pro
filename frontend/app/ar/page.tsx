@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getEgx30Index, getMovers, getAllFundsRanked, type Ticker } from '@/lib/public-data';
 import { rankingEligibility } from '@/lib/fund-stats';
+import { fundsAsOf } from '@/lib/funds-hub-render';
 import { ltrNum } from '@/lib/bidi';
 import { SITE_URL, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -76,6 +77,9 @@ export default async function ArHome() {
         .filter((f) => rankingEligibility(f).eligible)
         .sort((x, y) => (y.return_1y as number) - (x.return_1y as number));
     const leadFund = ranked[0];
+    // The rows' own as-of (newest NAV date) travels with every tagged metric, so
+    // the audit can tell a freshness lag between two caches from a real drift.
+    const fundsAsOfIso = fundsAsOf(funds as Array<Record<string, unknown>>, 'ar').iso ?? undefined;
     const leadFundName = leadFund ? String(leadFund.fund_name || leadFund.fund_name_en || '') : '';
     const leadFundPct = leadFund ? `${(leadFund.return_1y as number) >= 0 ? '+' : ''}${(leadFund.return_1y as number).toFixed(2)}%` : '';
     const up = (egx30?.change ?? 0) >= 0;
@@ -107,7 +111,7 @@ export default async function ArHome() {
             </p>
             {leadFund && leadFundName && (
                 <p className="mt-3 max-w-3xl leading-relaxed text-muted">
-                    أفضل صندوق استثمار في مصر خلال آخر 12 شهرًا اليوم: <strong>{leadFundName}</strong> بعائد <strong data-metric="lead_fund_return_1y">{ltrNum(leadFundPct)}</strong>، وهو الأول بين <span data-metric="ranked_fund_count">{ltrNum(String(ranked.length))}</span> صندوقًا مؤهلًا للترتيب من أصل <span data-metric="current_fund_count">{ltrNum(String(funds.length))}</span> صندوق استثمار مصري له سعر حالي، مرتبة آليًا حسب العائد في{' '}
+                    أفضل صندوق استثمار في مصر خلال آخر 12 شهرًا اليوم: <strong>{leadFundName}</strong> بعائد <strong data-metric="lead_fund_return_1y" data-as-of={fundsAsOfIso}>{ltrNum(leadFundPct)}</strong>، وهو الأول بين <span data-metric="ranked_fund_count" data-as-of={fundsAsOfIso}>{ltrNum(String(ranked.length))}</span> صندوقًا مؤهلًا للترتيب من أصل <span data-metric="current_fund_count" data-as-of={fundsAsOfIso}>{ltrNum(String(funds.length))}</span> صندوق استثمار مصري له سعر حالي، مرتبة آليًا حسب العائد في{' '}
                     <Link href="/ar/Funds/best-mutual-funds-egypt-2026" className="font-semibold text-starta-teal hover:underline">أفضل صناديق الاستثمار في مصر 2026</Link>.
                 </p>
             )}

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { apiError } from '@/lib/api-error';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
+import { EGX_ONLY } from '@/lib/public-data';
 
 export async function GET() {
     try {
@@ -11,7 +12,10 @@ export async function GET() {
                     currency, market_cap, pe_ratio, pb_ratio, dividend_yield, isin, logo_url,
                     last_updated, updated_at
              FROM market_tickers
-             WHERE last_price IS NOT NULL
+             -- LISTING AUTHORITY (2026-09-06): this endpoint served the whole vendor
+             -- universe — 273 Saudi rows (Aramco, Al Rajhi, STC) and non-listed EGX
+             -- lines — from an Egyptian-market API. Same allow-list as every page.
+             WHERE last_price IS NOT NULL AND ${EGX_ONLY}
              ORDER BY volume::numeric DESC NULLS LAST
              LIMIT 500`
         );

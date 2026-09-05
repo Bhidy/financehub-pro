@@ -971,7 +971,26 @@ async function assertDesignedShellsIntact() {
   // Unfiltered, 827 Saudi companies were published and sitemapped as Egyptian
   // Exchange listings (ar-companies.xml was 57% Saudi). Every PUBLIC query
   // against that table must carry the EGX_ONLY gate.
-  for (const file of ["lib/public-data.ts", "app/sitemaps/[name]/route.ts"]) {
+  // Every API route is a publication surface too: /api/v1/tickers served 273
+  // Saudi rows and 284 non-publishable symbols, /screener 18, /sectors counted
+  // Saudi companies, and the AI chat's tools read the raw table (2026-09-06).
+  // So the scan is the WHOLE app/api tree plus the AI service, not a fixed list.
+  const marketPurityFiles = ["lib/public-data.ts", "app/sitemaps/[name]/route.ts", "lib/ai-service.ts"];
+  const walk = (dir) => {
+    let entries = [];
+    try { entries = readdirSync(path.join(root, dir), { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      const rel = `${dir}/${e.name}`;
+      if (e.isDirectory()) walk(rel);
+      else if (e.isFile() && /\.(ts|tsx|mjs|js)$/.test(e.name) && !marketPurityFiles.includes(rel)) {
+        let t = "";
+        try { t = readFileSync(path.join(root, rel), "utf8"); } catch { continue; }
+        if (/FROM market_tickers/.test(t)) marketPurityFiles.push(rel);
+      }
+    }
+  };
+  walk("app/api");
+  for (const file of marketPurityFiles) {
     let text = "";
     try {
       text = readFileSync(path.join(root, file), "utf8");
@@ -984,7 +1003,9 @@ async function assertDesignedShellsIntact() {
     // EGX_ANY (market filter only, no listing gate) is permitted ONLY on the
     // single-symbol identity lookup that renders a non-listed symbol's status
     // page (getTickerAny). Any LIST or aggregate must carry EGX_ONLY.
-    const ungated = queries.filter((q) => !q.includes("EGX_ONLY") && !(q.includes("EGX_ANY") && /WHERE symbol = \$1 AND \$\{EGX_ANY\}/.test(q)));
+    // A literal lookup of the EGX30 INDEX line (status `index`, never a company)
+    // is the other permitted exception — an index value is not a listing claim.
+    const ungated = queries.filter((q) => !q.includes("EGX_ONLY") && !(q.includes("EGX_ANY") && /WHERE symbol = \$1 AND \$\{EGX_ANY\}/.test(q)) && !/WHERE symbol = 'EGX30'/.test(q));
     if (ungated.length > 0) {
       console.error(
         `FAIL: ${file} has ${ungated.length} market_tickers quer${ungated.length === 1 ? "y" : "ies"} without the EGX_ONLY gate — Saudi rows would publish as EGX companies.`

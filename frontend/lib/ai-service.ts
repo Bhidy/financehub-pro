@@ -1,5 +1,7 @@
 import Groq from 'groq-sdk';
 import { db } from './db-server';
+import { EGX_ONLY } from './public-data';
+import { isPublishable } from './security-master';
 
 // ============================================================================
 // ENTERPRISE AI SERVICE - 21 TOOLS
@@ -151,14 +153,16 @@ const COMPLEX_PATTERNS = [
 // ============================================================================
 async function resolveSymbol(query: string): Promise<string | null> {
     const trimmed = query.trim();
-    if (/^\d{4}$/.test(trimmed)) return trimmed;
+    // A bare 4-digit code is a TADAWUL convention (7010 = STC); EGX tickers are
+    // letters. Accept it only when the listing master publishes it.
+    if (/^\d{4}$/.test(trimmed)) return isPublishable(trimmed) ? trimmed : null;
 
     const lower = trimmed.toLowerCase();
     if (COMMON_ALIASES[lower]) return COMMON_ALIASES[lower];
 
     try {
         const result = await db.query(
-            `SELECT symbol FROM market_tickers WHERE name_en ILIKE $1 OR name_ar ILIKE $1 LIMIT 1`,
+            `SELECT symbol FROM market_tickers WHERE (name_en ILIKE $1 OR name_ar ILIKE $1) AND ${EGX_ONLY} LIMIT 1`,
             [`%${query}%`]
         );
         if (result.rows.length > 0) return result.rows[0].symbol;
@@ -201,7 +205,7 @@ async function getStockPrice(symbol: string) {
             pe_ratio, pb_ratio, dividend_yield, 
             market_cap, high_52w, low_52w, target_price,
             last_updated 
-         FROM market_tickers WHERE symbol = $1`,
+         FROM market_tickers WHERE symbol = $1 AND ${EGX_ONLY}`,
         [resolved]
     );
 
@@ -394,9 +398,9 @@ async function getBalanceSheet(symbol: string) {
 // ============================================================================
 async function getMarketSummary() {
     const [gainers, losers, volume] = await Promise.all([
-        db.query(`SELECT symbol, name_en, last_price, change_percent FROM market_tickers WHERE change_percent IS NOT NULL ORDER BY change_percent DESC LIMIT 5`),
-        db.query(`SELECT symbol, name_en, last_price, change_percent FROM market_tickers WHERE change_percent IS NOT NULL ORDER BY change_percent ASC LIMIT 5`),
-        db.query(`SELECT symbol, name_en, last_price, volume FROM market_tickers WHERE volume IS NOT NULL ORDER BY volume DESC LIMIT 5`)
+        db.query(`SELECT symbol, name_en, last_price, change_percent FROM market_tickers WHERE change_percent IS NOT NULL AND ${EGX_ONLY} ORDER BY change_percent DESC LIMIT 5`),
+        db.query(`SELECT symbol, name_en, last_price, change_percent FROM market_tickers WHERE change_percent IS NOT NULL AND ${EGX_ONLY} ORDER BY change_percent ASC LIMIT 5`),
+        db.query(`SELECT symbol, name_en, last_price, volume FROM market_tickers WHERE volume IS NOT NULL AND ${EGX_ONLY} ORDER BY volume DESC LIMIT 5`)
     ]);
 
     // FIXED: Format as readable strings to prevent [object Object]
@@ -491,7 +495,7 @@ async function getAnalystConsensus(symbol: string) {
 async function getTopMovers() {
     const result = await db.query(
         `SELECT symbol, name_en, last_price, change_percent, volume 
-         FROM market_tickers WHERE change_percent IS NOT NULL ORDER BY ABS(change_percent) DESC LIMIT 10`
+         FROM market_tickers WHERE change_percent IS NOT NULL AND ${EGX_ONLY} ORDER BY ABS(change_percent) DESC LIMIT 10`
     );
 
     // FIXED: Format as readable strings to prevent [object Object]
@@ -713,7 +717,7 @@ async function getPeerComparison(symbol: string) {
     if (!resolved) return null;
 
     const sectorResult = await db.query(
-        `SELECT sector_name FROM market_tickers WHERE symbol = $1`, [resolved]
+        `SELECT sector_name FROM market_tickers WHERE symbol = $1 AND ${EGX_ONLY}`, [resolved]
     );
     if (sectorResult.rows.length === 0) return null;
 
@@ -721,7 +725,7 @@ async function getPeerComparison(symbol: string) {
 
     const peers = await db.query(
         `SELECT symbol, name_en, last_price, change_percent, volume 
-         FROM market_tickers WHERE sector_name = $1 AND symbol != $2 
+         FROM market_tickers WHERE sector_name = $1 AND symbol != $2 AND ${EGX_ONLY}
          ORDER BY volume DESC LIMIT 5`,
         [sector, resolved]
     );
@@ -941,7 +945,7 @@ async function getCompanyProfile(symbol: string) {
     const result = await db.query(
         `SELECT symbol, name_en, name_ar, sector_name, market_cap, 
                 last_price, change_percent, volume, high_52w, low_52w
-         FROM market_tickers WHERE symbol = $1`,
+         FROM market_tickers WHERE symbol = $1 AND ${EGX_ONLY}`,
         [resolved]
     );
 
@@ -956,7 +960,7 @@ async function getSectorPerformance() {
         `SELECT sector_name, COUNT(*) as stock_count, 
                 AVG(change_percent) as avg_change,
                 SUM(volume) as total_volume
-         FROM market_tickers WHERE sector_name IS NOT NULL
+         FROM market_tickers WHERE sector_name IS NOT NULL AND ${EGX_ONLY}
          GROUP BY sector_name ORDER BY avg_change DESC`
     );
 

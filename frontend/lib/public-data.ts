@@ -1239,6 +1239,41 @@ export const getFundNavHistory = cache(async (fundId: number): Promise<NavPoint[
         .filter((p): p is NavPoint => p !== null);
 });
 
+/**
+ * LATEST PUBLISHED NAVs (newest first) for the fund page's collapsed history
+ * table — a compact, server-rendered slice of nav_history so the history is
+ * crawlable text and not only a client-drawn chart. Index plan: PK (fund_id,
+ * date) DESC LIMIT n. Cached with the fund profile (tag seo-funds).
+ */
+const _recentNavCached = unstable_cache(
+    async (fundId: number, limit: number): Promise<NavPoint[]> => {
+        let result;
+        try {
+            result = await db.query(
+                `SELECT date, nav, source, ingested_at FROM nav_history WHERE fund_id = $1 ORDER BY date DESC LIMIT $2`,
+                [fundId, limit]
+            );
+        } catch {
+            result = await db.query(`SELECT date, nav FROM nav_history WHERE fund_id = $1 ORDER BY date DESC LIMIT $2`, [fundId, limit]);
+        }
+        return (result.rows as Array<Record<string, unknown>>)
+            .map((r): NavPoint | null => {
+                const d = r.date instanceof Date ? r.date : new Date(String(r.date));
+                const nav = Number(r.nav);
+                if (Number.isNaN(d.getTime()) || !Number.isFinite(nav) || nav <= 0) return null;
+                const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                const ing = r.ingested_at instanceof Date ? r.ingested_at.toISOString() : typeof r.ingested_at === 'string' ? r.ingested_at : null;
+                return { date: iso, nav, source: typeof r.source === 'string' && r.source ? r.source : null, source_url: null, ingested_at: ing };
+            })
+            .filter((p): p is NavPoint => p !== null);
+    },
+    ['seo:fund-recent-nav:v1'],
+    { revalidate: 900, tags: ['seo-funds'] }
+);
+export const getFundRecentNav = cache(async (fundId: number, limit = 12): Promise<NavPoint[]> => {
+    try { return await _recentNavCached(fundId, limit); } catch { return []; }
+});
+
 /** All companies for the /companies directory hub. */
 // Cross-request data cache (5 min) for the full ticker list — the hottest read
 // path (powers /companies, every /markets ranking page, the egx30 constituents

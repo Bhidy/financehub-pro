@@ -54,6 +54,12 @@ export function fundsAsOf(funds: FundRow[], lang: 'en' | 'ar'): { iso: string | 
     };
 }
 
+/** YYYY-MM-DD of a pg DATE/timestamp value, for data-as-of. */
+const isoOf = (v: unknown): string | undefined => {
+    const t = v ? Date.parse(String(v)) : NaN;
+    return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 10) : undefined;
+};
+
 export function FundTable({
     funds,
     lang,
@@ -114,12 +120,14 @@ export function FundTable({
                                     className={`px-4 py-2.5 font-bold ${isAr ? 'text-left' : 'text-right'} ${r1y === null ? 'text-muted' : r1y >= 0 ? 'text-emerald-700' : 'text-red-600'}`}
                                     data-metric="return_1y"
                                     data-entity={String(f.fund_id)}
+                                    data-as-of={isoOf(f.last_nav_date)}
                                 >
                                     {fmtPct(r1y)}
                                 </td>
                                 <td className={`px-4 py-2.5 ${isAr ? 'text-left' : 'text-right'}`}>{fmtPct(num(f, 'return_ytd'))}</td>
                                 <td className={`px-4 py-2.5 ${isAr ? 'text-left' : 'text-right'}`}>
-                                    {fmtNav(num(f, 'latest_nav'), lang)} {str(f, 'currency') || 'EGP'}
+                                    {/* Tagged so the audit can prove the JSON-LD InvestmentFund amount equals the visible NAV. */}
+                                    <span data-metric="latest_nav" data-entity={String(f.fund_id)} data-as-of={isoOf(f.last_nav_date)}>{fmtNav(num(f, 'latest_nav'), lang)}</span> {str(f, 'currency') || 'EGP'}
                                 </td>
                             </tr>
                         );

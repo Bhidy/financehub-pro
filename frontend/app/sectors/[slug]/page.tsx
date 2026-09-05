@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getAllTickers, getSectors } from '@/lib/public-data';
 import { SITE_URL, sectorPath, slugify, symbolPath, OG_DEFAULTS } from '@/lib/seo';
 import { sectorAr } from '@/content/sector-names-ar';
+import { sectorDescription } from '@/content/sector-descriptions';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -158,6 +159,12 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
                 . Click any company for its full profile: price chart, key statistics, financial statements,
                 dividends, technicals and news. Updated daily{asOfHuman && <>; prices as of {asOfHuman}</>}.
             </p>
+            {sectorDescription(match.sector_name, 'en') && (
+                <section className="mt-5 max-w-3xl" aria-label="About this sector">
+                    <h2 className="text-lg font-bold text-main">What the {match.sector_name} sector covers</h2>
+                    <p className="mt-2 leading-relaxed text-muted">{sectorDescription(match.sector_name, 'en')}</p>
+                </section>
+            )}
 
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[640px] text-sm">
@@ -190,7 +197,7 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
                                     {t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}
                                 </td>
                                 <td className={`px-4 py-2.5 text-right font-semibold ${
-                                    t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'
+                                    t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'
                                 }`}>
                                     {t.change_percent !== null ? `${t.change_percent >= 0 ? '+' : ''}${t.change_percent.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—'}
                                 </td>

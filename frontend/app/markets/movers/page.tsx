@@ -73,7 +73,7 @@ function MoversTable({ rows, showVolume = false }: { rows: Ticker[]; showVolume?
                             </td>
                             <td className="px-4 py-2.5 text-right font-semibold">{fmtPrice(t.last_price)}{t.last_price !== null && t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}</td>
                             <td className={`px-4 py-2.5 text-right font-semibold ${
-                                t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'
+                                t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'
                             }`}>
                                 {fmtChange(t.change_percent)}
                             </td>

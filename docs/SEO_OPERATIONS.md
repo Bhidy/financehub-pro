@@ -87,6 +87,39 @@ property in Search Console, then store the JSON key as that repo secret.
 3. `BING_WEBMASTER_API_KEY` → Bing search performance; export the AI Performance CSV monthly and run `node scripts/seo/bing.mjs --import-ai <file>` → AI citations.
 4. Off-page: press coverage / referring domains (the site has 0 independent referring domains; the domain is 7 months old).
 
+## Added 2026-09-05 (second pass) — deep audit against production, Search Console and the pipelines
+
+**Read from Search Console (owner's session, 3 months to 2026-09-05):** 494 clicks · 144K impressions · 0.3% CTR · avg position 8.7 · 8.26K indexed / 1.22K not indexed · external links: 3 (all github.com) · Core Web Vitals: no field data yet. Arabic company pages are the largest impression source (25K) at the lowest CTR (0.2%); English news converts best (169 clicks / 21K).
+
+**Defects found and fixed in this pass:**
+
+| Defect (evidence) | Fix | Gate |
+|---|---|---|
+| 8 funds with no NAV for 90+ days (5 over a year; one last priced 2011) published as "prices today", ranked, counted, and pre-rendered for crawlers while the client app hid them | `DORMANT_DAYS = 180` (`lib/fund-stats.ts`); the current-fund universe (`getAllFundsRanked`) excludes them; their pages stay, carry a dormancy notice and `data-fund-status="dormant"`; risk-table eligibility requires a live series | audit `FUND_DORMANT` (low) replaces `DATA_STALE` on declared pages |
+| 4 sitemapped stock-comparison URLs 404'd — the sitemap chose pairs by market cap, the page demanded 8 populated rows | `countPairRows()` / `pairIsPublishable()` in `content/stock-vs.ts` shared by page and sitemap; `getStatsMap()` cached | full-segment check |
+| 24 Arabic news articles listed an English "latest" headline | same-language filter on the related block | audit `AR_PAGE_ENGLISH_SUBHEADING` |
+| 73 Arabic history pages carried an English `<h2>` ("Last 60 trading sessions") | `HISTORY.recentHeading` in the dictionary | same |
+| `/ar/Funds` and every Arabic category/provider hub served the marketplace's English empty-state `<h3>` | `empty_title` added to `AR_MARKETPLACE_CLOSING` | same |
+| `/Market-Pulse` 165 words (HIGH, thin) | movers, tape, breadth line and news pre-rendered server-side from the same tables the script reads | audit `PAGE_THIN` |
+| 15 Arabic sector pages under 300 words | `content/sector-descriptions.ts` — 24 sectors, EN+AR, keyed by DB sector name | — |
+| thin company sub-pages and Arabic overviews | `components/seo/KeyTerms.tsx` — glossary definitions (one vetted source) with links, on overview/dividends/history | — |
+| unknown `/symbol/{x}` returned the app shell with a 200 (52 soft-404s in Search Console) | hard 404 when the DB is up; app-shell degrade only on outage | — |
+| `/Portfolio`, `/shared/*`, `/mobile` indexable | `X-Robots-Tag: noindex` | — |
+| bare `/symbol` and `/ar/symbol` 404 | 308 → the company directories | — |
+| llms.txt pointed at a redirecting Arabic URL | canonical slugged URL | — |
+| Lighthouse a11y 88: closed mobile drawer held focusable links; `text-emerald-600` bold figures 3.8:1; zoom locked site-wide | `inert` on the closed drawer; `text-emerald-700` on every server-rendered table; zoom allowed (the app shell keeps its lock) | — |
+| company titles carried no price while the query is the price (25K Arabic impressions at 0.2% CTR) | live price in EN + AR company titles | — |
+| price-freshness monitor paged on a healthy pipeline (late-started run outside the window) | window judged at run time | — |
+| symbol-quality gate compared fiscal-year net income with trailing-twelve-month (27% apart on MFPC, red on every push) | same-period comparison, TTM fallback at 50% | — |
+| NAV update and weekly financials fires dropped by GitHub's scheduler (site trailed the source by two NAVs; reconciliation red) | retry cron slots (NAV: +2/day with `--zero-gain-streak 12`; financials: Fri 05:00 + Sat 03:00); catch-up runs dispatched | — |
+
+**Search Console API access (two owner clicks left):** Google Cloud project `starta-search-console` created, the Search Console API enabled, and service account `starta-seo-reader@starta-search-console.iam.gserviceaccount.com` created (unique id 116921909948302914995). Key creation is a credential action the agent harness refuses, so the owner finishes it:
+1. Cloud Console → IAM & Admin → Service Accounts → `starta-seo-reader` → **Keys → Add key → Create new key → JSON** (downloads one file).
+2. Search Console → Settings → Users and permissions → **Add user** → the service-account email above → permission **Full**.
+3. `gh secret set GSC_SERVICE_ACCOUNT_JSON < ~/Downloads/<the json file>` then delete the file. The next `seo-daily.yml` run fills the search-performance half of the brief.
+
+**Still owner-side:** Bing Webmaster (not signed in on this Mac) → `BING_WEBMASTER_API_KEY`; a licensed SERP provider; press / referring domains (3 external links, all from the public GitHub repo).
+
 ## Invariants the gates now hold (do not break these)
 
 - **`/ar/Funds` is a real Arabic hub, not a redirect.** It 308'd to the English

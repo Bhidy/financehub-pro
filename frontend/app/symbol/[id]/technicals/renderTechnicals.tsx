@@ -63,7 +63,7 @@ function signalKey(r: number | null): Signal {
 }
 
 const signalClass = (k: Signal): string =>
-    k === 'Strong Buy' || k === 'Buy' ? 'text-emerald-600' : k === 'Strong Sell' || k === 'Sell' ? 'text-red-600' : 'text-muted';
+    k === 'Strong Buy' || k === 'Buy' ? 'text-emerald-700' : k === 'Strong Sell' || k === 'Sell' ? 'text-red-600' : 'text-muted';
 
 const signalText = (k: Signal, lang: Lang): string => t(TECHNICALS.signals[k], lang);
 

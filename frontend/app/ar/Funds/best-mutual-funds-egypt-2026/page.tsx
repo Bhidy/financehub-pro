@@ -157,7 +157,7 @@ export default async function BestFundsArPage() {
                                             </Link>
                                         </td>
                                         <td className="px-4 py-2.5 text-muted">{CATEGORY_AR[categoryOf(f)]}</td>
-                                        <td className={`px-4 py-2.5 font-bold tabular-nums ${r1y !== null && r1y >= 0 ? 'text-emerald-600' : 'text-red-600'}`} dir="ltr">{fmtPct(r1y)}</td>
+                                        <td className={`px-4 py-2.5 font-bold tabular-nums ${r1y !== null && r1y >= 0 ? 'text-emerald-700' : 'text-red-600'}`} dir="ltr">{fmtPct(r1y)}</td>
                                         <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtPct(num(f, 'return_ytd'))}</td>
                                         <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtNav(num(f, 'latest_nav'))} {str(f, 'currency') || 'EGP'}</td>
                                     </tr>
@@ -194,7 +194,7 @@ export default async function BestFundsArPage() {
                                             <td className="px-4 py-2.5">
                                                 <Link href={fundPath(f.fund_id as number, str(f, 'fund_name_en'), str(f, 'fund_name'), 'ar')} className="font-semibold text-main hover:text-starta-teal">{arName(f)}</Link>
                                             </td>
-                                            <td className="px-4 py-2.5 font-bold text-emerald-600 tabular-nums" dir="ltr">{fmtPct(num(f, 'return_1y'))}</td>
+                                            <td className="px-4 py-2.5 font-bold text-emerald-700 tabular-nums" dir="ltr">{fmtPct(num(f, 'return_1y'))}</td>
                                             <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtPct(num(f, 'return_3y'))}</td>
                                             <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fee !== null ? `${fee.toFixed(2)}%` : '—'}</td>
                                             <td className="px-4 py-2.5 tabular-nums" dir="ltr">{minSub !== null ? minSub.toLocaleString('en-EG') : '—'}</td>

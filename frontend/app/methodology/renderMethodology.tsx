@@ -32,7 +32,7 @@ type Section = {
 };
 
 const EN: { title: string; description: string; h1: string; lede: string; sections: Section[]; related: Array<{ href: string; label: string }> } = {
-    title: 'Methodology — Data Sources, Return & Risk Formulas, Quality Grades',
+    title: 'Methodology — Sources, Formulas & Quality Grades',
     description:
         'Where Starta Markets’ EGX and mutual-fund data comes from, how often it refreshes, exactly how trailing returns, volatility, drawdown and CAGR are computed, how each fund’s history is graded, and why a missing figure is never shown as zero.',
     h1: 'Methodology',
@@ -162,7 +162,7 @@ const EN: { title: string; description: string; h1: string; lede: string; sectio
 };
 
 const AR: typeof EN = {
-    title: 'المنهجية — مصادر البيانات ومعادلات العائد والمخاطر ودرجات الجودة',
+    title: 'المنهجية — المصادر والمعادلات ودرجات الجودة',
     description:
         'من أين تأتي بيانات البورصة المصرية وصناديق الاستثمار في ستارتا ماركتس، وكم مرة تُحدَّث، وكيف تُحسب العوائد التاريخية والتقلب وأقصى الانخفاض ومعدل النمو السنوي المركّب بالضبط، وكيف يُصنَّف تاريخ كل صندوق، ولماذا لا يُعرض الرقم المفقود صفراً أبداً.',
     h1: 'المنهجية',

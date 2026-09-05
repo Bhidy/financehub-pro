@@ -61,7 +61,12 @@ export async function generateMetadata(
     // legal names): title ends at "Stock Price", description hard-capped ~160.
     let description = `${name} (EGX: ${symbol}): live price${price ? ` ${price}` : ""}, key stats, financials, dividends, technicals & news. Updated every 15 min in EGX hours.`;
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
-    const title = `${name} (${symbol}) Stock Price`;
+    // The live price in the title. Search Console (3 months to 2026-09-05):
+    // 13,175 impressions on these pages, 17 clicks — 0.13% at position 8.3.
+    // The query is the price; the incumbents show it in the title, ours did
+    // not. The page states the as-of time, so a cached SERP title is never a
+    // claim of freshness the page does not qualify.
+    const title = `${name} (${symbol}) Stock Price${price ? ` — ${price}` : ''}`;
     return {
         title,
         description,

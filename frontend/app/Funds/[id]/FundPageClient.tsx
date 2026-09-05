@@ -34,6 +34,8 @@ export type FundClientData = {
     navHuman: string | null;
     navStale: boolean;
     navAgeDays: number | null;
+    dormant: boolean;
+    dormantNotice: string | null;
     navHigh: string | null;
     navLow: string | null;
     currency: string;
@@ -109,6 +111,8 @@ export default function FundPageClient(props: FundClientData) {
         navHuman,
         navStale,
         navAgeDays,
+        dormant,
+        dormantNotice,
         navHigh,
         navLow,
         currency,
@@ -204,10 +208,15 @@ export default function FundPageClient(props: FundClientData) {
                                     )}
                                     {navStale && (
                                         <span className="mx-2 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200">
-                                            {t.delayed}{navAgeDays !== null ? ` · ${navAgeDays}d` : ''}
+                                            {dormant ? t.dormant : t.delayed}{navAgeDays !== null ? ` · ${navAgeDays}d` : ''}
                                         </span>
                                     )}
                                 </p>
+                                {dormantNotice && (
+                                    <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-800">
+                                        {dormantNotice}
+                                    </p>
+                                )}
                             </div>
                             <div className="summary-card rounded-[1.6rem] p-5">
                                 <div className={MICRO}>{headlineReturn ? headlineReturn.label : t.returnLabel}</div>

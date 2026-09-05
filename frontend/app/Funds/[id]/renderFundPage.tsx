@@ -8,6 +8,7 @@ import FundPageClient, { type FundClientData } from './FundPageClient';
 import { fundLabels, fundTypeLabel, riskLabel, freqLabel, type Lang } from './fund-i18n';
 import { fundLogo } from '@/lib/fund-logos';
 import { investmentFundNode } from '@/lib/funds-hub-render';
+import { DORMANT_DAYS } from '@/lib/fund-stats';
 import { buildFundAnalytics, type AnalyticsInput } from '@/lib/fund-analytics';
 
 /**
@@ -180,6 +181,29 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
     const eligValue = eligRaw ? (lang === 'ar' ? ELIGIBILITY_AR[eligRaw.toLowerCase()] || eligRaw : eligRaw) : null;
     const navPoints = num(fund, 'nav_points');
 
+    // NAV-history quality, from the per-fund ledger: coverage of the
+    // observations expected at the fund's own cadence, the worst gap, and the
+    // A-F grade defined on /methodology. A fact about our data, stated as one.
+    const qCoverage = num(fund, 'quality_coverage_pct');
+    const qGrade = str(fund, 'quality_grade');
+    const qWorstGap = num(fund, 'quality_worst_gap_days');
+    const qGapFrom = isoDate((fund as Fields)['quality_worst_gap_from']);
+    const qGapTo = isoDate((fund as Fields)['quality_worst_gap_to']);
+    let qualityText: string | null = null;
+    if (qCoverage !== null && qGrade) {
+        const gapBit =
+            qWorstGap !== null && qWorstGap >= 45 && qGapFrom && qGapTo
+                ? lang === 'ar'
+                    ? `؛ أطول فجوة ${fmtInt(qWorstGap)} يوماً (${qGapFrom} إلى ${qGapTo})`
+                    : `; longest gap ${fmtInt(qWorstGap)} days (${qGapFrom} to ${qGapTo})`
+                : '';
+        qualityText =
+            lang === 'ar'
+                ? `${qCoverage.toFixed(0)}% — الدرجة ${qGrade}${gapBit}`
+                : `${qCoverage.toFixed(0)}% — grade ${qGrade}${gapBit}`;
+    }
+    const dormant = navAgeDays !== null && navAgeDays > DORMANT_DAYS;
+
     const fundManager = str(fund, 'fund_manager');
     const fundManagerFact =
         fundManager && (!manager || fundManager.trim().toLowerCase() !== manager.trim().toLowerCase())
@@ -205,6 +229,7 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
             [t.domicile, str(fund, 'domicile'), false],
             [t.dividendPolicy, str(fund, 'dividend_policy'), false],
             [t.navObservations, navPoints !== null ? fmtInt(navPoints) : null, false],
+            [t.historyQuality, qualityText, false],
             [
                 t.minSubscription,
                 minSubscription !== null
@@ -437,6 +462,8 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang)
         navHuman: navDateIso ? humanDate(navDateIso, lang) : null,
         navStale,
         navAgeDays,
+        dormant,
+        dormantNotice: dormant && navDateIso ? t.dormantNotice(humanDate(navDateIso, lang)) : null,
         navHigh: navHigh !== null ? fmtNav(navHigh) : null,
         navLow: navLow !== null ? fmtNav(navLow) : null,
         currency,
@@ -568,7 +595,11 @@ export async function renderFundPage(idParam: string, lang: Lang) {
                 />
             )}
             <Breadcrumbs items={crumbs} />
-            <FundPageClient {...data} />
+            {/* Machine-readable status for the live audit: a page that DECLARES
+                dormancy is honest about a years-old NAV, not stale. */}
+            <div data-fund-status={data.dormant ? 'dormant' : 'active'}>
+                <FundPageClient {...data} />
+            </div>
         </PublicPageShell>
     );
 }

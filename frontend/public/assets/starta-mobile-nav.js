@@ -266,6 +266,11 @@
         drawer.setAttribute("role", "dialog");
         drawer.setAttribute("aria-modal", "true");
         drawer.setAttribute("aria-hidden", "true");
+        // inert: an aria-hidden dialog that still holds focusable links fails
+        // "aria-hidden-focus" (Lighthouse a11y 88 on every page, 2026-09-05)
+        // and lets keyboard users tab into an invisible menu. inert removes
+        // the descendants from the tab order and the accessibility tree.
+        drawer.setAttribute("inert", "");
 
         var i = 0;
         var linksHtml = sourceLinks.map(function (a, idx) {
@@ -376,6 +381,7 @@
         syncChrome();
         lastFocus = document.activeElement;
         root.classList.add("is-open");
+        drawer.removeAttribute("inert");
         drawer.setAttribute("aria-hidden", "false");
         burger.setAttribute("aria-expanded", "true");
         burger.setAttribute("aria-label", t("close"));
@@ -389,6 +395,7 @@
         if (!isOpen()) return;
         root.classList.remove("is-open");
         drawer.setAttribute("aria-hidden", "true");
+        drawer.setAttribute("inert", "");
         burger.setAttribute("aria-expanded", "false");
         burger.setAttribute("aria-label", t("open"));
         document.documentElement.classList.remove("smn-locked");

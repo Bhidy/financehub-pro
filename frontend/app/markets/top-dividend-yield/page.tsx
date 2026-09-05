@@ -98,7 +98,7 @@ export default async function TopDividendYieldPage() {
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
-                                <td className="px-4 py-2.5 text-right font-bold tabular-nums text-emerald-600">{(t.dividend_yield as number).toLocaleString('en-EG', { maximumFractionDigits: 2 })}%</td>
+                                <td className="px-4 py-2.5 text-right font-bold tabular-nums text-emerald-700">{(t.dividend_yield as number).toLocaleString('en-EG', { maximumFractionDigits: 2 })}%</td>
                             </tr>
                         ))}
                     </tbody>

@@ -32,7 +32,7 @@ const PATH_AR = '/ar/Funds/risk';
 export function fundRiskMetadata(lang: 'en' | 'ar'): Metadata {
     const isAr = lang === 'ar';
     const canonical = isAr ? PATH_AR : PATH_EN;
-    const title = isAr ? 'صناديق الاستثمار الأقل تقلباً في مصر — جدول المخاطر' : 'Lowest-Volatility Mutual Funds in Egypt — Risk League Table';
+    const title = isAr ? 'صناديق الاستثمار الأقل تقلباً في مصر — جدول المخاطر' : 'Lowest-Volatility Funds in Egypt — Risk Table';
     const description = isAr
         ? 'التقلب السنوي وأقصى انخفاض والانحراف السلبي ومعدل النمو السنوي المركّب لكل صندوق استثمار مصري لديه تاريخ كافٍ من صافي قيمة الأصول، مرتبة من الأقل تقلباً — محسوبة من بيانات الصندوق نفسه.'
         : 'Annualized volatility, maximum drawdown, downside deviation and CAGR for every Egyptian mutual fund with enough NAV history, least volatile first — computed from each fund’s own published NAVs.';
@@ -186,7 +186,7 @@ export async function renderFundRisk(lang: 'en' | 'ar') {
                                         <td className={`${tdNum} text-main`}>{x.n}</td>
                                         <td className={`${tdNum} font-semibold text-main`}>{pct(x.vol)}</td>
                                         <td className={`${tdNum} text-red-600`}>{pctSigned(x.dd)}</td>
-                                        <td className={`${tdNum} ${x.cagr === null ? 'text-muted' : x.cagr >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{pctSigned(x.cagr)}</td>
+                                        <td className={`${tdNum} ${x.cagr === null ? 'text-muted' : x.cagr >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{pctSigned(x.cagr)}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -231,7 +231,7 @@ export async function renderFundRisk(lang: 'en' | 'ar') {
                                         <td className={`${tdNum} font-bold text-main`}>{pct(x.r.volatility_annual)}</td>
                                         <td className={`${tdNum} text-red-600`}>{pctSigned(x.r.max_drawdown)}</td>
                                         <td className={`${tdNum} text-main`}>{pct(x.r.downside_deviation)}</td>
-                                        <td className={`${tdNum} ${x.r.cagr === null ? 'text-muted' : x.r.cagr >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{pctSigned(x.r.cagr)}</td>
+                                        <td className={`${tdNum} ${x.r.cagr === null ? 'text-muted' : x.r.cagr >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{pctSigned(x.r.cagr)}</td>
                                         <td className={`${tdNum} text-muted`}>{x.r.points ?? '—'}</td>
                                         <td className={`${tdNum} text-xs text-muted`}>{d.iso ? <time dateTime={d.iso}>{d.human}</time> : '—'}</td>
                                     </tr>

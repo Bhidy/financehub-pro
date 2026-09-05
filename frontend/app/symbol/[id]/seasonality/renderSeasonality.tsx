@@ -36,7 +36,7 @@ const pct = (n: number | null): string =>
 const rate = (n: number | null): string => (n === null ? '—' : ltrNum(`${Math.round(n)}%`));
 
 const toneClass = (n: number | null): string =>
-    n === null ? 'text-muted' : n > 0 ? 'text-emerald-600' : n < 0 ? 'text-red-600' : 'text-muted';
+    n === null ? 'text-muted' : n > 0 ? 'text-emerald-700' : n < 0 ? 'text-red-600' : 'text-muted';
 
 const monthLabel = (m: SeasonalMonth, lang: Lang): string =>
     (SEASONALITY.months[m.label] && t(SEASONALITY.months[m.label], lang)) || m.label;

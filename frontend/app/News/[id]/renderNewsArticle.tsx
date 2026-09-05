@@ -108,7 +108,10 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
         timeZone: 'Africa/Cairo',
     });
 
-    const latest = (await getLatestNews(7)).filter((n) => n.id !== article.id).slice(0, 6);
+    // Same-language only. The archive is bilingual and an article exists in
+    // ONE language, so "latest" on an Arabic page must be Arabic: 24 Arabic
+    // articles carried an English headline in this block (audit 2026-09-05).
+    const latest = (await getLatestNews(30)).filter((n) => n.id !== article.id && newsLang(n) === lang).slice(0, 6);
 
     const newsJsonLd = {
         '@context': 'https://schema.org',

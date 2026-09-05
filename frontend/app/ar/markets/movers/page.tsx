@@ -55,7 +55,7 @@ function MoversTable({ rows, showVolume = false }: { rows: Ticker[]; showVolume?
                                 <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-teal">{t.symbol}</Link>
                             </td>
                             <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{fmtPrice(t.last_price)}{t.last_price !== null && t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}</td>
-                            <td className={`px-4 py-2.5 font-semibold tabular-nums ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'}`} dir="ltr">{fmtChange(t.change_percent)}</td>
+                            <td className={`px-4 py-2.5 font-semibold tabular-nums ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'}`} dir="ltr">{fmtChange(t.change_percent)}</td>
                             {showVolume && <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtVolume(t.volume)}</td>}
                         </tr>
                     ))}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db-server';
-import { getMarketLists, getSeasonalitySymbols, getAllFundsRanked, getFundRiskTable } from '@/lib/public-data';
+import { getMarketLists, getSeasonalitySymbols, getAllFundsRanked, getFundRiskTable, getAllTickers, getStatsMap } from '@/lib/public-data';
+import { pairIsPublishable } from '@/content/stock-vs';
 import { riskEligible, MIN_RISK_ROWS } from '@/lib/fund-stats';
 import { rankFundPairs } from '@/lib/fund-pairs';
 import { SITE_URL, absUrl, fundPath, symbolPath, symbolPathAr, slugify, learnPath, glossaryPath, sectorPath } from '@/lib/seo';
@@ -483,12 +484,23 @@ async function stockComparisonEntries(): Promise<Entry[]> {
         }
     }
 
+    // THE PAGE'S OWN GATE, applied here. renderStockVs 404s a pair with fewer
+    // than MIN_ROWS populated metric rows; selecting by market cap alone
+    // advertised four such URLs (ACRO-vs-EIUD, AIHC-vs-ANFI, both languages).
+    // Same stats, same ticker fields, same counter — the two cannot disagree.
+    const [tickers, statsMap] = await Promise.all([getAllTickers(), getStatsMap()]);
+    const tickerBySym = new Map(tickers.map((t) => [String(t.symbol).toUpperCase(), t as unknown as Record<string, unknown>]));
+
     const entries: Entry[] = [];
     for (const syms of bySector.values()) {
         if (syms.length < 2) continue;
         for (let i = 0; i < syms.length; i++) {
             for (let j = i + 1; j < syms.length; j++) {
                 const [a, b] = syms[i] < syms[j] ? [syms[i], syms[j]] : [syms[j], syms[i]];
+                const ta = tickerBySym.get(a);
+                const tb = tickerBySym.get(b);
+                if (!ta || !tb) continue;
+                if (!pairIsPublishable(statsMap[a] ?? null, ta, statsMap[b] ?? null, tb)) continue;
                 const pair = `${a}-vs-${b}`;
                 entries.push({ loc: absUrl(`/companies/vs/${pair}`), changefreq: 'weekly', priority: '0.4' });
                 entries.push({ loc: absUrl(`/ar/companies/vs/${pair}`), changefreq: 'weekly', priority: '0.4' });

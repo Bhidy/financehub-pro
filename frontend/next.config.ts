@@ -176,6 +176,10 @@ const nextConfig = {
         destination: '/Market-Pulse',
         permanent: true,
       },
+      // The bare parent of every company page has no page of its own and sat
+      // in Search Console's 404 list; the directory is what it means.
+      { source: '/symbol', destination: '/companies', permanent: true },
+      { source: '/ar/symbol', destination: '/ar/companies', permanent: true },
       // /ar/Funds NO LONGER REDIRECTS. It is a real server-rendered Arabic
       // funds hub (app/ar/Funds/page.tsx) and the hreflang twin of /Funds.
       // While this 308 existed the site had no Arabic funds URL at all: the
@@ -229,7 +233,11 @@ const nextConfig = {
       })),
       // Private surfaces: keep crawlers out at the header level (robots.txt
       // disallow alone does not de-index already-discovered URLs).
-      ...['/admin/:path*', '/login', '/register', '/forgot-password', '/settings'].map((source) => ({
+      // Hidden products stay out of the index too: the portfolio tool, the
+      // shared AI-analysis pages and the Capacitor app shell are not part of
+      // the public proposition (funds, learn, news, tools) and were serving
+      // 200 with no robots signal — thin, indexable duplicates of app state.
+      ...['/admin/:path*', '/login', '/register', '/forgot-password', '/settings', '/Portfolio', '/Portfolio/:path*', '/shared/:path*', '/mobile'].map((source) => ({
         source,
         headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
       })),

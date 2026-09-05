@@ -224,3 +224,44 @@ export const STOCKVS = {
 };
 
 export const t = (v: S, lang: Lang): string => v[lang];
+
+/**
+ * THE comparison page's data gate, shared with the sitemap.
+ *
+ * A pair is a comparison only when enough metric rows have a figure on at
+ * least one side. The page has always enforced this (MIN_ROWS); the sitemap
+ * used to pick pairs by market cap alone, so it advertised URLs the page
+ * refused — four sitemapped 404s found live 2026-09-05. Both now call this.
+ */
+export const MIN_ROWS = 8;
+const numOf = (r: Record<string, unknown> | null | undefined, k: string): number | null => {
+    const v = r?.[k];
+    if (typeof v === 'number' && Number.isFinite(v)) return v;
+    if (typeof v === 'string' && v.trim() !== '') {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+    }
+    return null;
+};
+export function countPairRows(
+    statsA: Record<string, unknown> | null,
+    tickerA: Record<string, unknown>,
+    statsB: Record<string, unknown> | null,
+    tickerB: Record<string, unknown>
+): number {
+    let rows = 0;
+    for (const g of METRIC_GROUPS) {
+        for (const m of g.metrics) {
+            const va = numOf(statsA, m.key) ?? numOf(tickerA, m.key);
+            const vb = numOf(statsB, m.key) ?? numOf(tickerB, m.key);
+            if (va !== null || vb !== null) rows++;
+        }
+    }
+    return rows;
+}
+export const pairIsPublishable = (
+    statsA: Record<string, unknown> | null,
+    tickerA: Record<string, unknown>,
+    statsB: Record<string, unknown> | null,
+    tickerB: Record<string, unknown>
+): boolean => countPairRows(statsA, tickerA, statsB, tickerB) >= MIN_ROWS;

@@ -105,7 +105,7 @@ export default async function Egx30Page() {
                 <div className="mt-4 flex flex-wrap items-baseline gap-4">
                     <span className="text-4xl font-black tabular-nums tracking-tight">{fmt(quote.value)}</span>
                     {quote.change != null && (
-                        <span className={`text-xl font-bold tabular-nums ${up ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        <span className={`text-xl font-bold tabular-nums ${up ? 'text-emerald-700' : 'text-rose-600'}`}>
                             {up ? '+' : ''}{fmt(quote.change)} ({fmtPct(quote.changePercent)})
                         </span>
                     )}
@@ -167,7 +167,7 @@ export default async function Egx30Page() {
                                             </Link>
                                         </td>
                                         <td className="px-4 py-2.5 text-right tabular-nums">{c.last_price !== null ? `${c.currency || 'EGP'} ${fmt(c.last_price)}` : '—'}</td>
-                                        <td className={`px-4 py-2.5 text-right tabular-nums font-semibold ${(c.change_percent ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{c.change_percent !== null ? fmtPct(c.change_percent) : '—'}</td>
+                                        <td className={`px-4 py-2.5 text-right tabular-nums font-semibold ${(c.change_percent ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}>{c.change_percent !== null ? fmtPct(c.change_percent) : '—'}</td>
                                         <td className="px-4 py-2.5 text-right tabular-nums text-muted">{fmtCap(c.market_cap)}</td>
                                     </tr>
                                 ))}

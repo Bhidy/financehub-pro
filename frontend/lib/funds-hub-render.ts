@@ -46,6 +46,10 @@ export const AR_MARKETPLACE_CLOSING = [
         keepKey: true,
     },
     { dataKey: 'close_btn', text: 'اعرف ملف مخاطرك', keepKey: true },
+    // The filter empty state — hidden until the visitor filters, but its <h3>
+    // is in the served HTML and was the one English heading left on every
+    // Arabic hub (audit 2026-09-05: AR_PAGE_ENGLISH_SUBHEADING on /ar/Funds).
+    { dataKey: 'empty_title', text: 'لم نجد صناديق بهذا المزيج من الفلاتر.', keepKey: true },
 ];
 
 export const fundName = (f: Row, lang: 'en' | 'ar'): string => {

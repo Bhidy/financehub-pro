@@ -95,7 +95,7 @@ export default async function Egx30ArPage() {
                 <div className="mt-4 flex flex-wrap items-baseline gap-4" dir="ltr">
                     <span className="text-4xl font-black tabular-nums tracking-tight">{fmt(quote.value)}</span>
                     {quote.change != null && (
-                        <span className={`text-xl font-bold tabular-nums ${up ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        <span className={`text-xl font-bold tabular-nums ${up ? 'text-emerald-700' : 'text-rose-600'}`}>
                             {up ? '+' : ''}{fmt(quote.change)} ({fmtPct(quote.changePercent)})
                         </span>
                     )}
@@ -140,7 +140,7 @@ export default async function Egx30ArPage() {
                                             </Link>
                                         </td>
                                         <td className="px-4 py-2.5 tabular-nums" dir="ltr">{c.last_price !== null ? `${c.currency || 'EGP'} ${fmt(c.last_price)}` : '—'}</td>
-                                        <td className={`px-4 py-2.5 tabular-nums font-semibold ${(c.change_percent ?? 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`} dir="ltr">{c.change_percent !== null ? fmtPct(c.change_percent) : '—'}</td>
+                                        <td className={`px-4 py-2.5 tabular-nums font-semibold ${(c.change_percent ?? 0) >= 0 ? 'text-emerald-700' : 'text-rose-600'}`} dir="ltr">{c.change_percent !== null ? fmtPct(c.change_percent) : '—'}</td>
                                         <td className="px-4 py-2.5 tabular-nums text-muted" dir="ltr">{fmtCap(c.market_cap)}</td>
                                     </tr>
                                 ))}

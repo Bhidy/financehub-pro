@@ -140,7 +140,7 @@ export async function renderCategoriesIndex(lang: 'en' | 'ar') {
     const th = `px-4 py-3 ${isAr ? 'text-right' : 'text-left'}`;
     const thNum = `px-4 py-3 ${isAr ? 'text-left' : 'text-right'}`;
     const tdNum = `px-4 py-2.5 tabular-nums ${isAr ? 'text-left' : 'text-right'}`;
-    const tone = (v: number | null) => (v === null ? 'text-muted' : v >= 0 ? 'text-emerald-600' : 'text-red-600');
+    const tone = (v: number | null) => (v === null ? 'text-muted' : v >= 0 ? 'text-emerald-700' : 'text-red-600');
     const fundCell = (f: Row | null) =>
         f ? (
             <>

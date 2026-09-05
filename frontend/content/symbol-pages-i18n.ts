@@ -128,6 +128,10 @@ export const TECHNICALS = {
 /* ── price history ───────────────────────────────────────────────────────── */
 
 export const HISTORY = {
+    /** The recent-sessions table heading. Was a hard-coded English string on
+     *  both language trees — 73 Arabic history pages carried an English <h2>
+     *  (live audit 2026-09-05). */
+    recentHeading: (n: number): S => ({ en: `Last ${n} trading sessions`, ar: `آخر ${n} جلسة تداول` }),
     h1: (name: string, symbol: string): S =>
         s(`${name} (${symbol}) Price History`, `سجل أسعار سهم ${name} (${symbol})`),
     title: (name: string, symbol: string): S =>

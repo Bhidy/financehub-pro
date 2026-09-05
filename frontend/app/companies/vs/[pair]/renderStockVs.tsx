@@ -6,7 +6,7 @@ import { SITE_URL, absUrl, symbolPath, symbolPathAr, OG_DEFAULTS } from '@/lib/s
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { ltrNum } from '@/lib/bidi';
-import { METRIC_GROUPS, STOCKVS, t, type Lang, type Fmt, type Metric } from '@/content/stock-vs';
+import { METRIC_GROUPS, STOCKVS, t, type Lang, type Fmt, type Metric, countPairRows, MIN_ROWS } from '@/content/stock-vs';
 import { sectorAr } from '@/content/sector-names-ar';
 
 /**
@@ -146,8 +146,6 @@ type Loaded =
     | { redirect: string }
     | { A: Side; B: Side; sector: string; rowCount: number };
 
-/** A page needs enough populated rows to be a comparison rather than a stub. */
-const MIN_ROWS = 8;
 
 async function load(pairParam: string, lang: Lang): Promise<Loaded | null> {
     const parsed = parsePair(pairParam);
@@ -185,15 +183,14 @@ async function load(pairParam: string, lang: Lang): Promise<Loaded | null> {
     const A = mk(parsed.a, tickerA, statsA);
     const B = mk(parsed.b, tickerB, statsB);
 
-    // Count rows where at least one side has a figure — the page's own gate.
-    let rowCount = 0;
-    for (const g of METRIC_GROUPS) {
-        for (const m of g.metrics) {
-            const va = num(A.stats, m.key) ?? num(A.ticker as unknown as Record<string, unknown>, m.key);
-            const vb = num(B.stats, m.key) ?? num(B.ticker as unknown as Record<string, unknown>, m.key);
-            if (va !== null || vb !== null) rowCount++;
-        }
-    }
+    // Rows where at least one side has a figure — THE gate, shared with the
+    // sitemap (content/stock-vs.ts countPairRows) so the two cannot disagree.
+    const rowCount = countPairRows(
+        A.stats,
+        A.ticker as unknown as Record<string, unknown>,
+        B.stats,
+        B.ticker as unknown as Record<string, unknown>
+    );
     if (rowCount < MIN_ROWS) return null;
 
     return { A, B, sector: secA, rowCount };
@@ -285,7 +282,7 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
                 {fmtValue(S.ticker.last_price, 'price', lang, currency) ?? '—'}
             </div>
             {typeof S.ticker.change_percent === 'number' && (
-                <div className={`text-sm font-bold tabular-nums ${(S.ticker.change_percent as number) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                <div className={`text-sm font-bold tabular-nums ${(S.ticker.change_percent as number) >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
                     {ltrNum(`${(S.ticker.change_percent as number) >= 0 ? '+' : ''}${(S.ticker.change_percent as number).toFixed(2)}%`)}
                 </div>
             )}

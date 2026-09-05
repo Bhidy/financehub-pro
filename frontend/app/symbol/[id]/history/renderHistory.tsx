@@ -5,6 +5,7 @@ import { getTicker, getHistoryStats, getRecentHistory, getSeasonalitySymbols} fr
 import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS, symbolFromArParam, canonicalRedirectTarget } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import KeyTerms from '@/components/seo/KeyTerms';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
 import { HISTORY, NAV, t, type Lang } from '@/content/symbol-pages-i18n';
 
@@ -123,8 +124,13 @@ export async function renderHistory(id: string, lang: Lang) {
     const ticker = await getTicker(symbol);
     if (!ticker) notFound();
 
-    const stats = await getHistoryStats(symbol);
-    const recent = await getRecentHistory(symbol, 60);
+    // In parallel: these were four serial round trips, and the history pages
+    // were the slowest tail of the site (5-15 s cold, measured 2026-09-05).
+    const [stats, recent, seasonalSet] = await Promise.all([
+        getHistoryStats(symbol),
+        getRecentHistory(symbol, 60),
+        getSeasonalitySymbols(),
+    ]);
     // Quality gate: no recorded history → 404, never an empty shell page.
     if (!stats || recent.length === 0) notFound();
 
@@ -159,7 +165,7 @@ export async function renderHistory(id: string, lang: Lang) {
 
     // Seasonality only exists for symbols with enough history; ask the one
     // cached set rather than probing per page.
-    const hasSeasonality = (await getSeasonalitySymbols()).has(symbol);
+    const hasSeasonality = seasonalSet.has(symbol);
     const siblings = symbolSiblings(symbol, 'history', lang, ticker.name_ar, { seasonality: hasSeasonality });
 
     return (
@@ -200,7 +206,7 @@ export async function renderHistory(id: string, lang: Lang) {
                 </dl>
             )}
 
-            <h2 className="mt-8 text-lg font-bold text-main">Last {recent.length} trading sessions</h2>
+            <h2 className="mt-8 text-lg font-bold text-main">{t(HISTORY.recentHeading(recent.length), lang)}</h2>
             <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[640px] text-sm">
                     <thead>
@@ -235,6 +241,8 @@ export async function renderHistory(id: string, lang: Lang) {
                     </tbody>
                 </table>
             </div>
+
+            <KeyTerms slugs={['volatility', 'liquidity', 'free-float', 'circuit-breaker-egx']} lang={lang} />
 
             <p className="mt-4 text-sm text-muted">
                 The full price history{firstIso ? ` back to ${humanDate(firstIso)}` : ''} is available on the{' '}

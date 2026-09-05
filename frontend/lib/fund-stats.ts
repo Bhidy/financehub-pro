@@ -40,6 +40,31 @@ export function dayOf(v: unknown, lang: 'en' | 'ar'): { iso: string; human: stri
 }
 
 /**
+ * DORMANT FUNDS — the universe of CURRENT funds excludes them.
+ *
+ * Found 2026-09-05 on the live price list: eight funds whose newest NAV was
+ * over 90 days old, five of them over a year — one last priced in March 2011,
+ * two target-maturity funds that matured in late 2025 — all listed under
+ * "prices today", ranked, counted in category and provider statistics, and
+ * pre-rendered into the marketplace for crawlers while the client-side
+ * marketplace (fed by the API, which drops them) showed 200 funds. A closed or
+ * matured fund is real history and keeps its own page, with a dormancy notice;
+ * it is not a current price.
+ *
+ * 180 days: 54 funds publish weekly, so this is 25+ missed publications — far
+ * beyond any holiday, and beyond the source freeze the EIMA backfill covers.
+ */
+export const DORMANT_DAYS = 180;
+export function navAgeDays(lastNavDate: unknown, now = Date.now()): number | null {
+    const t = lastNavDate ? Date.parse(String(lastNavDate)) : NaN;
+    return Number.isFinite(t) ? Math.floor((now - t) / 86_400_000) : null;
+}
+export function fundIsDormant(lastNavDate: unknown, now = Date.now()): boolean {
+    const age = navAgeDays(lastNavDate, now);
+    return age !== null && age > DORMANT_DAYS;
+}
+
+/**
  * RISK LEAGUE TABLE ELIGIBILITY — shared by the page and the sitemap so the
  * two can never disagree about whether the page exists.
  *
@@ -52,4 +77,10 @@ export function dayOf(v: unknown, lang: 'en' | 'ar'): { iso: string; human: stri
 export const MIN_RISK_POINTS = 30;
 export const MIN_RISK_ROWS = 10;
 export const riskEligible = (r: FundRiskRow): boolean =>
-    !r.analytics_suppressed && r.volatility_annual !== null && r.max_drawdown !== null && (r.points ?? 0) >= MIN_RISK_POINTS;
+    !r.analytics_suppressed &&
+    r.volatility_annual !== null &&
+    r.max_drawdown !== null &&
+    (r.points ?? 0) >= MIN_RISK_POINTS &&
+    // a dormant fund's risk figures describe a series that stopped — not a
+    // current fund; the page drops it via the funds join, the sitemap via this
+    !fundIsDormant(r.latest_date);

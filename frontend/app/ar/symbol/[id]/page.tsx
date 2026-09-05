@@ -7,6 +7,7 @@ import { SITE_URL, symbolPath, symbolPathAr, symbolFromArParam, canonicalRedirec
 import { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import SymbolPageClient from '@/app/symbol/[id]/SymbolPageClient';
 import JsonLd from '@/components/seo/JsonLd';
+import KeyTerms from '@/components/seo/KeyTerms';
 import { sectorAr } from '@/content/sector-names-ar';
 
 /**
@@ -132,7 +133,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const name = ticker.name_ar || ticker.name_en || symbol;
     const cur = ticker.currency || 'EGP';
     const priceStr = ticker.last_price !== null ? `${cur} ${fmtNum(ticker.last_price)}` : null;
-    const title = `سعر سهم ${name} (${symbol}) اليوم — البورصة المصرية`;
+    // The live price in the title: 25,066 impressions on the Arabic company
+    // pages over three months, 55 clicks (0.22%) at position 8.6 — the query
+    // is "سعر سهم X" and the answer belongs in the title, as the incumbents do.
+    const title = `سعر سهم ${name} (${symbol}) اليوم${priceStr ? ` ${priceStr}` : ''} — البورصة المصرية`;
     let description = `تابع سعر سهم ${name} (${symbol}) في البورصة المصرية${priceStr ? ` — آخر سعر ${priceStr}` : ''}${ticker.sector_name ? `، قطاع ${sectorAr(ticker.sector_name)}` : ''}. إحصاءات وقوائم مالية وتوزيعات، تحديث كل 15 دقيقة.`;
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 
@@ -331,7 +335,7 @@ export default async function ArabicSymbolPage({ params }: Props) {
                     {change !== null && (
                         <span
                             dir="ltr"
-                            className={`text-sm font-bold ${change >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                            className={`text-sm font-bold ${change >= 0 ? 'text-emerald-700' : 'text-red-600'}`}
                         >
                             {change >= 0 ? '+' : ''}
                             {fmtNum(change)}%
@@ -414,6 +418,8 @@ export default async function ArabicSymbolPage({ params }: Props) {
                         </ul>
                     </section>
                 )}
+
+                <KeyTerms slugs={['market-cap', 'pe-ratio', 'pb-ratio', 'dividend-yield']} lang="ar" heading={`مصطلحات أساسية وراء أرقام ${symbol}`} />
 
                 <section className="mt-8">
                     <h2 className="text-xl font-bold text-main">أسئلة شائعة</h2>

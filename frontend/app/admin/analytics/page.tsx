@@ -1399,8 +1399,8 @@ export default function ChatbotAnalyticsPage() {
                                             <p className="mt-1.5 text-2xl font-black text-slate-900 dark:text-white tabular-nums">{newsletterPreview?.total_sent ?? 0}</p>
                                         </div>
                                         <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-500/5 dark:to-emerald-500/10 p-3.5 border border-emerald-200/50 dark:border-emerald-500/10">
-                                            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600/70 dark:text-emerald-400/70">Delivered</p>
-                                            <p className="mt-1.5 text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">{newsletterPreview?.last_dispatch_sent_count ?? 0}</p>
+                                            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-700/70 dark:text-emerald-400/70">Delivered</p>
+                                            <p className="mt-1.5 text-2xl font-black text-emerald-700 dark:text-emerald-400 tabular-nums">{newsletterPreview?.last_dispatch_sent_count ?? 0}</p>
                                         </div>
                                         <div className="rounded-2xl bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-500/5 dark:to-rose-500/10 p-3.5 border border-rose-200/50 dark:border-rose-500/10">
                                             <p className="text-[10px] font-black uppercase tracking-wider text-rose-600/70 dark:text-rose-400/70">Failed</p>
@@ -1454,7 +1454,7 @@ export default function ChatbotAnalyticsPage() {
                                             <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-2">Last Successful Recipient</p>
                                             <div className="flex items-center gap-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-500/5 border border-emerald-200/50 dark:border-emerald-500/10 px-4 py-3">
                                                 <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                                                    <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                                    <CheckCircle className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{newsletterPreview.recipient_email}</p>
@@ -1513,7 +1513,7 @@ export default function ChatbotAnalyticsPage() {
                                         <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Preview</span>
                                     </div>
                                     {newsletterPreview?.preview_available && (
-                                        <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                        <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                             Live Archive
                                         </span>

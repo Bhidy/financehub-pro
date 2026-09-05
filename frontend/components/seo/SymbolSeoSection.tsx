@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { SITE_URL, symbolPath, slugify, newsPath } from '@/lib/seo';
 import type { Ticker, CompanyProfile, NewsArticle, SymbolPerformance } from '@/lib/public-data';
 import JsonLd from '@/components/seo/JsonLd';
+import KeyTerms from '@/components/seo/KeyTerms';
 import { breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import { canonicalNewsPath } from '@/lib/news-display';
 
@@ -227,7 +228,7 @@ export default function SymbolSeoSection({
                             {ticker.change_percent !== null && (
                                 <span
                                     className={`text-lg font-bold tabular-nums ${
-                                        ticker.change_percent >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                                        ticker.change_percent >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                                     }`}
                                 >
                                     {ticker.change_percent >= 0 ? '+' : ''}
@@ -255,7 +256,7 @@ export default function SymbolSeoSection({
                             {perf.horizons.map((h) => (
                                 <div key={h.label} className="rounded-xl border border-slate-200/70 bg-white p-2.5 text-center shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:border-slate-800/70 dark:bg-[#0F172A]">
                                     <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{h.label}</dt>
-                                    <dd className={`mt-1 text-[13px] font-extrabold tabular-nums ${h.pct === null ? 'text-slate-400' : h.pct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                    <dd className={`mt-1 text-[13px] font-extrabold tabular-nums ${h.pct === null ? 'text-slate-400' : h.pct >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                                         {h.pct === null ? '—' : `${h.pct >= 0 ? '+' : ''}${h.pct.toFixed(1)}%`}
                                     </dd>
                                 </div>
@@ -361,7 +362,9 @@ export default function SymbolSeoSection({
                     </div>
                 )}
 
-                <div className="mb-8">
+                <KeyTerms slugs={['market-cap', 'pe-ratio', 'pb-ratio', 'dividend-yield']} lang="en" heading={`Key terms behind the ${symbol} figures`} />
+
+                <div className="mb-8 mt-8">
                     <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight"><span aria-hidden className="inline-block h-4 w-1 rounded-full bg-[#14B8A6]" />Frequently asked questions</h2>
                     <dl className="mt-4 divide-y divide-slate-200/70 rounded-2xl border border-slate-200/70 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05)] dark:divide-slate-800/70 dark:border-slate-800/70 dark:bg-[#0F172A]">
                         {faq.map((f) => (

@@ -2,6 +2,7 @@ import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { db } from '@/lib/db-server';
 import { matchAssetManager } from './asset-managers';
+import { fundIsDormant } from './fund-stats';
 
 /**
  * EGX-ONLY GATE for every PUBLIC / indexable surface.
@@ -131,28 +132,56 @@ export const getTicker = cache(async (symbol: string): Promise<Ticker | null> =>
     return (toNum(row, TICKER_NUM) as Ticker) || null;
 });
 
+/** Numeric columns of stock_stats_view every reader coerces — ONE list, so
+ *  the per-symbol read and the all-symbols map can never disagree. */
+const STATS_NUM_FIELDS = [
+    'last_price', 'pe_ratio', 'forward_pe', 'pb_ratio', 'dividend_yield', 'market_cap',
+    'beta_1y', 'rsi_14', 'ma_50d', 'ma_200d', 'eps_ttm', 'revenue_ttm', 'net_income_ttm',
+    'roe', 'roa', 'bvps', 'shares_outstanding', 'dps',
+    // FISCAL-YEAR + balance-sheet + growth columns. The view exposes these
+    // (migration 0009) and they are far better populated than their TTM
+    // siblings — revenue_fy ~78% vs revenue_ttm ~24% — but they were never
+    // coerced here, so a statistics page could not use them. The overview
+    // shows the TTM set; these are what make a dedicated statistics page
+    // additive rather than a re-grouping.
+    'revenue_fy', 'net_income_fy', 'eps_fy', 'ebitda_fy', 'fcf_fy', 'fcf_ttm',
+    'total_assets', 'total_debt', 'book_value',
+    'revenue_growth', 'profit_growth', 'eps_growth', 'profit_margin',
+    'float_shares_percent',
+];
+
 /** Key statistics (stock_stats_view — already absolute EGP). */
 export const getStats = cache(async (symbol: string): Promise<Record<string, number | string | null> | null> => {
     const result = await db.query(`SELECT * FROM stock_stats_view WHERE symbol = $1`, [symbol.toUpperCase()]);
     const row = result.rows[0] || null;
-    return row
-        ? (toNum(row, [
-              'last_price', 'pe_ratio', 'forward_pe', 'pb_ratio', 'dividend_yield', 'market_cap',
-              'beta_1y', 'rsi_14', 'ma_50d', 'ma_200d', 'eps_ttm', 'revenue_ttm', 'net_income_ttm',
-              'roe', 'roa', 'bvps', 'shares_outstanding', 'dps',
-              // FISCAL-YEAR + balance-sheet + growth columns. The view exposes
-              // these (migration 0009) and they are far better populated than
-              // their TTM siblings — revenue_fy ~78% vs revenue_ttm ~24% — but
-              // they were never coerced here, so a statistics page could not
-              // use them. The overview shows the TTM set; these are what make a
-              // dedicated statistics page additive rather than a re-grouping.
-              'revenue_fy', 'net_income_fy', 'eps_fy', 'ebitda_fy', 'fcf_fy', 'fcf_ttm',
-              'total_assets', 'total_debt', 'book_value',
-              'revenue_growth', 'profit_growth', 'eps_growth', 'profit_margin',
-              'float_shares_percent',
-          ]) as Record<string, number | string | null>)
-        : null;
+    return row ? (toNum(row, STATS_NUM_FIELDS) as Record<string, number | string | null>) : null;
 });
+
+/**
+ * Key statistics for EVERY EGX symbol, keyed by ticker — the read the sitemap
+ * needs to apply the comparison page's own row gate. The stock-comparisons
+ * segment used to pick pairs by market cap alone while the page demanded
+ * eight populated metric rows, so four sitemapped URLs 404'd (verified live
+ * 2026-09-05). One cached scan of the view, 15 minutes.
+ */
+const _statsMapCached = unstable_cache(
+    async (): Promise<Record<string, Record<string, number | string | null>>> => {
+        const result = await db.query(
+            `SELECT s.*
+             FROM stock_stats_view s
+             JOIN market_tickers t ON t.symbol = s.symbol
+             WHERE t.last_price IS NOT NULL AND t.${EGX_ONLY}`
+        );
+        const out: Record<string, Record<string, number | string | null>> = {};
+        for (const r of result.rows as Array<Record<string, unknown>>) {
+            out[String(r.symbol).toUpperCase()] = toNum(r, STATS_NUM_FIELDS) as Record<string, number | string | null>;
+        }
+        return out;
+    },
+    ['seo:stats-map'],
+    { revalidate: 900, tags: ['seo-tickers'] }
+);
+export const getStatsMap = cache((): Promise<Record<string, Record<string, number | string | null>>> => _statsMapCached());
 
 export type CompanyProfile = {
     description: string | null;
@@ -293,6 +322,26 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
             `SELECT platform_name, logo_url FROM fund_platforms WHERE fund_id = $1 ORDER BY platform_name`, [String(fundId)]);
         row.platforms = pl.rows;
     } catch { row.platforms = []; }
+    // The per-fund NAV quality ledger (compute_fund_data_quality.py): cadence,
+    // coverage, worst gap, grade. Published on the profile as a fact about OUR
+    // history of the fund — the spec's "confidence/status" field — never as a
+    // judgement of the fund. Isolated: a missing table cannot break the page.
+    try {
+        const q = await db.query(
+            `SELECT grade, coverage_pct, cadence, points, first_date, worst_gap_days, worst_gap_from, worst_gap_to
+             FROM fund_data_quality WHERE fund_id = $1`, [String(fundId)]);
+        const qr = q.rows[0] as Record<string, unknown> | undefined;
+        if (qr) {
+            row.quality_grade = qr.grade;
+            row.quality_coverage_pct = qr.coverage_pct;
+            row.quality_cadence = qr.cadence;
+            row.quality_points = qr.points;
+            row.quality_first_date = qr.first_date instanceof Date ? qr.first_date.toISOString().slice(0, 10) : qr.first_date;
+            row.quality_worst_gap_days = qr.worst_gap_days;
+            row.quality_worst_gap_from = qr.worst_gap_from instanceof Date ? qr.worst_gap_from.toISOString().slice(0, 10) : qr.worst_gap_from;
+            row.quality_worst_gap_to = qr.worst_gap_to instanceof Date ? qr.worst_gap_to.toISOString().slice(0, 10) : qr.worst_gap_to;
+        }
+    } catch { /* isolated */ }
     // Asset-manager profile from the STATIC harvested set (23 houses in
     // lib/asset-managers.ts). Matched by normalised, Arabic-aware token-set
     // equality (precise: "اتون فاروس" never matches a "فاروس" fund). No DB
@@ -313,6 +362,7 @@ export const getFund = cache(async (fundId: number): Promise<Fund | null> => {
         'max_drawdown', 'volatility_annual', 'nav_points',
         'cagr', 'return_inception', 'inception_years', 'downside_deviation',
         'best_period', 'worst_period', 'positive_periods_pct', 'avg_gain', 'avg_loss', 'avg_period_days',
+        'quality_coverage_pct', 'quality_points', 'quality_worst_gap_days',
     ]);
     return row;
 });
@@ -569,17 +619,33 @@ export const getSymbolNews = cache(async (symbol: string, limit = 5): Promise<Ne
 });
 
 /** All-time price range + row count for the history page summary. */
-export const getHistoryStats = cache(async (symbol: string): Promise<Record<string, unknown> | null> => {
-    const result = await db.query(
-        `SELECT COUNT(*)::int AS rows, MIN(date) AS first_date, MAX(date) AS last_date,
-                MIN(low) AS all_time_low, MAX(high) AS all_time_high
-         FROM ohlc_data WHERE UPPER(symbol) = $1`,
-        [symbol.toUpperCase()]
-    );
-    const row = result.rows[0] || null;
-    if (!row || !row.rows) return null;
-    return toNum(row, ['rows', 'all_time_low', 'all_time_high']);
-});
+// Cross-request cache: this is a full scan of a symbol's OHLC history for four
+// aggregates, and the price-history pages were the slowest tail of the whole
+// site (5-15 s cold, measured 2026-09-05) because every request re-ran it.
+// Daily bars change once per session; 15 minutes cannot show a stale figure
+// the page does not already date.
+const _historyStatsCached = unstable_cache(
+    async (symbol: string): Promise<Record<string, unknown> | null> => {
+        const result = await db.query(
+            `SELECT COUNT(*)::int AS rows, MIN(date) AS first_date, MAX(date) AS last_date,
+                    MIN(low) AS all_time_low, MAX(high) AS all_time_high
+             FROM ohlc_data WHERE UPPER(symbol) = $1`,
+            [symbol.toUpperCase()]
+        );
+        const row = result.rows[0] || null;
+        if (!row || !row.rows) return null;
+        // Dates go through the cache as JSON — normalise to ISO strings here so
+        // callers never see a Date on a cache miss and a string on a hit.
+        for (const k of ['first_date', 'last_date']) {
+            const v = row[k];
+            if (v instanceof Date) row[k] = v.toISOString();
+        }
+        return toNum(row, ['rows', 'all_time_low', 'all_time_high']);
+    },
+    ['seo:history-stats'],
+    { revalidate: 900, tags: ['seo-tickers'] }
+);
+export const getHistoryStats = cache((symbol: string): Promise<Record<string, unknown> | null> => _historyStatsCached(symbol.toUpperCase()));
 
 /** Sector list with counts + aggregate market cap (for /sectors hubs). */
 // Sector aggregates change slowly (membership + summed caps) and power the
@@ -702,7 +768,13 @@ const _allFundsRankedCached = unstable_cache(
     // Rank in JS on the coalesced value (the raw return_1y column is all-NULL,
     // so an SQL ORDER BY on it would be meaningless).
     rows.sort((a, b) => ((b.return_1y as number | null) ?? -Infinity) - ((a.return_1y as number | null) ?? -Infinity));
-    return rows;
+    // THE CURRENT-FUND UNIVERSE. A fund that has not published a NAV for over
+    // DORMANT_DAYS is closed, matured or frozen at source; it stays reachable
+    // through its own page (getFund) but is not a current price, a ranked
+    // return, a category member or a provider's live product. The public API
+    // already drops these, so this is also what makes the crawler-facing
+    // pre-render equal to what the marketplace shows a visitor.
+    return rows.filter((r) => !fundIsDormant(r.last_nav_date));
     },
     ['seo:all-funds-ranked'],
     { revalidate: 900, tags: ['seo-funds'] }

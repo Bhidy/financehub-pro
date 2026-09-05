@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { sectorDescription } from '@/content/sector-descriptions';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getAllTickers, getSectors } from '@/lib/public-data';
@@ -92,6 +93,12 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
                 {match.market_cap !== null && Number.isFinite(match.market_cap) && (<> — بإجمالي قيمة سوقية {fmtCap(match.market_cap)} ج.م</>)}.
                 اضغط على أي شركة لعرض ملفها الكامل. محدَّث يوميًا{asOfHuman && <>؛ الأسعار بتاريخ {asOfHuman}</>}.
             </p>
+            {sectorDescription(match.sector_name, 'ar') && (
+                <section className="mt-5 max-w-3xl" aria-label="عن هذا القطاع">
+                    <h2 className="text-lg font-bold text-main">ماذا يضم قطاع {ar}</h2>
+                    <p className="mt-2 leading-relaxed text-muted">{sectorDescription(match.sector_name, 'ar')}</p>
+                </section>
+            )}
 
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[640px] text-sm">
@@ -116,7 +123,7 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
                                     <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-teal">{t.symbol}</Link>
                                 </td>
                                 <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
-                                <td className={`px-4 py-2.5 font-semibold tabular-nums ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'}`} dir="ltr">{t.change_percent !== null ? `${t.change_percent >= 0 ? '+' : ''}${t.change_percent.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—'}</td>
+                                <td className={`px-4 py-2.5 font-semibold tabular-nums ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'}`} dir="ltr">{t.change_percent !== null ? `${t.change_percent >= 0 ? '+' : ''}${t.change_percent.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—'}</td>
                                 <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtCap(t.market_cap)}</td>
                             </tr>
                         ))}

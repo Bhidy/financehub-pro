@@ -45,8 +45,8 @@ export function providersMetadata(lang: 'en' | 'ar'): Metadata {
     const isAr = lang === 'ar';
     const canonical = isAr ? PATH_AR : PATH_EN;
     const title = isAr
-        ? 'مديرو صناديق الاستثمار في مصر — جدول ترتيب البنوك وشركات إدارة الأصول'
-        : 'Egyptian Fund Providers — Banks & Asset Managers League Table';
+        ? 'مديرو صناديق الاستثمار في مصر — جدول الترتيب'
+        : 'Egyptian Fund Providers — League Table';
     const description = isAr
         ? 'كل بنك وشركة إدارة أصول تقدّم صناديق استثمار في مصر: عدد الصناديق، والفئات، ووسيط عائد سنة، وأفضل صندوق، وأقل رسوم إدارة — من الإفصاحات الرسمية.'
         : 'Every bank and asset manager offering Egyptian mutual funds: fund count, categories, median 1-year return, best fund and lowest management fee — from official disclosures.';
@@ -197,7 +197,7 @@ export async function renderProvidersIndex(lang: 'en' | 'ar') {
                                 <td className={`px-4 py-2.5 text-muted ${isAr ? 'text-right' : 'text-left'}`}>{roleLabel(s.p.role)}</td>
                                 <td className={`${tdNum} font-bold text-main`}>{s.funds.length}</td>
                                 <td className={`px-4 py-2.5 text-xs text-muted ${isAr ? 'text-right' : 'text-left'}`}>{s.categories.length ? s.categories.join(isAr ? '، ' : ', ') : '—'}</td>
-                                <td className={`${tdNum} font-semibold ${s.median1y === null ? 'text-muted' : s.median1y >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{pctSigned(s.median1y)}</td>
+                                <td className={`${tdNum} font-semibold ${s.median1y === null ? 'text-muted' : s.median1y >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{pctSigned(s.median1y)}</td>
                                 <td className={`px-4 py-2.5 text-xs ${isAr ? 'text-right' : 'text-left'}`}>
                                     {s.best ? (
                                         <>

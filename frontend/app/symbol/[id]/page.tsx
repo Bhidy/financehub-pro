@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { getTicker, getStats, getCompanyProfile, getSectorPeers, getPerformance, getTechnicals, getSymbolNews } from '@/lib/public-data';
 import SymbolSeoSection from '@/components/seo/SymbolSeoSection';
 import SymbolPageClient from './SymbolPageClient';
@@ -26,12 +27,23 @@ export default async function SymbolOverviewPage({
     const symbol = (id || '').toUpperCase();
 
     let ticker = null;
+    let dbOk = true;
     try {
         ticker = await getTicker(symbol);
     } catch {
         // DB unreachable: the client app fetches its own data — degrade.
+        dbOk = false;
     }
-    if (!ticker) return <SymbolPageClient />;
+    if (!ticker) {
+        // 'unavailable' is not 'unknown symbol'. A DB outage degrades to the
+        // client app so a real company can never de-index itself; an UNKNOWN
+        // symbol with the database up must be a hard 404. Serving the app shell
+        // with a 200 here put 52 URLs — legacy Saudi numeric tickers and
+        // codes that never existed — in Search Console's soft-404 list, the
+        // exact class the Arabic page already refuses.
+        if (dbOk) notFound();
+        return <SymbolPageClient />;
+    }
 
     const [stats, profile, peers, perf, technicals, news] = await Promise.all([
         getStats(symbol).catch(() => null),

@@ -116,6 +116,9 @@ export type FundLabels = {
     domicile: string;
     dividendPolicy: string;
     navObservations: string;
+    historyQuality: string;
+    dormant: string;
+    dormantNotice: (date: string) => string;
     purchaseFrequency: string;
     redemptionFrequency: string;
     // fee labels
@@ -202,6 +205,9 @@ const EN: FundLabels = {
     domicile: 'Domicile',
     dividendPolicy: 'Dividend policy',
     navObservations: 'NAV observations',
+    historyQuality: 'Our NAV history (coverage)',
+    dormant: 'No NAV for 6+ months',
+    dormantNotice: (date: string) => `This fund has not published a net asset value since ${date}. It appears to be closed, matured or no longer reporting; the figures on this page are its last published record, not a current price, and it is excluded from rankings and today's price list.`,
     purchaseFrequency: 'Purchase frequency',
     redemptionFrequency: 'Redemption frequency',
     managementFee: 'Management fee',
@@ -391,6 +397,9 @@ const AR: FundLabels = {
     domicile: 'بلد التأسيس',
     dividendPolicy: 'سياسة التوزيعات',
     navObservations: 'عدد نقاط صافي قيمة الأصول',
+    historyQuality: 'تغطية سجل صافي قيمة الأصول لدينا',
+    dormant: 'بلا صافي قيمة أصول منذ 6+ أشهر',
+    dormantNotice: (date: string) => `لم ينشر هذا الصندوق صافي قيمة أصول منذ ${date}. يبدو أنه أُغلق أو انتهت مدته أو توقف عن الإفصاح؛ الأرقام في هذه الصفحة هي آخر سجل منشور له وليست سعراً حالياً، وهو مستبعد من الترتيبات ومن قائمة أسعار اليوم.`,
     purchaseFrequency: 'دورية الشراء',
     redemptionFrequency: 'دورية الاسترداد',
     managementFee: 'رسوم الإدارة',

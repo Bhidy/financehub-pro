@@ -5,6 +5,7 @@ import { getTicker, getDividendHistory, getDividendSummary, getSeasonalitySymbol
 import { SITE_URL, symbolPath, absUrl, symbolFromArParam, canonicalRedirectTarget } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import KeyTerms from '@/components/seo/KeyTerms';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
 import { DIVIDENDS, NAV, t, type Lang } from '@/content/symbol-pages-i18n';
 
@@ -249,6 +250,8 @@ export async function renderDividends(id: string, lang: Lang) {
                     the latest TradingView dividend data.
                 </p>
             )}
+
+            <KeyTerms slugs={['dividend', 'ex-dividend-date', 'dividend-yield', 'coupon']} lang={lang} />
 
             <p className="mt-4 text-xs text-muted">
                 {t(DIVIDENDS.sourceNote, lang)}

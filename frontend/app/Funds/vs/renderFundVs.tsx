@@ -183,7 +183,7 @@ type CompareRow = {
 function returnCell(value: number | null, otherValue: number | null) {
     if (value === null) return <td className="px-4 py-2.5 text-muted">—</td>;
     const better = otherValue !== null && value > otherValue;
-    const color = value < 0 ? 'text-red-600' : value > 0 ? 'text-emerald-600' : 'text-main';
+    const color = value < 0 ? 'text-red-600' : value > 0 ? 'text-emerald-700' : 'text-main';
     return (
         <td className={`px-4 py-2.5 tabular-nums ${color} ${better ? 'font-bold' : 'font-medium'}`}>
             {fmtSignedPct(value)}

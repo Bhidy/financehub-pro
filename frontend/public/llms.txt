@@ -14,7 +14,7 @@
 - [EGX movers](https://startamarkets.com/markets/movers): today's top gainers, losers and most active stocks
 - [EGX 30 index](https://startamarkets.com/markets/egx30): live EGX 30 benchmark value, day change, 52-week range and its 30 constituents (Arabic: /ar/markets/egx30)
 - [Dividend calendar](https://startamarkets.com/markets/dividend-calendar): upcoming and recent EGX dividend ex-dates and payouts
-- [Arabic company pages](https://startamarkets.com/ar/symbol/COMI): بالعربية — pattern /ar/symbol/{TICKER}
+- [Arabic company pages](https://startamarkets.com/ar/symbol/COMI-%D8%A7%D9%84%D8%A8%D9%86%D9%83-%D8%A7%D9%84%D8%AA%D8%AC%D8%A7%D8%B1%D9%8A-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A): بالعربية — pattern /ar/symbol/{TICKER}-{arabic-company-slug} (a bare /ar/symbol/{TICKER} redirects there)
 - [Company pages](https://startamarkets.com/symbol/COMI): per-symbol live price, key statistics, financials, dividends, technicals and news (URL pattern: /symbol/{TICKER}; data pages: /symbol/{TICKER}/financials, /dividends, /technicals, /history)
 
 ## Mutual funds

@@ -91,7 +91,7 @@ export default async function ArHome() {
                 <Link href="/ar/markets/egx30" className="mt-6 flex flex-wrap items-baseline gap-3 rounded-2xl border border-border bg-surface px-5 py-4 hover:border-starta-teal/50">
                     <span className="text-xs font-bold uppercase tracking-widest text-muted">مؤشر EGX30</span>
                     <span className="text-2xl font-black tabular-nums tracking-tight" dir="ltr">{fmt(egx30.value)}</span>
-                    <span className={`text-base font-bold tabular-nums ${up ? 'text-emerald-600' : 'text-rose-600'}`} dir="ltr">
+                    <span className={`text-base font-bold tabular-nums ${up ? 'text-emerald-700' : 'text-rose-600'}`} dir="ltr">
                         {up ? '+' : ''}{fmt(egx30.change)} ({fmtPct(egx30.changePercent)})
                     </span>
                 </Link>
@@ -117,7 +117,7 @@ export default async function ArHome() {
                             <li key={t.symbol}>
                                 <Link href={`/ar/symbol/${t.symbol}`} className="inline-flex items-baseline gap-2 rounded-full border border-border bg-surface px-3.5 py-1.5 text-sm font-semibold hover:border-starta-teal/50">
                                     <span className="text-main">{t.name_ar || t.name_en || t.symbol}</span>
-                                    <span className="tabular-nums text-emerald-600" dir="ltr">{t.change_percent !== null ? `+${t.change_percent.toFixed(2)}%` : ''}</span>
+                                    <span className="tabular-nums text-emerald-700" dir="ltr">{t.change_percent !== null ? `+${t.change_percent.toFixed(2)}%` : ''}</span>
                                 </Link>
                             </li>
                         ))}

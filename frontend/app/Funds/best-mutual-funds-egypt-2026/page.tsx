@@ -21,7 +21,7 @@ import FundsGuide from '@/components/seo/FundsGuide';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Best-Performing Mutual Funds in Egypt (2026) — Ranked by 1-Year Return',
+    title: 'Best Mutual Funds in Egypt 2026 — Ranked by 1-Year Return',
     description:
         'Egyptian mutual funds ranked by trailing 1-year return, by category: money market, fixed income, equity and balanced. Live NAVs, fees and minimums — updated twice daily.',
     alternates: {
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     openGraph: {
             ...OG_DEFAULTS,
         type: 'article',
-        title: 'Best-Performing Mutual Funds in Egypt (2026) | Starta Markets',
+        title: 'Best Mutual Funds in Egypt 2026 | Starta Markets',
         description: 'Ranked by trailing 1-year return with live NAVs, fees and minimums.',
         url: '/Funds/best-mutual-funds-egypt-2026',
     },
@@ -187,7 +187,7 @@ export default async function BestFundsPage() {
                                             )}
                                         </td>
                                         <td className="px-4 py-2.5 text-muted">{categoryOf(f)}</td>
-                                        <td className={`px-4 py-2.5 text-right font-bold ${r1y !== null && r1y >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{fmtPct(r1y)}</td>
+                                        <td className={`px-4 py-2.5 text-right font-bold ${r1y !== null && r1y >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>{fmtPct(r1y)}</td>
                                         <td className="px-4 py-2.5 text-right">{fmtPct(num(f, 'return_ytd'))}</td>
                                         <td className="px-4 py-2.5 text-right">{fmtNav(num(f, 'latest_nav'))} {str(f, 'currency') || 'EGP'}</td>
                                     </tr>
@@ -241,7 +241,7 @@ export default async function BestFundsPage() {
                                                     {name}
                                                 </Link>
                                             </td>
-                                            <td className="px-4 py-2.5 text-right font-bold text-emerald-600">{fmtPct(num(f, 'return_1y'))}</td>
+                                            <td className="px-4 py-2.5 text-right font-bold text-emerald-700">{fmtPct(num(f, 'return_1y'))}</td>
                                             <td className="px-4 py-2.5 text-right">{fmtPct(num(f, 'return_3y'))}</td>
                                             <td className="px-4 py-2.5 text-right">{fee !== null ? `${fee.toFixed(2)}%` : '—'}</td>
                                             <td className="px-4 py-2.5 text-right">{minSub !== null ? minSub.toLocaleString('en-EG') : '—'}</td>

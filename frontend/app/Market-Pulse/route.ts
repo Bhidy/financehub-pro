@@ -1,6 +1,7 @@
-import { renderStaticHub, esc, jsonLdScript, hreflangLinks, langSeedScript } from '@/lib/static-hub';
-import { getEgx30Index } from '@/lib/public-data';
-import { SITE_URL } from '@/lib/seo';
+import { renderStaticHub, esc, escUrl, jsonLdScript, hreflangLinks, langSeedScript } from '@/lib/static-hub';
+import { getEgx30Index, getMarketLists, getAllTickers, getLatestNews } from '@/lib/public-data';
+import { SITE_URL, symbolPath, symbolPathAr } from '@/lib/seo';
+import { canonicalNewsPath, newsLang, sanitizeNewsText } from '@/lib/news-display';
 
 /**
  * /Market-Pulse — the designed watchlist + charting tool.
@@ -97,6 +98,76 @@ export async function renderMarketPulse(lang: 'en' | 'ar') {
                   ? [{ id: 'mpUpdated', html: esc(t.asOf(asOf)), mode: 'insert' as const }]
                   : []),
           ];
+
+    // THE PAGE'S OWN CONTENT, PRE-RENDERED. The movers panel, the market tape,
+    // the breadth line and the news panel are all filled by market-pulse.js
+    // from the same tables read here; to a crawler the page was 165 words with
+    // no company link at all — a HIGH thin-content finding on every audit
+    // since the money pages were built. This renders the same rows, from the
+    // same data, in the same markup the script writes on load (which then
+    // overwrites them). No prose is added for a crawler's sake.
+    try {
+        const [lists, tickers, news] = await Promise.all([
+            getMarketLists(10),
+            getAllTickers(),
+            getLatestNews(40),
+        ]);
+        const pct = (v: number | null | undefined) =>
+            v === null || v === undefined || !Number.isFinite(v) ? '--' : `${v >= 0 ? '+' : ''}${fmt(v)}%`;
+        const cls = (v: number | null | undefined) => (typeof v === 'number' && v < 0 ? 'negative' : 'positive');
+        const href = (sym: string, nameAr: string | null | undefined) =>
+            escUrl(encodeURI(isAr ? symbolPathAr(sym, nameAr) : symbolPath(sym)));
+        const row = (x: { symbol: string; last_price: number | null; change_percent: number | null; name_ar?: string | null }) =>
+            `<a class="mover-row" href="${href(x.symbol, x.name_ar)}">` +
+            `<span style="display:flex;align-items:center;gap:.48rem;font-weight:600;color:var(--ink)">${esc(x.symbol)}</span>` +
+            `<span class="tabular">${esc(fmt(x.last_price))}</span>` +
+            `<strong class="tabular ${cls(x.change_percent)}">${esc(pct(x.change_percent))}</strong></a>`;
+        const movers = [...lists.gainers.slice(0, 5), ...lists.losers.slice(0, 5)];
+        if (movers.length) injections.push({ id: 'moverRows', html: movers.map(row).join(''), mode: 'insert' as const });
+
+        const tape = lists.active.filter((x) => !/^EG[A-Z0-9]{10}$/.test(x.symbol)).slice(0, 9);
+        if (tape.length) {
+            injections.push({
+                id: 'tickerTape',
+                html: tape
+                    .map(
+                        (x) =>
+                            `<span class="tape-entry"><strong><a href="${href(x.symbol, x.name_ar)}">${esc(x.symbol)}</a></strong>${esc(fmt(x.last_price))} <span class="${cls(x.change_percent)}">${esc(pct(x.change_percent))}</span></span>`
+                    )
+                    .join(''),
+                mode: 'insert' as const,
+            });
+        }
+
+        const adv = tickers.filter((x) => typeof x.change_percent === 'number' && x.change_percent > 0).length;
+        const dec = tickers.filter((x) => typeof x.change_percent === 'number' && x.change_percent < 0).length;
+        if (tickers.length) {
+            injections.push({ id: 'totalStocks', html: esc(tickers.length.toLocaleString('en-EG')), mode: 'replace' as const });
+            injections.push({ id: 'breadthCount', html: esc(`${adv.toLocaleString('en-EG')} / ${dec.toLocaleString('en-EG')}`), mode: 'replace' as const });
+            const reading = isAr
+                ? `${adv} سهماً مرتفعاً مقابل ${dec} منخفضاً من أصل ${tickers.length} ورقة مقيدة${value !== null ? `؛ مؤشر EGX 30 عند ${fmt(value)} (${pct(changePct)})` : ''}${asOf ? ` — حتى ${asOf}` : ''}.`
+                : `${adv} advancers against ${dec} decliners across ${tickers.length} listed securities${value !== null ? `; EGX 30 at ${fmt(value)} (${pct(changePct)})` : ''}${asOf ? ` — as of ${asOf}` : ''}.`;
+            injections.push({ id: 'marketReading', html: esc(reading), mode: 'insert' as const });
+        }
+
+        const items = news.filter((a) => newsLang(a) === lang).slice(0, 3);
+        if (items.length) {
+            injections.push({
+                id: 'newsRows',
+                html: items
+                    .map((a) => {
+                        const headline = sanitizeNewsText(a.headline);
+                        const when = a.published_at ? new Date(a.published_at).toLocaleDateString(t.locale, { day: 'numeric', month: 'short', timeZone: 'Africa/Cairo' }) : '';
+                        return `<a class="news-card" href="${escUrl(encodeURI(canonicalNewsPath(a.id, a.headline, a.source_section)))}"><div class="news-copy"><h3>${esc(headline)}</h3><time>${esc(when)}</time></div></a>`;
+                    })
+                    .join(''),
+                mode: 'insert' as const,
+            });
+        }
+    } catch (error) {
+        // A failed panel read leaves the shell as it was — never a broken page.
+        console.error('[hub:market-pulse] panel pre-render failed:', (error as Error).message);
+    }
 
     const dataset =
         value === null

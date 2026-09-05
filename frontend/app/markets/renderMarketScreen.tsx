@@ -159,7 +159,7 @@ export async function renderMarketScreen(slug: string, lang: 'en' | 'ar') {
                                     ? chg === null
                                         ? 'text-main'
                                         : chg >= 0
-                                          ? 'text-emerald-600'
+                                          ? 'text-emerald-700'
                                           : 'text-red-600'
                                     : 'text-main';
                             return (

@@ -212,7 +212,7 @@ export async function renderNavHistory(id: string, lang: Lang) {
                                     <th scope="row" className={`px-4 py-2.5 font-semibold text-main ${isAr ? 'text-right' : 'text-left'}`} dir="ltr">{r.year}</th>
                                     <td className={`px-4 py-2.5 text-muted ${isAr ? 'text-right' : 'text-left'}`}>{humanDate(r.date, lang)}</td>
                                     <td className={tdNum}>{fmtNav(r.nav, lang)} <span className="text-xs text-muted">{currency}</span></td>
-                                    <td className={`px-4 py-2.5 font-bold tabular-nums ${isAr ? 'text-left' : 'text-right'} ${r.change === null ? 'text-muted' : r.change >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                    <td className={`px-4 py-2.5 font-bold tabular-nums ${isAr ? 'text-left' : 'text-right'} ${r.change === null ? 'text-muted' : r.change >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
                                         {fmtPct(r.change)}
                                     </td>
                                 </tr>

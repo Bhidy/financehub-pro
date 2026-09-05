@@ -104,7 +104,7 @@ export default async function CompaniesArPage() {
                                 <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">
                                     {t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}
                                 </td>
-                                <td className={`px-4 py-2.5 font-semibold tabular-nums ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-600' : 'text-red-600'}`} dir="ltr">
+                                <td className={`px-4 py-2.5 font-semibold tabular-nums ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'}`} dir="ltr">
                                     {t.change_percent !== null ? `${t.change_percent >= 0 ? '+' : ''}${t.change_percent.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—'}
                                 </td>
                                 <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtCap(t.market_cap)}</td>

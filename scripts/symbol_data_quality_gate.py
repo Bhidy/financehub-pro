@@ -133,13 +133,26 @@ def check_symbol(base: str, sym: str, min_year: int) -> list[str]:
                 if ratio < 1e-4:
                     v.append(f"{sym}: net_income {ni:,.0f} is {ratio:.1e}x market_cap "
                              f"{market_cap:,.0f} — SCALE BUG")
-            # reconcile financials table vs profile TTM — BOTH TradingView now, so
-            # they must match closely (cross-tab consistency guard).
-            if ni is not None and profile_ni is not None and profile_ni != 0:
-                rr = abs(ni - profile_ni) / abs(profile_ni)
-                if rr > 0.2:
-                    v.append(f"{sym}: net_income table={ni:,.0f} vs profile_ttm={profile_ni:,.0f} "
-                             f"disagree {rr:.0%} (TV sources must agree)")
+            # reconcile the financials table vs the profile — BOTH TradingView, so
+            # the SAME PERIOD must match closely (cross-tab consistency guard).
+            #
+            # Same period, not FY-vs-TTM. The previous rule compared the latest
+            # ANNUAL net income with the profile's TRAILING-TWELVE-MONTH figure
+            # at 20%, and paged on MFPC (FY 11.3bn vs TTM 15.4bn, 27% apart) —
+            # which is not a data defect: two strong quarters after the fiscal
+            # year end legitimately put TTM above FY. It failed on every push
+            # from 2026-09-03. The guard exists to catch SCALE and MAPPING bugs
+            # (a 1e6x millions leak, a wrong column), so: compare FY with the
+            # profile's own FY figure at 20% when it is present, and only fall
+            # back to FY-vs-TTM at 50% — wide enough for a growing company,
+            # still far below any scale error.
+            profile_ni_fy = _f(stats.get("net_income_fy")) if isinstance(stats, dict) else None
+            ref, tol, label = (profile_ni_fy, 0.2, "profile_fy") if profile_ni_fy else (profile_ni, 0.5, "profile_ttm")
+            if ni is not None and ref is not None and ref != 0:
+                rr = abs(ni - ref) / abs(ref)
+                if rr > tol:
+                    v.append(f"{sym}: net_income table={ni:,.0f} vs {label}={ref:,.0f} "
+                             f"disagree {rr:.0%} (> {tol:.0%}; TV sources must agree for the same period)")
             # freshness — flag only GENUINE multi-year staleness (>= 2 years behind).
             # A 1-year lag is normal: not every issuer has filed the prior FY yet, and
             # TradingView itself may only carry through FY(year-1) for some names

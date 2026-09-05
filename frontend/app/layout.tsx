@@ -62,8 +62,11 @@ const spaceGrotesk = Space_Grotesk({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Pinch-zoom is a user's right (WCAG 1.4.4) and Lighthouse fails the page
+  // without it; the public pages never needed the lock. The Capacitor app
+  // shell (/mobile) declares its own locked viewport.
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: "cover",
   interactiveWidget: "resizes-content",
   themeColor: "#0f172a",

@@ -398,7 +398,11 @@ function auditPage(url, res) {
     }
     if (FUND_TEMPLATES.test(path) && Number.isFinite(newest)) {
         const ageDays = Math.floor((Date.now() - newest) / DAY);
-        if (ageDays > 60) {
+        if (facts.fundStatus === 'dormant') {
+            // Declared on the page itself and excluded from every current list:
+            // report for visibility, never as a freshness defect.
+            if (ageDays > 60) f.add('low', 'FUND_DORMANT', `${path} is a dormant fund (last NAV ${ageDays} days ago) and says so`, { url, ageDays });
+        } else if (ageDays > 60) {
             f.add('high', 'DATA_STALE', `${path}: newest as-of date on the page is ${ageDays} days old — frozen data presented as current`, { url, ageDays, newest: new Date(newest).toISOString().slice(0, 10) });
         } else if (ageDays > 21) {
             f.add('medium', 'DATA_STALE', `${path}: newest as-of date on the page is ${ageDays} days old`, { url, ageDays, newest: new Date(newest).toISOString().slice(0, 10) });

@@ -117,6 +117,9 @@ export function extractHtmlFacts(html) {
         subheadings: [],
         /** Visible text (scripts/styles stripped). */
         text: '',
+        /** data-fund-status="dormant|active" on fund pages — a page that
+         *  declares dormancy is honest about an old NAV, not stale. */
+        fundStatus: null,
         ogTitle: null,
         ogImage: null,
         jsonLd: [],
@@ -173,6 +176,9 @@ export function extractHtmlFacts(html) {
             }
         }
     }
+
+    const fs = /data-fund-status=["'](dormant|active)["']/i.exec(html);
+    if (fs) facts.fundStatus = fs[1].toLowerCase();
 
     const htmlTag = /<html\b[^>]*>/i.exec(html);
     if (htmlTag) {

@@ -47,7 +47,7 @@ export async function pricesTodayMetadata(lang: 'en' | 'ar'): Promise<Metadata> 
     const canonical = encodeURI(isAr ? PATH_AR : PATH_EN);
     const title = isAr
         ? 'أسعار وثائق صناديق الاستثمار اليوم في مصر'
-        : 'Egyptian Mutual Fund Prices Today — Unit NAV for Every Fund';
+        : 'Egyptian Mutual Fund Prices Today — Unit NAVs';
     const description = isAr
         ? 'سعر وثيقة كل صندوق استثمار مصري اليوم مع تاريخ آخر إفصاح، مرتبة أبجدياً — صناديق أسواق النقد والدخل الثابت والأسهم والذهب والصناديق المتوافقة مع الشريعة.'
         : 'Today’s published unit price for every Egyptian mutual fund with the date each price is as of — money market, fixed income, equity, gold, balanced and Shariah-compliant funds.';
@@ -252,7 +252,7 @@ export async function renderPricesToday(lang: 'en' | 'ar') {
                                             </span>
                                         )}
                                     </td>
-                                    <td className={`px-4 py-2.5 font-semibold tabular-nums ${isAr ? 'text-left' : 'text-right'} ${r1y === null ? 'text-muted' : r1y >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                    <td className={`px-4 py-2.5 font-semibold tabular-nums ${isAr ? 'text-left' : 'text-right'} ${r1y === null ? 'text-muted' : r1y >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
                                         {fmtPct(r1y)}
                                     </td>
                                 </tr>

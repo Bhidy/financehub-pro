@@ -57,6 +57,7 @@
     "^/methodology$",
     "^/sectors$",
     "^/sectors/[^/]+$",
+    "^/sectors/egx/[^/]+$",
     "^/symbol/[^/]+$",
     "^/symbol/[^/]+/dividends$",
     "^/symbol/[^/]+/financials$",

@@ -49,7 +49,7 @@ export function providersMetadata(lang: 'en' | 'ar'): Metadata {
         : 'Egyptian Fund Providers — League Table';
     const description = isAr
         ? 'كل بنك وشركة إدارة أصول تقدّم صناديق استثمار في مصر: عدد الصناديق، والفئات، ووسيط عائد سنة، وأفضل صندوق، وأقل رسوم إدارة — من الإفصاحات الرسمية.'
-        : 'Every bank and asset manager offering Egyptian mutual funds: fund count, categories, median 1-year return, best fund and lowest management fee — from official disclosures.';
+        : 'Every bank and asset manager offering Egyptian mutual funds: fund count, categories, median 1-year return, best fund and lowest fee — from disclosures.';
     return {
         title,
         description,

@@ -37,7 +37,7 @@ type Section = {
 const EN: { title: string; description: string; h1: string; lede: string; sections: Section[]; related: Array<{ href: string; label: string }> } = {
     title: 'Methodology — Sources, Formulas & Quality Grades',
     description:
-        'Where Starta Markets’ EGX and mutual-fund data comes from, how often it refreshes, exactly how trailing returns, volatility, drawdown and CAGR are computed, how each fund’s history is graded, and why a missing figure is never shown as zero.',
+        'Where Starta’s EGX and fund data comes from, how often it refreshes, how returns, volatility and CAGR are computed, and why a missing figure is never shown as zero.',
     h1: 'Methodology',
     lede:
         'How every figure on this site is produced: the sources and their refresh cadence, the formulas behind returns and risk, the tolerances that decide when a figure is withheld, the per-fund data-quality grades, and the checks that run on the live site every day.',
@@ -198,7 +198,7 @@ const EN: { title: string; description: string; h1: string; lede: string; sectio
 const AR: typeof EN = {
     title: 'المنهجية — المصادر والمعادلات ودرجات الجودة',
     description:
-        'من أين تأتي بيانات البورصة المصرية وصناديق الاستثمار في ستارتا ماركتس، وكم مرة تُحدَّث، وكيف تُحسب العوائد التاريخية والتقلب وأقصى الانخفاض ومعدل النمو السنوي المركّب بالضبط، وكيف يُصنَّف تاريخ كل صندوق، ولماذا لا يُعرض الرقم المفقود صفراً أبداً.',
+        'من أين تأتي بيانات البورصة وصناديق الاستثمار في ستارتا، وكم مرة تُحدَّث، وكيف تُحسب العوائد والتقلب ومعدل النمو المركّب، ولماذا لا يُعرض الرقم المفقود صفراً.',
     h1: 'المنهجية',
     lede:
         'كيف يُنتَج كل رقم على هذا الموقع: المصادر وتواتر تحديثها، والمعادلات وراء العوائد والمخاطر، والحدود التي تقرر متى يُحجب الرقم، ودرجات جودة البيانات لكل صندوق، والفحوص التي تعمل على الموقع الحي يومياً.',

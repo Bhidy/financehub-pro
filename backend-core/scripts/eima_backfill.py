@@ -80,6 +80,14 @@ MAX_RETRIES = 3
 SOURCE_PUBLISHED = "eima_report"
 SOURCE_DERIVED = "eima_derived"
 
+# Exported for the CI write-contract (qa/egx_audit.py). Columns source_url /
+# ingested_at are created by funds_nav_updater.NAV_DDL on every NAV run.
+SQL_INSERT_NAV_EIMA = """INSERT INTO nav_history (fund_id, date, nav, source, source_url, ingested_at)
+   SELECT fid, d, nav, src, url, NOW()
+   FROM unnest($1::text[], $2::date[], $3::numeric[], $4::text[], $5::text[]) AS t(fid, d, nav, src, url)
+   ON CONFLICT (fund_id, date) DO NOTHING
+   RETURNING date"""
+
 # Reconciliation thresholds.
 MATCH_WINDOW_DAYS = 4      # a stored NAV this close counts as the same observation
 MIN_OVERLAP_POINTS = 3     # fewer than this and the mapping is unproven
@@ -435,6 +443,10 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                 if not rep["report_date"]:
                     continue
                 parsed += 1
+                # Provenance: every point remembers the report it was read from.
+                for _p in rep.get("points", []):
+                    if isinstance(_p, dict):
+                        _p["source_url"] = u
                 # Key by (name, SECTION). Proven in production: two different
                 # funds — an equity and a money-market fund — parsed to the same
                 # name, their series MERGED, the equity points reconciled against
@@ -640,13 +652,11 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                 continue
             try:
                 res = await conn.fetch(
-                    """INSERT INTO nav_history (fund_id, date, nav, source)
-                       SELECT * FROM unnest($1::text[], $2::date[], $3::numeric[], $4::text[])
-                       ON CONFLICT (fund_id, date) DO NOTHING
-                       RETURNING date""",
+                    SQL_INSERT_NAV_EIMA,
                     [fid] * len(new), [p["date"] for p in new],
                     [p["nav"] for p in new],
-                    [SOURCE_DERIVED if p["derived"] else SOURCE_PUBLISHED for p in new])
+                    [SOURCE_DERIVED if p["derived"] else SOURCE_PUBLISHED for p in new],
+                    [p.get("source_url") for p in new])
                 stats["inserted"] += len(res)
             except Exception as e:  # noqa: BLE001 — per-fund isolation
                 if is_read_only_error(e):

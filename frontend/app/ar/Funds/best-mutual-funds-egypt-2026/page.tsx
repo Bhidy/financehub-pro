@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     // absolute: بدون لاحقة القالب (" | Starta Markets") التي رفعت العنوان إلى 76 حرفًا.
     title: { absolute: 'أفضل صناديق الاستثمار في مصر 2026 — مرتبة حسب العائد السنوي' },
     description:
-        'صناديق الاستثمار المصرية مرتبة حسب عائد آخر 12 شهرًا، حسب الفئة: أسواق النقد، الدخل الثابت، الأسهم، والمتوازنة. صافي قيمة الأصول والرسوم والحد الأدنى — محدَّث مرتين يوميًا.',
+        'صناديق الاستثمار المصرية مرتبة حسب عائد آخر 12 شهرًا حسب الفئة: أسواق النقد والدخل الثابت والأسهم والمتوازنة — مع الأسعار والرسوم، محدَّث مرتين يوميًا.',
     alternates: {
         canonical: '/ar/Funds/best-mutual-funds-egypt-2026',
         languages: {
@@ -66,14 +66,18 @@ const CATEGORY_KEY_TO_NAME: Record<string, string> = {
     'equity': 'Equity Funds',
     'balanced': 'Balanced Funds',
     'shariah': 'Shariah-Compliant Funds',
+    'index': 'Index Funds',
+    'sector': 'Sector & Thematic Funds',
 };
-const CATEGORY_ORDER = ['Money Market Funds', 'Fixed Income Funds', 'Equity Funds', 'Balanced Funds', 'Shariah-Compliant Funds', 'Other Funds'];
+const CATEGORY_ORDER = ['Money Market Funds', 'Fixed Income Funds', 'Equity Funds', 'Index Funds', 'Sector & Thematic Funds', 'Balanced Funds', 'Shariah-Compliant Funds', 'Other Funds'];
 const CATEGORY_AR: Record<string, string> = {
     'Money Market Funds': 'صناديق أسواق النقد',
     'Fixed Income Funds': 'صناديق الدخل الثابت',
     'Equity Funds': 'صناديق الأسهم',
     'Balanced Funds': 'الصناديق المتوازنة',
     'Shariah-Compliant Funds': 'الصناديق المتوافقة مع الشريعة',
+    'Index Funds': 'صناديق المؤشرات',
+    'Sector & Thematic Funds': 'الصناديق القطاعية والموضوعية',
     'Other Funds': 'صناديق أخرى',
 };
 

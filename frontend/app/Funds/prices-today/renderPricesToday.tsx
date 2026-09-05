@@ -49,8 +49,8 @@ export async function pricesTodayMetadata(lang: 'en' | 'ar'): Promise<Metadata> 
         ? 'أسعار وثائق صناديق الاستثمار اليوم في مصر'
         : 'Egyptian Mutual Fund Prices Today — Unit NAVs';
     const description = isAr
-        ? 'سعر وثيقة كل صندوق استثمار مصري اليوم مع تاريخ آخر إفصاح، مرتبة أبجدياً — صناديق أسواق النقد والدخل الثابت والأسهم والذهب والصناديق المتوافقة مع الشريعة.'
-        : 'Today’s published unit price for every Egyptian mutual fund with the date each price is as of — money market, fixed income, equity, gold, balanced and Shariah-compliant funds.';
+        ? 'سعر وثيقة كل صندوق استثمار مصري اليوم مع تاريخ آخر إفصاح، مرتبة أبجدياً — أسواق النقد والدخل الثابت والأسهم والذهب والصناديق الإسلامية.'
+        : 'Today’s published unit price for every Egyptian mutual fund, dated per fund — money market, fixed income, equity, gold, balanced and Shariah funds.';
     return {
         title,
         description,
@@ -207,6 +207,14 @@ export async function renderPricesToday(lang: 'en' | 'ar') {
                         <time dateTime={asOfIso}>{asOfHuman}</time>.
                     </>
                 )}
+            </p>
+            {/* The same rows as a downloadable, citable table (one line per fund,
+                as-of date and return source per row). Additive link; the page's
+                own table is unchanged. */}
+            <p className="mt-2 text-sm text-muted">
+                <a href="/Funds/prices-today.csv" className="font-semibold text-starta-darkTeal hover:underline" rel="nofollow">
+                    {isAr ? 'تنزيل الجدول (CSV) — سعر الوثيقة وتاريخه ومصدر العائد لكل صندوق' : 'Download the table (CSV) — unit price, as-of date and return source per fund'}
+                </a>
             </p>
 
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">

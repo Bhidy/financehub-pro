@@ -20,14 +20,14 @@ const PATH_AR = '/ar/RiskAssessment';
 
 const META = {
     en: {
-        title: 'Investment Risk Assessment — Find Your Investor Profile',
+        title: 'Investment Risk Profile Assessment',
         description:
-            'Answer 7 questions in about 2 minutes to discover your investor risk profile — from Very Conservative to Aggressive — with a recommended asset allocation and matching Egyptian mutual-fund categories. Free educational tool.',
+            'Answer 7 questions to find your investor risk profile — Very Conservative to Aggressive — with a suggested allocation and matching Egyptian fund categories.',
     },
     ar: {
-        title: 'تقييم ملف المخاطر الاستثماري — اعرف ملفك وتوزيع أصولك',
+        title: 'تقييم ملف المخاطر الاستثماري',
         description:
-            'أجب عن 7 أسئلة خلال دقيقتين لتحديد ملف المخاطر الخاص بك — من متحفظ جداً إلى جريء — واحصل على توزيع أصول مقترح وفئات صناديق الاستثمار المصرية المناسبة لك. أداة تعليمية مجانية.',
+            'أجب عن 7 أسئلة لتحديد ملف المخاطر الخاص بك — من متحفظ جداً إلى جريء — مع توزيع أصول مقترح وفئات صناديق الاستثمار المناسبة لك.',
     },
 } as const satisfies Record<Lang, { title: string; description: string }>;
 

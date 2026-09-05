@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     // this to 74 chars — the ranked-by clause was the part that truncated.
     title: { absolute: 'Best Mutual Funds in Egypt 2026 — Ranked by 1-Year Return' },
     description:
-        'Egyptian mutual funds ranked by trailing 1-year return, by category: money market, fixed income, equity and balanced. Live NAVs, fees and minimums — updated twice daily.',
+        'Egyptian mutual funds ranked by trailing 1-year return, by category — money market, fixed income, equity, balanced. NAVs, fees and minimums, updated twice daily.',
     alternates: {
         canonical: '/Funds/best-mutual-funds-egypt-2026',
         languages: {
@@ -83,14 +83,18 @@ const CATEGORY_KEY_TO_NAME: Record<string, string> = {
     'equity': 'Equity Funds',
     'balanced': 'Balanced Funds',
     'shariah': 'Shariah-Compliant Funds',
+    'index': 'Index Funds',
+    'sector': 'Sector & Thematic Funds',
 };
-const CATEGORY_ORDER = ['Money Market Funds', 'Fixed Income Funds', 'Equity Funds', 'Balanced Funds', 'Shariah-Compliant Funds', 'Other Funds'];
+const CATEGORY_ORDER = ['Money Market Funds', 'Fixed Income Funds', 'Equity Funds', 'Index Funds', 'Sector & Thematic Funds', 'Balanced Funds', 'Shariah-Compliant Funds', 'Other Funds'];
 const CATEGORY_AR: Record<string, string> = {
     'Money Market Funds': 'صناديق أسواق النقد',
     'Fixed Income Funds': 'صناديق الدخل الثابت',
     'Equity Funds': 'صناديق الأسهم',
     'Balanced Funds': 'الصناديق المتوازنة',
     'Shariah-Compliant Funds': 'الصناديق المتوافقة مع الشريعة',
+    'Index Funds': 'صناديق المؤشرات',
+    'Sector & Thematic Funds': 'الصناديق القطاعية والموضوعية',
     'Other Funds': 'صناديق أخرى',
 };
 

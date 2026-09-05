@@ -77,7 +77,10 @@ export async function generateMetadata(
     // The query is the price; the incumbents show it in the title, ours did
     // not. The page states the as-of time, so a cached SERP title is never a
     // claim of freshness the page does not qualify.
-    const title = `${name} (${symbol}) Stock Price${price ? ` — ${price}` : ''}`;
+    // Price in the title (the query) unless the legal name makes it overflow —
+    // then the price goes before the name does (audit: 150 TITLE_TOO_LONG).
+    const withPrice = `${name} (${symbol}) Stock Price${price ? ` — ${price}` : ''}`;
+    const title = withPrice.length <= 60 ? withPrice : `${name} (${symbol}) Stock Price`;
     return {
         // absolute: the layout template appends the brand and pushed these to
         // 90+ characters; the company name and price are what the searcher reads.

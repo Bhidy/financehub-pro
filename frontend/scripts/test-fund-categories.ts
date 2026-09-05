@@ -56,6 +56,16 @@ check('is_shariah + equity', categoryOfFund({ fund_type_en: 'equity', is_shariah
 check('is_shariah string "true"', categoryOfFund({ fund_type_en: 'money_market', is_shariah: 'true' })?.key ?? null, 'shariah');
 check('classification says islamic', categoryOfFund({ classification_en: 'Islamic Fund' })?.key ?? null, 'shariah');
 
+console.log('\n[3b] name fallback when the disclosure carries no type (106 of 207 live funds)');
+check('"HSBC Money Market Fund Kol Youm" -> money-market', categoryOfFund({ fund_name_en: 'HSBC Money Market Fund Kol Youm' })?.key ?? null, 'money-market');
+check('"Commercial International Bank Fixed Income Fund Thabat" -> fixed-income', categoryOfFund({ fund_name_en: 'Commercial International Bank Fixed Income Fund Thabat' })?.key ?? null, 'fixed-income');
+check('"ABC Bank Equity Fund 1" -> equity', categoryOfFund({ fund_name_en: 'ABC Bank Equity Fund 1' })?.key ?? null, 'equity');
+check('"Beltone EGX70 EWI Fund B 70" -> index', categoryOfFund({ fund_name_en: 'Beltone EGX70 EWI Fund B 70' })?.key ?? null, 'index');
+check('"CI Asset Management CI ctor Specialized Funds Issuance 2 Technology" -> sector', categoryOfFund({ fund_name_en: 'CI Asset Management CI ctor Specialized Funds Issuance 2 Technology' })?.key ?? null, 'sector');
+check('"Sanabel Equity Fund Islamic Sharia Compliant" -> shariah (flag wins)', categoryOfFund({ fund_name_en: 'Sanabel Equity Fund Islamic Sharia Compliant' })?.key ?? null, 'shariah');
+check('Arabic "فضة" inside "منخفضة" is NOT silver/gold', categoryOfFund({ fund_name_en: 'Azimut Equity Opportunities Fund Az LV', fund_name: 'صندوق أزيموت لفرص الأسهم منخفضة التقلبات السعرية' })?.key ?? null, 'equity');
+check('"Credit Agricole Egypt Mutual Fund 2" stays uncategorised', categoryOfFund({ fund_name_en: 'Credit Agricole Egypt Mutual Fund 2' }), null);
+
 console.log('\n[4] unknown / empty input is uncategorised, never mis-assigned');
 check('empty row', categoryOfFund({}), null);
 check('null fields', categoryOfFund({ fund_type_en: null, fund_type: null, classification_en: null }), null);
@@ -82,8 +92,12 @@ console.log('\n[7] production distribution — every category clears the thresho
 // Counts observed in production on 2026-09-03. This is a canary: if a future
 // classifier change drops a category below its gate, the page 404s and the
 // sitemap shrinks silently. Here it fails loudly instead.
+// Refreshed 2026-09-05 after the name-fallback classifier (106 funds carried
+// no disclosed type) and the index / sector categories: counts are from the
+// live fund payloads of that day.
 const OBSERVED: Record<string, number> = {
-    equity: 39, 'money-market': 26, 'fixed-income': 20, balanced: 10, shariah: 4, gold: 3,
+    equity: 48, 'money-market': 57, 'fixed-income': 29, balanced: 12, shariah: 13, gold: 6,
+    index: 5, sector: 8,
 };
 for (const c of FUND_CATEGORIES) {
     const n = OBSERVED[c.key];

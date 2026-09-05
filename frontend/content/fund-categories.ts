@@ -144,6 +144,42 @@ export const FUND_CATEGORIES: FundCategory[] = [
         marketplaceType: 'gold',
     },
     {
+        key: 'index',
+        nameEn: 'Index Funds',
+        nameAr: 'صناديق المؤشرات',
+        slugSourceAr: 'صناديق المؤشرات',
+        titleEn: 'Index Funds in Egypt — EGX30, EGX33 & EGX70 Trackers',
+        titleAr: 'صناديق المؤشرات في مصر — EGX30 وEGX33 وEGX70',
+        descriptionEn:
+            'Every Egyptian index fund that tracks an EGX benchmark (EGX30, EGX33 Shariah, EGX35 LV, EGX70 EWI, EGX100) with its NAV, trailing returns and fees. Updated twice daily.',
+        descriptionAr:
+            'كل صناديق المؤشرات في مصر التي تتبع مؤشرات البورصة (EGX30 وEGX33 الشرعي وEGX35 وEGX70 وEGX100) مع صافي قيمة الأصول والعوائد والرسوم. تحديث مرتين يومياً.',
+        introEn:
+            'Index funds hold the constituents of a published Egyptian Exchange index — EGX30, EGX33 Shariah, EGX35 Low Volatility, EGX70 Equal-Weight or EGX100 — in the index’s own weights, so their net asset value follows the benchmark rather than a manager’s stock selection, typically at a lower management fee than an actively managed equity fund. The regulator counted 12 index funds by issuance at end-June 2026. Every index fund covered on this site is listed below with its reported NAV and trailing returns.',
+        introAr:
+            'تحتفظ صناديق المؤشرات بمكوّنات مؤشر معلن للبورصة المصرية — EGX30 أو EGX33 الشرعي أو EGX35 منخفض التقلب أو EGX70 متساوي الأوزان أو EGX100 — بأوزان المؤشر نفسها، فتتبع صافي قيمة أصولها المؤشر المرجعي لا اختيارات مدير الصندوق، وعادةً برسوم إدارة أقل من صناديق الأسهم المُدارة بنشاط. أحصت الهيئة 12 صندوق مؤشرات بإصداراتها في نهاية يونيو 2026. كل صناديق المؤشرات المغطاة على هذا الموقع مدرجة أدناه بصافي قيمة الأصول المعلنة والعوائد.',
+        match: (t) => /\bindex\b|مؤشر/.test(t),
+        marketplaceType: '',
+    },
+    {
+        key: 'sector',
+        nameEn: 'Sector & Thematic Funds',
+        nameAr: 'الصناديق القطاعية والموضوعية',
+        slugSourceAr: 'الصناديق القطاعية',
+        titleEn: 'Sector & Thematic Funds in Egypt — NAVs, Returns & Fees',
+        titleAr: 'الصناديق القطاعية والموضوعية في مصر — الأسعار والعوائد',
+        descriptionEn:
+            'Egyptian equity funds concentrated in one sector or theme — building materials, technology, exports, consumption, e-payment, real estate, IPOs — with NAVs, returns and fees.',
+        descriptionAr:
+            'صناديق الأسهم المصرية المركّزة في قطاع أو موضوع واحد — مواد البناء والتكنولوجيا والتصدير والاستهلاك والدفع الإلكتروني والعقارات والطروحات — مع الأسعار والعوائد والرسوم.',
+        introEn:
+            'Sector and thematic funds concentrate their equity holdings in a single sector or investment theme instead of the whole market — building materials, technology, exporters, consumption, electronic payments, real estate developers, financials, or a rules-based theme such as IPOs or high dividends. That concentration makes them more volatile than a broad equity fund and ties their returns to one part of the economy. The regulator counted 4 sector and 8 thematic funds by issuance at end-June 2026. Every such fund covered on this site is listed below.',
+        introAr:
+            'تركّز الصناديق القطاعية والموضوعية استثماراتها في قطاع أو موضوع واحد بدلاً من السوق كله — مواد البناء أو التكنولوجيا أو المصدّرين أو الاستهلاك أو الدفع الإلكتروني أو المطوّرين العقاريين أو الخدمات المالية، أو موضوع قائم على قواعد مثل الطروحات الجديدة أو التوزيعات المرتفعة. هذا التركيز يجعلها أكثر تقلباً من صندوق أسهم واسع ويربط عوائدها بجزء واحد من الاقتصاد. أحصت الهيئة 4 صناديق قطاعية و8 صناديق موضوعية بإصداراتها في نهاية يونيو 2026. كل صندوق من هذا النوع مغطى على هذا الموقع مدرج أدناه.',
+        match: (t) => /\bsector\b|\bthematic\b|قطاعي|موضوعي/.test(t),
+        marketplaceType: '',
+    },
+    {
         key: 'shariah',
         nameEn: 'Shariah-Compliant Funds',
         nameAr: 'الصناديق المتوافقة مع الشريعة',
@@ -197,6 +233,8 @@ export function categoryOfFund(row: {
     fund_type?: unknown;
     classification_en?: unknown;
     is_shariah?: unknown;
+    fund_name?: unknown;
+    fund_name_en?: unknown;
 }): FundCategory | null {
     // NORMALISE SEPARATORS FIRST. The source values are snake_case
     // ("money_market", "fixed_income", "fixed_income_usd"), and a matcher
@@ -226,6 +264,7 @@ export function categoryOfFund(row: {
     // that names no type stays uncategorised.
     const fromName = classifyFundByName(row as { fund_name?: unknown; fund_name_en?: unknown });
     if (fromName.shariah) return shariah;
+    if (fromName.type === 'index' || fromName.type === 'sector') return FUND_CATEGORIES.find((c) => c.key === fromName.type) ?? null;
     return fromName.type ? FUND_CATEGORIES.find((c) => c.marketplaceType === fromName.type) ?? null : null;
 }
 
@@ -238,7 +277,7 @@ export function categoryOfFund(row: {
  * on top (the manager's own "Sharia compliant"/"Islamic"), never inferred
  * from a bank's name.
  */
-export type FundTypeSlug = 'money_market' | 'fixed_income' | 'equity' | 'balanced' | 'gold';
+export type FundTypeSlug = 'money_market' | 'fixed_income' | 'equity' | 'balanced' | 'gold' | 'index' | 'sector';
 /**
  * Arabic word matcher. `\b` does not delimit Arabic letters in a JS regex, so
  * a bare token matches INSIDE other words — "فضة" (silver) matched
@@ -250,6 +289,11 @@ const AR_LETTER = '[\\u0600-\\u06FF]';
 const arWord = (...words: string[]): string =>
     `(?<!${AR_LETTER})(?:و|ب|ل|لل|ال|وال|بال)?(?:${words.join('|')})(?!${AR_LETTER})`;
 const NAME_TYPE_PATTERNS: Array<[FundTypeSlug, RegExp]> = [
+    // Index trackers name their benchmark; sector/thematic funds name their
+    // sector or a theme word. Both are checked BEFORE the asset class because
+    // an index fund is also an equity fund — the more specific page wins.
+    ['index', new RegExp(`\\bindex\\b|\\bEGX ?(?:30|33|35|70|100)\\b|\\bEFX ?35\\b|\\bEWI\\b|${arWord('مؤشر', 'مؤشرات', 'المؤشر')}`, 'i')],
+    ['sector', new RegExp(`\\bsector\\b|\\bthematic\\b|\\bspecialized funds\\b|\\bspeciaized funds\\b|\\bctor specialized\\b|\\bctor speciaized\\b|\\b(?:building|technology|export|consumption|e[- ]?payment|consumer|industrial|financial|real estate) fund\\b|\\bIPO\\b|${arWord('قطاعي', 'قطاعية', 'القطاعية', 'موضوعي', 'موضوعية', 'الموضوعية')}`, 'i')],
     ['gold', new RegExp(`\\b(gold|precious\\s+metals?|silver|commodit\\w*)\\b|${arWord('ذهب', 'دهب', 'معادن\\s*نفيسة', 'فضة', 'سلع')}`, 'i')],
     ['money_market', new RegExp(`\\bmoney\\s*market\\b|\\bliquidity\\b|\\bcash\\s+fund\\b|\\btreasury\\b|\\bt-?bills?\\b|${arWord('أسواق\\s*النقد', 'اسواق\\s*النقد', 'سوق\\s*النقد', 'نقدي', 'نقدية', 'سيولة')}`, 'i')],
     ['fixed_income', new RegExp(`\\bfixed\\s*income\\b|\\bbonds?\\b|\\bdebt\\b|\\bsukuk\\b|${arWord('دخل\\s*ثابت', 'الدخل\\s*الثابت', 'سندات', 'صكوك', 'أدوات\\s*الدين', 'ادوات\\s*الدين')}`, 'i')],
@@ -273,5 +317,8 @@ export function fundTypeSlug(row: { fund_type?: unknown; fund_name?: unknown; fu
     const raw = typeof row.fund_type === 'string' ? row.fund_type.trim().toLowerCase() : '';
     if (raw) return { slug: raw, source: 'disclosed' };
     const { type } = classifyFundByName(row);
-    return type ? { slug: type, source: 'name' } : { slug: '', source: 'none' };
+    // Index and sector funds are equity funds for the marketplace's type filter;
+    // the category pages carry the finer distinction.
+    const slug = type === 'index' || type === 'sector' ? 'equity' : type;
+    return slug ? { slug, source: 'name' } : { slug: '', source: 'none' };
 }

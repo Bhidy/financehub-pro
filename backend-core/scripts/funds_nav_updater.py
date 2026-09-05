@@ -224,7 +224,7 @@ async def fetch_one(client, sem, fund_id):
         return fund_id, None, src if src != "mubasher_csv" else src2
 
 
-async def write_one(conn, fund_id, pts) -> tuple[int, int]:
+async def write_one(conn, fund_id, pts, source: str = "mubasher_csv", source_url: str | None = None) -> tuple[int, int]:
     """Idempotent upsert of NAV history + reconcile mutual_funds latest_nav.
 
     Returns (new_dates, corrections) — INFORMATION GAIN, not rows attempted.
@@ -245,17 +245,9 @@ async def write_one(conn, fund_id, pts) -> tuple[int, int]:
     case, and now it is visible as zero instead of as success.
     """
     rows = await conn.fetch(
-        """INSERT INTO nav_history (fund_id, date, nav)
-           SELECT * FROM unnest($1::text[], $2::date[], $3::numeric[])
-           ON CONFLICT (fund_id, date) DO UPDATE
-             SET nav = EXCLUDED.nav,
-                 -- The primary source now vouches for this date: claim it, or a
-                 -- corrected row keeps its eima tag and the backfill's prune
-                 -- could later delete a value the real source re-supplied.
-                 source = 'mubasher_csv'
-             WHERE nav_history.nav IS DISTINCT FROM EXCLUDED.nav
-           RETURNING (xmax = 0) AS inserted""",
+        SQL_UPSERT_NAV,
         [fund_id] * len(pts), [d for d, _ in pts], [nav for _, nav in pts],
+        source, source_url,
     )
     new_dates = sum(1 for r in rows if r["inserted"])
     corrections = len(rows) - new_dates
@@ -289,6 +281,37 @@ async def write_one(conn, fund_id, pts) -> tuple[int, int]:
 # run, so there is no separate migration step to forget (same pattern as
 # fund_risk_metrics).
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# PER-OBSERVATION PROVENANCE (audit 2026-09-05, "each financial fact has source
+# lineage and timestamps"). Every NAV point records WHICH source vouched for it,
+# the URL of the file/report it was read from, and WHEN it was ingested. The
+# columns are added idempotently on every run (same self-migrating pattern as
+# fund_risk_metrics) so there is no separate migration step to forget. Adding
+# nullable columns / a defaulted timestamptz is a metadata-only ALTER in
+# PostgreSQL 11+ — instant, no rewrite, safe on the live table.
+# ---------------------------------------------------------------------------
+NAV_DDL = """
+ALTER TABLE nav_history ADD COLUMN IF NOT EXISTS source TEXT;
+ALTER TABLE nav_history ADD COLUMN IF NOT EXISTS source_url TEXT;
+ALTER TABLE nav_history ADD COLUMN IF NOT EXISTS ingested_at TIMESTAMPTZ DEFAULT NOW();
+"""
+
+# The primary writer's upsert. Exported so the CI write-contract (qa/egx_audit.py)
+# can dry-run the EXACT statement against the live schema after applying NAV_DDL.
+SQL_UPSERT_NAV = """INSERT INTO nav_history (fund_id, date, nav, source, source_url, ingested_at)
+   SELECT fid, d, nav, $4, $5, NOW()
+   FROM unnest($1::text[], $2::date[], $3::numeric[]) AS t(fid, d, nav)
+   ON CONFLICT (fund_id, date) DO UPDATE
+     SET nav = EXCLUDED.nav,
+         -- The primary source now vouches for this date: claim it, or a
+         -- corrected row keeps its eima tag and the backfill's prune
+         -- could later delete a value the real source re-supplied.
+         source = EXCLUDED.source,
+         source_url = EXCLUDED.source_url,
+         ingested_at = NOW()
+     WHERE nav_history.nav IS DISTINCT FROM EXCLUDED.nav
+   RETURNING (xmax = 0) AS inserted"""
+
 _RUNS_DDL = """
 CREATE TABLE IF NOT EXISTS fund_ingest_runs (
     id                  BIGSERIAL PRIMARY KEY,
@@ -357,6 +380,9 @@ async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
                   "skipping funds NAV update this cycle; resumes automatically when writes "
                   "are restored. Not an error.", flush=True)
             return 0
+        if not dry_run:
+            # Provenance columns: idempotent, metadata-only, every run.
+            await conn.execute(NAV_DDL)
         universe = await get_universe(conn, only_numeric, ids, limit)
         print(f"[funds-nav] universe={len(universe)} funds  dry_run={dry_run}", flush=True)
 
@@ -389,7 +415,8 @@ async def run(only_numeric=True, ids=None, limit=None, concurrency=8,
                         new_dates, corrections = 0, 0
                         n = len(pts)
                     else:
-                        new_dates, corrections = await write_one(conn, fund_id, pts)
+                        src_url = (CSV_URL if src == "mubasher_csv" else API_URL).format(fund_id=fund_id)
+                        new_dates, corrections = await write_one(conn, fund_id, pts, src, src_url)
                         n = new_dates + corrections
                     stats["updated"] += 1
                     stats["points_saved"] += n

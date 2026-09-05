@@ -2,8 +2,10 @@ import type { Metadata } from 'next';
 import { ltrNum } from '@/lib/bidi';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getTicker, getTickerAny, getStats, getCompanyProfile, getSectorPeers } from '@/lib/public-data';
-import ListingStatusNotice from '@/components/seo/ListingStatusNotice';
+import { getTicker, getTickerAny, getStats, getStatsMap, getCompanyProfile, getSectorPeers } from '@/lib/public-data';
+import { pairIsPublishable } from '@/content/stock-vs';
+import { canonicalPair } from '@/app/companies/vs/[pair]/renderStockVs';
+import ListingStatusPage from '@/components/seo/ListingStatusPage';
 import type { Ticker } from '@/lib/public-data';
 import { SITE_URL, symbolPath, symbolPathAr, symbolFromArParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
 import { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
@@ -11,6 +13,8 @@ import SymbolPageClient from '@/app/symbol/[id]/SymbolPageClient';
 import JsonLd from '@/components/seo/JsonLd';
 import KeyTerms from '@/components/seo/KeyTerms';
 import { sectorAr } from '@/content/sector-names-ar';
+import { officialSector } from '@/content/egx-official-sectors';
+import { egxSectorPath } from '@/app/sectors/egx/renderEgxSector';
 
 /**
  * Arabic company page at /ar/symbol/{SYMBOL} — the AR twin of the EN
@@ -143,7 +147,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // The live price in the title: 25,066 impressions on the Arabic company
     // pages over three months, 55 clicks (0.22%) at position 8.6 — the query
     // is "سعر سهم X" and the answer belongs in the title, as the incumbents do.
-    const title = `سعر سهم ${name} (${symbol}) اليوم${priceStr ? ` ${priceStr}` : ''} — البورصة المصرية`;
+    // The price belongs in the title (it is the query) — but a long legal name
+    // plus the price truncates in the SERP; drop the price segment first, then
+    // the market suffix, before the name itself (audit: 150 TITLE_TOO_LONG).
+    const full = `سعر سهم ${name} (${symbol}) اليوم${priceStr ? ` ${priceStr}` : ''} — البورصة المصرية`;
+    const title = full.length <= 60 ? full : `سعر سهم ${name} (${symbol}) اليوم${priceStr ? ` ${priceStr}` : ''}`.length <= 60 ? `سعر سهم ${name} (${symbol}) اليوم${priceStr ? ` ${priceStr}` : ''}` : `سعر سهم ${name} (${symbol}) اليوم`;
     let description = `تابع سعر سهم ${name} (${symbol}) في البورصة المصرية${priceStr ? ` — آخر سعر ${priceStr}` : ''}${ticker.sector_name ? `، قطاع ${sectorAr(ticker.sector_name)}` : ''}. إحصاءات وقوائم مالية وتوزيعات، تحديث كل 15 دقيقة.`;
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 
@@ -213,12 +221,7 @@ export default async function ArabicSymbolPage({ params }: Props) {
         // a reachable status page, never a live-looking quote; noindex.
         const any = await getTickerAny(symbol).catch(() => null);
         if (!any) notFound();
-        return (
-            <>
-                <ListingStatusNotice symbol={symbol} security={any.listing} lang="ar" />
-                <ArabicSymbolAppOnly />
-            </>
-        );
+        return <ListingStatusPage ticker={any} security={any.listing} lang="ar" />;
     }
 
     // Canonicalise: the bare-ticker form and any stale slug 308 to the current
@@ -230,13 +233,22 @@ export default async function ArabicSymbolPage({ params }: Props) {
     const redirectTarget = canonicalRedirectTarget(`/ar/symbol/${id}`, canonicalPath);
     if (redirectTarget) permanentRedirect(redirectTarget);
 
-    const [stats, profile, peers] = await Promise.all([
+    const [stats, profile, peers, statsMap] = await Promise.all([
         getStats(symbol).catch(() => null),
         getCompanyProfile(symbol).catch(() => null),
         ticker.sector_name
             ? getSectorPeers(ticker.sector_name, symbol, 6).catch(() => [] as Ticker[])
             : Promise.resolve([] as Ticker[]),
+        getStatsMap().catch(() => ({} as Record<string, Record<string, number | string | null>>)),
     ]);
+    // Head-to-head pages that clear the comparison gate (content/stock-vs.ts) —
+    // the same rule the sitemap uses, so no link can 404. The 634 comparison
+    // URLs had no inbound link at all (audit 2026-09-05).
+    const comparable = new Set(
+        peers
+            .filter((p) => pairIsPublishable(stats, ticker as unknown as Record<string, unknown>, statsMap[p.symbol.toUpperCase()] ?? null, p as unknown as Record<string, unknown>))
+            .map((p) => p.symbol.toUpperCase())
+    );
 
     const name = ticker.name_ar || ticker.name_en || symbol;
     const cur = ticker.currency || 'EGP';
@@ -358,6 +370,11 @@ export default async function ArabicSymbolPage({ params }: Props) {
                         </span>
                     )}
                     <span className="text-sm font-semibold text-muted">البورصة المصرية (EGX)</span>
+                    {officialSector(ticker.official_sector_en) && (
+                        <Link href={encodeURI(egxSectorPath(officialSector(ticker.official_sector_en)!, 'ar'))} prefetch={false} className="text-sm font-semibold text-teal-700 hover:underline">
+                            قطاع {officialSector(ticker.official_sector_en)!.ar} (تصنيف البورصة)
+                        </Link>
+                    )}
                     {ticker.sector_name && (
                         <span className="text-sm text-muted">قطاع {sectorAr(ticker.sector_name)}</span>
                     )}
@@ -438,6 +455,16 @@ export default async function ArabicSymbolPage({ params }: Props) {
                                         {p.name_ar || p.name_en || p.symbol}{' '}
                                         <span dir="ltr">({p.symbol.toUpperCase()})</span>
                                     </Link>
+                                    {comparable.has(p.symbol.toUpperCase()) && (
+                                        <Link
+                                            href={`/ar/companies/vs/${canonicalPair(symbol, p.symbol.toUpperCase())}`}
+                                            prefetch={false}
+                                            className="mr-1 inline-block rounded-full border border-teal-300/60 px-2.5 py-1.5 text-[12px] font-semibold text-teal-700 hover:bg-teal-50"
+                                            aria-label={`مقارنة ${symbol} مع ${p.symbol.toUpperCase()}`}
+                                        >
+                                            <span dir="ltr">{symbol} vs {p.symbol.toUpperCase()}</span>
+                                        </Link>
+                                    )}
                                 </li>
                             ))}
                         </ul>

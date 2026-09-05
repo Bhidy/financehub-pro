@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
-import { getTicker, getTickerAny, getStats, getCompanyProfile, getSectorPeers, getPerformance, getTechnicals, getSymbolNews } from '@/lib/public-data';
-import ListingStatusNotice from '@/components/seo/ListingStatusNotice';
+import { getTicker, getTickerAny, getStats, getStatsMap, getCompanyProfile, getSectorPeers, getPerformance, getTechnicals, getSymbolNews } from '@/lib/public-data';
+import { pairIsPublishable } from '@/content/stock-vs';
+import ListingStatusPage from '@/components/seo/ListingStatusPage';
 import SymbolSeoSection from '@/components/seo/SymbolSeoSection';
 import SymbolPageClient from './SymbolPageClient';
 
@@ -50,15 +51,10 @@ export default async function SymbolOverviewPage({
         // symbol is before any vendor figure, and the layout marks it noindex.
         const any = await getTickerAny(symbol).catch(() => null);
         if (!any) notFound();
-        return (
-            <>
-                <ListingStatusNotice symbol={symbol} security={any.listing} lang="en" />
-                <SymbolPageClient />
-            </>
-        );
+        return <ListingStatusPage ticker={any} security={any.listing} lang="en" />;
     }
 
-    const [stats, profile, peers, perf, technicals, news] = await Promise.all([
+    const [stats, profile, peers, perf, technicals, news, statsMap] = await Promise.all([
         getStats(symbol).catch(() => null),
         getCompanyProfile(symbol).catch(() => null),
         ticker.sector_name
@@ -67,7 +63,15 @@ export default async function SymbolOverviewPage({
         getPerformance(symbol).catch(() => null),
         getTechnicals(symbol).catch(() => null),
         getSymbolNews(symbol, 5).catch(() => []),
+        getStatsMap().catch(() => ({} as Record<string, Record<string, number | string | null>>)),
     ]);
+    // Head-to-head pages exist only for pairs that clear the comparison gate
+    // (content/stock-vs.ts) — the same rule the sitemap uses, so no link here
+    // can lead to a 404. 634 comparison URLs were sitemapped with no inbound
+    // link at all (audit 2026-09-05).
+    const comparablePeers = peers
+        .filter((p) => pairIsPublishable(stats, ticker as unknown as Record<string, unknown>, statsMap[p.symbol.toUpperCase()] ?? null, p as unknown as Record<string, unknown>))
+        .map((p) => p.symbol.toUpperCase());
 
     return (
         <>
@@ -80,6 +84,7 @@ export default async function SymbolOverviewPage({
                 perf={perf}
                 technicals={technicals}
                 news={news}
+                comparablePeers={comparablePeers}
             />
         </>
     );

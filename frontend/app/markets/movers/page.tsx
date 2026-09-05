@@ -18,14 +18,14 @@ import JsonLd from '@/components/seo/JsonLd';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'EGX Movers Today — Top Gainers, Losers & Most Active Stocks',
+    title: 'EGX Movers Today — Gainers, Losers, Most Active',
     description:
         'The biggest EGX movers today — top gainers, losers and most active Egyptian Exchange stocks by volume. Refreshed every 15 minutes during trading hours.',
     alternates: { canonical: '/markets/movers', languages: { en: '/markets/movers', ar: '/ar/markets/movers', 'x-default': '/ar/markets/movers' } },
     openGraph: {
             ...OG_DEFAULTS,
         type: 'website',
-        title: 'EGX Movers Today — Top Gainers, Losers & Most Active Stocks | Starta Markets',
+        title: 'EGX Movers Today — Gainers, Losers, Most Active | Starta Markets',
         description:
             'The biggest EGX movers today — top gainers, losers and most active Egyptian Exchange stocks by volume.',
         url: '/markets/movers',

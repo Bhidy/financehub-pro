@@ -28,9 +28,9 @@ export const dynamic = 'force-dynamic';
 const PATH_AR = '/ar/Funds';
 const PATH_EN = '/Funds';
 
-const AR_TITLE = 'صناديق الاستثمار في مصر — الأسعار والعوائد والرسوم | Starta Markets';
+const AR_TITLE = 'صناديق الاستثمار في مصر — الأسعار والعوائد | Starta Markets';
 const AR_DESC =
-    'كل صناديق الاستثمار في مصر: صافي قيمة الأصول والعوائد التاريخية ورسوم الإدارة ومدير كل صندوق، مصنّفة حسب الفئة ومحدثة مرتين يومياً من إفصاحات مديري الصناديق.';
+    'كل صناديق الاستثمار في مصر: صافي قيمة الأصول والعوائد ورسوم الإدارة ومدير كل صندوق، مصنّفة حسب الفئة ومحدثة مرتين يومياً من الإفصاحات الرسمية.';
 
 export async function GET() {
     let funds: Array<Record<string, unknown>> = [];

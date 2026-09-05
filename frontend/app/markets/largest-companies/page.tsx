@@ -15,7 +15,7 @@ import JsonLd from '@/components/seo/JsonLd';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Largest Companies on the EGX by Market Cap — Ranked',
+    title: 'Largest EGX Companies by Market Cap',
     description:
         'The biggest companies on the Egyptian Exchange (EGX) ranked by market capitalisation — the largest Egyptian listed stocks with live prices, updated daily.',
     alternates: {

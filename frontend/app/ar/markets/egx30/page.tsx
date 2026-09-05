@@ -13,7 +13,7 @@ import JsonLd from '@/components/seo/JsonLd';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'مؤشر EGX30 اليوم — القيمة المباشرة والتغير والشركات المكونة',
+    title: 'مؤشر EGX30 اليوم — القيمة والشركات المكونة',
     description:
         'مؤشر EGX30 — المؤشر الرئيسي للبورصة المصرية — قيمته المباشرة والتغير اليومي والنطاق السنوي والشركات الثلاثين المكونة له، محدث خلال جلسة التداول.',
     alternates: {

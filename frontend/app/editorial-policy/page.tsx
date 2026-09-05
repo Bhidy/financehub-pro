@@ -12,9 +12,9 @@ import JsonLd from '@/components/seo/JsonLd';
  */
 
 export const metadata: Metadata = {
-    title: 'Editorial Policy — Sourcing, Accuracy & AI Disclosure',
+    title: 'Editorial Policy — Sourcing & Accuracy',
     description:
-        'How Starta Markets sources, verifies and publishes Egyptian Exchange market data and news — our sourcing standards, accuracy process, AI-assistance disclosure and corrections policy.',
+        'How Starta Markets sources, verifies and publishes EGX market data and news: sourcing standards, accuracy process, AI disclosure and corrections policy.',
     alternates: {
         canonical: '/editorial-policy',
         languages: { en: '/editorial-policy', ar: '/ar/editorial-policy', 'x-default': '/ar/editorial-policy' },

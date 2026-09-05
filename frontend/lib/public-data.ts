@@ -1137,22 +1137,38 @@ export const getNewsWindow = cache((): Promise<Array<Record<string, unknown>>> =
  * only worth publishing on the full series, so this reads nav_history directly
  * rather than going through the capped endpoint.
  */
-export type NavPoint = { date: string; nav: number };
+export type NavPoint = { date: string; nav: number; source?: string | null; source_url?: string | null; ingested_at?: string | null };
 
 export const getFundNavHistory = cache(async (fundId: number): Promise<NavPoint[]> => {
-    const result = await db.query(
-        `SELECT date, nav FROM nav_history WHERE fund_id = $1 ORDER BY date ASC`,
-        [fundId]
-    );
+    // PROVENANCE COLUMNS (audit 2026-09-05): source / source_url / ingested_at
+    // are added to nav_history by the NAV updater's self-migration (NAV_DDL).
+    // Until the first post-deploy run they may not exist, so the read degrades
+    // to the core columns rather than 500 every fund page.
+    let result;
+    try {
+        result = await db.query(
+            `SELECT date, nav, source, source_url, ingested_at FROM nav_history WHERE fund_id = $1 ORDER BY date ASC`,
+            [fundId]
+        );
+    } catch {
+        result = await db.query(`SELECT date, nav FROM nav_history WHERE fund_id = $1 ORDER BY date ASC`, [fundId]);
+    }
     return (result.rows as Array<Record<string, unknown>>)
-        .map((r) => {
+        .map((r): NavPoint | null => {
             const d = r.date instanceof Date ? r.date : new Date(String(r.date));
             const nav = Number(r.nav);
             if (Number.isNaN(d.getTime()) || !Number.isFinite(nav) || nav <= 0) return null;
             // Local components, not toISOString: a pg DATE arrives at local
             // midnight and UTC conversion shifts it a day.
             const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            return { date: iso, nav };
+            const ing = r.ingested_at instanceof Date ? r.ingested_at.toISOString() : typeof r.ingested_at === 'string' ? r.ingested_at : null;
+            return {
+                date: iso,
+                nav,
+                source: typeof r.source === 'string' && r.source ? r.source : null,
+                source_url: typeof r.source_url === 'string' && r.source_url ? r.source_url : null,
+                ingested_at: ing,
+            };
         })
         .filter((p): p is NavPoint => p !== null);
 });

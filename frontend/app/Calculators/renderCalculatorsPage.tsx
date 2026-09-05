@@ -24,8 +24,8 @@ export function calculatorsMetadata(lang: Lang): Metadata {
             : 'Wealth Calculators — Retirement & Investment Planning | Starta';
     const description =
         lang === 'ar'
-            ? 'حاسبات ثروة مجانية من ستارتا ماركتس: مخطط تقاعد من 5 خطوات مع مقارنة السيناريوهات، ومحاكي نمو الاستثمار بنطاقات مونت كارلو — مصممة للمستثمر المصري وبالجنيه المصري.'
-            : 'Free wealth calculators from Starta Markets: a 5-step retirement planner with scenario comparison, and an investment growth simulator with Monte Carlo ranges — built for Egyptian investors, in EGP.';
+            ? 'حاسبات ثروة مجانية: مخطط تقاعد من 5 خطوات مع مقارنة السيناريوهات، ومحاكي نمو الاستثمار بنطاقات مونت كارلو — للمستثمر المصري وبالجنيه.'
+            : 'Free wealth calculators: a 5-step retirement planner with scenario comparison and an investment growth simulator with Monte Carlo ranges — in EGP.';
     const canonical = lang === 'ar' ? PATH_AR : PATH_EN;
     return {
         // The root layout template appends "| Starta Markets"; these titles carry

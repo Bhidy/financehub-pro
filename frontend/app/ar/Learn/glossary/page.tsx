@@ -14,7 +14,7 @@ import { GLOSSARY_TERMS, firstSentence } from '@/content/glossary-terms';
 const PATH = '/ar/Learn/glossary';
 
 export const metadata: Metadata = {
-    title: 'قاموس المصطلحات المالية — البورصة المصرية والاستثمار',
+    title: 'قاموس المصطلحات المالية والاستثمار',
     description:
         'تعريفات واضحة لثلاثين مصطلحًا أساسيًا في سوق الأسهم والاستثمار — من مكرر الربحية وصافي قيمة الأصول إلى قاطع التداول — بزاوية مصرية على البورصة المصرية.',
     alternates: {

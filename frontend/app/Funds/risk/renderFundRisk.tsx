@@ -32,10 +32,10 @@ const PATH_AR = '/ar/Funds/risk';
 export function fundRiskMetadata(lang: 'en' | 'ar'): Metadata {
     const isAr = lang === 'ar';
     const canonical = isAr ? PATH_AR : PATH_EN;
-    const title = isAr ? 'صناديق الاستثمار الأقل تقلباً في مصر — جدول المخاطر' : 'Lowest-Volatility Funds in Egypt — Risk Table';
+    const title = isAr ? 'صناديق الاستثمار الأقل تقلباً في مصر' : 'Lowest-Volatility Funds in Egypt — Risk Table';
     const description = isAr
-        ? 'التقلب السنوي وأقصى انخفاض والانحراف السلبي ومعدل النمو السنوي المركّب لكل صندوق استثمار مصري لديه تاريخ كافٍ من صافي قيمة الأصول، مرتبة من الأقل تقلباً — محسوبة من بيانات الصندوق نفسه.'
-        : 'Annualized volatility, maximum drawdown, downside deviation and CAGR for every Egyptian mutual fund with enough NAV history, least volatile first — computed from each fund’s own published NAVs.';
+        ? 'التقلب السنوي وأقصى انخفاض والانحراف السلبي ومعدل النمو المركّب لكل صندوق مصري لديه سجل كافٍ، مرتبة من الأقل تقلباً — محسوبة من بيانات الصندوق نفسه.'
+        : 'Annualized volatility, max drawdown, downside deviation and CAGR for every Egyptian fund with enough NAV history, least volatile first — from published NAVs.';
     return {
         title,
         description,

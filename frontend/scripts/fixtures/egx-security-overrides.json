@@ -10,6 +10,82 @@
         "https://english.mubasher.info/markets/EGX/stocks/GTHE"
       ],
       "note": "EGX published a Delisting Decree for Global Telecom Holding; shares delisted at the close of 9 Sep 2019 (VEON). Mubasher's market announcement of 11 Sep 2019 confirms. The 2026 prints TradingView relays under EGX:GTHE are off-board trades in a delisted security, not a listed EGX quote."
+    },
+    {
+      "symbol": "IRAX",
+      "isin": "EGS3D041C017",
+      "delisting_date": "2023-10-04",
+      "evidence": [
+        "https://english.mubasher.info/markets/EGX/stocks/IRAX"
+      ],
+      "note": "EGX market announcement 4 Oct 2023: 'De-Listing of El Ezz Aldekhela Steel - Alexandria (Main Market)', following the voluntary delisting procedures released 7-18 Sep 2023."
+    },
+    {
+      "symbol": "NCGC",
+      "isin": "EGS32131C012",
+      "delisting_date": "2021-06-14",
+      "evidence": [
+        "https://english.mubasher.info/markets/EGX/stocks/NCGC"
+      ],
+      "note": "EGX market announcement 14 Jun 2021: 'Approving the Final Voluntary Delisting for Nile Cotton Ginning Co.' after the board-approved voluntary delisting and share buyback from minority holders."
+    },
+    {
+      "symbol": "SUCE",
+      "isin": "EGS3C181C012",
+      "delisting_date": "2021-01-13",
+      "evidence": [
+        "https://english.mubasher.info/markets/EGX/stocks/SUCE",
+        "https://menafn.com/1101263428/Suez-Cement-Tourah-Portland-announce-voluntarily-delisting-from-Egyptian-Exchange"
+      ],
+      "note": "Suez Cement announced voluntary delisting in Dec 2020; company release of 13 Jan 2021 'Concerning The Delisting Of The Company's Shares' (Mubasher announcements). Date is the release date; the exchange decree date was not captured."
+    },
+    {
+      "symbol": "TORA",
+      "isin": "EGS3C311C015",
+      "delisting_date": null,
+      "evidence": [
+        "https://menafn.com/1101263428/Suez-Cement-Tourah-Portland-announce-voluntarily-delisting-from-Egyptian-Exchange",
+        "https://english.mubasher.info/markets/EGX/stocks/TORA/profile"
+      ],
+      "note": "Tourah Portland Cement's board approved voluntary delisting after Suez Cement's tender offer (Dec 2020); not on the EGX register on 2026-09-05. Exact decree date not captured."
+    },
+    {
+      "symbol": "PACH",
+      "isin": "EGS38311C014",
+      "delisting_date": "2023-11-15",
+      "evidence": [
+        "https://en.amwalalghad.com/egypt-regulator-approves-uaes-national-paints-holding-acquisition-of-pachin/",
+        "https://english.mubasher.info/markets/EGX/stocks/PACH/announcements"
+      ],
+      "note": "Final delisting of Paint & Chemicals Industries (Pachin) from the EGX Main Market on 15 Nov 2023 after National Paints Holding's acquisition; voluntary delisting within six months of closing."
+    },
+    {
+      "symbol": "NBKE",
+      "isin": "EGS60171C013",
+      "delisting_date": "2022-02-10",
+      "evidence": [
+        "https://www.african-markets.com/en/stock-markets/egx/egyptian-exchange-approves-delisting-of-national-bank-of-kuwait-egypt",
+        "https://english.mubasher.info/markets/EGX/stocks/NBKE/news"
+      ],
+      "note": "EGX Listing Committee approved the final delisting of National Bank of Kuwait Egypt and the deletion of its data from the EGX database as of 10 Feb 2022 (board decision to delist: Aug 2021)."
+    },
+    {
+      "symbol": "ALEX",
+      "isin": "EGS3H051C012",
+      "delisting_date": null,
+      "evidence": [
+        "https://english.mubasher.info/markets/EGX/stocks/ALEX"
+      ],
+      "note": "'EGX approves Alexandria Portland Cement's voluntary delisting procedures' (Mubasher corporate actions); not on the EGX register on 2026-09-05. Exact decree date not captured."
+    },
+    {
+      "symbol": "EITP",
+      "isin": "EGS70011C019",
+      "delisting_date": null,
+      "evidence": [
+        "https://english.mubasher.info/markets/EGX/stocks/EITP"
+      ],
+      "note": "Egyptian International Tourism Projects (Americana Egypt): 'EGX delists Americana Egypt's shares' after the 2020 voluntary delisting and MTO (Mubasher corporate actions); not on the EGX register on 2026-09-05."
     }
   ],
   "identity": [

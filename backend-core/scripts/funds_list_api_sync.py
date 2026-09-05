@@ -50,6 +50,15 @@ except ModuleNotFoundError:  # pragma: no cover
 # unit-testable — in environments without asyncpg installed.
 
 LIST_URL = "https://english.mubasher.info/api/1/funds?country=eg&size=500"
+
+# Per-observation provenance (audit 2026-09-05): the list API is a secondary
+# source, tagged as such with the URL it was read from. Columns are created by
+# funds_nav_updater.NAV_DDL (self-migrating); exported for the CI write-contract.
+SQL_UPSERT_NAV_LIST = """INSERT INTO nav_history (fund_id, date, nav, source, source_url, ingested_at)
+   VALUES ($1, $2, $3, 'mubasher_list_api', $4, NOW())
+   ON CONFLICT (fund_id, date) DO UPDATE
+     SET nav = EXCLUDED.nav, source = EXCLUDED.source, source_url = EXCLUDED.source_url, ingested_at = NOW()
+     WHERE nav_history.nav IS DISTINCT FROM EXCLUDED.nav"""
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 
@@ -241,10 +250,7 @@ async def run(dry_run=False, min_updated=1, discover=False):
                 stats["updated"] += 1
                 continue
             try:
-                await conn.execute(
-                    """INSERT INTO nav_history (fund_id, date, nav) VALUES ($1, $2, $3)
-                       ON CONFLICT (fund_id, date) DO UPDATE SET nav = EXCLUDED.nav""",
-                    fund_id, d, nav)
+                await conn.execute(SQL_UPSERT_NAV_LIST, fund_id, d, nav, LIST_URL)
                 await conn.execute(
                     """UPDATE mutual_funds f SET latest_nav = nh.nav,
                            last_update_date = nh.date, updated_at = NOW()

@@ -12,9 +12,9 @@ import JsonLd from '@/components/seo/JsonLd';
  */
 
 export const metadata: Metadata = {
-    title: 'About Starta Markets — Data Sources & Methodology',
+    title: 'About Starta Markets — Sources & Method',
     description:
-        'Starta Markets is a bilingual (Arabic/English) market-intelligence platform for the Egyptian Exchange: live EGX prices, 20 years of financials, mutual-fund NAVs and market news. How our data works and where it comes from.',
+        'Bilingual market intelligence for the Egyptian Exchange: live EGX prices, 20 years of financials, mutual-fund NAVs and news — and where every figure comes from.',
     alternates: {
         canonical: '/about',
         languages: { en: '/about', ar: '/ar/about', 'x-default': '/ar/about' },

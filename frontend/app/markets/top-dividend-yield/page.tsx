@@ -14,7 +14,7 @@ import JsonLd from '@/components/seo/JsonLd';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Highest Dividend Yield Stocks on the EGX — Ranked',
+    title: 'Highest Dividend Yield EGX Stocks — Ranked',
     description:
         'Egyptian Exchange (EGX) stocks ranked by trailing dividend yield — the highest-yielding EGX shares with live prices, updated daily. Ranking is mechanical',
     alternates: {

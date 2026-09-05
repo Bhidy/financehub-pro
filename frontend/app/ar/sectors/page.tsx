@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getSectors } from '@/lib/public-data';
+import { publishableEgxSectors } from '@/app/sectors/egx/renderEgxSector';
 import { SITE_URL, absUrl, sectorPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
@@ -11,7 +12,7 @@ import { sectorAr } from '@/content/sector-names-ar';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'قطاعات البورصة المصرية — الشركات المدرجة حسب القطاع',
+    title: 'قطاعات البورصة المصرية — الشركات حسب القطاع',
     description:
         'تصفح شركات البورصة المصرية (EGX) حسب القطاع — عدد الشركات والقيمة السوقية الإجمالية لكل قطاع، محدَّث يوميًا.',
     alternates: {
@@ -37,6 +38,7 @@ const fmtCap = (n: number | null): string => {
 
 export default async function SectorsArPage() {
     const sectors = await getSectors();
+    const official = await publishableEgxSectors().catch(() => []);
     const totalCompanies = sectors.reduce((sum, s) => sum + (s.companies || 0), 0);
 
     const itemListJsonLd = {
@@ -89,6 +91,24 @@ export default async function SectorsArPage() {
                     </tbody>
                 </table>
             </div>
+
+            {official.length > 0 && (
+                <section className="mt-8" aria-labelledby="egx-official-sectors">
+                    <h2 id="egx-official-sectors" className="text-lg font-bold text-main">التصنيف القطاعي الرسمي للبورصة المصرية</h2>
+                    <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+                        الجدول أعلاه يجمع الشركات وفق تصنيف مزوّد البيانات العالمي. أما البورصة المصرية فتصنّف كل شركة مقيدة في واحد من 18 قطاعًا في سجل الأوراق المالية المقيدة — وهو التقسيم الذي يستخدمه المستثمر المصري. كل صفحة أدناه تعرض الشركات التي يضعها السجل في ذلك القطاع.
+                    </p>
+                    <ul className="mt-3 flex flex-wrap gap-2 text-sm">
+                        {official.map((x) => (
+                            <li key={x.sector.slug}>
+                                <Link href={encodeURI(x.ar)} className="inline-block rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">
+                                    {x.sector.ar} <span className="text-muted" dir="ltr">({x.count})</span>
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
 
             <nav aria-label="استكشف" className="mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-6 text-sm font-semibold">
                 <Link href="/ar/companies" className="text-muted hover:text-starta-darkTeal">جميع الشركات</Link>

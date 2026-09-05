@@ -19,7 +19,7 @@ import JsonLd from '@/components/seo/JsonLd';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'EGX 30 Index Today — Live Value, Change & Constituents',
+    title: 'EGX 30 Index Today — Value & Constituents',
     description:
         'The EGX 30 — the Egyptian Exchange benchmark index — live value, daily change, 52-week range and its 30 constituent companies.',
     alternates: {

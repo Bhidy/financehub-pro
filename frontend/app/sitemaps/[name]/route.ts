@@ -16,6 +16,7 @@ import { MARKET_SCREENS, screenPath } from '@/content/market-screens';
 import { NEWS_TOPICS, newsTopicPath } from '@/content/news-topics';
 import { livePublishedTopics } from '@/app/News/renderNewsHubs';
 import { EGX_ONLY } from '@/lib/public-data';
+import { publishableEgxSectors } from '@/app/sectors/egx/renderEgxSector';
 
 export const dynamic = 'force-dynamic';
 
@@ -214,10 +215,22 @@ async function sectorEntries(): Promise<Entry[]> {
          GROUP BY sector_name
          ORDER BY sector_name`
     );
-    return result.rows.flatMap((r: any) => [
+    const vendor: Entry[] = result.rows.flatMap((r: any) => [
         { loc: absUrl(sectorPath(r.sector_name, null, 'en')), changefreq: 'daily', priority: '0.7' },
         { loc: absUrl(sectorPath(r.sector_name, sectorAr(r.sector_name), 'ar')), changefreq: 'daily', priority: '0.6' },
     ]);
+    // Official EGX sector hubs — the exchange's own 18-sector classification
+    // through the security master; same MIN_COMPANIES gate as the pages.
+    let official: Entry[] = [];
+    try {
+        official = (await publishableEgxSectors()).flatMap((x) => [
+            { loc: absUrl(x.en), changefreq: 'daily', priority: '0.7' },
+            { loc: absUrl(encodeURI(x.ar)), changefreq: 'daily', priority: '0.7' },
+        ]);
+    } catch (error) {
+        console.error('[sitemap:sectors] official sectors unavailable:', (error as Error).message);
+    }
+    return vendor.concat(official);
 }
 
 async function arCompanyEntries(): Promise<Entry[]> {

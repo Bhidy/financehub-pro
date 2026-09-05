@@ -108,6 +108,26 @@ jobs:
           BING_WEBMASTER_API_KEY: ${{ secrets.BING_WEBMASTER_API_KEY }}
         run: node scripts/seo/bing.mjs --days 30 --out /tmp/seo-bing.json
 
+      - name: Listing authority drift (EGX registers vs vendor universe)
+        working-directory: frontend
+        # Refreshes the fetchable inputs (SME register, TradingView universe,
+        # platform symbols) and reports whether the committed security master
+        # would change. A drift is a signal to regenerate and review — new
+        # listings stay QUARANTINED (unverified, noindex) until then, which is
+        # the fail-closed behaviour the audit requires. Never fails the run.
+        continue-on-error: true
+        run: |
+          node scripts/egx-security-master.mjs --refresh-sme --refresh-tv --refresh-platform --check \
+            || echo "::warning::security master drift — run: node scripts/egx-security-master.mjs (review the quarantine; refresh the main register in a browser if a new listing appeared)"
+          git checkout -- scripts/fixtures/ 2>/dev/null || true
+
+      - name: Fund-universe reconciliation freshness (FRA vs Starta)
+        working-directory: frontend
+        continue-on-error: true
+        run: |
+          node scripts/fund-universe-reconcile.mjs --check \
+            || echo "::warning::fund-universe reconciliation is stale — run: node scripts/fund-universe-reconcile.mjs (and re-transcribe the FRA quarterly table)"
+
       - name: Compose and send the intelligence report
         working-directory: frontend
         env:

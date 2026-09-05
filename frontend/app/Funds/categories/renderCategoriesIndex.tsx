@@ -42,7 +42,7 @@ export function categoriesMetadata(lang: 'en' | 'ar'): Metadata {
     const title = isAr ? 'فئات صناديق الاستثمار في مصر — العوائد حسب النوع' : 'Fund Categories in Egypt — Returns by Type';
     const description = isAr
         ? 'أسواق النقد والدخل الثابت والأسهم والذهب والمتوازنة والإسلامية: عدد الصناديق ووسيط عائد سنة ومنذ بداية العام وأفضل وأسوأ صندوق ووسيط رسوم الإدارة لكل فئة.'
-        : 'Money market, fixed income, equity, gold, balanced and Shariah-compliant: fund count, median 1-year and YTD return, best and worst fund and median management fee per category.';
+        : 'Money market, fixed income, equity, gold, balanced and Shariah funds: count, median 1-year and YTD return, best and worst fund, median fee per category.';
     return {
         title,
         description,

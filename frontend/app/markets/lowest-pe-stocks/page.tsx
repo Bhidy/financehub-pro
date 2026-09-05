@@ -15,7 +15,7 @@ import JsonLd from '@/components/seo/JsonLd';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'Lowest P/E Stocks on the EGX — Value Screen, Ranked',
+    title: 'Lowest P/E Stocks on the EGX — Ranked',
     description:
         'Egyptian Exchange (EGX) stocks ranked by the lowest trailing price-to-earnings (P/E) ratio',
     alternates: {
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     openGraph: {
             ...OG_DEFAULTS,
         type: 'website',
-        title: 'Lowest P/E Stocks on the EGX — Value Screen | Starta Markets',
+        title: 'Lowest P/E Stocks on the EGX — Ranked | Starta Markets',
         description: 'EGX shares ranked by lowest trailing P/E ratio, a mechanical value screen updated daily.',
         url: '/markets/lowest-pe-stocks',
     },

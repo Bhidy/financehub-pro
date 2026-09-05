@@ -5,6 +5,9 @@ import JsonLd from '@/components/seo/JsonLd';
 import KeyTerms from '@/components/seo/KeyTerms';
 import { breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import { canonicalNewsPath } from '@/lib/news-display';
+import { canonicalPair } from '@/app/companies/vs/[pair]/renderStockVs';
+import { officialSector } from '@/content/egx-official-sectors';
+import { egxSectorPath } from '@/app/sectors/egx/renderEgxSector';
 
 /**
  * Server-rendered SEO/GEO content for /symbol/[id], mounted BELOW the
@@ -103,6 +106,7 @@ export default function SymbolSeoSection({
     perf = null,
     technicals = null,
     news = [],
+    comparablePeers = [],
 }: {
     ticker: Ticker;
     stats: Stats | null;
@@ -111,6 +115,8 @@ export default function SymbolSeoSection({
     perf?: SymbolPerformance | null;
     technicals?: Array<Record<string, unknown>> | null;
     news?: NewsArticle[];
+    /** Peers whose head-to-head page clears its own data gate (content/stock-vs.ts) — the only ones linked. */
+    comparablePeers?: string[];
 }) {
     const symbol = ticker.symbol.toUpperCase();
     const name = ticker.name_en || symbol;
@@ -201,6 +207,15 @@ export default function SymbolSeoSection({
                             [`${symbolPath(symbol)}/dividends`, 'Dividends'],
                             [`${symbolPath(symbol)}/technicals`, 'Technical Analysis'],
                             [`${symbolPath(symbol)}/history`, 'Price History'],
+                            // Per-metric pages. These were sitemapped but reachable from
+                            // NOWHERE on the site (orphan family, audit 2026-09-05); each
+                            // link is gated on the data the metric page itself demands.
+                            ...((ticker.market_cap ?? num(stats, 'market_cap')) !== null ? [[`${symbolPath(symbol)}/market-cap`, 'Market Cap']] : []),
+                            ...((ticker.pe_ratio ?? num(stats, 'pe_ratio')) !== null ? [[`${symbolPath(symbol)}/pe-ratio`, 'P/E Ratio']] : []),
+                            ...(((ticker.dividend_yield ?? num(stats, 'dividend_yield')) ?? 0) > 0 ? [[`${symbolPath(symbol)}/dividend-yield`, 'Dividend Yield']] : []),
+                            ...((num(stats, 'revenue_ttm') ?? num(stats, 'revenue_fy')) !== null ? [[`${symbolPath(symbol)}/revenue`, 'Revenue']] : []),
+                            ...((num(stats, 'net_income_ttm') ?? num(stats, 'net_income_fy')) !== null ? [[`${symbolPath(symbol)}/net-income`, 'Net Income']] : []),
+                            ...((num(stats, 'eps_ttm') ?? num(stats, 'eps_fy')) !== null ? [[`${symbolPath(symbol)}/eps`, 'EPS']] : []),
                         ] as Array<[string, string]>
                     ).map(([href, label]) => (
                         <Link
@@ -245,6 +260,16 @@ export default function SymbolSeoSection({
                     <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         {name} ({symbol}) trades on the Egyptian Exchange (EGX){ticker.sector_name ? ` in the ${ticker.sector_name} sector` : ''}
                         {asOf ? `. Last updated ${asOf} (Cairo time).` : '.'}
+                        {(() => {
+                            // The exchange's OWN sector for this company (register, via the security master).
+                            const os = officialSector(ticker.official_sector_en);
+                            return os ? (
+                                <>
+                                    {' '}EGX sector classification:{' '}
+                                    <Link href={egxSectorPath(os, 'en')} className="font-semibold text-teal-600 hover:underline dark:text-teal-400">{os.en}</Link>.
+                                </>
+                            ) : null;
+                        })()}
                     </p>
                     {/* Answer-first: the sentence a searcher asked for, in the words
                         they used. Every figure is the page's own data. */}
@@ -345,6 +370,15 @@ export default function SymbolSeoSection({
                                     >
                                         {p.name_en || p.symbol} ({p.symbol.toUpperCase()})
                                     </Link>
+                                    {comparablePeers.includes(p.symbol.toUpperCase()) && (
+                                        <Link
+                                            href={`/companies/vs/${canonicalPair(symbol, p.symbol.toUpperCase())}`}
+                                            className="ml-1 inline-block rounded-full border border-[#14B8A6]/40 px-2.5 py-1.5 text-[12px] font-semibold text-[#0D9488] hover:bg-[#14B8A6]/10 dark:text-[#2DD4BF]"
+                                            aria-label={`Compare ${symbol} with ${p.symbol.toUpperCase()}`}
+                                        >
+                                            vs {p.symbol.toUpperCase()}
+                                        </Link>
+                                    )}
                                 </li>
                             ))}
                         </ul>

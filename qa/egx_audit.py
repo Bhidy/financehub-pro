@@ -318,6 +318,59 @@ async def suite_fund_write_contract():
 
 
 # --------------------------------------------------------------------------- #
+# 14.1e NAV WRITE CONTRACT (requires DB) — the three nav_history writers now carry
+#   per-observation provenance (source, source_url, ingested_at; audit 2026-09-05).
+#   Apply funds_nav_updater.NAV_DDL, then EXECUTE each writer's exact statement
+#   with probe values inside a rolled-back transaction. Column/type/arity drift
+#   fails HERE, per PR, instead of on the next scheduled NAV run.
+# --------------------------------------------------------------------------- #
+async def suite_nav_write_contract():
+    if not DATABASE_URL:
+        print("\n14.1e NAV WRITE CONTRACT: skipped (no DATABASE_URL)")
+        return
+    import asyncpg
+    from datetime import date
+    print("\n14.1e NAV WRITE CONTRACT (nav_history provenance writers vs live schema)")
+    try:
+        upd = _load_module("backend-core/scripts/funds_nav_updater.py", "nav_updater_probe")
+        lst = _load_module("backend-core/scripts/funds_list_api_sync.py", "nav_list_probe")
+        eima = _load_module("backend-core/scripts/eima_backfill.py", "nav_eima_probe")
+    except Exception as e:  # noqa: BLE001 — deps missing is not schema drift
+        skip("nav write-contract (module import failed)", f"{type(e).__name__}: {e}")
+        return
+    try:
+        conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0, command_timeout=20)
+    except (asyncpg.CannotConnectNowError, asyncpg.PostgresConnectionError,
+            OSError, asyncio.TimeoutError) as e:
+        skip("nav write-contract (DB unreachable — transient infra)", type(e).__name__)
+        return
+    tr = conn.transaction()
+    await tr.start()
+    try:
+        await conn.execute(upd.NAV_DDL)
+        probe = "__QAFUNDNAV__"
+        rows = await conn.fetch(upd.SQL_UPSERT_NAV, [probe], [date(2000, 1, 1)], [1.0],
+                                "qa", "https://example.invalid/qa.csv")
+        check("funds_nav_updater upsert matches nav_history schema (post-migrate)", len(rows) == 1)
+        await conn.execute(lst.SQL_UPSERT_NAV_LIST, probe, date(2000, 1, 2), 1.0, "https://example.invalid/list")
+        check("funds_list_api_sync upsert matches nav_history schema", True)
+        rows = await conn.fetch(eima.SQL_INSERT_NAV_EIMA, [probe], [date(2000, 1, 3)], [1.0], ["qa"], ["https://example.invalid/r.pdf"])
+        check("eima_backfill insert matches nav_history schema", len(rows) == 1)
+        prov = await conn.fetchrow(
+            "SELECT source, source_url, ingested_at FROM nav_history WHERE fund_id = $1 AND date = $2", probe, date(2000, 1, 1))
+        check("provenance columns round-trip (source, source_url, ingested_at)",
+              prov is not None and prov["source"] == "qa" and prov["source_url"] and prov["ingested_at"] is not None)
+    except asyncpg.ReadOnlySQLTransactionError:
+        skip("nav write-contract execute-probe (DB read-only — platform incident)",
+             "re-runs when writable; not schema drift")
+    except Exception as e:  # noqa: BLE001 — any structural mismatch is a No-Go
+        check("nav_history writers match live schema", False, f"{type(e).__name__}: {e}")
+    finally:
+        await tr.rollback()  # never persist the probe rows
+        await conn.close()
+
+
+# --------------------------------------------------------------------------- #
 # 14.1 / live: validate the real TV client's own gates
 # --------------------------------------------------------------------------- #
 async def suite_live():
@@ -389,6 +442,7 @@ async def main(suite: str):
     if suite in ("all", "contract", "dataquality"):
         await suite_write_contract()        # DB dry-run: SQL vs live schema
         await suite_fund_write_contract()   # DB dry-run: fund_risk_metrics + fund_feedback
+        await suite_nav_write_contract()    # DB dry-run: nav_history provenance writers
     if suite in ("all", "live"):
         await suite_live()
     if suite in ("all", "dataquality"):

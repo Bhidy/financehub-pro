@@ -153,9 +153,27 @@ export async function renderNavHistory(id: string, lang: Lang) {
         [t(NAVHIST.stats.low, lang), `${currency} ${fmtNav(low.nav, lang)} · ${humanDate(low.date, lang)}`],
     ];
 
+    // PROVENANCE (audit 2026-09-05): which source vouched for each point, from
+    // which document, and when it was ingested — read from nav_history itself.
+    // Sources are named as the pipeline tags them; nothing is inferred.
+    const SOURCE_LABEL: Record<string, { en: string; ar: string }> = {
+        mubasher_csv: { en: 'Mubasher per-fund price file (primary)', ar: 'ملف أسعار الصندوق من مباشر (المصدر الأساسي)' },
+        mubasher_api: { en: 'Mubasher chart API (fallback)', ar: 'واجهة الرسم البياني من مباشر (احتياطي)' },
+        mubasher_list_api: { en: 'Mubasher fund-list API (latest price)', ar: 'قائمة الصناديق من مباشر (آخر سعر)' },
+        eima_report: { en: 'EIMA weekly performance report (published NAV)', ar: 'تقرير الأداء الأسبوعي لجمعية إدارة الاستثمار (قيمة منشورة)' },
+        eima_derived: { en: 'EIMA weekly report (NAV reconstructed from published return)', ar: 'تقرير جمعية إدارة الاستثمار (قيمة مستخرجة من العائد المنشور)' },
+    };
+    const bySource = new Map<string, number>();
+    for (const p of points) bySource.set(p.source ?? 'unrecorded', (bySource.get(p.source ?? 'unrecorded') ?? 0) + 1);
+    const provenance = [...bySource.entries()].sort((a, b) => b[1] - a[1]);
+    const latestIngest = points.reduce<string | null>((mx, p) => (p.ingested_at && (!mx || p.ingested_at > mx) ? p.ingested_at : mx), null);
+    const sourceUrls = [...new Set(points.map((p) => p.source_url).filter((u): u is string => !!u))];
+    const sourceName = (k: string) => (SOURCE_LABEL[k] ? SOURCE_LABEL[k][lang] : k === 'unrecorded' ? (isAr ? 'غير مسجَّل (قبل تتبّع المصدر)' : 'unrecorded (before source tracking)') : k);
+
     const dataset = {
         '@context': 'https://schema.org',
         '@type': 'Dataset',
+        ...(sourceUrls.length ? { isBasedOn: sourceUrls.slice(0, 5) } : {}),
         name: t(NAVHIST.h1(name), lang),
         description: t(NAVHIST.description(name, humanDate(first.date, lang), humanDate(last.date, lang), points.length), lang),
         url: absUrl(canonicalPath),
@@ -230,6 +248,7 @@ export async function renderNavHistory(id: string, lang: Lang) {
                             <tr className="border-b border-border bg-panel/40 text-xs font-bold uppercase tracking-wide text-muted">
                                 <th scope="col" className={th}>{t(NAVHIST.cols.date, lang)}</th>
                                 <th scope="col" className={thNum}>{t(NAVHIST.cols.nav, lang)}</th>
+                                <th scope="col" className={th}>{isAr ? 'المصدر' : 'Source'}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -237,11 +256,60 @@ export async function renderNavHistory(id: string, lang: Lang) {
                                 <tr key={p.date} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                     <th scope="row" className={`px-4 py-2.5 font-medium text-main ${isAr ? 'text-right' : 'text-left'}`}>{humanDate(p.date, lang)}</th>
                                     <td className={tdNum}>{fmtNav(p.nav, lang)} <span className="text-xs text-muted">{currency}</span></td>
+                                    <td className={`px-4 py-2.5 text-xs text-muted ${isAr ? 'text-right' : 'text-left'}`}>{sourceName(p.source ?? 'unrecorded')}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
+            </section>
+
+            <section className="mt-8 max-w-3xl" aria-labelledby="nav-provenance" data-nav-provenance={provenance.length}>
+                <h2 id="nav-provenance" className="text-lg font-extrabold tracking-tight text-main">{isAr ? 'مصدر كل نقطة في هذا السجل' : 'Where every point in this history comes from'}</h2>
+                <p className="mt-2 text-sm leading-6 text-muted">
+                    {isAr
+                        ? 'يحمل كل صافي قيمة أصول في هذه السلسلة اسم المصدر الذي أفصح عنه، ورابط الملف أو التقرير الذي قُرئ منه، ووقت إدخاله إلى قاعدة بياناتنا. لا تُقدَّر أي قيمة؛ والنقاط المسجَّلة قبل بدء تتبّع المصدر تظهر كذلك.'
+                        : 'Every NAV in this series carries the source that vouched for it, the file or report it was read from, and the time it entered our database. Nothing is estimated; points recorded before source tracking began are shown as such.'}
+                </p>
+                <table className="mt-3 w-full max-w-xl text-sm">
+                    <thead>
+                        <tr className={`border-b border-border text-xs font-bold uppercase tracking-wide text-muted ${isAr ? 'text-right' : 'text-left'}`}>
+                            <th className="py-2">{isAr ? 'المصدر' : 'Source'}</th>
+                            <th className={`py-2 ${isAr ? 'text-left' : 'text-right'}`}>{isAr ? 'عدد النقاط' : 'Points'}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {provenance.map(([k, n]) => (
+                            <tr key={k} className="border-b border-border/60 last:border-0">
+                                <td className="py-2 text-muted">{sourceName(k)}</td>
+                                <td className={`py-2 tabular-nums font-semibold text-main ${isAr ? 'text-left' : 'text-right'}`} dir="ltr">{n.toLocaleString('en-EG')}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {(latestIngest || sourceUrls.length > 0) && (
+                    <p className="mt-3 text-xs leading-relaxed text-muted">
+                        {latestIngest && (
+                            <>
+                                {isAr ? 'آخر إدخال: ' : 'Last ingested: '}
+                                <time dateTime={latestIngest}>{new Date(latestIngest).toLocaleString(isAr ? 'ar-EG-u-nu-latn' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Cairo' })}</time>
+                                {isAr ? ' (بتوقيت القاهرة)' : ' (Cairo time)'}
+                            </>
+                        )}
+                        {sourceUrls.length > 0 && (
+                            <>
+                                {latestIngest ? ' · ' : ''}
+                                {isAr ? 'المستندات الأصلية: ' : 'Source documents: '}
+                                {sourceUrls.slice(0, 3).map((u, i) => (
+                                    <span key={u}>
+                                        {i > 0 && ', '}
+                                        <a href={u} rel="nofollow noopener" target="_blank" className="underline">{new URL(u).hostname.replace(/^www\./, '')}</a>
+                                    </span>
+                                ))}
+                            </>
+                        )}
+                    </p>
+                )}
             </section>
 
             <p className="mt-4 max-w-3xl text-xs leading-relaxed text-muted">{t(NAVHIST.sourceNote, lang)}</p>

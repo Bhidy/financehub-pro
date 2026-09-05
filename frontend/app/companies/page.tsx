@@ -18,7 +18,7 @@ import { SECURITY_MASTER_SOURCES } from '@/lib/security-master';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-    title: 'EGX Listed Companies — All Egyptian Exchange Stocks',
+    title: 'EGX Listed Companies — Egyptian Exchange Stocks',
     description:
         'Complete directory of companies listed on the Egyptian Exchange (EGX), sorted by market capitalization — live prices, sectors and market caps, updated daily.',
     alternates: { canonical: '/companies', languages: { en: '/companies', ar: '/ar/companies', 'x-default': '/ar/companies' } },

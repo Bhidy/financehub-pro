@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getSectors } from '@/lib/public-data';
+import { publishableEgxSectors } from '@/app/sectors/egx/renderEgxSector';
 import { SITE_URL, absUrl, slugify, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
@@ -40,6 +41,7 @@ const fmtCap = (n: number | null): string => {
 
 export default async function SectorsPage() {
     const sectors = await getSectors();
+    const official = await publishableEgxSectors().catch(() => []);
     const totalCompanies = sectors.reduce((sum, s) => sum + (s.companies || 0), 0);
 
     const itemListJsonLd = {
@@ -104,6 +106,24 @@ export default async function SectorsPage() {
                     </tbody>
                 </table>
             </div>
+
+            {official.length > 0 && (
+                <section className="mt-8" aria-labelledby="egx-official-sectors">
+                    <h2 id="egx-official-sectors" className="text-lg font-bold text-main">The Egyptian Exchange’s own sector classification</h2>
+                    <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+                        The table above groups companies by the data vendor’s global taxonomy. The exchange classifies each listed company into one of 18 sectors in its register of listed securities — the grouping Egyptian investors use. Each hub below lists the companies the register places in that sector.
+                    </p>
+                    <ul className="mt-3 flex flex-wrap gap-2 text-sm">
+                        {official.map((x) => (
+                            <li key={x.sector.slug}>
+                                <Link href={x.en} className="inline-block rounded-full border border-border bg-surface px-3.5 py-1.5 font-semibold text-main hover:border-starta-teal/50 hover:text-starta-darkTeal">
+                                    {x.sector.en} <span className="text-muted">({x.count})</span>
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
 
             <p className="mt-4 text-xs text-muted">
                 Source: Egyptian Exchange via TradingView, updated daily. Market caps in Egyptian pounds. See also

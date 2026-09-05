@@ -12,6 +12,7 @@ import {
 import { SITE_URL, symbolPath, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import KeyTerms from '@/components/seo/KeyTerms';
 
 /**
  * /symbol/{SYM}/{metric} — per-metric programmatic pages (StockAnalysis
@@ -54,6 +55,16 @@ const METRIC_LABEL: Record<MetricSlug, string> = {
     'eps': 'EPS',
     'dividend-yield': 'Dividend Yield',
     'pe-ratio': 'P/E Ratio',
+};
+
+/** Glossary terms each metric page links (slugs from content/glossary-terms.ts). */
+const METRIC_TERMS: Record<MetricSlug, string[]> = {
+    'market-cap': ['market-cap', 'free-float', 'egx-30'],
+    'pe-ratio': ['pe-ratio', 'eps', 'pb-ratio'],
+    'dividend-yield': ['dividend-yield', 'dividend', 'ex-dividend-date'],
+    revenue: ['eps', 'pe-ratio', 'market-cap'],
+    'net-income': ['eps', 'pe-ratio', 'dividend'],
+    eps: ['eps', 'pe-ratio', 'dividend-yield'],
 };
 
 /** 1–2 sentence textbook definitions, EGX-flavored. Factual, no hype. */
@@ -660,6 +671,11 @@ export default async function MetricPage({ params }: Props) {
                     </div>
                 </section>
             )}
+
+            {/* The glossary terms behind this figure — definitions live once, in
+                the glossary, and the metric page links them (the audit found these
+                pages at ~290 words with no path to the definitions). */}
+            <KeyTerms slugs={METRIC_TERMS[slug]} lang="en" />
 
             <p className="mt-6 text-xs text-muted">
                 All monetary figures in EGP. Source: Egyptian Exchange via TradingView; annual figures from company

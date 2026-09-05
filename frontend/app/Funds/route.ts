@@ -24,7 +24,7 @@ export const dynamic = 'force-dynamic';
 // Head-tag replacements only: the designed file's bytes are untouched.
 const EN_TITLE = 'Mutual Funds in Egypt — NAVs, Returns & Fees | Starta Markets';
 const EN_DESC =
-    'Egyptian mutual funds that publish a NAV — the latest NAV, trailing returns, management fee and manager — by category and by bank, updated twice daily from disclosures.';
+    'Egyptian mutual funds that publish a NAV: latest NAV, trailing returns, management fee and manager, by category and by bank. Updated twice daily from disclosures.';
 
 export async function GET() {
     let funds: Array<Record<string, unknown>> = [];

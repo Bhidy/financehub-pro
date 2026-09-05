@@ -245,6 +245,15 @@ en-GB dates and a whole English fee sentence on `/ar/Funds/vs/*`.
   (collapsed, server-rendered); per-point `source_url`/`ingested_at` stay on the NAV-history page.
 * `/api/proxy/*` and `/api/egx/*` forward to the FastAPI backend, whose own endpoints are not gated by
   this repo's security master.
+* 404 bodies on entity routes are client-rendered (framework behaviour, reproduced locally on
+  2026-09-06): a `notFound()` thrown inside a matched dynamic segment makes Next answer 404 with its
+  minimal `<html id="__next_error__">` document and render the nearest not-found boundary from the RSC
+  payload on the client; only UNMATCHED URLs get the server-rendered root 404 (`app/not-found.tsx`, now
+  bilingual from `x-starta-lang`). Page metadata is dropped with the page, layout metadata survives —
+  so `app/Funds/[id]/layout.tsx`, `app/ar/Funds/[id]/layout.tsx` and `app/ar/symbol/[id]/layout.tsx`
+  exist only to put an Arabic/English "not found" title on those documents. The status code, the
+  `noindex` and the sitemap hygiene are what search engines act on; the body reaches JS-rendering
+  crawlers. A server-rendered 404 body would need a framework change, not a code change.
 
 * `nav_history` provenance (`source`, `source_url`, `ingested_at`) is live in the writers and the
   schema (self-migrating `NAV_DDL`, CI probe 14.1e); rows written before 2026-09-05 stay

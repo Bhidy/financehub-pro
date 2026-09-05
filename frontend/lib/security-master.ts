@@ -90,7 +90,16 @@ if (PUBLISHABLE_SYMBOLS.length < 200) {
 }
 
 /**
- * SQL predicate: `symbol` is an EGX-coded row on the publish allow-list.
+ * SQL predicate: the row's `symbol` is on the publish allow-list.
+ *
+ * CONTRACT: the fragment STARTS with the column name and references no other
+ * column, because callers splice it both bare (`WHERE ${EGX_ONLY}`) and
+ * alias-prefixed over a JOIN (`WHERE t.${EGX_ONLY}` beside stock_stats_view).
+ * The first version read `market_code = 'EGX' AND symbol IN (…)`; prefixed,
+ * that left `symbol` unqualified across the join — "column reference is
+ * ambiguous" — and 503'd the market screens and the stock-comparisons
+ * sitemap for 20 minutes on 2026-09-05. The market check is implied: the
+ * list is EGX's own register, and no non-EGX row can carry an EGX ticker.
  * Every value passed the SAFE alphabet above, so plain quoting is exact.
  */
-export const EGX_PUBLISHABLE_SQL = `market_code = 'EGX' AND symbol IN (${PUBLISHABLE_SYMBOLS.map((s) => `'${s}'`).join(',')})`;
+export const EGX_PUBLISHABLE_SQL = `symbol IN (${PUBLISHABLE_SYMBOLS.map((s) => `'${s}'`).join(',')})`;

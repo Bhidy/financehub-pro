@@ -15,6 +15,7 @@
 import { execFileSync } from 'node:child_process';
 import master from '../content/egx-security-master.json';
 import { EGX_OFFICIAL_SECTORS, officialSector } from '../content/egx-official-sectors';
+import { EGX_PUBLISHABLE_SQL, PUBLISHABLE_SYMBOLS } from '../lib/security-master';
 
 let failed = 0;
 const ok = (cond: boolean, label: string, got?: unknown) => {
@@ -53,6 +54,12 @@ for (const s of ['TOUR', 'FTNS', 'INEG']) ok(bySymbol.get(s)?.listing_status ===
 ok(bySymbol.get('TMGH')?.official_sector_en === 'Real Estate', 'TMGH carries EGX’s own sector (Real Estate), not the vendor’s "Finance"', bySymbol.get('TMGH')?.official_sector_en);
 
 console.log('\n[3] structural invariants');
+// The SQL fragment is spliced both bare and alias-prefixed (`t.${EGX_ONLY}`)
+// over JOINs: it must start with the column and name no other column, or the
+// prefixed form leaves an unqualified `symbol` ambiguous (503'd the market
+// screens and the stock-comparisons sitemap on 2026-09-05).
+ok(/^symbol IN \('[A-Z0-9.\-]+'(?:,'[A-Z0-9.\-]+')*\)$/.test(EGX_PUBLISHABLE_SQL), 'EGX_PUBLISHABLE_SQL starts with the column and references no other column', EGX_PUBLISHABLE_SQL.slice(0, 40));
+ok(PUBLISHABLE_SYMBOLS.length === listed.length, 'the runtime allow-list equals the committed publishable list');
 ok(new Set(master.securities.map((s) => s.symbol)).size === master.securities.length, 'symbols are unique');
 ok(master.publishable_symbols.every((s) => bySymbol.get(s)?.listing_status === 'listed'), 'publishable ⇔ listed');
 ok(listed.length === master.publishable_symbols.length, 'publishable list is complete', [listed.length, master.publishable_symbols.length]);

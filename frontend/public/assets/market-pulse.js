@@ -193,8 +193,11 @@
         const breadthTotal = Math.max(1, adv + dec + unch);
         byId("upBreadth").style.width = `${(adv / breadthTotal) * 100}%`;
         byId("downBreadth").style.width = `${(dec / breadthTotal) * 100}%`;
-        // Market "reading" sentence removed — it was a house verdict derived from the advance/decline counts, not source data.
-        setText("marketReading", "");
+        // The reading paragraph is rendered by the server from the same tables
+        // (breadth, leader, laggard, busiest name, method, all with an as-of
+        // time) and is left as delivered: blanking it here made the rendered
+        // DOM differ from the HTML — invisible to readers and to Google's
+        // renderer alike. Nothing here is a house verdict; every figure is data.
     }
 
     function sortedStocks(mode) {

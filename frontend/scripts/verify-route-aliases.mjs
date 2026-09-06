@@ -720,6 +720,27 @@ const checks = [
     },
   },
   {
+    // ══ NO PROMOTIONAL STRIP MAY BE APPENDED TO A PAGE ══════════════════════
+    // The registration ask is a DIALOG over the page, or a veil around a
+    // section that is already there. It is never a new band of furniture
+    // inserted between a designed page's blocks — that was built, shipped and
+    // rejected on sight, and the rejection was right. `.starta-invite` was the
+    // class those strips used; nothing user-facing may render it again.
+    name: "no page appends a promotional strip",
+    files: [
+      "components/gate/PriceAlert.tsx",
+      "components/seo/SymbolSeoSection.tsx",
+      "app/Funds/[id]/FundPageClient.tsx",
+      "app/News/[id]/renderNewsArticle.tsx",
+      "public/assets/starta-gate.js",
+      "public/assets/market-pulse.js",
+    ],
+    assert: (text) =>
+      // The CONTAINER class is the strip. `starta-invite-dismiss` is only the
+      // "Not now" button style used inside the dialog, and is fine.
+      !/class(Name)?="starta-invite"|class(Name)?='starta-invite'|starta-guestbar/.test(text),
+  },
+  {
     // The veil may only cover a block that is NOT in the server HTML. When
     // gated content IS in the HTML a crawler reads what a person cannot, and
     // the page must then declare it (lib/paywall-jsonld.ts) or it is cloaking.

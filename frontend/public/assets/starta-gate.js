@@ -324,51 +324,6 @@
         return Object.keys(readVisits()).length >= INVITE_AFTER;
     }
 
-    var INVITE_COPY = {
-        en: {
-            title: "Keep what you are reading",
-            body: "You have looked at a few of these. A free account keeps your watchlist and your comparisons between visits.",
-            cta: "Create a free account",
-            dismiss: "Not now",
-        },
-        ar: {
-            title: "احتفظ بما تقرأه",
-            body: "اطّلعت على عدد منها. الحساب المجاني يحفظ قائمة متابعتك ومقارناتك بين الزيارات.",
-            cta: "أنشئ حسابًا مجانيًا",
-            dismiss: "ليس الآن",
-        },
-    };
-
-    /**
-     * Render the line into `anchor` (appended). Static pages call this; React
-     * surfaces render their own markup and only borrow shouldInvite(), so the
-     * RULE lives in one place while each renderer owns its own DOM.
-     */
-    function renderInvite(anchor) {
-        if (!anchor || !shouldInvite()) return false;
-        if (document.querySelector(".starta-invite")) return false;
-        var L = INVITE_COPY[lang()];
-        var box = document.createElement("div");
-        box.className = "starta-invite";
-        box.innerHTML =
-            '<span class="starta-invite-text">' +
-                '<span class="starta-invite-title"></span>' +
-                '<span class="starta-invite-body"></span>' +
-            "</span>" +
-            '<a class="starta-gate-cta"></a>' +
-            '<button type="button" class="starta-invite-dismiss"></button>';
-        box.querySelector(".starta-invite-title").textContent = L.title;
-        box.querySelector(".starta-invite-body").textContent = L.body;
-        var cta = box.querySelector(".starta-gate-cta");
-        cta.textContent = L.cta;
-        cta.href = href("/register");
-        var no = box.querySelector(".starta-invite-dismiss");
-        no.textContent = L.dismiss;
-        no.addEventListener("click", dismissInvite);
-        anchor.appendChild(box);
-        return true;
-    }
-
     /* ══ THE TIMED INVITATION, FOR THE STATIC HUBS ═══════════════════════
        components/gate/TimedRegisterDialog.tsx does this for the React routes.
        It cannot serve /Funds, /News or /Market-Pulse: those are Route Handlers
@@ -512,7 +467,6 @@
         noteVisit: noteVisit,
         shouldInvite: shouldInvite,
         dismissInvite: dismissInvite,
-        renderInvite: renderInvite,
         inviteAfter: INVITE_AFTER,
         limits: LIMITS,
     };

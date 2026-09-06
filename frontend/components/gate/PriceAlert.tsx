@@ -87,18 +87,52 @@ export default function PriceAlert({ symbol }: { symbol: string }) {
 
     const t = COPY[lang];
     const g = GATE_LABELS[lang].reasons.alerts;
+    const label = symbol;
 
+    const back = pathname ? `?redirect=${encodeURIComponent(pathname)}` : '';
+
+    // A GUEST SEES THE REAL SECTION, VEILED — not a strip bolted on beneath it.
+    // The earlier version appended a promotional bar, which is the pattern the
+    // owner rejected: these pages are designed documents and a band of
+    // furniture between their blocks breaks the composition. Veiling the
+    // section itself keeps the page's rhythm and still shows exactly what an
+    // account opens, which is a better argument than describing it.
+    //
+    // Free of SEO and GEO cost for the same reason as the other veils: this
+    // whole control renders client-side only and is absent from the server HTML.
     if (!user) {
-        const back = pathname ? `?redirect=${encodeURIComponent(pathname)}` : '';
         return (
-            <section className="starta-invite" aria-label={g.title}>
-                <span className="starta-invite-text">
-                    <span className="starta-invite-title">{g.title}</span>
-                    <span className="starta-invite-body">{g.body}</span>
-                </span>
-                <Link href={`/register${back}`} className="starta-gate-cta">{g.cta}</Link>
-                <Link href={`/login${back}`} className="starta-invite-dismiss">{g.signin}</Link>
-            </section>
+            <div className="starta-gate mt-8">
+                <div className="starta-gate-clip" aria-hidden="true">
+                    <section className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
+                        <h2 className="text-base font-bold text-main">{t.heading}</h2>
+                        <p className="mt-1 text-sm text-muted">{t.lead(label)}</p>
+                        <div className="mt-4 flex flex-wrap items-center gap-3">
+                            <div className="inline-flex rounded-full border border-border p-1">
+                                <span className="px-4 py-2 rounded-full text-xs font-bold bg-starta-teal text-white">{t.above}</span>
+                                <span className="px-4 py-2 rounded-full text-xs font-bold text-muted">{t.below}</span>
+                            </div>
+                            <span className="w-40 rounded-xl border border-border bg-page px-4 py-2.5 text-sm text-muted">{t.placeholder}</span>
+                            <span className="starta-gate-cta">{t.submit}</span>
+                        </div>
+                        <p className="mt-3 text-xs text-muted">{t.once}</p>
+                    </section>
+                </div>
+                <div className="starta-gate-panel">
+                    <span className="starta-gate-lock">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                            <rect x="4" y="10" width="16" height="11" rx="2.5" />
+                            <path strokeLinecap="round" d="M8 10V7a4 4 0 018 0v3" />
+                        </svg>
+                    </span>
+                    <h3 className="text-lg font-display font-bold tracking-[-0.02em] text-main">{g.title}</h3>
+                    <p className="mt-2 max-w-md text-sm leading-relaxed text-muted">{g.body}</p>
+                    <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                        <Link href={`/register${back}`} className="starta-gate-cta">{g.cta}</Link>
+                        <Link href={`/login${back}`} className="starta-gate-signin">{g.signin}</Link>
+                    </div>
+                </div>
+            </div>
         );
     }
 

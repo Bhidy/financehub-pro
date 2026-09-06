@@ -4,6 +4,7 @@ import { fundName } from '@/lib/funds-hub-render';
 import { featuredFundPairs } from '@/lib/fund-pairs';
 import { FUND_CATEGORIES, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { SITE_URL, absUrl } from '@/lib/seo';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /Funds/Compare and /ar/Funds/Compare — THE COMPARISON HUB.
@@ -240,7 +241,7 @@ export async function renderCompareHub(lang: Lang) {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         itemListElement: [
-            { '@type': 'ListItem', position: 1, name: t.home, item: `${SITE_URL}${isAr ? '/ar' : '/'}` },
+            { '@type': 'ListItem', position: 1, name: t.home, item: `${SITE_URL}${HOME_PATH}` },
             { '@type': 'ListItem', position: 2, name: t.crumbFunds, item: absUrl(fundsHref) },
             { '@type': 'ListItem', position: 3, name: t.crumb },
         ],

@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { localizedHref } from '@/lib/localized-href';
+import { langSeedScript as langSeedScriptFromContract } from '@/lib/lang';
 import path from 'node:path';
 
 /**
@@ -500,11 +501,11 @@ export function jsonLdScript(data: unknown): string {
  * the rest of the site uses (PublicPageShell persistLang) — one contract.
  */
 export function langSeedScript(lang: 'en' | 'ar'): string {
-    return (
-        `<script>try{localStorage.setItem('starta-lang','${lang}');` +
-        `localStorage.setItem('lang','${lang}');` +
-        `document.cookie='starta-lang=${lang};path=/;max-age=31536000;samesite=lax';}catch(e){}</script>`
-    );
+    // ONE definition (lib/lang.ts). This used to carry its own copy of the keys
+    // and the cookie; PublicPageShell carried a third. Three copies of one
+    // contract is three chances for a key to drift and for storage to stop
+    // agreeing with the URL.
+    return langSeedScriptFromContract(lang);
 }
 
 /** Reciprocal hreflang triple for a bilingual pair. */

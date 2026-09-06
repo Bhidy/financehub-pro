@@ -112,6 +112,98 @@ const checks = [
       !/href="\/RiskAssessment"/.test(text) &&
       !/href="\/Calculators"/.test(text),
   },
+  // ───────────────────────────────────────────────────────────────────────
+  // HOME + LANGUAGE CONTRACT (lib/lang.ts). The behavioural half of these
+  // rules is EXECUTED by scripts/test-lang-contract.ts (npm run verify:lang);
+  // these gates guard the source so a regression is caught at the line that
+  // causes it, with the reason attached.
+  //
+  // Both defects these gates exist for were live in production on 2026-09-06:
+  //   1. localizedHref('/', 'ar') returned '/ar', so every Arabic page's nav,
+  //      breadcrumb and footer HOME link opened the 113 KB Arabic hub while the
+  //      brand lockup beside them opened the 299 KB designed homepage.
+  //   2. Persisting the URL's language was opt-in, and 35 of 59 shell call
+  //      sites never opted in, so storage drifted from the URL and the next
+  //      single-URL page rendered in the other language.
+  // ───────────────────────────────────────────────────────────────────────
+  {
+    name: "HOME is one URL: the canonical nav points home at '/'",
+    file: "lib/nav.json",
+    assert: (text) => {
+      const home = JSON.parse(text).items.find((i) => i.key === "nav_home");
+      return Boolean(home) && home.href === "/";
+    },
+  },
+  {
+    name: "the React link localizer never maps '/' to the Arabic hub",
+    file: "lib/localized-href.ts",
+    assert: (text) =>
+      /return HOME_PATH/.test(text) &&
+      !/(path|bare)\s*===\s*['"]\/['"][^\n]*return\s*['"]\/ar['"]/.test(text) &&
+      !/return\s*['"]\/ar['"];/.test(text),
+  },
+  {
+    name: "the React link localizer matches EXACT patterns, never route prefixes",
+    file: "lib/localized-href.ts",
+    // Prefix matching is the algorithm sync-ar-routes.mjs documents as
+    // abandoned: it minted /ar/News/{id} for English-only articles (a 308 back
+    // into the English tree — the language-flip report) and /ar/markets (a hard
+    // 404). Both halves of the contract must use arTwinRoutes.patterns.
+    assert: (text) =>
+      /arTwinRoutes\.patterns/.test(text) &&
+      !/startsWith\(`\$\{route\}\//.test(text),
+  },
+  {
+    name: "the browser link localizer never maps '/' to the Arabic hub",
+    file: "public/assets/starta-lang-boot.js",
+    assert: (text) =>
+      /if \(bare === "" \|\| bare === "\/"\) return "\/" \+ rest;/.test(text),
+  },
+  {
+    name: "PublicPageShell records the URL's language itself (never opt-in)",
+    file: "components/seo/PublicPageShell.tsx",
+    // `persistLang` was the opt-in that 35 call sites missed. The shell now
+    // decides: an /ar URL always counts as a language choice; a bare English
+    // URL counts only when the page has a real Arabic twin (altHref), so
+    // opening an English-only article cannot flip an Arabic reader's chrome.
+    assert: (text) =>
+      /lang === 'ar' \|\| altHref \? langSeedScriptBody\(lang\) : ''/.test(text) &&
+      /void persistLang/.test(text),
+  },
+  {
+    name: "one definition of the language seed (keys + cookie)",
+    file: "lib/static-hub.ts",
+    assert: (text) => /langSeedScriptFromContract\(lang\)/.test(text) && !/localStorage\.setItem\('starta-lang'/.test(text),
+  },
+  {
+    name: "every designed hub seeds its language in BOTH trees, not only Arabic",
+    // Seeding only on /ar made storage a one-way ratchet: a reader who chose
+    // English was flipped back by any /ar URL they opened, and the next
+    // single-URL page they visited rendered in the wrong language.
+    files: ["app/Funds/route.ts", "app/Learn/route.ts", "app/Market-Pulse/route.ts", "lib/news-hub.ts", "lib/fund-hub.ts", "lib/compare-hub.ts"],
+    assert: (text) => /langSeedScript\(/.test(text),
+  },
+  {
+    name: "the Market Pulse hub seeds English too (not only Arabic)",
+    file: "app/Market-Pulse/route.ts",
+    assert: (text) => /langSeedScript\(isAr \? 'ar' : 'en'\)/.test(text),
+  },
+  {
+    name: "the company page resolves its language with the shared Arabic-default rule",
+    file: "app/symbol/[id]/SymbolPageClient.tsx",
+    // It defaulted to "en" and cast whatever string it found, so a visitor with
+    // no stored preference got English on a site whose default is Arabic.
+    assert: (text) =>
+      /readStoredLang\(\)/.test(text) && !/\|\| "en";/.test(text),
+  },
+  {
+    name: "the language + home contract is executed by the build",
+    file: "package.json",
+    assert: (text) => {
+      const scripts = JSON.parse(text).scripts || {};
+      return Boolean(scripts["verify:lang"]) && /verify:lang/.test(scripts["verify:all"] || "");
+    },
+  },
   {
     name: "register success uses unified home route",
     file: "app/register/page.tsx",
@@ -1591,7 +1683,15 @@ async function run() {
     // script and PublicPageShell's inline script) must test the derived
     // patterns.
     const shell = await readFile(path.join(root, "components/seo/PublicPageShell.tsx"), "utf8");
-    for (const [label, text] of [["starta-lang-boot.js", boot], ["PublicPageShell.tsx", shell]]) {
+    // lib/localized-href.ts WAS MISSING FROM THIS LIST until 2026-09-06, and it
+    // is the copy every React nav, breadcrumb and footer actually calls. The
+    // gate passed for a year while that copy still prefix-matched the flattened
+    // route list — the abandoned algorithm — and minted /ar/News/{id} for
+    // English-only articles (308 back to English: the language-flip report) and
+    // /ar/markets (404). A gate that does not examine the file that does the
+    // work is not a gate.
+    const reactLocalizer = await readFile(path.join(root, "lib/localized-href.ts"), "utf8");
+    for (const [label, text] of [["starta-lang-boot.js", boot], ["PublicPageShell.tsx", shell], ["lib/localized-href.ts", reactLocalizer]]) {
       if (!/AR_TWIN_PATTERNS|arTwinRoutes\.patterns/.test(text)) {
         console.error(`FAIL: ${label} does not use the derived /ar patterns — parent-prefix matching invents URLs that 404.`);
         process.exit(1);
@@ -1604,6 +1704,54 @@ async function run() {
 
     // Every generated pattern must correspond to a real app/ar route file, and
     // no EN path may be rewritten unless its own Arabic twin exists.
+  // HOME IS ONE URL (lib/lang.ts R1). Twenty render files each hand-wrote
+  // `{ href: isAr ? '/ar' : '/', … }` for the first breadcrumb, which is why
+  // the Arabic breadcrumb still opened the Arabic hub after the nav item was
+  // fixed. One definition (HOME_PATH) or it drifts again.
+  //
+  // This scan REPORTS THE FILE COUNT it examined: a repo-wide check that
+  // silently walks zero files passes just as loudly as one that walks a
+  // thousand, and this repo has shipped exactly that failure before.
+  {
+    const HOME_TERNARY = /(isAr|arabic|lang === 'ar'|lang === "ar")\s*\?\s*['"]\/ar['"]\s*:\s*['"]\/['"]/;
+    const offenders = [];
+    let scanned = 0;
+    async function scanDir(dir) {
+      let entries;
+      try {
+        entries = await readdir(dir, { withFileTypes: true });
+      } catch {
+        return;
+      }
+      for (const e of entries) {
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) {
+          if (e.name === "node_modules" || e.name === ".next") continue;
+          await scanDir(full);
+        } else if (/\.(ts|tsx)$/.test(e.name)) {
+          const rel = path.relative(root, full);
+          if (rel === path.join("lib", "lang.ts")) continue; // the definition itself documents the banned form
+          scanned++;
+          const text = await readFile(full, "utf8");
+          if (HOME_TERNARY.test(text)) offenders.push(rel);
+        }
+      }
+    }
+    for (const dir of ["app", "components", "lib"]) await scanDir(path.join(root, dir));
+    if (scanned < 200) {
+      console.error(`FAIL: the home-href scan examined only ${scanned} files — it is not reaching the source tree.`);
+      process.exit(1);
+    }
+    if (offenders.length) {
+      console.error(
+        `FAIL: ${offenders.length} file(s) hand-roll the home href instead of importing HOME_PATH from lib/lang.ts:\n` +
+        offenders.map((f) => `       ${f}`).join("\n")
+      );
+      process.exit(1);
+    }
+    console.log(`OK: home is one URL — ${scanned} source files carry no hand-rolled /ar home href.`);
+  }
+
     const mustStayEnglish = ["/News/838616-x", "/symbol/COMI/pe-ratio", "/symbol/COMI/revenue"];
     const compiled = derived.patterns.map((s) => new RegExp(s));
     for (const p of mustStayEnglish) {

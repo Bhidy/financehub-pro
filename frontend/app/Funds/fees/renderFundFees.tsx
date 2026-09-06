@@ -15,6 +15,7 @@ import {
 import { fundName } from '@/lib/funds-hub-render';
 import { FEES, t, type Lang } from '@/content/fund-fees';
 import { ltrNum } from '@/lib/bidi';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /Funds/fees and /ar/Funds/fees
@@ -139,7 +140,7 @@ export async function renderFundFees(lang: Lang) {
     if (withFee.length < 20) notFound();
 
     const crumbs = [
-        { href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: HOME_PATH, url: HOME_PATH, label: isAr ? 'الرئيسية' : 'Home' },
         {
             href: isAr ? '/ar/Funds' : '/Funds',
             url: isAr ? '/ar/Funds' : '/Funds',

@@ -4,6 +4,7 @@ import type { Ticker } from '@/lib/public-data';
 import PublicPageShell, { Breadcrumbs } from '@/components/seo/PublicPageShell';
 import ListingStatusNotice from '@/components/seo/ListingStatusNotice';
 import { symbolPath, symbolPathAr } from '@/lib/seo';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * THE STATUS PAGE for a symbol the security master does not publish as a
@@ -40,7 +41,7 @@ export default function ListingStatusPage({ ticker, security, lang }: { ticker: 
     ];
     const canonicalHref = security?.canonical_symbol ? (isAr ? symbolPathAr(security.canonical_symbol) : symbolPath(security.canonical_symbol)) : null;
     const crumbs = isAr
-        ? [{ href: '/ar', label: 'الرئيسية' }, { href: '/ar/companies', label: 'أسهم البورصة المصرية' }, { label: `${name} (${symbol})` }]
+        ? [{ href: HOME_PATH, label: 'الرئيسية' }, { href: '/ar/companies', label: 'أسهم البورصة المصرية' }, { label: `${name} (${symbol})` }]
         : [{ href: '/', label: 'Home' }, { href: '/companies', label: 'EGX Listed Companies' }, { label: `${name} (${symbol})` }];
     return (
         <PublicPageShell lang={lang} altHref={isAr ? symbolPath(symbol) : `/ar${symbolPath(symbol)}`}>

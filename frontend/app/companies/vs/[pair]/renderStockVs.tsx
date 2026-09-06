@@ -8,6 +8,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { ltrNum } from '@/lib/bidi';
 import { METRIC_GROUPS, STOCKVS, t, type Lang, type Fmt, type Metric, countPairRows, MIN_ROWS } from '@/content/stock-vs';
 import { sectorAr } from '@/content/sector-names-ar';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /companies/vs/{A}-vs-{B} and /ar/companies/vs/{A}-vs-{B}
@@ -259,7 +260,7 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
     }
 
     const crumbs = [
-        { href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: HOME_PATH, url: HOME_PATH, label: isAr ? 'الرئيسية' : 'Home' },
         {
             href: isAr ? '/ar/companies' : '/companies',
             url: isAr ? '/ar/companies' : '/companies',

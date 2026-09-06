@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import PublicPageShell from '@/components/seo/PublicPageShell';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * Arabic 404 for the /ar tree. Before this file existed, a `notFound()` thrown
@@ -21,7 +22,8 @@ export default function ArNotFound() {
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {[
-                    { href: '/ar', title: 'البورصة المصرية اليوم', desc: 'الصفحة الرئيسية بالعربية' },
+                    { href: HOME_PATH, title: 'الرئيسية', desc: 'الصفحة الرئيسية لستارتا ماركتس' },
+                    { href: '/ar', title: 'البورصة المصرية اليوم', desc: 'مؤشر EGX30 وأسهم البورصة والقطاعات' },
                     { href: '/ar/Funds', title: 'صناديق الاستثمار', desc: 'صافي قيمة الأصول والعوائد والرسوم لكل صندوق' },
                     { href: '/ar/companies', title: 'أسهم البورصة المصرية', desc: 'الشركات المقيدة مرتبة حسب القيمة السوقية' },
                     { href: '/ar/Funds/best-mutual-funds-egypt-2026', title: 'أفضل صناديق الاستثمار 2026', desc: 'ترتيب آلي حسب عائد 12 شهرًا' },

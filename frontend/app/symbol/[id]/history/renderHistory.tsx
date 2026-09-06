@@ -8,6 +8,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import KeyTerms from '@/components/seo/KeyTerms';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
 import { HISTORY, NAV, t, type Lang } from '@/content/symbol-pages-i18n';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /symbol/{SYM}/history — server-rendered daily price history: all-time
@@ -181,7 +182,7 @@ export async function renderHistory(id: string, lang: Lang) {
             <JsonLd
                 data={breadcrumbJsonLd(
                     [
-                        { url: lang === 'ar' ? '/ar' : '/', label: t(NAV.home, lang) },
+                        { url: HOME_PATH, label: t(NAV.home, lang) },
                         { url: '/companies', label: t(NAV.companies, lang) },
                         { url: overviewPath, label: name },
                         { label: t(NAV.history, lang) },

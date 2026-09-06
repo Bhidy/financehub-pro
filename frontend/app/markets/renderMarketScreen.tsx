@@ -8,6 +8,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { findScreen, screenPath, MARKET_SCREENS, type MarketScreen } from '@/content/market-screens';
 import { ltrNum } from '@/lib/bidi';
 import { sectorAr } from '@/content/sector-names-ar';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * MARKET SCREEN PAGES — /markets/{screen} and /ar/markets/{screen}.
@@ -105,7 +106,7 @@ export async function renderMarketScreen(slug: string, lang: 'en' | 'ar') {
         encodeURI(isAr ? symbolPathAr(r.symbol, r.name_ar) : symbolPath(r.symbol));
 
     const crumbs = [
-        { href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: HOME_PATH, url: HOME_PATH, label: isAr ? 'الرئيسية' : 'Home' },
         { href: isAr ? '/ar/markets/movers' : '/markets/movers', url: isAr ? '/ar/markets/movers' : '/markets/movers', label: isAr ? 'حركة السوق' : 'EGX Movers' },
         { label: h1 },
     ];

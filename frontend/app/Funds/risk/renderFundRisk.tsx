@@ -8,6 +8,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { FUND_CATEGORIES, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { fundName, investmentFundNode } from '@/lib/funds-hub-render';
 import { str, median, pctSigned, pct, dayOf, riskEligible, MIN_RISK_ROWS, MIN_RISK_POINTS, type Row } from '@/lib/fund-stats';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /Funds/risk and /ar/Funds/risk — THE FUND RISK LEAGUE TABLE.
@@ -114,7 +115,7 @@ export async function renderFundRisk(lang: 'en' | 'ar') {
         mainEntity: faq.map((x) => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })),
     };
     const crumbs = [
-        { href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: HOME_PATH, url: HOME_PATH, label: isAr ? 'الرئيسية' : 'Home' },
         { href: isAr ? '/ar/Funds' : '/Funds', url: isAr ? '/ar/Funds' : '/Funds', label: isAr ? 'صناديق الاستثمار' : 'Mutual Funds' },
         { label: isAr ? 'جدول المخاطر' : 'Risk' },
     ];

@@ -9,6 +9,7 @@ import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } f
 import { buildProviders, providerPath } from '@/content/fund-providers';
 import { fundName, fundsAsOf } from '@/lib/funds-hub-render';
 import { ltrNum } from '@/lib/bidi';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /Funds/prices-today and /ar/Funds/أسعار-الوثائق-اليوم
@@ -168,7 +169,7 @@ export async function renderPricesToday(lang: 'en' | 'ar') {
     };
 
     const crumbs = [
-        { href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: HOME_PATH, url: HOME_PATH, label: isAr ? 'الرئيسية' : 'Home' },
         { href: isAr ? '/ar/Funds' : '/Funds', url: isAr ? '/ar/Funds' : '/Funds', label: isAr ? 'صناديق الاستثمار' : 'Mutual Funds' },
         { label: title },
     ];

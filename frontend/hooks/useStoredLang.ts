@@ -36,10 +36,9 @@ import { useSyncExternalStore } from "react";
 
 export type StoredLang = "en" | "ar";
 
-/** Canonical key, written by PublicPageShell's persistLang and every page script. */
-const STORAGE_KEY = "starta-lang";
-/** Legacy key kept for visitors whose preference predates the canonical one. */
-const LEGACY_STORAGE_KEY = "lang";
+// Keys and the resolution rule come from the ONE contract (lib/lang.ts R4);
+// this hook is only the React binding for it.
+import { LANG_STORAGE_KEY as STORAGE_KEY, LANG_LEGACY_KEY as LEGACY_STORAGE_KEY, DEFAULT_LANG, resolveStoredLang } from "@/lib/lang";
 
 /**
  * Event any client code can dispatch on `window` after changing the stored
@@ -53,15 +52,15 @@ export const LANG_CHANGE_EVENT = "starta-lang-change";
  * Safe to call on the server / with storage disabled — falls back to Arabic.
  */
 export function readStoredLang(): StoredLang {
-    if (typeof window === "undefined") return "ar";
+    if (typeof window === "undefined") return DEFAULT_LANG;
     try {
-        const stored =
+        return resolveStoredLang(
             window.localStorage.getItem(STORAGE_KEY) ||
-            window.localStorage.getItem(LEGACY_STORAGE_KEY);
-        return stored === "en" ? "en" : "ar";
+            window.localStorage.getItem(LEGACY_STORAGE_KEY),
+        );
     } catch {
         // Storage unavailable (privacy mode): keep the Arabic default.
-        return "ar";
+        return DEFAULT_LANG;
     }
 }
 
@@ -76,7 +75,7 @@ function subscribe(onStoreChange: () => void): () => void {
 
 /** Stable server/hydration snapshot: the site default language. */
 function getServerSnapshot(): StoredLang {
-    return "ar";
+    return DEFAULT_LANG;
 }
 
 /**

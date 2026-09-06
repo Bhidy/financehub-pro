@@ -4,6 +4,7 @@ import { fundPath, absUrl, SITE_URL } from '@/lib/seo';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { buildProviders, providerPath } from '@/content/fund-providers';
 import { fundsHubRows, fundsHubItemList, fundsCountInjection, breadcrumbJson, AR_MARKETPLACE_CLOSING } from '@/lib/funds-hub-render';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /ar/Funds — THE ARABIC FUNDS HUB, served by the PREMIUM MARKETPLACE DESIGN.
@@ -131,7 +132,7 @@ export async function GET() {
         head:
             langSeedScript('ar') +
             (funds.length ? jsonLdScript(fundsHubItemList(funds, 'ar', PATH_AR)) : '') +
-            jsonLdScript(breadcrumbJson([{ name: 'الرئيسية', url: '/ar' }, { name: 'صناديق الاستثمار' }])),
+            jsonLdScript(breadcrumbJson([{ name: 'الرئيسية', url: HOME_PATH }, { name: 'صناديق الاستثمار' }])),
         cacheSeconds: 900,
     });
 }

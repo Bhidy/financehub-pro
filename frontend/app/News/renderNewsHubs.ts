@@ -4,6 +4,7 @@ import { renderNewsHub, type NewsArticleRow } from '@/lib/news-hub';
 import {
     NEWS_TOPICS, MIN_ARTICLES_PER_TOPIC, findNewsTopic, newsTopicPath, topicOfArticle,
 } from '@/content/news-topics';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * NEWS HUBS — the front hub in each language, and one archive per topic.
@@ -81,7 +82,7 @@ export async function renderNewsFront(lang: 'en' | 'ar', page = 1) {
             : 'The latest coverage of the Egyptian Exchange, the Egyptian economy and listed companies, grouped by topic.',
         articles,
         crumbs: [
-            { name: isAr ? 'الرئيسية' : 'Home', url: isAr ? '/ar' : '/' },
+            { name: isAr ? 'الرئيسية' : 'Home', url: HOME_PATH },
             { name: isAr ? 'أخبار السوق' : 'News' },
         ],
         siblings: topicLinks(lang),
@@ -133,7 +134,7 @@ export async function renderNewsTopic(slug: string, lang: 'en' | 'ar', page = 1)
         intro: isAr ? topic.introAr : topic.introEn,
         articles,
         crumbs: [
-            { name: isAr ? 'الرئيسية' : 'Home', url: isAr ? '/ar' : '/' },
+            { name: isAr ? 'الرئيسية' : 'Home', url: HOME_PATH },
             { name: isAr ? 'أخبار السوق' : 'News', url: isAr ? '/ar/News' : '/News' },
             { name: isAr ? topic.nameAr : topic.nameEn },
         ],

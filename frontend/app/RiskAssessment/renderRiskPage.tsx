@@ -5,6 +5,7 @@ import { SITE_URL, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import RiskAssessmentClient from './RiskAssessmentClient';
 import RiskMethodology from '@/components/seo/RiskMethodology';
 import { RISK_I18N, type Lang } from './risk-i18n';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * Shared per-URL bilingual renderer for the Investment Risk Assessment —
@@ -61,7 +62,7 @@ export function renderRiskPage(lang: Lang) {
 
     const crumbs = isAr
         ? [
-              { url: '/ar', href: '/ar', label: 'الرئيسية' },
+              { url: HOME_PATH, href: HOME_PATH, label: 'الرئيسية' },
               { label: 'تقييم المخاطر' },
           ]
         : [

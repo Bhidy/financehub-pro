@@ -13,6 +13,7 @@ import { DORMANT_DAYS } from '@/lib/fund-stats';
 import { buildFundAnalytics, type AnalyticsInput } from '@/lib/fund-analytics';
 import { primaryAssetClassOf, shariaCompliantOf } from '@/content/fund-categories';
 import { fundSourceLabel } from '@/lib/fund-sources';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * Shared, per-URL bilingual renderer for the fund-profile page. Both routes
@@ -642,11 +643,11 @@ export async function renderFundPage(idParam: string, lang: Lang) {
 
     const crumbs =
         lang === 'ar'
-            ? [{ href: '/ar', label: 'الرئيسية' }, { href: '/ar/Funds', label: 'الصناديق الاستثمارية' }, { label: name }]
+            ? [{ href: HOME_PATH, label: 'الرئيسية' }, { href: '/ar/Funds', label: 'الصناديق الاستثمارية' }, { label: name }]
             : [{ href: '/', label: 'Home' }, { href: '/Funds', label: 'Mutual Funds' }, { label: name }];
     const crumbLd =
         lang === 'ar'
-            ? [{ url: '/ar', label: 'الرئيسية' }, { url: '/ar/Funds', label: 'الصناديق الاستثمارية' }, { label: name }]
+            ? [{ url: HOME_PATH, label: 'الرئيسية' }, { url: '/ar/Funds', label: 'الصناديق الاستثمارية' }, { label: name }]
             : [{ url: '/', label: 'Home' }, { url: '/Funds', label: 'Mutual Funds' }, { label: name }];
 
     // ONE builder for the fund entity, shared with every hub's ItemList

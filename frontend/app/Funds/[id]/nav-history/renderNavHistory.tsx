@@ -7,6 +7,7 @@ import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo
 import JsonLd from '@/components/seo/JsonLd';
 import { NAVHIST, t, type Lang } from '@/content/symbol-pages-i18n';
 import { fundSourceLabel } from '@/lib/fund-sources';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /Funds/{id}-{slug}/nav-history and the Arabic twin.
@@ -141,7 +142,7 @@ export async function renderNavHistory(id: string, lang: Lang) {
     const low = points.reduce((m, p) => (p.nav < m.nav ? p : m), points[0]);
 
     const crumbs = [
-        { href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: HOME_PATH, url: HOME_PATH, label: isAr ? 'الرئيسية' : 'Home' },
         { href: isAr ? '/ar/Funds' : '/Funds', url: isAr ? '/ar/Funds' : '/Funds', label: isAr ? 'صناديق الاستثمار' : 'Mutual Funds' },
         { href: encodeURI(basePath(fund, lang)), url: encodeURI(basePath(fund, lang)), label: name },
         { label: isAr ? 'سجل صافي قيمة الأصول' : 'NAV history' },

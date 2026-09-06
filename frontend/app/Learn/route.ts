@@ -1,4 +1,4 @@
-import { renderStaticHub, esc, escUrl, jsonLdScript, hreflangLinks } from '@/lib/static-hub';
+import { renderStaticHub, esc, escUrl, jsonLdScript, hreflangLinks , langSeedScript } from '@/lib/static-hub';
 import { learnPath, SITE_URL, absUrl } from '@/lib/seo';
 import learnTopics from '@/content/learn-topics.generated';
 
@@ -77,7 +77,14 @@ export async function GET() {
         // /ar/Learn is now a real Arabic hub rather than a 308 back to here,
         // so this finally declares the true bilingual pair. Pointing both
         // values at /Learn told search engines no Arabic education hub existed.
-        head: hreflangLinks('/Learn', '/ar/Learn') + jsonLdScript(itemList) + jsonLdScript(breadcrumb),
+        head:
+            // R3 (lib/lang.ts): a URL whose language is fixed must WRITE that
+            // language down. Only the /ar twins used to seed, which made storage a
+            // one-way ratchet toward Arabic: a reader who chose English was flipped
+            // back by any /ar URL they opened, and the next single-URL page they
+            // visited rendered in the wrong language.
+            langSeedScript('en') +
+            hreflangLinks('/Learn', '/ar/Learn') + jsonLdScript(itemList) + jsonLdScript(breadcrumb),
         cacheSeconds: 86400,
     });
 }

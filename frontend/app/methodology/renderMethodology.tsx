@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { SITE_URL } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /methodology and /ar/methodology — HOW EVERY NUMBER ON THE SITE IS MADE.
@@ -411,7 +412,7 @@ export function renderMethodology(lang: 'en' | 'ar') {
     const t = isAr ? AR : EN;
     const path = isAr ? PATH_AR : PATH_EN;
     const crumbs = [
-        { href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: HOME_PATH, url: HOME_PATH, label: isAr ? 'الرئيسية' : 'Home' },
         { label: t.h1 },
     ];
     return (

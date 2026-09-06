@@ -4,6 +4,7 @@ import { getAllFundsRanked } from '@/lib/public-data';
 import { renderFundHub } from '@/lib/fund-hub';
 import { buildProviders, findProvider, fundBelongsToProvider, providerPath } from '@/content/fund-providers';
 import { clampTitle, clampDescription } from '@/lib/seo';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * FUND PROVIDER HUBS — /Funds/provider/{slug} and /ar/Funds/provider/{arabic}.
@@ -88,7 +89,7 @@ export async function renderProviderHub(slug: string, lang: 'en' | 'ar'): Promis
             : introEn(name, funds.length, provider.role, asOf, lead),
         funds,
         crumbs: [
-            { name: isAr ? 'الرئيسية' : 'Home', url: isAr ? '/ar' : '/' },
+            { name: isAr ? 'الرئيسية' : 'Home', url: HOME_PATH },
             { name: isAr ? 'صناديق الاستثمار' : 'Mutual Funds', url: isAr ? '/ar/Funds' : '/Funds' },
             { name: isAr ? `صناديق ${name}` : `${name} funds` },
         ],

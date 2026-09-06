@@ -1,5 +1,6 @@
 import { symbolPath, symbolPathAr } from '@/lib/seo';
 import { NAV, t, type Lang } from '@/content/symbol-pages-i18n';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * The company page family, in one place.
@@ -62,7 +63,7 @@ export function symbolCrumbs(
 ): Array<{ href?: string; url?: string; label: string }> {
     const base = encodeURI(symbolBase(symbol, lang, nameAr));
     const companies = lang === 'ar' ? '/ar/companies' : '/companies';
-    const home = lang === 'ar' ? '/ar' : '/';
+    const home = HOME_PATH;
     return [
         { href: home, url: home, label: t(NAV.home, lang) },
         { href: companies, url: companies, label: t(NAV.companies, lang) },

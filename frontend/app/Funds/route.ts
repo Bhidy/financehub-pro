@@ -1,4 +1,4 @@
-import { renderStaticHub, esc, escUrl, jsonLdScript } from '@/lib/static-hub';
+import { renderStaticHub, esc, escUrl, jsonLdScript, langSeedScript } from '@/lib/static-hub';
 import { getAllFundsRanked } from '@/lib/public-data';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { buildProviders, providerPath } from '@/content/fund-providers';
@@ -83,6 +83,12 @@ export async function GET() {
         // hreflang already ships inside marketplace.html (injected by
         // scripts/inject-seo-heads.mjs) — re-adding it here would duplicate it.
         head:
+            // R3 (lib/lang.ts): a URL whose language is fixed must WRITE that
+            // language down. Only the /ar twins used to seed, which made storage a
+            // one-way ratchet toward Arabic: a reader who chose English was flipped
+            // back by any /ar URL they opened, and the next single-URL page they
+            // visited rendered in the wrong language.
+            langSeedScript('en') +
             (funds.length ? jsonLdScript(fundsHubItemList(funds, 'en', '/Funds')) : '') +
             jsonLdScript(breadcrumbJson([{ name: 'Home', url: '/' }, { name: 'Mutual Funds' }])),
         cacheSeconds: 900,

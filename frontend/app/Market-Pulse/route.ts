@@ -3,6 +3,7 @@ import { getEgx30Index, getMarketLists, getAllTickers, getLatestNews } from '@/l
 import { SITE_URL, symbolPath, symbolPathAr } from '@/lib/seo';
 import { canonicalNewsPath, newsLang, sanitizeNewsText } from '@/lib/news-display';
 import { ltrNum } from '@/lib/bidi';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /Market-Pulse — the designed watchlist + charting tool.
@@ -226,7 +227,7 @@ export async function renderMarketPulse(lang: 'en' | 'ar') {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         itemListElement: [
-            { '@type': 'ListItem', position: 1, name: t.home, item: `${SITE_URL}${isAr ? '/ar' : '/'}` },
+            { '@type': 'ListItem', position: 1, name: t.home, item: `${SITE_URL}${HOME_PATH}` },
             { '@type': 'ListItem', position: 2, name: t.crumb },
         ],
     };
@@ -267,7 +268,8 @@ export async function renderMarketPulse(lang: 'en' | 'ar') {
         ],
         injections,
         head:
-            (isAr ? langSeedScript('ar') : '') +
+            // R3 (lib/lang.ts): seed in BOTH languages, not only Arabic.
+            langSeedScript(isAr ? 'ar' : 'en') +
             hreflangLinks(PATH_EN, PATH_AR) +
             (dataset ? jsonLdScript(dataset) : '') +
             jsonLdScript(breadcrumb),

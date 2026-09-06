@@ -53,6 +53,15 @@
         var cut = bare.search(/[?#]/);
         if (cut >= 0) { rest = bare.slice(cut); bare = bare.slice(0, cut); }
         if (bare.length > 1 && bare.charAt(bare.length - 1) === "/") bare = bare.slice(0, -1);
+        // HOME IS ONE URL (lib/lang.ts R1) — "/" in every language. Stated
+        // explicitly rather than left to fall through the pattern loop, because
+        // the React twin of this function (lib/localized-href.ts) DID carry a
+        // `path === "/" -> "/ar"` special case, and that single divergence is
+        // what sent every Arabic nav/breadcrumb/footer HOME link to the Arabic
+        // hub while these static pages still linked the designed homepage.
+        // Both halves are executed against each other by
+        // scripts/test-lang-contract.ts. Do not add an /ar mapping here.
+        if (bare === "" || bare === "/") return "/" + rest;
         for (var i = 0; i < AR_TWIN_PATTERNS.length; i++) {
             if (new RegExp(AR_TWIN_PATTERNS[i]).test(bare)) return "/ar" + bare + rest;
         }

@@ -8,6 +8,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath, type FundCategory, FUND_TAXONOMY_OVERRIDES } from '@/content/fund-categories';
 import { fundName, fundsAsOf } from '@/lib/funds-hub-render';
 import { num, str, median, pctSigned, pct, type Row } from '@/lib/fund-stats';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /Funds/categories and /ar/Funds/categories — CATEGORY PERFORMANCE, COMPARED.
@@ -136,7 +137,7 @@ export async function renderCategoriesIndex(lang: 'en' | 'ar') {
         mainEntity: faq.map((x) => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })),
     };
     const crumbs = [
-        { href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: HOME_PATH, url: HOME_PATH, label: isAr ? 'الرئيسية' : 'Home' },
         { href: isAr ? '/ar/Funds' : '/Funds', url: isAr ? '/ar/Funds' : '/Funds', label: isAr ? 'صناديق الاستثمار' : 'Mutual Funds' },
         { label: isAr ? 'الفئات' : 'Categories' },
     ];

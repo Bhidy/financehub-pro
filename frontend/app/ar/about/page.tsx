@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { SITE_URL } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /ar/about — Arabic twin of the entity anchor page. It returned 404 while
@@ -39,7 +40,7 @@ const SOURCES: Array<[string, string]> = [
 ];
 
 export default function AboutArPage() {
-    const crumbs = [{ href: '/ar', url: '/ar', label: 'الرئيسية' }, { label: 'من نحن' }];
+    const crumbs = [{ href: HOME_PATH, url: HOME_PATH, label: 'الرئيسية' }, { label: 'من نحن' }];
 
     return (
         <PublicPageShell lang="ar" altHref="/about" persistLang>

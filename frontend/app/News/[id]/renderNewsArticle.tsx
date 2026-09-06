@@ -9,6 +9,7 @@ import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo
 import PreferredSource from '@/components/seo/PreferredSource';
 import JsonLd from '@/components/seo/JsonLd';
 import { newsCoverPath, newsCoverUrl } from '@/lib/news-cover';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * Server-rendered news article, in the tree that matches its OWN language:
@@ -191,7 +192,7 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
             <JsonLd
                 data={breadcrumbJsonLd(
                     [
-                        { url: arabic ? '/ar' : '/', label: arabic ? 'الرئيسية' : 'Home' },
+                        { url: HOME_PATH, label: arabic ? 'الرئيسية' : 'Home' },
                         { url: arabic ? '/ar/News' : '/News', label: arabic ? 'أخبار السوق' : 'Market News' },
                         { label: headline },
                     ],

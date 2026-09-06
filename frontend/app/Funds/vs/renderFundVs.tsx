@@ -8,6 +8,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { FUNDVS, t, type Lang } from '@/content/symbol-pages-i18n';
 import { ltrNum } from '@/lib/bidi';
 import { fundTypeLabel, riskLabel } from '@/app/Funds/[id]/fund-i18n';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /Funds/vs/{idA}-vs-{idB} — side-by-side comparison of two Egyptian mutual
@@ -307,7 +308,7 @@ export async function renderFundVs(pair: string, lang: Lang) {
     const summary = summaryBits.length > 0 ? `${summaryBits.join('. ')}.` : null;
 
     const breadcrumbItems = [
-        { href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: isAr ? 'الرئيسية' : 'Home' },
+        { href: HOME_PATH, url: HOME_PATH, label: isAr ? 'الرئيسية' : 'Home' },
         { href: isAr ? '/ar/Funds' : '/Funds', url: isAr ? '/ar/Funds' : '/Funds', label: t(FUNDVS.crumb, lang) },
         { label: t(FUNDVS.h1(A.name, B.name), lang) },
     ];

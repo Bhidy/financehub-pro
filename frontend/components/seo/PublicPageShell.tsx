@@ -6,6 +6,7 @@ import navConfig from '@/lib/nav.json';
 import assetVersions from '@/lib/asset-versions.json';
 import arTwinRoutes from '@/lib/ar-twin-routes.json';
 import { localizedHref } from '@/lib/localized-href';
+import { langSeedScriptBody } from '@/lib/lang';
 
 /**
  * Server-rendered chrome for the SEO/public pages — a FAITHFUL replication of
@@ -114,7 +115,7 @@ export default function PublicPageShell({
     altHref,
     dir,
     wide = false,
-    persistLang = false,
+    persistLang,
 }: {
     children: React.ReactNode;
     lang?: Lang;
@@ -124,39 +125,61 @@ export default function PublicPageShell({
     dir?: 'ltr' | 'rtl';
     /** Widen the content to match the header (max-w-screen-2xl vs the default max-w-7xl). */
     wide?: boolean;
-    /** Persist this page's URL-derived language to localStorage + cookie so the
-     *  client-i18n surfaces (static marketplace / compare / home / news) stay in
-     *  the SAME language after navigation — fixing the "language suddenly flips to
-     *  English" bug globally. Opt-in: pass true ONLY from URL-based bilingual pages
-     *  (funds, news) that own their language via the URL. Do NOT pass it from
-     *  localStorage-based sections like /symbol, or their Arabic would be clobbered. */
+    /**
+     * @deprecated NO LONGER READ — persistence is unconditional (lib/lang.ts R3).
+     *
+     * This used to be opt-in, on the theory that a storage-based section such as
+     * /symbol would have its Arabic "clobbered" by an English twin persisting
+     * "en". That reasoning was inverted: the shell only ever renders at a URL
+     * whose language IS the page's language, so writing it down is always
+     * correct, and NOT writing it down is what let storage drift away from the
+     * URL. The 2026-09-06 audit found 35 of 59 call sites had not opted in —
+     * /ar itself, /ar/companies, /ar/sectors, every /ar/markets/* money page,
+     * /ar/Learn/glossary — so a reader on any of them who then opened a
+     * single-URL page (the designed homepage, /login, /symbol) got the OTHER
+     * language. The prop is kept only so existing call sites still compile.
+     */
     persistLang?: boolean;
 }) {
     const direction = dir ?? (lang === 'ar' ? 'rtl' : 'ltr');
+    void persistLang; // deprecated; persistence is unconditional (see above)
     const t = NAV_LABELS[lang];
     const f = FOOTER_LABELS[lang];
 
     return (
         <div dir={direction} lang={lang} className={`seo-shell min-h-screen bg-page text-main ${lang === 'ar' ? 'font-arabic' : ''}`}>
             <style dangerouslySetInnerHTML={{ __html: SHELL_CSS }} />
-            {(lang === 'ar' || persistLang) && (
-                // The root layout hardcodes <html lang="en"> — mirror the page
-                // language onto the document element so assistive tech and search
-                // engines see the right document. When persistLang is set, also
-                // sticky-store the language (localStorage + cookie) so the static /
-                // client-i18n surfaces (marketplace, compare, home, news) render in
-                // the SAME language after the user navigates to them.
-                <script
-                    dangerouslySetInnerHTML={{
-                        __html:
-                            (lang === 'ar' ? "document.documentElement.lang='ar';document.documentElement.dir='rtl';" : '') +
-                            (persistLang
-                                ? `try{localStorage.setItem('starta-lang','${lang}');localStorage.setItem('lang','${lang}');}catch(e){}` +
-                                  `try{document.cookie='starta-lang=${lang};path=/;max-age=31536000;samesite=lax';}catch(e){}`
-                                : ''),
-                    }}
-                />
-            )}
+            {/* The root layout hardcodes <html lang="en">, so mirror THIS page's
+                language onto the document element for assistive tech and search
+                engines — and record it as the reader's preference whenever the
+                URL is a genuine expression of language (lib/lang.ts R3).
+
+                WHEN THE URL COUNTS AS A LANGUAGE CHOICE — the rule is
+                deliberately asymmetric, because the two trees are:
+
+                  • an /ar/* URL ALWAYS counts. "/ar" is an explicit language
+                    marker; a reader who is on one is reading Arabic, however
+                    they arrived (nav, search result, shared link).
+                  • a bare English URL counts ONLY when the page has a real
+                    Arabic twin (`altHref`). The bare path is also the default
+                    tree for content that exists in one language only, and
+                    opening an English-only news article is a choice of ARTICLE,
+                    not a choice of language — seeding "en" there would flip an
+                    Arabic reader's whole site chrome for clicking a headline.
+
+                This replaces the old `persistLang` opt-in, which 35 of 59 call
+                sites never opted into — /ar itself, /ar/companies, /ar/sectors,
+                every /ar/markets/* money page, /ar/Learn/glossary — so storage
+                drifted away from the URL and the next single-URL page the
+                reader opened (the designed homepage, /login, /symbol) rendered
+                in the other language. */}
+            <script
+                dangerouslySetInnerHTML={{
+                    __html:
+                        `document.documentElement.lang='${lang}';document.documentElement.dir='${direction}';` +
+                        (lang === 'ar' || altHref ? langSeedScriptBody(lang) : ''),
+                }}
+            />
             <Script src="/assets/starta-theme.js?v=1.1.0" strategy="beforeInteractive" />
             {/* starta-mobile-nav builds its drawer CTA through
                 window.startaLocalizedHref. That helper normally ships in

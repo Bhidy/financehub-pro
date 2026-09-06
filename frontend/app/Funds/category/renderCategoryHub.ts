@@ -6,6 +6,7 @@ import { clampTitle, clampDescription } from '@/lib/seo';
 import {
     categoryOfFund, categoryPath, findCategory, MIN_FUNDS_TO_PUBLISH, FUND_CATEGORIES,
 } from '@/content/fund-categories';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * FUND CATEGORY HUBS — /Funds/category/{key} and /ar/Funds/category/{arabic}.
@@ -54,7 +55,7 @@ export async function renderCategoryHub(slug: string, lang: 'en' | 'ar'): Promis
         funds,
         marketplaceType: cat.marketplaceType || undefined,
         crumbs: [
-            { name: isAr ? 'الرئيسية' : 'Home', url: isAr ? '/ar' : '/' },
+            { name: isAr ? 'الرئيسية' : 'Home', url: HOME_PATH },
             { name: isAr ? 'صناديق الاستثمار' : 'Mutual Funds', url: isAr ? '/ar/Funds' : '/Funds' },
             { name: isAr ? cat.nameAr : cat.nameEn },
         ],

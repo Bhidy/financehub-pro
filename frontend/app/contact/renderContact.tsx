@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { SITE_URL } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * /contact and /ar/contact — one renderer, two URLs.
@@ -131,7 +132,7 @@ export function renderContact(lang: Lang) {
     const alt = isAr ? PATH.en : PATH.ar;
     const p = (en: string, ar: string) => (isAr ? ar : en);
 
-    const crumbs = [{ href: isAr ? '/ar' : '/', url: isAr ? '/ar' : '/', label: t.crumbHome }, { label: t.crumb }];
+    const crumbs = [{ href: HOME_PATH, url: HOME_PATH, label: t.crumbHome }, { label: t.crumb }];
 
     const list = (items: readonly string[]) => (
         <ul className="mt-3 max-w-3xl space-y-2 leading-relaxed text-muted">

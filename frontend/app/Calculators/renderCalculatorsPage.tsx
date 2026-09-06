@@ -4,6 +4,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { SITE_URL, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import CalculatorsClient from './CalculatorsClient';
 import { calcLabels, type Lang } from './calculators-i18n';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * Shared, per-URL bilingual renderer for the Wealth Calculators page. Both
@@ -55,11 +56,11 @@ export function renderCalculatorsPage(lang: Lang) {
 
     const crumbs =
         lang === 'ar'
-            ? [{ href: '/ar', label: labels.breadcrumbs.home }, { label: labels.breadcrumbs.calculators }]
+            ? [{ href: HOME_PATH, label: labels.breadcrumbs.home }, { label: labels.breadcrumbs.calculators }]
             : [{ href: '/', label: labels.breadcrumbs.home }, { label: labels.breadcrumbs.calculators }];
     const crumbLd =
         lang === 'ar'
-            ? [{ url: '/ar', label: labels.breadcrumbs.home }, { label: labels.breadcrumbs.calculators }]
+            ? [{ url: HOME_PATH, label: labels.breadcrumbs.home }, { label: labels.breadcrumbs.calculators }]
             : [{ url: '/', label: labels.breadcrumbs.home }, { label: labels.breadcrumbs.calculators }];
 
     const appJsonLd = {

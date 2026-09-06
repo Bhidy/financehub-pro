@@ -8,6 +8,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { EGX_OFFICIAL_SECTORS, type EgxOfficialSector } from '@/content/egx-official-sectors';
 import { SECURITY_MASTER_SOURCES } from '@/lib/security-master';
 import { sectorAr } from '@/content/sector-names-ar';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * OFFICIAL EGX SECTOR HUBS — /sectors/egx/{slug} and /ar/sectors/egx/{arabic}.
@@ -123,7 +124,7 @@ export async function renderEgxSector(slug: string, lang: Lang) {
     const scope = SCOPE[sector.slug]?.[lang];
 
     const crumbs = isAr
-        ? [{ href: '/ar', url: '/ar', label: 'الرئيسية' }, { href: '/ar/sectors', url: '/ar/sectors', label: 'القطاعات' }, { label: `قطاع ${sector.ar}` }]
+        ? [{ href: HOME_PATH, url: HOME_PATH, label: 'الرئيسية' }, { href: '/ar/sectors', url: '/ar/sectors', label: 'القطاعات' }, { label: `قطاع ${sector.ar}` }]
         : [{ href: '/', url: '/', label: 'Home' }, { href: '/sectors', url: '/sectors', label: 'EGX Sectors' }, { label: `${sector.en} (official)` }];
 
     const itemList = {

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { headers } from 'next/headers';
 import PublicPageShell from '@/components/seo/PublicPageShell';
+import { HOME_PATH } from '@/lib/lang';
 
 /**
  * Root 404 — the page Next renders for every UNMATCHED URL (a URL no route
@@ -33,7 +34,8 @@ const COPY = {
         h1: 'الصفحة غير موجودة',
         lede: 'لا توجد صفحة على هذا العنوان. قد يكون الرابط قديمًا، أو يشير إلى ورقة مالية غير مقيدة في البورصة المصرية، أو إلى صندوق لم يعد يُنشر له سعر.',
         hubs: [
-            { href: '/ar', title: 'البورصة المصرية اليوم', desc: 'الصفحة الرئيسية بالعربية' },
+            { href: HOME_PATH, title: 'الرئيسية', desc: 'الصفحة الرئيسية لستارتا ماركتس' },
+            { href: '/ar', title: 'البورصة المصرية اليوم', desc: 'مؤشر EGX30 وأسهم البورصة والقطاعات' },
             { href: '/ar/Funds', title: 'صناديق الاستثمار', desc: 'صافي قيمة الأصول والعوائد والرسوم لكل صندوق' },
             { href: '/ar/companies', title: 'أسهم البورصة المصرية', desc: 'الشركات المقيدة مرتبة حسب القيمة السوقية' },
             { href: '/ar/Funds/best-mutual-funds-egypt-2026', title: 'أفضل صناديق الاستثمار 2026', desc: 'ترتيب آلي حسب عائد 12 شهرًا' },

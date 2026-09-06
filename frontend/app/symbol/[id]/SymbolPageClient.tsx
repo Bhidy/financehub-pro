@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { TradingViewChartModal } from "@/components/TradingViewChartModal";
 import { TradingViewInlineChart } from "@/components/TradingViewInlineChart";
+import { readStoredLang, type StoredLang } from "@/hooks/useStoredLang";
 import { useTheme } from "@/components/ThemeProvider";
 import ThemeToggle from "@/components/ThemeToggle";
 import { sectorAr } from '@/content/sector-names-ar';
@@ -521,10 +522,15 @@ export default function SymbolDetailPage() {
     const fundamentalsCurrency = isEgx ? "EGP" : "SAR";
     const marketName = isEgx ? "EGX" : "Tadawul";
 
-    const [lang, setLang] = useState<"en" | "ar">("en");
+    // The company page is a single-URL surface: its language comes from storage,
+    // and it MUST resolve it with the site's one rule (lib/lang.ts R4). It used
+    // to fall back to "en" and to cast whatever string it found, so a visitor
+    // with no stored preference — the site default is ARABIC — got an English
+    // company page, and a corrupted value was rendered as a language.
+    const [lang, setLang] = useState<StoredLang>("ar");
     useEffect(() => {
-        const savedLang = localStorage.getItem("starta-lang") || localStorage.getItem("lang") || "en";
-        setLang(savedLang as "en" | "ar");
+        const savedLang = readStoredLang();
+        setLang(savedLang);
         document.documentElement.lang = savedLang;
         document.documentElement.dir = savedLang === "ar" ? "rtl" : "ltr";
     }, []);
@@ -536,6 +542,8 @@ export default function SymbolDetailPage() {
         setLang(nextLang);
         localStorage.setItem("starta-lang", nextLang);
         localStorage.setItem("lang", nextLang);
+        // Cookie mirror too, so every surface reads the same preference.
+        try { document.cookie = `starta-lang=${nextLang};path=/;max-age=31536000;samesite=lax`; } catch { /* private mode */ }
         document.documentElement.lang = nextLang;
         document.documentElement.dir = nextLang === "ar" ? "rtl" : "ltr";
     };

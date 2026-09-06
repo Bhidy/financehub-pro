@@ -250,7 +250,16 @@
         document.getElementById("langToggle").textContent = state.lang === "ar" ? "EN" : "AR";
         renderCategories();
         if (refresh && document.body.dataset.page === "listing" && state.items.length) loadListing();
-        if (refresh && document.body.dataset.page === "article" && state.items.length) location.href = "/News";
+        if (refresh && document.body.dataset.page === "article" && state.items.length) {
+            // A PROGRAMMATIC NAVIGATION IS THE ONE THING NO CLICK-TIME NET CAN
+            // CATCH. starta-lang-boot's anchor localizer and
+            // components/i18n/LangLinkGuard both work on <a> elements; this is
+            // an assignment, so it went straight to the ENGLISH hub — sending a
+            // reader who had just switched an Arabic article to Arabic out of
+            // the Arabic tree, which is the opposite of what they asked for.
+            var hub = window.startaLocalizedHref ? window.startaLocalizedHref("/News") : "/News";
+            location.href = hub;
+        }
     }
 
     function media(item, eager = false) {

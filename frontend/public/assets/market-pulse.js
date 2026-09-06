@@ -1,6 +1,27 @@
 (function () {
     "use strict";
 
+    /**
+     * COMPANY LINKS FOLLOW THE READER'S LANGUAGE.
+     *
+     * These four links were built as `/symbol/${sym}`, so on /ar/Market-Pulse
+     * the drawer's "عرض الشركة" button carried an Arabic label to the ENGLISH
+     * company page — the same defect the nav had, in the same page, measured
+     * the same way. starta-lang-boot's click-time localizer was covering it,
+     * which is why nobody saw it; a crawler rendering this page still read an
+     * Arabic document whose links all left the Arabic tree.
+     *
+     * startaLocalizedHref is defined in starta-lang-boot.js, which every static
+     * page loads before this file, and it reads <html lang> at CALL time — so a
+     * language toggle re-targets these without a re-render.
+     */
+    function symbolHref(symbol) {
+        var path = "/symbol/" + encodeURIComponent(symbol);
+        return window.startaLocalizedHref ? window.startaLocalizedHref(path) : path;
+    }
+
+
+
     const translations = {
         en: {
             nav_home: "HOME", nav_funds: "MUTUAL FUNDS", nav_pulse: "MARKET PULSE", nav_learn: "LEARN", nav_news: "MARKET NEWS", nav_portfolio: "PORTFOLIO", nav_about: "ABOUT US",
@@ -377,7 +398,7 @@
 
         const actionBtn = byId("companyAction");
         if (actionBtn) {
-            actionBtn.href = `/symbol/${item.symbol}`;
+            actionBtn.href = symbolHref(item.symbol);
         }
 
         renderOverviewTab();
@@ -570,7 +591,7 @@
                         ${cards.map(c => cardHtml(c.title, c.value, c.color)).join("")}
                     </div>
                     <div style="display: flex; justify-content: center; width: 100%;">
-                        <a href="/symbol/${encodeURIComponent(item.symbol)}?tab=financials" class="quick-view-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px;">
+                        <a href="${symbolHref(item.symbol)}?tab=financials" class="quick-view-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px;">
                             ${viewMoreLabel}
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 0.9rem; height: 0.9rem; transform: ${isAr ? "rotate(180deg)" : "none"}">
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -635,7 +656,7 @@
                         }).join("")}
                     </div>
                     <div style="display: flex; justify-content: center; width: 100%;">
-                        <a href="/symbol/${encodeURIComponent(item.symbol)}?tab=news" class="quick-view-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px;">
+                        <a href="${symbolHref(item.symbol)}?tab=news" class="quick-view-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px;">
                             ${viewMoreLabel}
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 0.9rem; height: 0.9rem; transform: ${isAr ? "rotate(180deg)" : "none"}">
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1374,7 +1395,7 @@
         
         const profileLink = byId("drawerFullProfileLink");
         if (profileLink) {
-            profileLink.href = `/symbol/${item.symbol}`;
+            profileLink.href = symbolHref(item.symbol);
             profileLink.style.display = "block";
         }
         

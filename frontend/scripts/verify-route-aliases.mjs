@@ -2147,6 +2147,76 @@ async function run() {
     console.log(`OK: one nav definition — ${navScanned} files carry no hand-written nav list.`);
   }
 
+  // ══ NO STATIC PAGE SCRIPT MAY HARD-CODE A TWINNED URL ══════════════════════
+  // The static pages are covered at CLICK time by starta-lang-boot's anchor
+  // localizer, which is why raw hrefs survived here unnoticed for so long:
+  //
+  //   market-pulse.js  four company links built as `/symbol/${sym}` — on
+  //                    /ar/Market-Pulse the drawer's "عرض الشركة" button
+  //                    carried an Arabic label to the English company page
+  //   news-public.js   `location.href = "/News"` after a language switch — an
+  //                    ASSIGNMENT, which no click-time net can ever catch, so
+  //                    switching an Arabic article to Arabic left the Arabic
+  //                    tree entirely
+  //
+  // A reader rarely saw the first (the localizer repaired it in the instant
+  // before navigation) and always saw the second. Both are now built through
+  // window.startaLocalizedHref, and neither may come back.
+  //
+  // Every href is normalised before matching, so a template hole (`${sym}`)
+  // counts as a path segment: `/symbol/${x}` is tested as `/symbol/X`.
+  {
+    const { patterns } = JSON.parse(await readFile(path.join(root, "lib/ar-twin-routes.json"), "utf8"));
+    const twins = patterns.map((p) => new RegExp(p));
+    const isFile = (p) => /\.[A-Za-z0-9]{1,8}$/.test(p.slice(p.lastIndexOf("/") + 1));
+    // Same rule as lib/localized-href.ts: a dynamic pattern may not claim a file.
+    const twinned = (p) => twins.some((re) => re.test(p) && !(isFile(p) && re.source.includes("[^/]+")));
+
+    const assetsDir = path.join(root, "public/assets");
+    const files = (await readdir(assetsDir)).filter((f) => f.endsWith(".js"));
+    if (files.length < 5) {
+      console.error(`FAIL: the static-script link scan found only ${files.length} scripts — it is not reaching public/assets.`);
+      process.exit(1);
+    }
+    // starta-lang-boot.js DEFINES the localizer and carries the pattern list;
+    // starta-nav.js holds the canonical neutral paths in data-starta-href and
+    // localizes them on the same line.
+    const DEFINES_THE_RULE = new Set(["starta-lang-boot.js", "starta-nav.js", "starta-mobile-nav.js"]);
+    const offenders = [];
+    for (const f of files) {
+      if (DEFINES_THE_RULE.has(f)) continue;
+      const text = await readFile(path.join(assetsDir, f), "utf8");
+      const hits = new Set();
+      // href="/x" | href = `/x` | location.href = "/x"
+      for (const m of text.matchAll(/href\s*=\s*[`"'](\/[A-Za-z][^`"'\n]*)/g)) {
+        const raw = m[1];
+        const probe = raw.replace(/\$\{[^}]*\}/g, "X").split(/[?#]/)[0].replace(/(.)\/$/, "$1");
+        if (twinned(probe)) hits.add(raw.slice(0, 60));
+      }
+      if (hits.size) offenders.push(`${f}: ${[...hits].join(" | ")}`);
+    }
+    if (offenders.length) {
+      console.error(
+        `FAIL: ${offenders.length} static script(s) hard-code a URL that has an Arabic twin:\n` +
+        offenders.map((o) => `       ${o}`).join("\n") +
+        "\n       Build it through window.startaLocalizedHref(path) instead."
+      );
+      process.exit(1);
+    }
+    console.log(`OK: ${files.length - DEFINES_THE_RULE.size} static scripts build every twinned URL through startaLocalizedHref.`);
+  }
+
+  {
+    // The four Market Pulse company links, by name, so a future edit that
+    // reintroduces `/symbol/${sym}` fails loudly rather than relying on the
+    // scan's normalisation.
+    const mp = await readFile(path.join(root, "public/assets/market-pulse.js"), "utf8");
+    if (!/function symbolHref\(symbol\)/.test(mp) || !/window\.startaLocalizedHref/.test(mp)) {
+      console.error("FAIL: market-pulse.js no longer routes company links through startaLocalizedHref.");
+      process.exit(1);
+    }
+  }
+
     const mustStayEnglish = ["/News/838616-x", "/symbol/COMI/pe-ratio", "/symbol/COMI/revenue"];
     const compiled = derived.patterns.map((s) => new RegExp(s));
     for (const p of mustStayEnglish) {

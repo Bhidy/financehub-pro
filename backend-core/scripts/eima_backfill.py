@@ -399,44 +399,59 @@ async def verify_written(conn, prune: bool = False) -> int:
     return 1 if (dup or bad_vals) else 0
 
 
-HOLE_FROM = date(2025, 5, 14)
-HOLE_TO = date(2026, 6, 30)
+# A hole no publication cadence explains. The widest genuine rhythm in the book
+# is monthly; six months of silence is missing data, whenever it happened.
+UNRECOVERED_GAP_DAYS = 180
 
 
 async def report_unrecovered(conn, fate: dict[str, str]) -> list[str]:
-    """Name every fund that still has NO observation inside the hole, and why.
+    """Name every fund that still carries an unexplained hole, and why.
 
-    Restricted to the ingested universe, and to funds that actually straddle the
-    window — a fund launched after it, or wound up before it, has no hole to
-    recover and must not be reported as a defect.
+    ASKS THE GENERAL QUESTION, NOT THE 2025 ONE. The first version of this
+    counted observations BETWEEN two hardcoded dates and reported "none", which
+    was simply false: the boundaries are themselves observations — 2025-05-14 is
+    the last point before the hole for most of the cohort — so an inclusive
+    BETWEEN found one row inside every window and cleared every fund. A ledger
+    that reports a clean sheet while sixteen funds are visibly broken is worse
+    than no ledger.
+
+    So the gap is measured directly, per fund, from consecutive observations. It
+    needs no window, it cannot be fooled by an edge, and it will report the next
+    hole — in 2027, from a source nobody has thought about yet — exactly as
+    readily as this one.
     """
     rows = await conn.fetch(
-        """SELECT fund_id,
-                  MAX(date) FILTER (WHERE date < $1) AS before_hole,
-                  MIN(date) FILTER (WHERE date > $2) AS after_hole,
-                  COUNT(*) FILTER (WHERE date BETWEEN $1 AND $2) AS inside
-             FROM nav_history
-            WHERE fund_id ~ '^[0-9]+$'
-            GROUP BY fund_id""", HOLE_FROM, HOLE_TO)
+        """WITH d AS (
+               SELECT fund_id, date,
+                      LAG(date) OVER (PARTITION BY fund_id ORDER BY date) AS prev
+                 FROM nav_history
+                WHERE fund_id ~ '^[0-9]+$'
+           )
+           SELECT fund_id,
+                  MAX(date - prev)                                   AS worst,
+                  (array_agg(prev ORDER BY (date - prev) DESC))[1]   AS gap_from,
+                  (array_agg(date ORDER BY (date - prev) DESC))[1]   AS gap_to,
+                  COUNT(*) + 1                                       AS points
+             FROM d
+            WHERE prev IS NOT NULL
+            GROUP BY fund_id
+           HAVING MAX(date - prev) >= $1
+            ORDER BY MAX(date - prev) DESC""", UNRECOVERED_GAP_DAYS)
 
-    holed = [r for r in rows
-             if r["inside"] == 0 and r["before_hole"] is not None and r["after_hole"] is not None]
-    holed.sort(key=lambda r: r["fund_id"])
-    if not holed:
-        print("[eima] UNRECOVERED: none — every fund that straddles the hole "
-              "now has at least one observation inside it.", flush=True)
+    if not rows:
+        print(f"[eima] UNRECOVERED: none — no fund carries a gap of "
+              f"{UNRECOVERED_GAP_DAYS}+ days.", flush=True)
         return []
 
-    print(f"[eima] UNRECOVERED: {len(holed)} fund(s) still have NO observation "
-          f"between {HOLE_FROM} and {HOLE_TO}:", flush=True)
-    for r in holed:
+    print(f"[eima] UNRECOVERED: {len(rows)} fund(s) still carry a gap of "
+          f"{UNRECOVERED_GAP_DAYS}+ days:", flush=True)
+    for r in rows:
         fid = r["fund_id"]
         why = fate.get(fid) or ("no EIMA report name shortlisted for this fund — "
                                 "EIMA does not appear to cover it under a matchable name")
-        span = (r["after_hole"] - r["before_hole"]).days
-        print(f"[eima]   {fid:>9}  {span:>4}d  {r['before_hole']} -> {r['after_hole']}  {why}",
-              flush=True)
-    return [r["fund_id"] for r in holed]
+        print(f"[eima]   {fid:>9}  {r['worst']:>4}d  {r['gap_from']} -> {r['gap_to']}  "
+              f"({r['points']} pts)  {why}", flush=True)
+    return [r["fund_id"] for r in rows]
 
 
 async def run(dry_run: bool = False, only_ids: list[str] | None = None,

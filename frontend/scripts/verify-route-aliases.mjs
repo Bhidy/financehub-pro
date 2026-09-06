@@ -197,6 +197,21 @@ const checks = [
       /readStoredLang\(\)/.test(text) && !/\|\| "en";/.test(text),
   },
   {
+    name: "the designed home relabels its tab title and description with the language",
+    file: "public/home.html",
+    // "/" is the destination of every HOME link in BOTH languages and the site
+    // default is Arabic, so most visitors read an Arabic homepage. Its tab used
+    // to read "Starta Markets — EGX Stocks, Mutual Funds & Market Data". The
+    // MARKUP defaults stay English on purpose — that is what a crawler at "/"
+    // is served and what the hreflang pair declares — only the live document is
+    // relabelled after the language resolves.
+    assert: (text) =>
+      /doc_title:/.test(text) &&
+      /doc_desc:/.test(text) &&
+      /document\.title = translations\[lang\]\.doc_title/.test(text) &&
+      /meta\[name="description"\]/.test(text),
+  },
+  {
     name: "the language + home contract is executed by the build",
     file: "package.json",
     assert: (text) => {

@@ -3712,6 +3712,7 @@
         // --- TRANSLATION ENGINE ---
         const translations = {
             en: { nav_pulse: "MARKET PULSE", nav_portfolio: "MY PORTFOLIO", nav_about: "ABOUT US",
+                doc_title: "Starta Markets — EGX Stocks, Mutual Funds & Market Data", doc_desc: "The bilingual mutual-fund platform for Egypt: verified NAV history, fees and risk scorecards, fund comparison, market news and wealth calculators.",
                 about_tag: "OUR MISSION", about_title: "Empowering Investors with Clearer Market Vision.", about_text: "At Starta, we build intelligent financial tools that help investors understand the market, track stocks, analyze news, and manage investment decisions from one unified platform. Our mission is to turn complex financial data into clear, actionable insights that support smarter and more confident investing.", about_val1_title: "Innovation", about_val1_text: "Smart technology that helps investors understand the market faster and act with more confidence.", about_val2_title: "Transparency", about_val2_text: "Clear data and insights that give investors a stronger view before making decisions.", about_vision: "Redefining the Investment Experience", about_vision_text: "We combine market data, AI-powered analysis, and simple design to deliver a clearer, faster, and more professional way to monitor the market and manage investments.",
                 hero_kicker: "Egypt's Mutual Fund Platform",
                 hero_title: `A Smarter Vision<br>for <span class="text-gradient">Funds.</span>`,
@@ -3825,6 +3826,7 @@
                 sim_disclaimer: "For illustrative purposes only. Not investment advice."
             },
             ar: { nav_pulse: "نبض السوق", nav_portfolio: "محفظتي", nav_about: "معلومات عنا",
+                doc_title: "ستارتا ماركتس — صناديق الاستثمار وأسهم البورصة المصرية", doc_desc: "منصة الصناديق الاستثمارية في مصر: سجل موثّق لصافي قيمة الوحدة، والرسوم والمخاطر بوضوح، ومقارنة الصناديق، وأخبار السوق، وحاسبات الثروة.",
                 about_tag: "مهمتنا", about_title: "تمكين المستثمر من رؤية السوق بوضوح.", about_text: "في ستارتا، نبني أدوات مالية ذكية تساعد المستثمر على فهم السوق، متابعة الأسهم، تحليل الأخبار، وإدارة قراراته الاستثمارية من منصة واحدة. مهمتنا هي تحويل البيانات المالية المعقدة إلى رؤى واضحة وقابلة للتنفيذ تساعد على اتخاذ قرارات استثمارية أكثر وعيًا وثقة.", about_val1_title: "الابتكار", about_val1_text: "تقنيات ذكية تساعد المستثمر على فهم السوق بشكل أسرع واتخاذ قرارات بثقة أكبر.", about_val2_title: "الشفافية", about_val2_text: "بيانات ورؤى واضحة تمنح المستثمر رؤية أقوى قبل اتخاذ القرار.", about_vision: "إعادة تعريف تجربة الاستثمار", about_vision_text: "نجمع بين بيانات السوق، والتحليل المدعوم بالذكاء الاصطناعي، وتجربة استخدام بسيطة لنقدم طريقة أوضح وأسرع وأكثر احترافية لمتابعة السوق وإدارة الاستثمارات.",
                 hero_kicker: "منصة صناديق الاستثمار في مصر",
                 hero_title: `رؤية أذكى<br><span class="text-gradient">للاستثمار في الصناديق</span>`,
@@ -3950,6 +3952,18 @@
                 const key = el.getAttribute('data-key');
                 if (translations[lang][key]) el.innerHTML = translations[lang][key];
             });
+            // The browser tab and the share preview are part of the page too.
+            // The site default is ARABIC and this file is the destination of
+            // every HOME link in both languages, so the overwhelming majority
+            // of visitors read an Arabic homepage whose tab said
+            // "Starta Markets — EGX Stocks, Mutual Funds & Market Data".
+            // The MARKUP defaults stay English (that is what a crawler at "/"
+            // is served, and what the canonical/hreflang pair declares); only
+            // the live document is relabelled once the language is resolved.
+            // learn-topic.html and fund-details.html already do this.
+            if (translations[lang].doc_title) document.title = translations[lang].doc_title;
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc && translations[lang].doc_desc) metaDesc.setAttribute('content', translations[lang].doc_desc);
         }
         const initialLang = getStoredLanguage();
         document.documentElement.lang = initialLang;

@@ -13,7 +13,8 @@ name: NAV Archive (permanent)
 #
 # db-backup.yml is disaster recovery, not an archive: `retention-days: 30`.
 # Thirty-one days after a silent deletion the last copy is gone. These assets
-# never expire.
+# never expire — which is also why they are Release assets and not
+# actions/upload-artifact.
 #
 # THE GUARANTEE
 #   Every (fund_id, date) present in any previous snapshot must still exist.
@@ -31,6 +32,10 @@ name: NAV Archive (permanent)
 #
 # ORDER MATTERS: the snapshot is published BEFORE it is judged. A run that finds
 # missing history must still keep the evidence of what it found.
+#
+# NO gh CLI: this runner does not have it (the first run died on `gh release
+# view`, exit 127), so publishing goes through the REST API in
+# backend-core/scripts/gh_release_asset.py.
 #
 # Requires repo secret DATABASE_URL. Needs contents:write to attach the assets.
 # ============================================================
@@ -51,6 +56,7 @@ permissions:
 
 env:
   TAG: nav-archive
+  GITHUB_TOKEN: ${{ github.token }}
 
 jobs:
   archive:
@@ -65,24 +71,12 @@ jobs:
       - run: pip install --quiet asyncpg
 
       - name: Ensure the archive release exists
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          gh release view "$TAG" >/dev/null 2>&1 || \
-            gh release create "$TAG" \
-              --title "NAV archive" \
-              --notes "Permanent snapshots of nav_history. Assets never expire. \
-          manifest-latest.json is the integrity manifest the next run compares against." \
-              --latest=false
+        run: python backend-core/scripts/gh_release_asset.py ensure-release --tag "$TAG"
 
       - name: Fetch the previous manifest
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
-          gh release download "$TAG" --pattern 'manifest-latest.json' --output prev.json \
-            || echo "no previous manifest — this is the first run"
+          python backend-core/scripts/gh_release_asset.py download \
+            --tag "$TAG" --name manifest-latest.json --out prev.json
 
       - name: Export the snapshot
         env:
@@ -96,12 +90,12 @@ jobs:
             --manifest manifest-latest.json
 
       - name: Publish (before judging it)
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release upload "$TAG" \
-            "nav-history-$STAMP.csv.gz" manifest-latest.json --clobber
+          python backend-core/scripts/gh_release_asset.py upload \
+            --tag "$TAG" --file "nav-history-$STAMP.csv.gz"
+          python backend-core/scripts/gh_release_asset.py upload \
+            --tag "$TAG" --file manifest-latest.json
 
       - name: Nothing may have been lost, and nothing may have gone silent
         run: |

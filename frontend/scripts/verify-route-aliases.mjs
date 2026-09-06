@@ -290,6 +290,14 @@ const checks = [
     assert: (text) => /\^\\\/ar\(\\\/\|\$\)\/\.test\(location\.pathname\)/.test(text),
   },
   {
+    name: "market screens never link a screen that is data-gated out",
+    file: "app/markets/renderMarketScreen.tsx",
+    // A screen 404s below its own minRows. The sibling list ignored that, so all
+    // twelve market pages linked /markets/oversold-stocks — a live 404 — until a
+    // post-deploy crawl found it. The hub applies the gate; so must these.
+    assert: (text) => /lists\?\.\[s\.key\]\?\.length \?\? 0\) >= s\.minRows/.test(text),
+  },
+  {
     name: "the language + home contract is executed by the build",
     file: "package.json",
     assert: (text) => {

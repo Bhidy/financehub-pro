@@ -129,7 +129,14 @@ export async function renderMarketScreen(slug: string, lang: 'en' | 'ar') {
         })),
     };
 
-    const siblings = MARKET_SCREENS.filter((s) => s.slug !== screen.slug);
+    // SIBLINGS ARE DATA-GATED TOO. A screen 404s below its own minRows, and this
+    // list linked every sibling unconditionally — so all twelve market pages
+    // carried a live link to /markets/oversold-stocks, which is exactly such a
+    // 404 today. Found by crawling the tree after the market-data hub shipped:
+    // the hub applies the gate, these pages did not. Same rule, same rows.
+    const siblings = MARKET_SCREENS.filter(
+        (s) => s.slug !== screen.slug && (lists?.[s.key]?.length ?? 0) >= s.minRows,
+    );
 
     return (
         <PublicPageShell lang={lang} altHref={screenPath(screen, isAr ? 'en' : 'ar')} persistLang>

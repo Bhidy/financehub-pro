@@ -60,6 +60,11 @@ const ELIGIBLE = [
     /^\/(ar\/)?News\/[^/]+$/,       // a specific article
     /^\/(ar\/)?Market-Pulse$/,
     /^\/(ar\/)?Funds$/,
+    // Learn topics and the calculators: someone reading an explainer or
+    // modelling a plan is researching, which is the state this asks in.
+    /^\/(ar\/)?Learn\/[^/]+$/,
+    /^\/(ar\/)?Calculators$/,
+    /^\/(ar\/)?RiskAssessment$/,
 ];
 
 function eligible(pathname: string | null): boolean {

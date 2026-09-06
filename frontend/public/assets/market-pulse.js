@@ -1254,6 +1254,32 @@
         });
     }
 
+    /**
+     * Veil the COMPANY OVERVIEW panel for signed-out visitors.
+     *
+     * Checked before wiring it, not assumed: this panel carries none of the
+     * eleven ids that app/Market-Pulse/route.ts injects server-side. Its
+     * description and facts are fetched in the browser for whichever symbol is
+     * selected, so nothing here reaches a crawler or an answer engine.
+     *
+     * The quick-stats panel next to it looks like an equally good target and is
+     * NOT one: it contains totalStocks, breadthCount AND marketReading — the
+     * generated market-reading paragraph is server-rendered and is exactly the
+     * text answer engines quote. Veiling that panel would hide the page's own
+     * answer. This is why every veil is measured rather than eyeballed.
+     */
+    function veilCompanyOverview() {
+        if (!window.startaGate || !window.startaGate.veil) return;
+        var panel = document.querySelector(".panel.company-overview .overview-content");
+        if (panel) window.startaGate.veil(panel, "companyOverview");
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function () { setTimeout(veilCompanyOverview, 600); });
+    } else {
+        setTimeout(veilCompanyOverview, 600);
+    }
+
     function openDrawer() {
         const drawer = byId("companyDrawer");
         if (!drawer) return;

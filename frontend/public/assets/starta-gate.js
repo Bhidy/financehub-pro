@@ -344,11 +344,19 @@
                 title: "Open this company's financials",
                 body: "Revenue, earnings, margins and the balance-sheet lines behind the price — free with an account.",
             },
+            companyOverview: {
+                title: "Read the company behind the ticker",
+                body: "What this company does, its industry, and the facts that frame the price — free with an account.",
+            },
         },
         ar: {
             drawerFinancials: {
                 title: "افتح القوائم المالية لهذه الشركة",
                 body: "الإيرادات والأرباح والهوامش وبنود المركز المالي وراء السعر — مجانًا مع الحساب.",
+            },
+            companyOverview: {
+                title: "اقرأ الشركة خلف الرمز",
+                body: "نشاط الشركة وقطاعها والحقائق التي تؤطّر السعر — مجانًا مع الحساب.",
             },
         },
     };
@@ -418,6 +426,9 @@
         /^\/(ar\/)?Funds$/,
         /^\/(ar\/)?News$/,
         /^\/(ar\/)?Market-Pulse$/,
+        // The Learn hub is a Route Handler too, so it belongs here rather than
+        // in the React list. Its topic PAGES are React and are listed there.
+        /^\/(ar\/)?Learn$/,
     ];
 
     var TIMED_COPY = {

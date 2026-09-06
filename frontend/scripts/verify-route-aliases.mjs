@@ -720,6 +720,20 @@ const checks = [
     },
   },
   {
+    // ══ THE MARKET-READING PANEL IS NEVER VEILED ════════════════════════════
+    // `.panel.quick-stats` looks like an obvious veil target and is a trap: it
+    // contains totalStocks, breadthCount AND marketReading. That last one is the
+    // generated market-reading paragraph — server-rendered, and exactly the text
+    // answer engines quote from this page. Veiling that panel would hide the
+    // page's own answer from the readers search sends to it.
+    name: "Market Pulse never veils the panel holding the market reading",
+    file: "public/assets/market-pulse.js",
+    assert: (text) => {
+      const veils = [...text.matchAll(/startaGate\.veil\(([^,]+),/g)].map((m) => m[1]);
+      return !veils.some((target) => /quick-stats|marketReading|totalStocks|breadthCount/.test(target));
+    },
+  },
+  {
     // ══ THE HUBS' CONTENT IS NEVER VEILED ═══════════════════════════════════
     // Measured 2026-09-07: the funds hub is 489KB of server-rendered fund cards
     // and the news hub is a server-rendered list of headlines. That IS the

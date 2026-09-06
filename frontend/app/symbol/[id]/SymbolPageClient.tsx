@@ -1200,6 +1200,14 @@ export default function SymbolDetailPage() {
                                         <p className="text-slate-400 font-bold">{t.fc_no_coverage}</p>
                                     </div>
                                 ) : (
+                                    // ONE veil around the whole analyst group —
+                                    // target, ratings and earnings forecasts are
+                                    // a single idea, and three stacked cards each
+                                    // with its own panel would read as a locked
+                                    // page rather than a gated feature. Safe:
+                                    // this component is "use client" and none of
+                                    // it reaches the server response.
+                                    <BlurGate reason="forecasts">
                                     <>
                                         {tvEstimates.target_average > 0 && lastPrice > 0 && (
                                             <AnalystTargetBar low={Number(tvEstimates.target_low) || Number(tvEstimates.target_average)}
@@ -1218,6 +1226,7 @@ export default function SymbolDetailPage() {
                                             </div>
                                         </div>
                                     </>
+                                    </BlurGate>
                                 )}
                             </div>
                         )}

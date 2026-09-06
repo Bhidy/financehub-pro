@@ -246,12 +246,54 @@
         return out;
     }
 
+    /**
+     * THE DRAWER'S LINK LIST — canonical data first, page markup only as a
+     * fallback.
+     *
+     * Scraping the page's anchors LOST A RACE. This script is `defer`, so it
+     * runs while readyState is "interactive" and builds immediately; the nav
+     * renderer (starta-nav.js) rewrites the bar from lib/nav.json on
+     * DOMContentLoaded, which fires AFTER every deferred script. The drawer
+     * therefore froze whatever stale list each page happened to hard-code —
+     * five links, missing ASSESS YOUR INVESTMENT and MARKET PULSE, plus a CTA
+     * button whose copy was retired in August. That was survivable while the
+     * drawer was a phone-only affordance, but the nav row is now a >=1280px
+     * affordance (public/assets/starta-nav.css), so this drawer is the ONLY way
+     * to navigate on a small laptop and a stale list hides real pages.
+     *
+     * starta-nav.js publishes window.STARTA_NAV at script-evaluation time in
+     * <head>, so it is already there when this deferred script runs — no
+     * ordering assumption, no event to wait for.
+     */
+    function navModel() {
+        var canon = window.STARTA_NAV;
+        if (canon && canon.items && canon.items.length) {
+            return canon.items.map(function (item) {
+                return { href: item.href, key: item.key, en: item.en, ar: item.ar };
+            });
+        }
+        return collectLinks().map(function (a) {
+            var label = a.textContent.trim();
+            return { href: a.getAttribute("href"), key: a.getAttribute("data-key") || "", en: label, ar: label };
+        });
+    }
+
+    function modelLabel(item) { return item[lang()] || item.en; }
+
+    /** The canonical CTA, or null when the profile link is a normal nav item. */
+    function ctaModel() {
+        var canon = window.STARTA_NAV;
+        if (canon && "cta" in canon) return canon.cta;
+        return { key: "nav_cta", href: CTA_HREF, en: null, ar: null };
+    }
+
     /* ----------------------------------------------------------------- build */
-    var root, overlay, drawer, burger, sourceLinks, lastFocus;
+    var root, overlay, drawer, burger, sourceLinks, linkModel, lastFocus;
 
     function build() {
         sourceLinks = collectLinks();
-        if (!sourceLinks.length) return false;
+        linkModel = navModel();
+        if (!linkModel.length) return false;
 
         root = document.createElement("div");
         root.className = "smn-root";
@@ -273,20 +315,26 @@
         drawer.setAttribute("inert", "");
 
         var i = 0;
-        var linksHtml = sourceLinks.map(function (a, idx) {
+        var linksHtml = linkModel.map(function (item, idx) {
             var n = String(idx + 1);
             if (n.length < 2) n = "0" + n;
-            var dk = a.getAttribute("data-key");
+            var dk = item.key;
             return (
-                '<a class="smn-link smn-stagger" style="--i:' + i++ + '" href="' + a.getAttribute("href") + '">' +
+                '<a class="smn-link smn-stagger" style="--i:' + i++ + '" href="' + (window.startaLocalizedHref || String)(item.href) + '">' +
                 '<span class="smn-link-idx">' + n + "</span>" +
-                '<span class="smn-link-label"' + (dk ? ' data-key="' + dk + '"' : "") + ">" + a.textContent.trim() + "</span>" +
+                '<span class="smn-link-label"' + (dk ? ' data-key="' + dk + '"' : "") + ">" + modelLabel(item) + "</span>" +
                 svgArrow("smn-link-arrow") +
                 "</a>"
             );
         }).join("");
 
+        var cta = ctaModel();
         var ctaIdx = i++, footIdx = i++, tagIdx = i++;
+        // `cta: null` means the profile link is a normal nav item (nav_risk); a
+        // button here would duplicate it under retired copy.
+        var ctaHtml = cta
+            ? '<a class="smn-cta smn-stagger" style="--i:' + ctaIdx + '" href="' + (window.startaLocalizedHref || String)(cta.href) + '"><span data-key="' + cta.key + '">' + (cta[lang()] || ctaLabel()) + "</span>" + svgArrow("") + "</a>"
+            : "";
 
         drawer.innerHTML =
             '<div class="smn-glow"></div>' +
@@ -297,7 +345,7 @@
             '<div class="smn-eyebrow smn-stagger" style="--i:0"><span class="smn-eyebrow-text">' + t("menu") + "</span></div>" +
             '<h2 class="smn-explore smn-stagger" style="--i:0"><span class="smn-explore-text">' + t("explore") + "</span></h2>" +
             '<nav class="smn-nav" aria-label="Mobile">' + linksHtml + "</nav>" +
-            '<a class="smn-cta smn-stagger" style="--i:' + ctaIdx + '" href="' + (window.startaLocalizedHref || String)(CTA_HREF) + '"><span data-key="nav_cta">' + ctaLabel() + "</span>" + svgArrow("") + "</a>" +
+            ctaHtml +
             '<div class="smn-footer smn-stagger" style="--i:' + footIdx + '">' +
                 '<button class="smn-foot-btn smn-theme" type="button"><span class="smn-theme-icon"></span><span class="smn-theme-label"></span></button>' +
                 '<button class="smn-foot-btn smn-lang" type="button">' + svgGlobe() + '<span class="smn-foot-lang-tag"></span></button>' +
@@ -411,16 +459,22 @@
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
 
-    // Pull the freshest (already-translated) label text from the host links.
+    // Re-label from the canonical model on a language change. Reading the host
+    // anchors instead would reintroduce two bugs: the nav renderer REPLACES
+    // those nodes (leaving these references detached), and a page dictionary
+    // that has never heard of a key silently skips it, which would strand a
+    // newer item such as nav_risk in English on the Arabic drawer.
     function syncLabels() {
         drawer.querySelectorAll(".smn-link").forEach(function (link, idx) {
-            var src = sourceLinks[idx];
-            if (!src) return;
+            var item = linkModel[idx];
+            if (!item) return;
             var label = link.querySelector(".smn-link-label");
-            if (label) label.textContent = src.textContent.trim();
+            if (label) label.textContent = modelLabel(item);
+            link.setAttribute("href", (window.startaLocalizedHref || String)(item.href));
         });
-        var cta = drawer.querySelector(".smn-cta span");
-        if (cta) cta.textContent = ctaLabel();
+        var ctaEl = drawer.querySelector(".smn-cta span");
+        var ctaCanon = ctaModel();
+        if (ctaEl) ctaEl.textContent = (ctaCanon && ctaCanon[lang()]) || ctaLabel();
         setText(".smn-eyebrow-text", t("menu"));
         setText(".smn-explore-text", t("explore"));
         setText(".smn-tagline-text", t("tagline"));
@@ -440,12 +494,21 @@
         if (burger) burger.setAttribute("aria-label", isOpen() ? t("close") : t("open"));
     }
 
-    // Show the burger only when the host page's own nav links are hidden.
+    /**
+     * Show the burger only when the host page's own nav links are hidden.
+     *
+     * The probe is re-queried EVERY time rather than reusing the anchor captured
+     * at build: starta-nav.js replaces the row's innerHTML, so a held reference
+     * becomes a detached node whose offsetParent is null — which reads as
+     * "links hidden" and would show a burger beside a perfectly visible nav.
+     */
     function syncBurgerVisibility() {
-        if (!burger || !sourceLinks.length) return;
-        var probe = sourceLinks[0];
-        var hidden = !probe.offsetParent && getComputedStyle(probe).position !== "fixed";
+        if (!burger) return;
+        var probe = document.querySelector(
+            'nav .starta-nav-links a, nav a[data-key^="nav_"], .site-nav a[data-key^="nav_"], .nav-links a'
+        );
         // offsetParent is null when an ancestor is display:none — our reliable "links hidden" signal.
+        var hidden = !probe || (!probe.offsetParent && getComputedStyle(probe).position !== "fixed");
         burger.classList.toggle("is-visible", hidden);
         if (!hidden && isOpen()) close();
     }
@@ -457,6 +520,10 @@
         // Re-check once fonts/late layout settle.
         setTimeout(syncBurgerVisibility, 400);
         window.addEventListener("load", syncBurgerVisibility);
+        // …and whenever the viewport crosses the row's breakpoint. Without this
+        // a window resized from desktop to laptop width kept a hidden nav and no
+        // burger until the next reload.
+        window.addEventListener("resize", syncBurgerVisibility);
     }
 
     if (document.readyState === "loading") {

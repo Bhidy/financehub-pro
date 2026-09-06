@@ -18,14 +18,16 @@ const seoPages = [...publicPages, "portfolio", "portfolio-detail", "privacy", "t
 function hasCurrentPublicNav(text) {
   const nav = text.match(/<nav[\s\S]*?<\/nav>/i)?.[0] || "";
   const fundsKey = nav.includes('data-key="nav_mobile"') ? "nav_mobile" : "nav_funds";
-  // Market Pulse (nav_pulse) and My Portfolio (nav_portfolio) are intentionally
-  // hidden from the nav; assert they are ABSENT and the remaining links are in order.
+  // My Portfolio (nav_portfolio), Features and Pricing are hidden features; assert
+  // they are ABSENT and the remaining links are in order. nav_pulse is NOT in that
+  // set any more — Market Pulse was restored to the bar on 2026-09-06 and now lives
+  // in lib/nav.json, which the runtime renderer draws over this legacy markup.
   const positions = ["nav_home", fundsKey, "nav_news", "nav_learn"]
     .map((key) => nav.indexOf(`data-key="${key}"`));
 
   return positions.every((position) => position >= 0) &&
     positions.every((position, index) => index === 0 || position > positions[index - 1]) &&
-    !/data-key=["']nav_(features|pricing|pulse|portfolio)["']/.test(nav) &&
+    !/data-key=["']nav_(features|pricing|portfolio)["']/.test(nav) &&
     /data-key=["']nav_news["'][^>]*>\s*MARKET NEWS\s*</i.test(nav);
 }
 
@@ -284,7 +286,24 @@ const checks = [
     },
   },
   {
+    // MARKET PULSE IS A NAV ITEM (restored 2026-09-06, owner request). The page
+    // shipped in both languages the whole time (app/Market-Pulse +
+    // app/ar/Market-Pulse); only the menu entry was missing, so it was reachable
+    // by URL alone. Pin it here so a future nav edit cannot drop it silently, and
+    // pin the Arabic label too — an item added English-only would render an
+    // English word in the Arabic bar (see the bilingual-parity rule).
+    name: "Market Pulse is in the canonical nav, in both languages",
+    file: "lib/nav.json",
+    assert: (text) => {
+      const item = JSON.parse(text).items.find((i) => i.key === "nav_pulse");
+      return Boolean(item) && item.href === "/Market-Pulse" && item.en === "MARKET PULSE" && item.ar === "\u0646\u0628\u0636 \u0627\u0644\u0633\u0648\u0642";
+    },
+  },
+  {
     // Both React navs must render from the canonical list, never a local copy.
+    // The Market-Pulse pattern below is a LOCAL-LIST canary, not a ban on the
+    // page: `href: "/Market-Pulse"` in object-literal form can only come from a
+    // hand-written array, which is exactly the drift lib/nav.json replaced.
     name: "SiteNav renders from lib/nav.json",
     file: "components/SiteNav.tsx",
     assert: (text) => /import navConfig from "@\/lib\/nav\.json"/.test(text)

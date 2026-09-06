@@ -19,10 +19,43 @@
  */
 
 /* ── Primary links ──────────────────────────────────────────────────────── */
+/*
+ * THE ROW IS A >=1280px AFFORDANCE, NOT A >=1024px ONE.
+ *
+ * The bar holds three clusters: logo (~127px), this row, and the control
+ * cluster (~287px: two auth pills, theme, language). At 1024px the container is
+ * 1074px wide, so the row may occupy ~660px. It never did: with SIX English
+ * items it measured 761px and the bar overflowed by 81px, which clipped "Sign
+ * In" and pushed "Create Account" off the right edge entirely. That defect was
+ * live and unnoticed because nothing asserts the bar fits. Restoring MARKET
+ * PULSE (a seventh item, 892px row) would have widened the overflow to 212px.
+ *
+ * Shrinking the gap cannot fix it — all six gaps together are 216px, so even a
+ * zero gap barely covers the overflow. The row simply does not belong at that
+ * width, so it is hidden below 1280px and the burger drawer carries the links
+ * instead. The drawer is built from these same anchors, so it needs no update.
+ *
+ * PLAIN CSS, NOT UTILITIES, and it lives here rather than in each page's markup
+ * for the usual two reasons: every static page ships its own FROZEN Tailwind
+ * build (so an `xl:flex` written into their markup would silently no-op), and
+ * this file is the one stylesheet all three renderers load, so the breakpoint
+ * can only ever have one value. components/SiteNav.tsx renders its OWN burger
+ * instead of the shared one and therefore mirrors this breakpoint in JSX.
+ */
 nav .starta-nav-links {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 2.25rem;
+}
+
+@media (min-width: 1280px) {
+    nav .starta-nav-links { display: flex; }
+}
+
+/* 1280-1439px fits, but only just: at 2.25rem gaps the row sits 18px from the
+   logo. Tighten the gap through that band so the clusters stay separated. */
+@media (min-width: 1280px) and (max-width: 1439.98px) {
+    nav .starta-nav-links { gap: 1.4rem; }
 }
 
 /* Size/weight/spacing are authoritative (page styles varied them: 12px mono on
@@ -110,8 +143,12 @@ html[data-theme="dark"] .starta-nav-cta {
     .starta-nav-cta { display: inline-flex; }
 }
 
-/* ── Burger: a mobile affordance only ───────────────────────────────────── */
-@media (min-width: 1024px) {
+/* ── Burger: shown wherever the link row is not ──────────────────────────
+   Must track the breakpoint above. starta-mobile-nav.js already reveals the
+   burger by probing whether the nav links are hidden (offsetParent === null),
+   so it follows automatically; this rule only stops the burger from ALSO
+   appearing next to a visible row. */
+@media (min-width: 1280px) {
     nav .smn-burger { display: none !important; }
 }
 

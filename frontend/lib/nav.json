@@ -1,5 +1,5 @@
 {
-  "_comment": "CANONICAL PRIMARY NAV — the single source of truth for the site chrome. Consumed by React (components/SiteNav.tsx, components/seo/PublicPageShell.tsx) and mirrored into public/assets/starta-nav.js, which renders it on every static HTML page. The mirror is build-gated: scripts/verify-route-aliases.mjs fails if the two drift. Add or reorder items HERE ONLY. `cta` is null: the profile CTA is a normal nav item (nav_risk), not a button.",
+  "_comment": "CANONICAL PRIMARY NAV — the single source of truth for the site chrome. Consumed by React (components/SiteNav.tsx, components/seo/PublicPageShell.tsx) and mirrored into public/assets/starta-nav.js, which renders it on every static HTML page. The mirror is build-gated: scripts/verify-route-aliases.mjs fails if the two drift. Add or reorder items HERE ONLY. `cta` is null: the profile CTA is a normal nav item (nav_risk), not a button. nav_pulse (/Market-Pulse) was restored to the bar on 2026-09-06 by owner request — the page has always shipped in both languages (app/Market-Pulse + app/ar/Market-Pulse); only the menu entry was missing.",
   "items": [
     {
       "key": "nav_home",
@@ -12,6 +12,12 @@
       "href": "/Funds",
       "en": "MUTUAL FUNDS",
       "ar": "الصناديق الاستثمارية"
+    },
+    {
+      "key": "nav_pulse",
+      "href": "/Market-Pulse",
+      "en": "MARKET PULSE",
+      "ar": "نبض السوق"
     },
     {
       "key": "nav_news",

@@ -182,7 +182,11 @@ export default function PublicPageShell({
                 While this shell styled its own links they rendered 12px mono at
                 40px gaps against 13px IBM Plex at 36px everywhere else. */}
             <link rel="stylesheet" href={`/assets/starta-nav.css?v=${assetVersions["starta-nav.css"]}`} />
-            <Script src="/assets/starta-mobile-nav.js?v=1.0.6" strategy="lazyOnload" />
+            {/* Content-hashed like every other shared asset. The hand-typed "1.0.6"
+                never moved when the file changed, so a returning visitor kept an
+                old drawer from cache — the same failure mode that let a stale
+                starta-nav.css override a freshly deployed one. */}
+            <Script src={`/assets/starta-mobile-nav.js?v=${assetVersions["starta-mobile-nav.js"]}`} strategy="lazyOnload" />
 
             {/* ── Header: verbatim structure from the designed pages ─────────── */}
             <nav className="fixed top-0 w-full z-50 border-b border-border bg-page/80 backdrop-blur-xl transition-all duration-300">

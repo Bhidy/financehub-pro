@@ -33,6 +33,12 @@
                     "ar": "الصناديق الاستثمارية"
             },
             {
+                    "key": "nav_pulse",
+                    "href": "/Market-Pulse",
+                    "en": "MARKET PULSE",
+                    "ar": "نبض السوق"
+            },
+            {
                     "key": "nav_news",
                     "href": "/News",
                     "en": "MARKET NEWS",
@@ -103,9 +109,26 @@
      * Load the canonical stylesheet. The look lives in starta-nav.css so the
      * React renderers can load the exact same file — while it was inlined here,
      * only static pages got it and /Calculators rendered a different nav.
+     *
+     * ADOPT THE PAGE'S OWN LINK; NEVER ADD A SECOND ONE. Every page that ships
+     * the stylesheet in markup loads it WITH a content-hash query
+     * (`?v=<hash>`, written by scripts/sync-asset-versions.mjs). This function
+     * used to append its own UNVERSIONED copy on top of that, which is not a
+     * harmless duplicate: the injected link lands later in <head>, so it wins
+     * every specificity tie, and being unversioned it is served straight from
+     * the visitor's HTTP cache. The result was that a stale cached stylesheet
+     * overrode the freshly-deployed one, and nav CSS changes silently did not
+     * reach returning visitors — the responsive breakpoint below was defeated
+     * this exact way while it was being tested. Reuse the existing element
+     * instead, and only inject when the page ships no link at all.
      */
     function ensureStyles() {
         if (document.getElementById("starta-nav-css")) return;
+        var existing = document.querySelector('link[rel="stylesheet"][href*="/assets/starta-nav.css"]');
+        if (existing) {
+            existing.id = "starta-nav-css";
+            return;
+        }
         var link = document.createElement("link");
         link.id = "starta-nav-css";
         link.rel = "stylesheet";

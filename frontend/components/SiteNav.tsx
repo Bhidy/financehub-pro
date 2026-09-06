@@ -30,6 +30,15 @@ interface SiteNavProps {
  * which drifted: it still advertised Market-Pulse and My Portfolio after the
  * funds-only repositioning, and lacked Wealth Calculators. Do not re-add a
  * local list — edit lib/nav.json.
+ *
+ * BREAKPOINT: the desktop row and this component's burger switch at 1280px,
+ * written as `min-[1280px]:` rather than a named variant because this project
+ * overrides Tailwind's screens (lg is 921px, xl is 1152px) and neither lands on
+ * the value public/assets/starta-nav.css uses. The two MUST agree: that
+ * stylesheet hides `.starta-nav-links` below 1280px, so a wider variant here
+ * would leave this surface with no links and no burger. Unlike PublicPageShell,
+ * this component renders its own burger instead of the shared starta-mobile-nav
+ * one, which reveals itself by probing whether the links are hidden.
  */
 const NAV_LINKS = navConfig.items;
 
@@ -70,7 +79,7 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                         only ever produce one nav. */}
                     <link rel="stylesheet" href={`/assets/starta-nav.css?v=${assetVersions["starta-nav.css"]}`} />
                     {/* Desktop nav links */}
-                    <div className="hidden lg:flex items-center gap-10">
+                    <div className="hidden min-[1280px]:flex items-center gap-10">
                         <div className="starta-nav-links">
                             {NAV_LINKS.map((link) => (
                                 <a
@@ -106,7 +115,7 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                         <button
                             onClick={toggleTheme}
                             aria-label="Toggle theme"
-                            className="hidden lg:flex w-[2.35rem] h-[2.35rem] rounded-full border border-slate-200 dark:border-white/[0.09] bg-white/50 dark:bg-[rgba(14,16,16,0.56)] backdrop-blur-sm items-center justify-center text-slate-600 dark:text-[#eef2f6] hover:text-[#14B8A6] hover:border-[rgba(20,184,166,0.5)] hover:-translate-y-px transition-all duration-200"
+                            className="hidden min-[1280px]:flex w-[2.35rem] h-[2.35rem] rounded-full border border-slate-200 dark:border-white/[0.09] bg-white/50 dark:bg-[rgba(14,16,16,0.56)] backdrop-blur-sm items-center justify-center text-slate-600 dark:text-[#eef2f6] hover:text-[#14B8A6] hover:border-[rgba(20,184,166,0.5)] hover:-translate-y-px transition-all duration-200"
                         >
                             {theme === "dark" ? <Sun className="w-[1.1rem] h-[1.1rem]" /> : <Moon className="w-[1.1rem] h-[1.1rem]" />}
                         </button>
@@ -115,7 +124,7 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                         {onToggleLang && (
                             <button
                                 onClick={onToggleLang}
-                                className="hidden lg:flex w-[2.35rem] h-[2.35rem] rounded-full border border-slate-200 dark:border-white/[0.09] bg-white/50 dark:bg-[rgba(14,16,16,0.56)] backdrop-blur-sm items-center justify-center text-[0.8rem] font-bold text-slate-600 dark:text-[#eef2f6] hover:text-[#14B8A6] hover:border-[rgba(20,184,166,0.5)] hover:-translate-y-px transition-all duration-200"
+                                className="hidden min-[1280px]:flex w-[2.35rem] h-[2.35rem] rounded-full border border-slate-200 dark:border-white/[0.09] bg-white/50 dark:bg-[rgba(14,16,16,0.56)] backdrop-blur-sm items-center justify-center text-[0.8rem] font-bold text-slate-600 dark:text-[#eef2f6] hover:text-[#14B8A6] hover:border-[rgba(20,184,166,0.5)] hover:-translate-y-px transition-all duration-200"
                             >
                                 {lang === "en" ? "AR" : "EN"}
                             </button>
@@ -125,7 +134,7 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                         {mobileChatActions?.onOpenHistory && (
                             <button
                                 onClick={mobileChatActions.onOpenHistory}
-                                className="lg:hidden relative w-[2.35rem] h-[2.35rem] rounded-full border border-slate-200 dark:border-white/[0.09] bg-white/50 dark:bg-[rgba(14,16,16,0.56)] backdrop-blur-sm flex items-center justify-center text-slate-600 dark:text-[#eef2f6] hover:text-[#14B8A6] hover:border-[rgba(20,184,166,0.5)] transition-all duration-200"
+                                className="min-[1280px]:hidden relative w-[2.35rem] h-[2.35rem] rounded-full border border-slate-200 dark:border-white/[0.09] bg-white/50 dark:bg-[rgba(14,16,16,0.56)] backdrop-blur-sm flex items-center justify-center text-slate-600 dark:text-[#eef2f6] hover:text-[#14B8A6] hover:border-[rgba(20,184,166,0.5)] transition-all duration-200"
                                 aria-label="Chat history"
                             >
                                 <History className="w-[1.1rem] h-[1.1rem]" />
@@ -136,7 +145,7 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                         )}
                         {/* Mobile burger */}
                         <button
-                            className="lg:hidden w-[2.35rem] h-[2.35rem] rounded-full border border-slate-200 dark:border-white/[0.09] bg-white/50 dark:bg-[rgba(14,16,16,0.56)] backdrop-blur-sm flex items-center justify-center text-slate-600 dark:text-[#eef2f6] hover:text-[#14B8A6] hover:border-[rgba(20,184,166,0.5)] transition-all duration-200"
+                            className="min-[1280px]:hidden w-[2.35rem] h-[2.35rem] rounded-full border border-slate-200 dark:border-white/[0.09] bg-white/50 dark:bg-[rgba(14,16,16,0.56)] backdrop-blur-sm flex items-center justify-center text-slate-600 dark:text-[#eef2f6] hover:text-[#14B8A6] hover:border-[rgba(20,184,166,0.5)] transition-all duration-200"
                             onClick={() => setMobileOpen((o) => !o)}
                             aria-label={mobileOpen ? "Close menu" : "Open menu"}
                         >
@@ -151,14 +160,14 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                 <>
                     {/* Scrim — tap anywhere to close */}
                     <div
-                        className="lg:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px]"
+                        className="min-[1280px]:hidden fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px]"
                         onClick={() => setMobileOpen(false)}
                         aria-hidden="true"
                     />
 
                     {/* Dropdown panel — anchored right below the 80px nav bar */}
                     <div
-                        className="lg:hidden fixed left-0 right-0 top-20 z-50 bg-white dark:bg-[#0b0c0d] border-b border-slate-200/60 dark:border-white/[0.08] shadow-2xl shadow-slate-900/10 dark:shadow-black/50 px-6 py-4"
+                        className="min-[1280px]:hidden fixed left-0 right-0 top-20 z-50 bg-white dark:bg-[#0b0c0d] border-b border-slate-200/60 dark:border-white/[0.08] shadow-2xl shadow-slate-900/10 dark:shadow-black/50 px-6 py-4"
                         style={{ animation: "siteNavSlideDown 0.18s ease-out both" }}
                     >
                         <style>{`

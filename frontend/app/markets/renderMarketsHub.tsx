@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getEgx30Index, getAllTickers, getMarketLists, getDividendCalendar, type Ticker } from '@/lib/public-data';
-import { rankByMarketCap, rankByDividendYield, rankByLowestPe, rankedAsOf } from '@/lib/market-rankings';
+import { rankByMarketCap, rankByDividendYield, rankByLowestPe, rankedAsOf, fmtMarketCap, fmtYield, fmtPeRatio } from '@/lib/market-rankings';
 import { MARKET_SCREENS, screenPath, type MarketScreen } from '@/content/market-screens';
 import { HUB_ENTRIES, HUB_GROUPS, HUB_BROWSE, HUB_COPY, type HubGroupKey } from '@/content/market-hub';
 import { SITE_URL, absUrl, OG_DEFAULTS } from '@/lib/seo';
@@ -69,14 +69,6 @@ type Row = {
     tone: 'up' | 'down' | 'flat';
 };
 
-const fmtCap = (n: unknown, lang: 'en' | 'ar'): string => {
-    if (typeof n !== 'number' || !Number.isFinite(n)) return '—';
-    const loc = 'en-EG';
-    if (n >= 1e9) return ltrNum(`${(n / 1e9).toLocaleString(loc, { maximumFractionDigits: 1 })}${lang === 'ar' ? ' مليار' : 'B'}`);
-    if (n >= 1e6) return ltrNum(`${(n / 1e6).toLocaleString(loc, { maximumFractionDigits: 1 })}${lang === 'ar' ? ' مليون' : 'M'}`);
-    return ltrNum(n.toLocaleString(loc, { maximumFractionDigits: 0 }));
-};
-
 const fmtPct = (n: unknown): string =>
     typeof n === 'number' && Number.isFinite(n)
         ? ltrNum(`${n >= 0 ? '+' : ''}${n.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%`)
@@ -129,17 +121,17 @@ export async function renderMarketsHub(lang: 'en' | 'ar') {
             tone: (lists?.gainers?.[0]?.change_percent ?? 0) >= 0 ? 'up' : 'down',
         },
         '/markets/largest-companies': {
-            lead: byCap[0] ? fmtCap(byCap[0].market_cap, lang) : null,
+            lead: byCap[0] ? ltrNum(fmtMarketCap(byCap[0].market_cap, lang)) : null,
             leadFor: nameOf(byCap[0], lang),
             tone: 'flat',
         },
         '/markets/top-dividend-yield': {
-            lead: byYield[0] ? ltrNum(`${(byYield[0].dividend_yield as number).toFixed(2)}%`) : null,
+            lead: byYield[0] ? ltrNum(fmtYield(byYield[0].dividend_yield)) : null,
             leadFor: nameOf(byYield[0], lang),
             tone: 'flat',
         },
         '/markets/lowest-pe-stocks': {
-            lead: byPe[0] ? fmtPlain(byPe[0].pe_ratio, 2) : null,
+            lead: byPe[0] ? ltrNum(fmtPeRatio(byPe[0].pe_ratio)) : null,
             leadFor: nameOf(byPe[0], lang),
             tone: 'flat',
         },
@@ -266,7 +258,7 @@ export async function renderMarketsHub(lang: 'en' | 'ar') {
                                         </span>
                                         {r.lead && (
                                             <span className="flex items-baseline gap-2 whitespace-nowrap">
-                                                {r.leadFor && <span className="max-w-[12rem] truncate text-xs text-muted">{r.leadFor}</span>}
+                                                {r.leadFor && <span className="max-w-[11rem] truncate text-xs text-muted sm:max-w-[20rem] lg:max-w-[26rem]">{r.leadFor}</span>}
                                                 <span
                                                     className={`font-mono text-sm font-semibold ${
                                                         r.tone === 'up' ? 'text-emerald-700' : r.tone === 'down' ? 'text-red-600' : 'text-main'

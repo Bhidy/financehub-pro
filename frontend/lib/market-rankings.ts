@@ -63,3 +63,38 @@ export function rankedAsOf(rows: Ticker[]): string | null {
         null,
     );
 }
+
+/**
+ * HOW A RANKED FIGURE IS PRINTED — also one definition, for the same reason.
+ *
+ * Live audit of the new hub against its own destinations (2026-09-06) found the
+ * ranking VALUES identical and the RENDERING different: the hub said "480.1B"
+ * where /markets/largest-companies said "EGP 480.12B" — one number, two
+ * roundings and one missing currency, on two pages a reader reaches in one
+ * click. Sharing the ranking without sharing its formatter only moves the drift
+ * from the data layer to the display layer, which is where a reader actually
+ * meets it.
+ */
+
+/** Market capitalisation, in the destination page's exact wording per language. */
+export function fmtMarketCap(n: unknown, lang: 'en' | 'ar'): string {
+    if (typeof n !== 'number' || !Number.isFinite(n)) return '—';
+    const en = lang === 'en';
+    if (n >= 1e9) return en ? `EGP ${(n / 1e9).toFixed(2)}B` : `${(n / 1e9).toFixed(2)} مليار ج.م`;
+    if (n >= 1e6) return en ? `EGP ${(n / 1e6).toFixed(2)}M` : `${(n / 1e6).toFixed(2)} مليون ج.م`;
+    return en ? `EGP ${n.toLocaleString('en-EG')}` : `${n.toLocaleString('en-EG')} ج.م`;
+}
+
+/** Dividend yield, as the ranking page prints it (no trailing zeros). */
+export function fmtYield(n: unknown): string {
+    return typeof n === 'number' && Number.isFinite(n)
+        ? `${n.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%`
+        : '—';
+}
+
+/** Trailing P/E, as the ranking page prints it. */
+export function fmtPeRatio(n: unknown): string {
+    return typeof n === 'number' && Number.isFinite(n)
+        ? n.toLocaleString('en-EG', { maximumFractionDigits: 2 })
+        : '—';
+}

@@ -4,7 +4,9 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
-import { rankByMarketCap, rankedAsOf } from '@/lib/market-rankings';
+import { rankByMarketCap, rankedAsOf, fmtMarketCap } from '@/lib/market-rankings';
+/** The hub states this page's leader; one formatter so they cannot disagree. */
+const fmtMarketCap_ = (n: unknown) => fmtMarketCap(n, 'ar');
 
 /** Arabic twin of /markets/largest-companies — "أكبر الشركات في البورصة المصرية". */
 
@@ -28,12 +30,6 @@ export const metadata: Metadata = {
     },
 };
 
-const fmtCap = (n: number | null): string => {
-    if (n === null || !Number.isFinite(n)) return '—';
-    if (n >= 1e9) return `${(n / 1e9).toFixed(2)} مليار ج.م`;
-    if (n >= 1e6) return `${(n / 1e6).toFixed(2)} مليون ج.م`;
-    return `${n.toLocaleString('en-EG')} ج.م`;
-};
 
 export default async function LargestCompaniesArPage() {
     const all = await getAllTickers();
@@ -53,7 +49,7 @@ export default async function LargestCompaniesArPage() {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
         mainEntity: [
-            { '@type': 'Question', name: 'ما هي أكبر شركة في البورصة المصرية؟', acceptedAnswer: { '@type': 'Answer', text: ranked[0] ? `من حيث القيمة السوقية، أكبر شركة مدرجة في البورصة المصرية هي ${ranked[0].name_ar || ranked[0].name_en || ranked[0].symbol} (${ranked[0].symbol})، بقيمة سوقية نحو ${fmtCap(ranked[0].market_cap)}${asOfHuman ? ` بتاريخ ${asOfHuman}` : ''}.` : 'تُرتَّب أكبر شركات البورصة المصرية حسب القيمة السوقية في هذه الصفحة، وتُحدَّث مع بيانات السوق.' } },
+            { '@type': 'Question', name: 'ما هي أكبر شركة في البورصة المصرية؟', acceptedAnswer: { '@type': 'Answer', text: ranked[0] ? `من حيث القيمة السوقية، أكبر شركة مدرجة في البورصة المصرية هي ${ranked[0].name_ar || ranked[0].name_en || ranked[0].symbol} (${ranked[0].symbol})، بقيمة سوقية نحو ${fmtMarketCap_(ranked[0].market_cap)}${asOfHuman ? ` بتاريخ ${asOfHuman}` : ''}.` : 'تُرتَّب أكبر شركات البورصة المصرية حسب القيمة السوقية في هذه الصفحة، وتُحدَّث مع بيانات السوق.' } },
             { '@type': 'Question', name: 'ما هي القيمة السوقية؟', acceptedAnswer: { '@type': 'Answer', text: 'القيمة السوقية هي إجمالي القيمة السوقية لأسهم الشركة المدرجة — أي سعر السهم مضروبًا في عدد الأسهم المصدرة. وهي المقياس الأكثر شيوعًا لحجم الشركة المدرجة.' } },
         ],
     };
@@ -92,7 +88,7 @@ export default async function LargestCompaniesArPage() {
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
-                                <td className="px-4 py-2.5 font-bold tabular-nums" dir="ltr">{fmtCap(t.market_cap)}</td>
+                                <td className="px-4 py-2.5 font-bold tabular-nums" dir="ltr">{fmtMarketCap_(t.market_cap)}</td>
                             </tr>
                         ))}
                     </tbody>

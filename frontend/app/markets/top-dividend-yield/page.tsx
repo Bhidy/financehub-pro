@@ -4,7 +4,7 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
-import { rankByDividendYield, rankedAsOf } from '@/lib/market-rankings';
+import { rankByDividendYield, rankedAsOf, fmtYield } from '@/lib/market-rankings';
 
 /**
  * /markets/top-dividend-yield — EGX stocks ranked by trailing dividend yield.
@@ -95,7 +95,7 @@ export default async function TopDividendYieldPage() {
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
-                                <td className="px-4 py-2.5 text-right font-bold tabular-nums text-emerald-700">{(t.dividend_yield as number).toLocaleString('en-EG', { maximumFractionDigits: 2 })}%</td>
+                                <td className="px-4 py-2.5 text-right font-bold tabular-nums text-emerald-700">{fmtYield(t.dividend_yield)}</td>
                             </tr>
                         ))}
                     </tbody>

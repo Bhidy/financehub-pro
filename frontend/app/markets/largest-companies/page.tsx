@@ -4,7 +4,9 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
-import { rankByMarketCap, rankedAsOf } from '@/lib/market-rankings';
+import { rankByMarketCap, rankedAsOf, fmtMarketCap } from '@/lib/market-rankings';
+/** The hub states this page's leader; one formatter so they cannot disagree. */
+const fmtMarketCap_ = (n: unknown) => fmtMarketCap(n, 'en');
 
 /**
  * /markets/largest-companies — EGX stocks ranked by market capitalisation.
@@ -32,12 +34,6 @@ export const metadata: Metadata = {
     },
 };
 
-const fmtCap = (n: number | null): string => {
-    if (n === null || !Number.isFinite(n)) return '—';
-    if (n >= 1e9) return `EGP ${(n / 1e9).toFixed(2)}B`;
-    if (n >= 1e6) return `EGP ${(n / 1e6).toFixed(2)}M`;
-    return `EGP ${n.toLocaleString('en-EG')}`;
-};
 
 export default async function LargestCompaniesPage() {
     const all = await getAllTickers();
@@ -58,7 +54,7 @@ export default async function LargestCompaniesPage() {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
         mainEntity: [
-            { '@type': 'Question', name: 'What is the largest company on the Egyptian Exchange?', acceptedAnswer: { '@type': 'Answer', text: ranked[0] ? `By market capitalisation, the largest company listed on the EGX is ${ranked[0].name_en || ranked[0].symbol} (${ranked[0].symbol}), at approximately ${fmtCap(ranked[0].market_cap)}${asOfHuman ? ` as of ${asOfHuman}` : ''}.` : 'The largest EGX companies by market capitalisation are ranked on this page, updated with our market data.' } },
+            { '@type': 'Question', name: 'What is the largest company on the Egyptian Exchange?', acceptedAnswer: { '@type': 'Answer', text: ranked[0] ? `By market capitalisation, the largest company listed on the EGX is ${ranked[0].name_en || ranked[0].symbol} (${ranked[0].symbol}), at approximately ${fmtMarketCap_(ranked[0].market_cap)}${asOfHuman ? ` as of ${asOfHuman}` : ''}.` : 'The largest EGX companies by market capitalisation are ranked on this page, updated with our market data.' } },
             { '@type': 'Question', name: 'What is market capitalisation?', acceptedAnswer: { '@type': 'Answer', text: 'Market capitalisation is the total market value of a company’s listed shares — the share price multiplied by the number of shares outstanding. It is the most common measure of a listed company’s size.' } },
             { '@type': 'Question', name: 'Are these figures in Egyptian pounds?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. Market capitalisation on this page is stated in Egyptian pounds (EGP), the reporting currency of the Egyptian Exchange. Figures update with our market data and are information, not a recommendation.' } },
         ],
@@ -99,7 +95,7 @@ export default async function LargestCompaniesPage() {
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
-                                <td className="px-4 py-2.5 text-right font-bold tabular-nums">{fmtCap(t.market_cap)}</td>
+                                <td className="px-4 py-2.5 text-right font-bold tabular-nums">{fmtMarketCap_(t.market_cap)}</td>
                             </tr>
                         ))}
                     </tbody>

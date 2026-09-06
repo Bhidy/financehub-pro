@@ -260,10 +260,17 @@ const checks = [
     // 50-row cut. The hub now states each ranking's leader, so a drifting copy
     // would advertise a leader the destination does not show — the cross-surface
     // metric drift this codebase treats as Critical.
+    // Sharing the ranking without sharing its FORMATTER only moves the drift to
+    // the display layer: the live audit found the hub printing "480.1B" where
+    // the page it links printed "EGP 480.12B" — one number, two roundings, one
+    // missing currency, one click apart.
     assert: (text) =>
       /from '@\/lib\/market-rankings'/.test(text) &&
       !/\.slice\(0, 50\)/.test(text) &&
-      !/const MAX_PLAUSIBLE_YIELD/.test(text),
+      !/const MAX_PLAUSIBLE_YIELD/.test(text) &&
+      !/const fmtCap = /.test(text) &&
+      !/dividend_yield as number\)\.toLocaleString/.test(text) &&
+      !/pe_ratio as number\)\.toLocaleString/.test(text),
   },
   {
     name: "the market cluster is linked from the shared footer, in both languages",

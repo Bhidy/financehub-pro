@@ -4,7 +4,7 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
-import { rankByLowestPe, rankedAsOf } from '@/lib/market-rankings';
+import { rankByLowestPe, rankedAsOf, fmtPeRatio } from '@/lib/market-rankings';
 
 /**
  * /markets/lowest-pe-stocks — EGX stocks ranked by lowest trailing P/E ratio
@@ -91,7 +91,7 @@ export default async function LowestPeStocksPage() {
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
-                                <td className="px-4 py-2.5 text-right font-bold tabular-nums text-starta-darkTeal">{(t.pe_ratio as number).toLocaleString('en-EG', { maximumFractionDigits: 2 })}</td>
+                                <td className="px-4 py-2.5 text-right font-bold tabular-nums text-starta-darkTeal">{fmtPeRatio(t.pe_ratio)}</td>
                             </tr>
                         ))}
                     </tbody>

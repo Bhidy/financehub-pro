@@ -4,7 +4,7 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
-import { rankByLowestPe, rankedAsOf } from '@/lib/market-rankings';
+import { rankByLowestPe, rankedAsOf, fmtPeRatio } from '@/lib/market-rankings';
 
 /** Arabic twin of /markets/lowest-pe-stocks — "أرخص أسهم البورصة المصرية حسب مكرر الربحية". */
 
@@ -85,7 +85,7 @@ export default async function LowestPeStocksArPage() {
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
-                                <td className="px-4 py-2.5 font-bold tabular-nums text-starta-darkTeal" dir="ltr">{(t.pe_ratio as number).toLocaleString('en-EG', { maximumFractionDigits: 2 })}</td>
+                                <td className="px-4 py-2.5 font-bold tabular-nums text-starta-darkTeal" dir="ltr">{fmtPeRatio(t.pe_ratio)}</td>
                             </tr>
                         ))}
                     </tbody>

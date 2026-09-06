@@ -67,6 +67,13 @@ jobs:
         working-directory: frontend
         run: node scripts/seo/audit.mjs --quick --out /tmp/seo-audit.json --fail-on critical
 
+      - name: Sitemap parity (sampled — did this deploy break a URL family?)
+        working-directory: frontend
+        # 40 URLs per segment on a fixed stride: enough to catch a deploy that
+        # 404s or de-canonicalises a whole family within seconds of going live.
+        # The FULL walk runs daily (seo-daily.yml); this is the fast gate.
+        run: node scripts/seo/parity.mjs --sample 40 --fail-on hard --out /tmp/seo-parity.json
+
       - name: Report the regression
         if: failure()
         working-directory: frontend
@@ -102,4 +109,10 @@ jobs:
           node-version: '22'
       - name: Submit URLs changed in the last 6 hours
         working-directory: frontend
-        run: node scripts/seo/indexnow.mjs --since 6h
+        # --since is data-driven (sitemap lastmod), so a TEMPLATE change that
+        # touches thousands of pages without moving any lastmod submits nothing:
+        # all three deploys on 2026-09-05 submitted 0 URLs. The money pages are
+        # therefore always resubmitted, so a template or schema fix is announced.
+        run: |
+          node scripts/seo/indexnow.mjs --since 6h
+          node scripts/seo/indexnow.mjs --money-pages || true

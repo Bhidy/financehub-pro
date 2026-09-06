@@ -32,6 +32,10 @@ export const MANAGED_ASSETS = [
   // returning visitors — an unversioned stylesheet is how a stale nav CSS beat
   // a fresh deploy for weeks.
   "starta-typography.css",
+  // The registration gate's appearance, shared by the React tree and the static
+  // hubs so a gate cannot look like two different products.
+  "starta-gate.css",
+  "starta-gate.js",
   "starta-auth-nav.js",
   "starta-i18n.js",
   "starta-lang-boot.js",

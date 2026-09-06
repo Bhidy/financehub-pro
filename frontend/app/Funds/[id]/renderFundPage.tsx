@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getAllFundsRanked, getFund, getFundPeers, getFundRecentNav, type Fund, type NavPoint } from '@/lib/public-data';
 import { SITE_URL, fundPath, idFromParam, canonicalRedirectTarget, absUrl } from '@/lib/seo';
+import { withGateDeclaration } from '@/lib/paywall-jsonld';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import FundPageClient, { type FundClientData } from './FundPageClient';
@@ -670,6 +671,19 @@ export async function renderFundPage(idParam: string, lang: Lang) {
         isPartOf: { '@id': `${SITE_URL}/#website` },
         ...(data.navDateIso ? { dateModified: data.navDateIso } : {}),
         mainEntity: { '@id': `${absUrl(canonicalPath)}#fund` },
+        // DECLARE THE GATE. This page sends the scorecard and the
+        // suitability/stress cluster to every browser and then veils them for
+        // signed-out visitors (see FundGate → components/gate/RegisterGate.tsx).
+        // Content a crawler can read and a person cannot is cloaking unless it
+        // is declared, and Google applies that rule to a free registration wall
+        // exactly as to a paid one. This page had the gate and no declaration.
+        //
+        // The PAGE stays isAccessibleForFree: true — everything an organic
+        // searcher arrives for (NAV, returns, fees, risk, strategy, manager,
+        // FAQ) is outside the gate and must stay there. Only the named part is
+        // withheld. Emitted whenever the analytics render, which is exactly when
+        // the gate can appear.
+        ...withGateDeclaration({}, data.analytics?.hasEnoughData === true),
     };
 
     return (

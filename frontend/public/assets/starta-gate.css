@@ -1,0 +1,266 @@
+/**
+ * REGISTRATION GATE — the one appearance, for both renderers.
+ *
+ * Loaded by the React root layout AND by the static HTML hubs, so the gate that
+ * appears over a fund's analytics and the one that appears over the Market Pulse
+ * watchlist cannot look like two different products. Same reasoning as
+ * starta-nav.css and starta-typography.css.
+ *
+ * These rules used to live inside app/Funds/[id]/fund-premium.css, scoped under
+ * `.fund-premium`, which made them inert on every other surface — the gate was
+ * unusable outside the fund page by construction.
+ *
+ * WHAT THE CLIP IS DOING, AND WHY IT MATTERS
+ * `.starta-gate-clip` keeps the gated content IN the document and hides it
+ * visually. That is deliberate: the server sends one identical HTML document to
+ * everybody (the edge cache in middleware.ts requires it), so the gate can only
+ * ever be a client-side veil. The consequence is that a crawler reads text a
+ * signed-out person cannot, which is why every page using this MUST declare the
+ * gate with `isAccessibleForFree: false` — see lib/paywall-jsonld.ts. The blur
+ * is a courtesy to the reader, never a security boundary: anyone can read the
+ * markup. Do not put anything genuinely confidential behind it.
+ */
+
+.starta-gate {
+    position: relative;
+}
+
+.starta-gate-clip {
+    max-height: 540px;
+    overflow: hidden;
+    filter: blur(7px) saturate(0.92);
+    opacity: 0.5;
+    pointer-events: none;
+    user-select: none;
+    -webkit-mask-image: linear-gradient(to bottom, #000 26%, transparent 92%);
+    mask-image: linear-gradient(to bottom, #000 26%, transparent 92%);
+}
+
+.starta-gate-panel {
+    position: absolute;
+    left: 50%;
+    top: 30%;
+    transform: translateX(-50%);
+    width: min(92%, 470px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.75rem 1.5rem;
+    border-radius: 1rem;
+    background: var(--c-surface, #fff);
+    border: 1px solid var(--c-border, rgba(148, 163, 184, 0.2));
+    box-shadow: 0 24px 60px -24px rgba(2, 6, 23, 0.28);
+}
+
+.starta-gate--compact .starta-gate-clip {
+    max-height: 360px;
+}
+
+.starta-gate--compact .starta-gate-panel {
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 1.25rem 1rem;
+}
+
+.starta-gate-lock {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-bottom: 0.9rem;
+    border-radius: 999px;
+    color: #0F766E;
+    background: rgba(20, 184, 166, 0.12);
+    border: 1px solid rgba(20, 184, 166, 0.3);
+}
+
+html[data-theme="dark"] .starta-gate-lock {
+    color: #2DD4BF;
+}
+
+/* Plain CSS, not utilities: the static hubs ship frozen Tailwind builds where a
+   class that is not already compiled silently does nothing. Same trap the nav
+   CTA fell into. */
+.starta-gate-cta,
+.starta-gate-signin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 1.4rem;
+    border-radius: 999px;
+    font-family: 'IBM Plex Sans Arabic', 'Sora', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease;
+}
+
+.starta-gate-cta {
+    background: #14B8A6;
+    color: #fff;
+}
+
+.starta-gate-cta:hover {
+    background: #0F766E;
+}
+
+.starta-gate-signin {
+    color: var(--c-text-muted, #5c6676);
+    border-color: var(--c-border, rgba(148, 163, 184, 0.28));
+    background: transparent;
+}
+
+.starta-gate-signin:hover {
+    color: #14B8A6;
+    border-color: rgba(20, 184, 166, 0.55);
+}
+
+.starta-gate-cta:focus-visible,
+.starta-gate-signin:focus-visible {
+    outline: 2px solid #14B8A6;
+    outline-offset: 2px;
+}
+
+/* ══ THE COUNTER ═══════════════════════════════════════════════════════════
+   Shown beside a capped feature, e.g. "2 of 3 free". It is not a warning and is
+   not styled like one: the free allowance is a real, usable amount, and the
+   moment it reads as a countdown the feature starts feeling like a trial. */
+.starta-gate-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--c-text-muted, #5c6676);
+}
+
+/* ══ THE INVITATION ════════════════════════════════════════════════════════
+   Tier 3. A single dismissible line IN the flow of the page — never a modal,
+   never over content, never blocking. It appears only after a visitor has shown
+   real interest, and never comes back once dismissed. If this ever needs to
+   interrupt someone to work, it is in the wrong place. */
+.starta-invite {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.15rem;
+    margin: 1.5rem 0;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(20, 184, 166, 0.28);
+    background: rgba(20, 184, 166, 0.06);
+}
+
+.starta-invite-text {
+    flex: 1 1 16rem;
+    min-width: 0;
+}
+
+.starta-invite-title {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--c-text-main, #111827);
+}
+
+.starta-invite-body {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--c-text-muted, #5c6676);
+}
+
+.starta-invite-dismiss {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--c-text-muted, #5c6676);
+}
+
+.starta-invite-dismiss:hover {
+    color: var(--c-text-main, #111827);
+}
+
+@media (max-width: 480px) {
+    .starta-gate-panel {
+        padding: 1.35rem 1rem;
+        width: 94%;
+    }
+}
+
+/* ══ THE DIALOG ════════════════════════════════════════════════════════════
+   Used by the static-page renderer (starta-gate.js) when a visitor reaches a
+   free allowance. A dialog rather than an in-place veil, because nothing was
+   shown and then taken away — they pressed "add" and hit a limit. Veiling
+   content they never saw would be theatre. */
+.starta-gate-dialog-root {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+}
+
+.starta-gate-dialog-scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.5);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+
+.starta-gate-dialog {
+    /* Overrides the absolute placement the in-page panel uses. */
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    width: min(100%, 430px);
+    animation: starta-gate-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes starta-gate-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .starta-gate-dialog { animation: none; }
+}
+
+.starta-gate-dialog-title {
+    font-family: 'IBM Plex Sans Arabic', 'Sora', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--c-text-main, #111827);
+    margin: 0;
+}
+
+.starta-gate-dialog-body {
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: var(--c-text-muted, #5c6676);
+}
+
+.starta-gate-dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}

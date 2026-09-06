@@ -159,6 +159,9 @@ export default async function RootLayout({
             attribute rules stay there as the fallback for engines without
             :dir(). Do not add a competing font policy anywhere else. */}
         <link rel="stylesheet" href={`/assets/starta-typography.css?v=${assetVersions["starta-typography.css"]}`} />
+        {/* The registration gate, same file the static hubs load. See
+            REGISTRATION_STRATEGY.md for what may and may not sit behind it. */}
+        <link rel="stylesheet" href={`/assets/starta-gate.css?v=${assetVersions["starta-gate.css"]}`} />
       </head>
       <body
         className={`${manrope.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} ${arabic.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}

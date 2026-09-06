@@ -414,6 +414,72 @@ const checks = [
       !/Cairo\(/.test(text),
   },
   {
+    // ══ THE REGISTRATION STRATEGY ═══════════════════════════════════════════
+    // Organic search is this site's only channel and the domain is under a year
+    // old. The rule (REGISTRATION_STRATEGY.md) is that NOTHING a search engine
+    // indexes may be gated — the gate goes on personal and derived value only.
+    // These renderers produce the pages an organic visitor lands on, and none of
+    // them may mount a gate around their body.
+    name: "no registration gate on an indexed answer",
+    files: [
+      "lib/news-hub.ts",
+      "app/News/[id]/renderNewsArticle.tsx",
+      "components/seo/SymbolSeoSection.tsx",
+      "lib/funds-hub-render.ts",
+    ],
+    assert: (text) => !/RegisterGate|FundGate|starta-gate-clip/.test(text),
+  },
+  {
+    // A gate that veils in-DOM content shows a crawler more than a person, which
+    // is cloaking unless declared. Google applies this to a FREE registration
+    // wall exactly as to a paid subscription; the WSJ lost about 44% of its
+    // search traffic changing its model without it. This page gates its
+    // analytics and emitted no declaration at all until 2026-09-06.
+    name: "the fund page declares its gate to search engines",
+    file: "app/Funds/[id]/renderFundPage.tsx",
+    assert: (text) => /withGateDeclaration/.test(text),
+  },
+  {
+    // The declaration names a CSS class, and the gate must actually carry it.
+    // If these drift apart the markup points at nothing and the page is back to
+    // undeclared cloaking — silently, because both halves still look right.
+    name: "the paywall selector matches the class the gate renders",
+    file: "components/gate/RegisterGate.tsx",
+    assert: (text, ctx) => {
+      const declared = (ctx.gateI18n.match(/GATED_CLASS\s*=\s*"([^"]+)"/) || [])[1];
+      return Boolean(declared) && text.includes("GATED_CLASS") && ctx.paywall.includes("GATED_CLASS");
+    },
+  },
+  {
+    // The gate must never decide server-side. The edge cache (middleware.ts)
+    // serves ONE shared HTML document per URL, so a per-visitor server render
+    // would hand one visitor's view to everybody — and would take the gated
+    // content out of the crawler's copy at the same time. Both renderers resolve
+    // the session in the browser, and this keeps it that way.
+    name: "the gate resolves the session in the browser, never on the server",
+    file: "components/gate/RegisterGate.tsx",
+    assert: (text) =>
+      /'use client'/.test(text) &&
+      /useAuth\(\)/.test(text) &&
+      // isLoading must keep the SSR + hydrating render UNLOCKED, or the content
+      // leaves the server HTML.
+      /!isLoading\s*&&\s*!user/.test(text),
+  },
+  {
+    // Both renderers read ONE session contract. If the static gate and the auth
+    // nav disagreed about who is signed in, a signed-in visitor would meet a
+    // gate on a static hub and not on a React page.
+    name: "the static gate reads the canonical session keys",
+    file: "public/assets/starta-gate.js",
+    assert: (text, ctx) => {
+      // readContract() already returns the parsed object — do not JSON.parse it.
+      const keys = ctx.authNav?.storage;
+      if (!keys) return false;
+      // The three that resolve a session. `avatar` is presentation, not identity.
+      return ["token", "refresh", "user"].every((k) => keys[k] && text.includes(`"${keys[k]}"`));
+    },
+  },
+  {
     // ══ ONE ARABIC TYPEFACE, EVERYWHERE ═════════════════════════════════════
     // Checking only app/layout.tsx was not enough. Cairo survived in
     // app/mobile/mobile.module.css, which self-hosted it in four weights and
@@ -1383,6 +1449,10 @@ async function run() {
   // Canonical nav config, passed to checks that compare a surface against it.
   const navConfig = await readFile(path.join(root, "lib/nav.json"), "utf8");
   const authNav = await readContract();
+  // The registration-gate contract, read once for the checks that compare the
+  // declared paywall selector against the class the gate actually renders.
+  const gateI18n = await readFile(path.join(root, "lib/gate-i18n.ts"), "utf8");
+  const paywall = await readFile(path.join(root, "lib/paywall-jsonld.ts"), "utf8");
 
   for (const check of checks) {
     // A check may name one `file` or a list of `files` that must ALL satisfy the
@@ -1392,7 +1462,7 @@ async function run() {
     const targets = check.files ?? [check.file];
     for (const target of targets) {
       const text = await readFile(path.join(root, target), "utf8");
-      if (!check.assert(text, { navConfig, authNav })) {
+      if (!check.assert(text, { navConfig, authNav, gateI18n, paywall })) {
         console.error(`FAIL: ${check.name} (${target})`);
         process.exit(1);
       }

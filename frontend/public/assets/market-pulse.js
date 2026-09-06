@@ -238,7 +238,15 @@
         if (!symbol) return;
         const list = getCustomWatchlist();
         const index = list.indexOf(symbol);
-        if (index > -1) { list.splice(index, 1); } else { list.push(symbol); }
+        if (index > -1) {
+            // REMOVING is never gated. A visitor must always be able to undo
+            // their own state; a gate that traps someone at their limit with no
+            // way back is a dark pattern, not a prompt.
+            list.splice(index, 1);
+        } else {
+            if (window.startaGate && !window.startaGate.allow("watchlist", list.length)) return;
+            list.push(symbol);
+        }
         try { localStorage.setItem("starta-watchlist", JSON.stringify(list)); } catch (_) {}
         updateFavBtn(symbol);
         if (state.watchTab === "custom") renderWatchlist();
@@ -1496,6 +1504,13 @@
         if (!symbol) return;
         const list = getCustomWatchlist();
         if (!list.includes(symbol)) {
+            // FREE ALLOWANCE. A signed-out visitor keeps five symbols; the list
+            // ships seeded with four, so this is only reached by someone
+            // actually building one. See REGISTRATION_STRATEGY.md — the gate is
+            // on the WATCHLIST, which is personal and produces no indexable
+            // text, never on the market data around it, which is what search
+            // sends people here for.
+            if (window.startaGate && !window.startaGate.allow("watchlist", list.length)) return;
             list.push(symbol);
             try { localStorage.setItem("starta-watchlist", JSON.stringify(list)); } catch (_) {}
         }

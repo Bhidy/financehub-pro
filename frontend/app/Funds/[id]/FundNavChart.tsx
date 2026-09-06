@@ -43,6 +43,14 @@ const MIN_POINTS_TO_DRAW = 2;
  */
 const MIN_WINDOW_COVERAGE = 1 / 3;
 
+/**
+ * A window whose days are more than this fraction inside a severed gap is not a
+ * view of the fund, it is a view of the hole. Used only to choose the FALLBACK
+ * range; the reader may still select any supported window and see the truth,
+ * gaps and all.
+ */
+const MAX_WINDOW_EMPTINESS = 0.25;
+
 const EN = {
     all: 'All',
     noData: 'Not enough published NAV history for this period',
@@ -164,13 +172,46 @@ export default function FundNavChart({
             : [];
     }, [all, range]);
 
-    // If the remembered range is not supported by this fund, fall back to the
-    // widest one that is — and reflect that in the buttons, not just the canvas.
+    /**
+     * How much of a window the reader would actually see as EMPTY — the share of
+     * its days swallowed by gaps severe enough to sever the line.
+     *
+     * A range can be "supported" (enough points, enough span) and still be the
+     * wrong thing to show. Fund 6197 publishes daily, has 83 observations, and
+     * carries a 412-day hole: ALL passes every support test and renders as a
+     * cluster at the far left, a void, and a stub at the right. That is the
+     * chart the owner was looking at when they reported the page as broken.
+     */
+    const emptiness = useCallback((r: Range): number => {
+        if (!all) return 1;
+        const c = rangeCutoff(r);
+        const win = c === null ? all : all.filter((p) => Date.parse(`${p.time}T00:00:00Z`) >= c);
+        if (win.length < MIN_POINTS_TO_DRAW) return 1;
+        const from = Date.parse(`${win[0].time}T00:00:00Z`);
+        const span = Math.max(Date.now() - (c === null ? from : c), 1);
+        const lost = findGaps(win as NavPoint[], breakToleranceDays(win as NavPoint[]))
+            .reduce((sum, g) => sum + g.days, 0) * 86_400_000;
+        return Math.min(1, lost / span);
+    }, [all]);
+
+    // If the remembered range is not supported by this fund, fall back — but to
+    // the widest range that is mostly DATA, not simply the widest.
+    //
+    // Reversing RANGES and taking the first supported one always preferred ALL,
+    // which is right for a fund with continuous history and precisely wrong for
+    // a holed one: it hands the reader the emptiest possible view of the fund.
+    // Widest-still-wins among the windows that are actually populated; only if
+    // every window is gap-dominated does the least-empty one win, because
+    // showing the best available chart beats showing the longest empty one.
     useEffect(() => {
         if (!all || supported.size === 0 || supported.has(range)) return;
-        const fallback = ([...RANGES].reverse().find((r) => supported.has(r)) ?? 'ALL') as Range;
-        setRange(fallback);
-    }, [all, supported, range]);
+        const widestFirst = ([...RANGES].reverse().filter((r) => supported.has(r))) as Range[];
+        const fallback =
+            widestFirst.find((r) => emptiness(r) <= MAX_WINDOW_EMPTINESS)
+            ?? widestFirst.slice().sort((a, b) => emptiness(a) - emptiness(b))[0]
+            ?? 'ALL';
+        setRange(fallback as Range);
+    }, [all, supported, range, emptiness]);
 
     // Fetch NAV history once.
     useEffect(() => {

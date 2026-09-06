@@ -580,6 +580,27 @@ const checks = [
       /data-starta-href="' \+ item\.href \+ '"/.test(text),
   },
   {
+    // ══ THE FALLBACK RANGE MUST NOT HAND BACK THE EMPTIEST VIEW ═════════════
+    // The chart defaults to YTD and falls back when a fund cannot support it.
+    // That fallback took `[...RANGES].reverse().find(supported)` — always the
+    // WIDEST supported window. Right for a fund with continuous history, and
+    // exactly wrong for one with a hole: fund 6197 publishes daily, holds 83
+    // observations and carries a 412-day gap, so ALL passes every support test
+    // and renders as a cluster at the far left, a void, and a stub at the right.
+    // That is the chart the owner was looking at when they reported the fund
+    // pages as broken.
+    //
+    // Widest still wins among windows that are actually populated; a
+    // gap-dominated one is only chosen when every window is.
+    name: "the NAV chart falls back to a populated range, not merely the widest",
+    file: "app/Funds/[id]/FundNavChart.tsx",
+    assert: (text) =>
+      /MAX_WINDOW_EMPTINESS/.test(text) &&
+      /emptiness\(r\) <= MAX_WINDOW_EMPTINESS/.test(text) &&
+      // The bare widest-first form must not come back.
+      !/\[\.\.\.RANGES\]\.reverse\(\)\.find\(\(r\) => supported\.has\(r\)\)/.test(text),
+  },
+  {
     // Both React navs must render from the canonical list, never a local copy.
     // The Market-Pulse pattern below is a LOCAL-LIST canary, not a ban on the
     // page: `href: "/Market-Pulse"` in object-literal form can only come from a

@@ -1,5 +1,6 @@
 import { renderStaticHub, esc, jsonLdScript, langSeedScript } from '@/lib/static-hub';
 import { SITE_URL } from '@/lib/seo';
+import { siteGraph } from '@/lib/structured-data';
 
 /**
  * /ar — THE ARABIC HOMEPAGE, on the designed homepage.
@@ -73,6 +74,10 @@ export async function GET() {
         // ar -> /ar, x-default -> /ar) and it is correct for BOTH members of the
         // pair, so it is left alone rather than duplicated.
         head:
+            // Site identity graph — these are designed static shells that never pass
+            // through PublicPageShell, so the `#website` / `#organization` pointers in
+            // the nodes below resolved to nothing (post-ship audit, 2026-09-07).
+            jsonLdScript(siteGraph()) +
             langSeedScript('ar') +
             jsonLdScript({
                 '@context': 'https://schema.org',

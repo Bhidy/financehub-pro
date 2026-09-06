@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import EngagePrompt from '@/components/gate/EngagePrompt';
 import SaveButton from '@/components/gate/SaveButton';
 import PriceAlert from '@/components/gate/PriceAlert';
 import { SITE_URL, symbolPath, slugify, newsPath } from '@/lib/seo';
@@ -449,7 +448,6 @@ export default function SymbolSeoSection({
                     (backend-core/app/services/alert_service.py) — which is what
                     finally makes a gate in front of it honest. */}
                 <PriceAlert symbol={symbol} />
-                <EngagePrompt itemId={`symbol:${symbol}`} />
 
                 {/* Hub links — the EN symbol template dead-ended PageRank
                     (no footer/hub links). This routes equity to the directory,

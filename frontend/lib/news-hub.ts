@@ -2,6 +2,7 @@ import { renderStaticHub, esc, escUrl, jsonLdScript, langSeedScript } from '@/li
 import { rssAutodiscoveryLink } from '@/lib/news-feed';
 import { canonicalNewsPath, sanitizeNewsText } from '@/lib/news-display';
 import { SITE_URL, absUrl } from '@/lib/seo';
+import { siteGraph } from '@/lib/structured-data';
 
 /**
  * THE ONE NEWS-HUB RENDERER.
@@ -241,6 +242,10 @@ export function renderNewsHub(spec: NewsHubSpec): Promise<Response> {
             { id: 'newsGrid', html: gridHtml },
         ],
         head:
+            // Site identity graph — these are designed static shells that never pass
+            // through PublicPageShell, so the `#website` / `#organization` pointers in
+            // the nodes below resolved to nothing (post-ship audit, 2026-09-07).
+            jsonLdScript(siteGraph()) +
             // Feed autodiscovery: no page on the site advertised the RSS feed,
             // so readers and aggregators had to know the URL. One link per
             // language, pointing at that language's own feed.

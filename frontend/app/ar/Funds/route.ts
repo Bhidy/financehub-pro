@@ -5,6 +5,7 @@ import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } f
 import { buildProviders, providerPath } from '@/content/fund-providers';
 import { fundsHubRows, fundsHubItemList, fundsCountInjection, breadcrumbJson, AR_MARKETPLACE_CLOSING } from '@/lib/funds-hub-render';
 import { HOME_PATH } from '@/lib/lang';
+import { siteGraph } from '@/lib/structured-data';
 
 /**
  * /ar/Funds — THE ARABIC FUNDS HUB, served by the PREMIUM MARKETPLACE DESIGN.
@@ -131,6 +132,12 @@ export async function GET() {
         ],
         head:
             langSeedScript('ar') +
+            // Site identity graph. These two hubs are DESIGNED STATIC SHELLS built by
+            // this route handler, not by PublicPageShell, so the CollectionPage node
+            // below said `isPartOf: {'@id': '…/#website'}` while nothing on the page
+            // declared that node — a pointer to nothing on the site's two most
+            // valuable fund URLs (post-ship audit, 2026-09-07).
+            jsonLdScript(siteGraph()) +
             (funds.length ? jsonLdScript(fundsHubItemList(funds, 'ar', PATH_AR)) : '') +
             jsonLdScript(breadcrumbJson([{ name: 'الرئيسية', url: HOME_PATH }, { name: 'صناديق الاستثمار' }])),
         cacheSeconds: 900,

@@ -369,113 +369,138 @@
         return true;
     }
 
-    /* ══ THE GUEST BAR ═══════════════════════════════════════════════════
-       A slim, always-present strip telling a signed-out visitor what an account
-       gives them. It exists because measuring the site proved the clever,
-       threshold-based prompts fired for almost nobody: on the funds hub and on
-       Market Pulse a signed-out visitor saw ZERO invitations to register,
-       because every trigger needed engagement a normal session never reaches.
+    /* ══ THE TIMED INVITATION, FOR THE STATIC HUBS ═══════════════════════
+       components/gate/TimedRegisterDialog.tsx does this for the React routes.
+       It cannot serve /Funds, /News or /Market-Pulse: those are Route Handlers
+       that emit a designed HTML shell and never mount the React layout, so a
+       component in that layout simply never runs there. Verified the hard way —
+       the dialog was mounted, correct, and completely absent from three of the
+       five pages it was meant to appear on.
 
-       So this one has no trigger. It is simply there, on the surfaces where
-       someone is browsing rather than reading, from the first second of the
-       first visit. That is the difference between a growth feature that exists
-       and one that is only theoretically reachable.
+       Same rules as the React twin, deliberately: fifteen seconds of VISIBLE
+       time, an allow-list of routes, never the home page, once per session, and
+       silence for a month after a second refusal. Two implementations of one
+       behaviour must not drift, so if you change a rule, change it in both. */
+    var TIMED_DELAY_MS = 15000;
+    var TIMED_SESSION = "starta-timed-shown";
+    var TIMED_SNOOZE = "starta-timed-snooze";
+    var TIMED_COUNT = "starta-timed-dismissals";
+    var MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
-       It is still not a wall: one line, in the flow of the page, dismissible,
-       and dismissing it lasts the whole session. It removes nothing, covers
-       nothing, and is injected by script AFTER load, so it never enters the
-       HTML a crawler or an answer engine reads. */
-    var BAR_COPY = {
+    /** Research surfaces only. The home page is absent on purpose. */
+    var TIMED_ROUTES = [
+        /^\/(ar\/)?Funds$/,
+        /^\/(ar\/)?News$/,
+        /^\/(ar\/)?Market-Pulse$/,
+    ];
+
+    var TIMED_COPY = {
         en: {
-            title: "Free account, more of the site",
-            body: "Keep a watchlist that survives this browser, save funds and companies, compare more than two at a time, and set a price alert.",
+            title: "Keep what you find here",
+            body: "A free account keeps your watchlist beyond this browser, saves the funds and companies you are looking at, compares more than two at once, and tells you when a price reaches your level.",
             cta: "Create a free account",
-            signin: "Sign in",
+            signin: "I already have one",
             dismiss: "Not now",
         },
         ar: {
-            title: "حساب مجاني، واستفادة أكبر من الموقع",
-            body: "احتفظ بقائمة متابعة لا تختفي مع هذا المتصفح، واحفظ الصناديق والشركات، وقارن أكثر من اثنين معًا، واضبط تنبيهًا للسعر.",
+            title: "احتفظ بما تجده هنا",
+            body: "الحساب المجاني يحفظ قائمة متابعتك خارج هذا المتصفح، ويحتفظ بالصناديق والشركات التي تطالعها، ويقارن أكثر من اثنين معًا، ويخبرك عند بلوغ السعر المستوى الذي تحدده.",
             cta: "أنشئ حسابًا مجانيًا",
-            signin: "تسجيل الدخول",
+            signin: "لديّ حساب بالفعل",
             dismiss: "ليس الآن",
         },
     };
 
-    var BAR_DISMISS = "starta-bar-off";
-
-    function barDismissed() {
-        try { return sessionStorage.getItem(BAR_DISMISS) === "1"; } catch (e) { return false; }
-    }
-
-    /**
-     * Render the bar into `anchor`. Returns true when it rendered.
-     * Signed-in visitors never see it; a permanent dismissal of the engagement
-     * prompts silences this too, because someone who said no meant it.
-     */
-    function renderGuestBar(anchor) {
-        if (!anchor || isSignedIn() || barDismissed()) return false;
-        try { if (localStorage.getItem("starta-invite-off") === "1") return false; } catch (e) {}
-        if (document.querySelector(".starta-guestbar")) return false;
-
-        var L = BAR_COPY[lang()];
-        var box = document.createElement("div");
-        box.className = "starta-invite starta-guestbar";
-        box.setAttribute("role", "complementary");
-        box.innerHTML =
-            '<span class="starta-invite-text">' +
-                '<span class="starta-invite-title"></span>' +
-                '<span class="starta-invite-body"></span>' +
-            "</span>" +
-            '<a class="starta-gate-cta"></a>' +
-            '<a class="starta-gate-signin"></a>' +
-            '<button type="button" class="starta-invite-dismiss"></button>';
-
-        box.querySelector(".starta-invite-title").textContent = L.title;
-        box.querySelector(".starta-invite-body").textContent = L.body;
-        var cta = box.querySelector(".starta-gate-cta");
-        cta.textContent = L.cta; cta.href = href("/register");
-        var si = box.querySelector(".starta-gate-signin");
-        si.textContent = L.signin; si.href = href("/login");
-        var no = box.querySelector(".starta-invite-dismiss");
-        no.textContent = L.dismiss;
-        no.addEventListener("click", function () {
-            try { sessionStorage.setItem(BAR_DISMISS, "1"); } catch (e) {}
-            box.remove();
-        });
-
-        anchor.appendChild(box);
-        return true;
-    }
-
-    /**
-     * Place the bar on a static hub automatically. Looks for an explicit slot
-     * first, then falls back to the top of <main> — never above the page's own
-     * <h1>, which is the answer the visitor came for.
-     */
-    function mountGuestBar() {
-        if (isSignedIn()) return;
-        var slot = document.querySelector("[data-starta-guestbar]");
-        if (slot) { renderGuestBar(slot); return; }
-        var main = document.querySelector("main") || document.body;
-        var h1 = main.querySelector("h1");
-        var host = document.createElement("div");
-        if (h1 && h1.parentElement) {
-            // After the heading and its immediate sibling, so the answer lands
-            // first and the offer follows it.
-            var after = h1.parentElement;
-            if (after.nextSibling) after.parentElement.insertBefore(host, after.nextSibling);
-            else after.parentElement.appendChild(host);
-        } else {
-            main.insertBefore(host, main.firstChild);
+    function timedEligible() {
+        var path = window.location.pathname.replace(/\/$/, "") || "/";
+        if (path === "/" || path === "/ar") return false;
+        for (var i = 0; i < TIMED_ROUTES.length; i++) {
+            if (TIMED_ROUTES[i].test(path)) return true;
         }
-        if (!renderGuestBar(host)) host.remove();
+        return false;
+    }
+
+    function timedSuppressed() {
+        try {
+            if (sessionStorage.getItem(TIMED_SESSION) === "1") return true;
+            if (localStorage.getItem("starta-invite-off") === "1") return true;
+            var until = Number(localStorage.getItem(TIMED_SNOOZE) || 0);
+            return until > Date.now();
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function timedDismiss() {
+        try {
+            var n = Number(localStorage.getItem(TIMED_COUNT) || 0) + 1;
+            localStorage.setItem(TIMED_COUNT, String(n));
+            if (n >= 2) localStorage.setItem(TIMED_SNOOZE, String(Date.now() + MONTH_MS));
+        } catch (e) {}
+        close();
+    }
+
+    function showTimed() {
+        if (openDialog) return;
+        var L = TIMED_COPY[lang()];
+        var root = document.createElement("div");
+        root.className = "starta-gate-dialog-root";
+        root.setAttribute("role", "dialog");
+        root.setAttribute("aria-modal", "true");
+        root.setAttribute("aria-label", L.title);
+        root.innerHTML =
+            '<div class="starta-gate-dialog-scrim"></div>' +
+            '<div class="starta-gate-panel starta-gate-dialog">' +
+                '<button type="button" class="starta-gate-dialog-close" aria-label="Close">' +
+                    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>' +
+                "</button>" +
+                '<span class="starta-gate-lock">' + lockIcon() + "</span>" +
+                '<h3 class="starta-gate-dialog-title"></h3>' +
+                '<p class="starta-gate-dialog-body"></p>' +
+                '<div class="starta-gate-dialog-actions">' +
+                    '<a class="starta-gate-cta"></a>' +
+                    '<a class="starta-gate-signin"></a>' +
+                "</div>" +
+                '<button type="button" class="starta-invite-dismiss"></button>' +
+            "</div>";
+
+        root.querySelector(".starta-gate-dialog-title").textContent = L.title;
+        root.querySelector(".starta-gate-dialog-body").textContent = L.body;
+        var cta = root.querySelector(".starta-gate-cta");
+        cta.textContent = L.cta; cta.href = href("/register");
+        var si = root.querySelector(".starta-gate-signin");
+        si.textContent = L.signin; si.href = href("/login");
+        root.querySelector(".starta-invite-dismiss").textContent = L.dismiss;
+
+        root.querySelector(".starta-gate-dialog-scrim").addEventListener("click", timedDismiss);
+        root.querySelector(".starta-gate-dialog-close").addEventListener("click", timedDismiss);
+        root.querySelector(".starta-invite-dismiss").addEventListener("click", timedDismiss);
+        document.addEventListener("keydown", onKey, true);
+        document.body.appendChild(root);
+        openDialog = root;
+        cta.focus();
+    }
+
+    function armTimedInvite() {
+        if (isSignedIn() || !timedEligible() || timedSuppressed()) return;
+        var elapsed = 0;
+        var step = 1000;
+        var timer = setInterval(function () {
+            // Only count time the tab is actually in front of the reader.
+            if (document.visibilityState !== "visible") return;
+            elapsed += step;
+            if (elapsed < TIMED_DELAY_MS) return;
+            clearInterval(timer);
+            if (isSignedIn() || openDialog) return;
+            try { sessionStorage.setItem(TIMED_SESSION, "1"); } catch (e) {}
+            showTimed();
+        }, step);
     }
 
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", function () { setTimeout(mountGuestBar, 400); });
+        document.addEventListener("DOMContentLoaded", armTimedInvite);
     } else {
-        setTimeout(mountGuestBar, 400);
+        armTimedInvite();
     }
 
     window.startaGate = {
@@ -484,8 +509,6 @@
         show: show,
         notice: notice,
         close: close,
-        renderGuestBar: renderGuestBar,
-        mountGuestBar: mountGuestBar,
         noteVisit: noteVisit,
         shouldInvite: shouldInvite,
         dismissInvite: dismissInvite,

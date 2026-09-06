@@ -672,64 +672,72 @@ const checks = [
     assert: (text) => /union/i.test(text) && /alreadyMerged/.test(text),
   },
   {
-    // ══ THE PROMPT BUDGET IS THE PRODUCT'S MANNERS ══════════════════════════
-    // There are five registration scenarios now. Five prompts with no budget is
-    // nagware, and nagware on a site whose only channel is organic search is a
-    // bounce rate problem dressed as a growth feature. The budget is what makes
-    // "a lot of things making the user register" survivable: one prompt per
-    // session, three a week, a quiet period at the start of every visit, and a
-    // dismissal that ends ALL of them for good. Remove any of those and the
-    // build stops.
-    name: "the registration prompt keeps its budget",
-    file: "public/assets/starta-engage.js",
+    // ══ THE REGISTRATION ASK IS A LAYER, NEVER A SECTION ════════════════════
+    // An earlier attempt appended a promotional strip into the page body and was
+    // rejected on sight — correctly. These pages are designed documents and a
+    // band of furniture between their sections breaks the composition however
+    // tidy it is. The ask is a DIALOG over the page, or the fund page's veil
+    // around a section that is already there. It is never a new block.
+    name: "the timed registration ask is a dialog, on chosen routes, never home",
+    file: "components/gate/TimedRegisterDialog.tsx",
     assert: (text) => {
-      // A BOUND, not one exact number. The first version of this check pinned
-      // perSession to 1 and then correctly failed the day the thresholds were
-      // rebalanced against measured behaviour — the rule it was really
-      // protecting is "there is a ceiling and it is small", not "the ceiling is
-      // one". What must never happen is an unbounded or absent budget.
-      const perSession = Number((text.match(/perSession:\s*(\d+)/) || [])[1]);
-      const perWeek = Number((text.match(/perWeek:\s*(\d+)/) || [])[1]);
-      const quietMs = Number((text.match(/quietMs:\s*(\d+)/) || [])[1]);
+      const delay = Number((text.match(/DELAY_MS\s*=\s*(\d+)/) || [])[1]);
       return (
-        perSession >= 1 && perSession <= 2 &&
-        perWeek >= 1 && perWeek <= 6 &&
-        // Never ask before the visitor has been given anything.
-        quietMs >= 3000 &&
-        /dismissForever/.test(text) &&
-        // Signed-in visitors are never evaluated at all.
-        /if \(signedIn\(\) \|\| dismissed\(\)\) return null;/.test(text)
+        // Long enough that the visitor has been given what they came for.
+        delay >= 15000 &&
+        // The home page is the front door. A modal over it is the worst first
+        // impression a site can make, and this must never be relaxed.
+        /pathname === '\/'/.test(text) &&
+        /return false/.test(text) &&
+        // An allow-list, not an everywhere-except list: a new route has to be
+        // added deliberately rather than inheriting a popup.
+        /const ELIGIBLE = \[/.test(text) &&
+        // Once per session, and silence after a second refusal.
+        /SESSION_KEY/.test(text) && /SNOOZE_KEY/.test(text) &&
+        // Only counts time the tab is actually in front of someone.
+        /visibilityState/.test(text)
       );
     },
   },
   {
-    // Every prompt line claims something about THIS reader — you have been back
-    // three times, you were here yesterday. A claim the engine cannot prove is
-    // worse than silence, so the renderer must take its counts from the engine's
-    // own stats rather than inventing a number to sound impressive.
-    name: "prompt copy is driven by measured signals, not invented ones",
-    file: "components/gate/EngagePrompt.tsx",
-    assert: (text) =>
-      /engage\.stats\(\)/.test(text) &&
-      /engage\.pick\(/.test(text) &&
-      /recordPrompt\(\)/.test(text) &&
-      // It must not render on the server: that is what keeps it out of the HTML
-      // a crawler and an answer engine read.
-      /'use client'/.test(text) &&
-      /if \(isLoading \|\| user\) return;/.test(text),
+    // The static hubs are Route Handlers and never mount the React layout, so
+    // the React dialog cannot serve them — it was mounted, correct, and absent
+    // from three of the five pages it was meant to appear on. This is its twin,
+    // and it must keep the SAME rules: fifteen seconds, an allow-list, never the
+    // home page, once a session. Two implementations of one behaviour drift
+    // unless both are held to the contract.
+    name: "the static hubs' timed dialog keeps the same rules as the React one",
+    file: "public/assets/starta-gate.js",
+    assert: (text) => {
+      const delay = Number((text.match(/TIMED_DELAY_MS\s*=\s*(\d+)/) || [])[1]);
+      return (
+        delay >= 15000 &&
+        /var TIMED_ROUTES = \[/.test(text) &&
+        /path === "\/" \|\| path === "\/ar"/.test(text) &&
+        /TIMED_SESSION/.test(text) && /TIMED_SNOOZE/.test(text) &&
+        /visibilityState/.test(text)
+      );
+    },
   },
   {
-    // Saving is an ADDITION, never a subtraction. The button points at pages the
-    // site publishes openly; if it ever starts wrapping content in a gate it has
-    // stopped being a growth feature and started being a wall.
-    name: "the save control adds value without hiding any",
-    file: "components/gate/SaveButton.tsx",
+    // The veil may only cover a block that is NOT in the server HTML. When
+    // gated content IS in the HTML a crawler reads what a person cannot, and
+    // the page must then declare it (lib/paywall-jsonld.ts) or it is cloaking.
+    // Client-only blocks have nothing to declare because nothing was ever shown.
+    name: "the blur gate documents the client-only test it depends on",
+    file: "components/gate/BlurGate.tsx",
     assert: (text) =>
       /'use client'/.test(text) &&
-      !/starta-gate-clip/.test(text) &&
-      // The press must survive the sign-up round trip, or the reader does the
-      // work twice and learns not to bother.
-      /PENDING_KEY/.test(text),
+      /NOT in the server-rendered HTML/i.test(text) &&
+      // Unlocked during SSR and hydration, so the markup is identical for all.
+      /const locked = mounted && !isLoading && !user;/.test(text),
+  },
+  {
+    // The symbol page's INDEXABLE body must stay open. The veil belongs in the
+    // client app; SymbolSeoSection is what search and answer engines read.
+    name: "the company page's indexable body carries no gate",
+    file: "components/seo/SymbolSeoSection.tsx",
+    assert: (text) => !/BlurGate|starta-gate-clip/.test(text),
   },
   {
     // ══ THE INVITATION MUST STAY AN INVITATION ══════════════════════════════

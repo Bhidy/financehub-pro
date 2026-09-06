@@ -3,6 +3,7 @@ import { getAllFundsRanked } from '@/lib/public-data';
 import { FUND_CATEGORIES, MIN_FUNDS_TO_PUBLISH, categoryOfFund, categoryPath } from '@/content/fund-categories';
 import { buildProviders, providerPath } from '@/content/fund-providers';
 import { fundsHubRows, fundsHubItemList, fundsCountInjection, breadcrumbJson } from '@/lib/funds-hub-render';
+import { siteGraph } from '@/lib/structured-data';
 
 /**
  * /Funds — the designed funds marketplace, unchanged, with its fund list
@@ -89,6 +90,12 @@ export async function GET() {
             // back by any /ar URL they opened, and the next single-URL page they
             // visited rendered in the wrong language.
             langSeedScript('en') +
+            // Site identity graph. These two hubs are DESIGNED STATIC SHELLS built by
+            // this route handler, not by PublicPageShell, so the CollectionPage node
+            // below said `isPartOf: {'@id': '…/#website'}` while nothing on the page
+            // declared that node — a pointer to nothing on the site's two most
+            // valuable fund URLs (post-ship audit, 2026-09-07).
+            jsonLdScript(siteGraph()) +
             (funds.length ? jsonLdScript(fundsHubItemList(funds, 'en', '/Funds')) : '') +
             jsonLdScript(breadcrumbJson([{ name: 'Home', url: '/' }, { name: 'Mutual Funds' }])),
         cacheSeconds: 900,

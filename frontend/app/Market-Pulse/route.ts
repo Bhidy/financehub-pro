@@ -5,6 +5,7 @@ import { canonicalNewsPath, newsLang, sanitizeNewsText } from '@/lib/news-displa
 import { ltrNum } from '@/lib/bidi';
 import { HOME_PATH } from '@/lib/lang';
 import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
+import { siteGraph } from '@/lib/structured-data';
 
 /**
  * /Market-Pulse — the designed watchlist + charting tool.
@@ -270,6 +271,10 @@ export async function renderMarketPulse(lang: 'en' | 'ar') {
         ],
         injections,
         head:
+            // Site identity graph — these are designed static shells that never pass
+            // through PublicPageShell, so the `#website` / `#organization` pointers in
+            // the nodes below resolved to nothing (post-ship audit, 2026-09-07).
+            jsonLdScript(siteGraph()) +
             // R3 (lib/lang.ts): seed in BOTH languages, not only Arabic.
             langSeedScript(isAr ? 'ar' : 'en') +
             hreflangLinks(PATH_EN, PATH_AR) +

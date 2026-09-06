@@ -1,5 +1,6 @@
 import { renderStaticHub, esc, escUrl, jsonLdScript, langSeedScript } from '@/lib/static-hub';
 import { fundsHubRows, fundsHubItemList, fundsCountInjection, breadcrumbJson, AR_MARKETPLACE_CLOSING } from '@/lib/funds-hub-render';
+import { siteGraph } from '@/lib/structured-data';
 
 /**
  * THE ONE FUND-HUB RENDERER.
@@ -106,6 +107,13 @@ export function renderFundHub(spec: FundHubSpec): Promise<Response> {
             (spec.marketplaceType
                 ? `<script>window.__STARTA_FUND_TYPE__=${JSON.stringify(spec.marketplaceType)};</script>`
                 : '') +
+            // The site identity graph, exactly as PublicPageShell emits it on the
+            // React pages. These hubs are DESIGNED STATIC SHELLS, so they never
+            // passed through that component — and their CollectionPage node says
+            // `isPartOf: {'@id': '…/#website'}`, a pointer that resolved to
+            // nothing on the two highest-value fund URLs. A JSON-LD `@id` only
+            // resolves inside its own document (post-ship audit, 2026-09-07).
+            jsonLdScript(siteGraph()) +
             jsonLdScript(fundsHubItemList(spec.funds, spec.lang, spec.canonical, spec.heading)) +
             jsonLdScript(breadcrumbJson(spec.crumbs)),
         cacheSeconds: spec.cacheSeconds ?? 900,

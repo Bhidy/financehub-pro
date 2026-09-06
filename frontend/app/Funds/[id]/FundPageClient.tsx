@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import EngagePrompt from '@/components/gate/EngagePrompt';
 import SaveButton from '@/components/gate/SaveButton';
 import Link from 'next/link';
 import FundNavChart from './FundNavChart';
@@ -613,11 +612,6 @@ export default function FundPageClient(props: FundClientData) {
                     />
 
                     <FundFeedback fundId={fundId} t={t} />
-
-                    {/* The highest-intent page on the site and, until now, the
-                        one with no prompt on it at all. Last thing on the page,
-                        after every published figure. */}
-                    <EngagePrompt itemId={`fund:${fundId}`} />
                 </aside>
             </div>
 

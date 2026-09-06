@@ -104,6 +104,35 @@ for (const f of files) {
     check(`${f} has no bare @id creator/publisher/provider`, bare.length === 0, `${bare.length} found — use publisherRef()`);
 }
 
+/* ── 4b. a file that POINTS at the site graph must also EMIT it ──────────── */
+console.log('\n[4b] every renderer that references #website / #organization emits the graph');
+// The post-ship audit on 2026-09-07 found /Funds and /ar/Funds still carrying a
+// dangling `isPartOf: {'@id': '…/#website'}`: they are DESIGNED STATIC SHELLS
+// rendered by route handlers, so they never pass through PublicPageShell and
+// never received siteGraph(). Section 4 above only caught `creator`/`publisher`
+// spelled one way — this catches the whole class, whatever the key is called.
+const SHELL_RENDERERS = ['lib/fund-hub.ts', 'lib/news-hub.ts', 'app/ar/route.ts', 'app/Market-Pulse/route.ts',
+    'app/Funds/route.ts', 'app/ar/Funds/route.ts'];
+// A pure NODE BUILDER emits no document of its own; the gate holds its callers
+// (all of SHELL_RENDERERS or PublicPageShell pages) to emitting the graph instead.
+const NODE_BUILDERS = ['lib/funds-hub-render.ts'];
+for (const f of files) {
+    const text = readFileSync(path.join(root, f), 'utf8');
+    const pointsAtGraph = /\{\s*'@id':\s*`\$\{SITE_URL\}\/#(website|organization)`/.test(text);
+    if (!pointsAtGraph || NODE_BUILDERS.includes(f)) continue;
+    // React pages inherit the graph from PublicPageShell; a route handler that
+    // builds its own document has to emit it itself.
+    const isShell = SHELL_RENDERERS.includes(f);
+    const usesShell = /PublicPageShell/.test(text);
+    const emitsGraph = /siteGraph\(\)/.test(text);
+    check(`${f} — points at the site graph and can resolve it`, emitsGraph || usesShell,
+        isShell ? 'a static-shell renderer must emit jsonLdScript(siteGraph())' : 'render inside PublicPageShell or emit siteGraph()');
+}
+for (const f of SHELL_RENDERERS) {
+    const text = readFileSync(path.join(root, f), 'utf8');
+    check(`${f} — emits siteGraph()`, /siteGraph\(\)/.test(text));
+}
+
 /* ── 5. the builders themselves produce valid output ─────────────────────── */
 console.log('\n[5] datasetNode() output satisfies the Dataset contract');
 const ds = datasetNode({ name: 'X', description: 'Y', url: 'https://startamarkets.com/x', lang: 'ar' }) as Record<string, unknown>;

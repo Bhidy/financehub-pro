@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import EngagePrompt from '@/components/gate/EngagePrompt';
 import SaveButton from '@/components/gate/SaveButton';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
@@ -258,12 +257,6 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
 
                 <PreferredSource lang={arabic ? 'ar' : 'en'} />
 
-                {/* AFTER the article, never inside it. An invitation, not a
-                    gate: the body above is complete and open. It appears only
-                    when the engine says a moment has been earned, at most once a
-                    session, and never again once dismissed. Client-side only, so
-                    it never enters the indexable HTML. */}
-                <EngagePrompt itemId={`news:${article.id}`} />
 
             </article>
 

@@ -7,6 +7,7 @@ import ShellWrapper from "@/components/ShellWrapper";
 import SmoothScroll from "@/components/SmoothScroll";
 import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import TimedRegisterDialog from "@/components/gate/TimedRegisterDialog";
 import assetVersions from "@/lib/asset-versions.json";
 
 // Manrope - Landing Page Match (Google Fonts)
@@ -253,6 +254,11 @@ export default async function RootLayout({
               <ShellWrapper>
                 {children}
               </ShellWrapper>
+              {/* ONE registration dialog for the whole app, mounted once and
+                  deciding for itself which routes it may appear on. It renders
+                  null everywhere else, including the home page, which it must
+                  never appear on. See the component for the full rule set. */}
+              <TimedRegisterDialog />
             </ToastProvider>
           </ThemeProvider>
         </Providers>

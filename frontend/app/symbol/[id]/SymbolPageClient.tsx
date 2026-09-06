@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import BlurGate from '@/components/gate/BlurGate';
 import { symbolFromArParam } from "@/lib/seo";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -1008,8 +1009,17 @@ export default function SymbolDetailPage() {
                                     </div>
                                 </div>
 
-                                {/* Ownership Summary Strip — TradingView fields only */}
+                                {/* Ownership Summary Strip — TradingView fields only.
+                                    GATED for signed-out visitors. Safe to veil:
+                                    this whole component is "use client" and the
+                                    block is absent from the server response
+                                    (verified: grep of /symbol/COMI returns 0),
+                                    so no crawler and no answer engine was ever
+                                    shown it. The indexable body lives in
+                                    components/seo/SymbolSeoSection.tsx and is
+                                    untouched. */}
                                 {(floatSharesPercent > 0 || floatShares > 0 || sharesOutstanding > 0) && (
+                                  <BlurGate reason="ownership">
                                     <div className="premium-glass rounded-3xl p-8">
                                         <SectionHeader icon={Users} title={lang === "ar" ? "هيكل الملكية" : "Ownership Structure"} color="text-indigo-500" />
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1019,6 +1029,7 @@ export default function SymbolDetailPage() {
                                             {shareholdersCount > 0 && <MetricCard label={lang === "ar" ? "عدد المساهمين" : "Shareholders"} value={formatNumber(shareholdersCount)} icon={Briefcase} color="text-orange-500" />}
                                         </div>
                                     </div>
+                                  </BlurGate>
                                 )}
 
                                 {/* Internal valuation models (DCF / DDM / P-E target + "% vs current price") removed — house-generated price targets are model opinion, not source data. */}
@@ -1140,7 +1151,8 @@ export default function SymbolDetailPage() {
                                             </button>
                                         ))}
                                     </div>
-                                    {/* gauges */}
+                                    {/* gauges — GATED, same reasoning as ownership above. */}
+                                    <BlurGate reason="technicals">
                                     <div className="premium-glass rounded-3xl p-6 md:p-8">
                                         <SectionHeader icon={Gauge} title={t.tech_summary} color="text-[#14b8a6]" />
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1156,6 +1168,7 @@ export default function SymbolDetailPage() {
                                             </p>
                                         )}
                                     </div>
+                                    </BlurGate>
                                     {/* indicator tables */}
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                         <IndicatorTable title={t.tech_oscillators} icon={Activity} color="text-amber-500" lang={lang} rows={[

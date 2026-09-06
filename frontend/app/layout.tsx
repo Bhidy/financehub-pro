@@ -7,6 +7,7 @@ import ShellWrapper from "@/components/ShellWrapper";
 import SmoothScroll from "@/components/SmoothScroll";
 import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import assetVersions from "@/lib/asset-versions.json";
 
 // Manrope - Landing Page Match (Google Fonts)
 const manrope = Manrope({
@@ -147,6 +148,17 @@ export default async function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem("theme");t=(t==="dark"||t==="light")?t:"light";var d=document.documentElement;d.setAttribute("data-theme",t);d.classList.remove("light","dark");d.classList.add(t);d.style.colorScheme=t;}catch(e){}})();`,
           }}
         />
+        {/* CANONICAL TYPOGRAPHY — the same file every static HTML page loads, so
+            the React routes and the marketing pages cannot disagree about which
+            face renders a language. It carries the :dir()-precise Arabic rule
+            that fixes the auth pages: /login, /register and /forgot-password
+            have no /ar twin, so they keep <html dir="ltr"> and flip an inner
+            wrapper to rtl — a shape that made globals.css's `[dir="ltr"] *`
+            policy win over its `[dir="rtl"] *` twin and render every Arabic
+            string in Manrope. Loaded AFTER globals.css deliberately; the legacy
+            attribute rules stay there as the fallback for engines without
+            :dir(). Do not add a competing font policy anywhere else. */}
+        <link rel="stylesheet" href={`/assets/starta-typography.css?v=${assetVersions["starta-typography.css"]}`} />
       </head>
       <body
         className={`${manrope.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} ${arabic.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}

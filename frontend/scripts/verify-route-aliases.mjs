@@ -14,6 +14,12 @@ const root = path.resolve(__dirname, "..");
 const publicPages = ["home", "marketplace", "fund-details", "fund-compare", "market-pulse", "learn", "learn-topic", "news", "news-article"];
 // SEO gate covers every indexable static template (superset incl. legal pages).
 const seoPages = [...publicPages, "portfolio", "portfolio-detail", "privacy", "terms"];
+// Every static HTML page must load the ONE typography contract
+// (public/assets/starta-typography.css). A page that misses it falls back to
+// whatever its own inline <style> says, which is exactly the drift that let
+// Arabic render in a Latin face. Checked for the full set, not just the
+// indexable ones — a legal page in the wrong typeface is still wrong.
+const typographyPages = [...seoPages];
 
 function hasCurrentPublicNav(text) {
   const nav = text.match(/<nav[\s\S]*?<\/nav>/i)?.[0] || "";
@@ -386,6 +392,11 @@ const checks = [
       /assets\/starta-nav\.css/.test(text) &&
       /className="starta-nav-links"/.test(text),
   },
+  ...typographyPages.map((page) => ({
+    name: `${page}.html loads the canonical typography contract`,
+    file: `public/${page}.html`,
+    assert: (text) => /assets\/starta-typography\.css/.test(text),
+  })),
   {
     name: "static nav renderer links the canonical stylesheet (not inline CSS)",
     file: "public/assets/starta-nav.js",
@@ -401,6 +412,53 @@ const checks = [
       /IBM_Plex_Sans_Arabic\(/.test(text) &&
       /variable:\s*"--font-arabic"/.test(text) &&
       !/Cairo\(/.test(text),
+  },
+  {
+    // ══ THE TYPOGRAPHY CONTRACT ═════════════════════════════════════════════
+    // ONE font policy for the whole system. Four disagreed before this file
+    // existed (globals.css, each static page's inline <style>, market-pulse.css,
+    // and per-component classes) and Arabic lost: /login, /register and
+    // /forgot-password rendered EVERY Arabic string in Manrope, which has no
+    // Arabic glyphs, so the text fell back to an arbitrary system face. Those
+    // pages have no /ar twin, so they keep <html dir="ltr"> and flip an inner
+    // wrapper to rtl — and `[dir="rtl"] *` then ties with `[dir="ltr"] *` on
+    // specificity, letting source order pick the font instead of the element's
+    // actual direction. The contract must keep both faces, the :dir() rule that
+    // is immune to that nesting, and the Arabic fallback INSIDE the Latin stack
+    // (the only thing that can rescue untagged mixed content).
+    name: "canonical typography contract is intact",
+    file: "public/assets/starta-typography.css",
+    assert: (text) =>
+      /IBM Plex Sans Arabic/.test(text) &&
+      /Manrope/.test(text) &&
+      /:dir\(rtl\)/.test(text) &&
+      /\[lang="ar"\]/.test(text) &&
+      !/Cairo/.test(text.replace(/\/\*[\s\S]*?\*\//g, "")),
+  },
+  {
+    // The React tree must load the SAME file the static pages do, or the two
+    // engines drift again — which is the entire history of this defect class.
+    name: "React root layout loads the canonical typography contract",
+    file: "app/layout.tsx",
+    assert: (text) => /assets\/starta-typography\.css/.test(text),
+  },
+  {
+    // A font policy anywhere else is how this broke. globals.css keeps its
+    // legacy attribute rules ONLY as the pre-:dir() fallback; it must not grow
+    // a new direction-scoped face, and it must never name a family directly
+    // (every face goes through a --font-* token so one edit moves the site).
+    name: "globals.css declares no font family outside the canonical tokens",
+    file: "app/globals.css",
+    assert: (text) => {
+      // Scan the WHOLE stylesheet, not just `font-family:` declarations — the
+      // first version of this gate did the latter and a `--font-x: Cairo` custom
+      // property sailed straight through it, which is precisely how a second
+      // Arabic typeface entered the app the first time. Comments are stripped so
+      // the history above may name the banned faces.
+      const css = text.replace(/\/\*[\s\S]*?\*\//g, "");
+      const banned = /\b(Cairo|Tajawal|Almarai|Changa|Amiri|Noto\s+Sans\s+Arabic|Inter|Poppins|Lato|Open\s+Sans)\b/i;
+      return !banned.test(css);
+    },
   },
   {
     // Inline onclick handlers run in GLOBAL scope at click time. A render-time

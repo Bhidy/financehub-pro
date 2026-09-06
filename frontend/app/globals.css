@@ -136,8 +136,13 @@
   /* ========================================================================
      TYPOGRAPHY
      ======================================================================== */
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  /* The Arabic face sits INSIDE the Latin stack on purpose. Font fallback is
+     per glyph, so an Arabic word in an otherwise Latin run (a language
+     switch reading "العربية" on an English page) resolves to IBM Plex Sans
+     Arabic instead of whatever face the operating system picks. No selector
+     can catch untagged mixed content; a stack always can. */
+  --font-sans: var(--font-manrope), var(--font-arabic), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, var(--font-arabic), monospace;
   --font-arabic-stack: var(--font-arabic), var(--font-sans);
 
   /* Type Scale */
@@ -620,11 +625,11 @@ html.finhub-pro-domain .min-h-screen {
 /* Finhub-wide typography lock */
 html.finhub-pro-domain,
 html.finhub-pro-domain body {
-  font-family: var(--font-manrope) !important;
+  font-family: var(--font-manrope), var(--font-arabic) !important;
 }
 
 html.finhub-pro-domain *:not(.font-mono):not(code):not(pre) {
-  font-family: var(--font-manrope) !important;
+  font-family: var(--font-manrope), var(--font-arabic) !important;
 }
 
 html.finhub-pro-domain .font-mono,
@@ -642,10 +647,20 @@ html.finhub-pro-domain pre {
   /* Zoom removed for standard scale */
 }
 
+/* ══ LEGACY DIRECTION POLICY — superseded, kept as a fallback ══════════════
+   public/assets/starta-typography.css is now the ONE font contract and every
+   surface loads it. The rules below stay because they are the only policy an
+   engine without `:dir()` support will apply, and there they reproduce exactly
+   what shipped before. Do NOT extend them, and do not add a font policy here:
+   they cannot express the case that broke the auth pages, where an element sits
+   inside BOTH a `[dir="ltr"]` and a `[dir="rtl"]` ancestor and the descendant
+   selectors tie on specificity, so the later declaration decides the font
+   rather than the element's actual direction. Edit the canonical file instead.
+   ═════════════════════════════════════════════════════════════════════════ */
 /* Typography enforcement (Strict) */
 [lang="en"],
 [dir="ltr"] {
-  font-family: var(--font-manrope) !important;
+  font-family: var(--font-manrope), var(--font-arabic) !important;
 }
 
 [lang="en"] .font-mono,
@@ -672,7 +687,7 @@ html.finhub-pro-domain pre {
 }
 
 [dir="ltr"] *:not(.font-mono):not(code):not(pre) {
-  font-family: var(--font-manrope) !important;
+  font-family: var(--font-manrope), var(--font-arabic) !important;
 }
 
 /* ============================================================================

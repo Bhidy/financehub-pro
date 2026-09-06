@@ -258,7 +258,7 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
                                     className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.09] bg-slate-50 dark:bg-white/[0.04] text-sm font-semibold text-slate-600 dark:text-[#9ca6b5] hover:text-[#14B8A6] hover:border-[rgba(20,184,166,0.4)] transition-all duration-200"
                                 >
                                     <span className="text-base leading-none">🌐</span>
-                                    <span>{lang === "en" ? "العربية" : "English"}</span>
+                                    <span lang={lang === "en" ? "ar" : "en"}>{lang === "en" ? "العربية" : "English"}</span>
                                 </button>
                             )}
                         </div>

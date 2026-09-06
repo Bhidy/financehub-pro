@@ -87,7 +87,7 @@ export default function AppearanceTab() {
                     <button className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 transition-all opacity-60 cursor-not-allowed">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold text-xs">AR</div>
-                            <span className="font-medium">العربية</span>
+                            <span lang="ar" className="font-medium">العربية</span>
                         </div>
                     </button>
                 </div>

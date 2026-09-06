@@ -1,0 +1,142 @@
+/**
+ * CANONICAL TYPOGRAPHY — the ONE font contract for every surface on the site.
+ *
+ * ══ THE CONTRACT ═══════════════════════════════════════════════════════════
+ *   Arabic  → IBM Plex Sans Arabic      (never a Latin-only face)
+ *   Latin   → Manrope, or Sora where a page designs a display face
+ *   Data    → IBM Plex Mono / JetBrains Mono
+ *   No other family may render user-facing copy. Cairo is banned outright
+ *   (the site shipped it in the React app for months while every static page
+ *   used IBM Plex, so one Arabic string had two shapes depending on the route).
+ *
+ * ══ WHY THIS FILE EXISTS ═══════════════════════════════════════════════════
+ * Four independent font policies disagreed — app/globals.css, each static
+ * page's inline <style>, public/assets/market-pulse.css, and the per-component
+ * classes — and Arabic lost in three measurable ways on PRODUCTION:
+ *
+ *   1. /login, /register, /forgot-password rendered EVERY Arabic string in
+ *      Manrope. Those pages have no /ar twin, so they keep <html dir="ltr">
+ *      and flip an INNER wrapper to dir="rtl". globals.css then matched BOTH
+ *      `[dir="rtl"] *` and `[dir="ltr"] *` on the same element — identical
+ *      specificity, both !important — so the later-declared LTR rule won and
+ *      forced a Latin face onto Arabic text. Manrope has no Arabic glyphs, so
+ *      every heading, label and button silently fell back to whatever Arabic
+ *      face the operating system happened to pick. Proven by flipping
+ *      html[dir] to rtl in the live page and watching the font change.
+ *
+ *   2. Arabic inside an LTR page had no route to the Arabic face at all. The
+ *      mobile drawer's language switch reads "العربية" on an English page and
+ *      rendered in Manrope, i.e. in a system fallback.
+ *
+ *   3. Arabic inside a mono element fell back the same way, because IBM Plex
+ *      Mono carries no Arabic either.
+ *
+ * ══ HOW IT FIXES THEM ══════════════════════════════════════════════════════
+ *   · `:dir(rtl)` resolves each element's OWN computed direction, so it is
+ *     immune to the nesting that broke `[dir="rtl"] *`. It fixes the inner-RTL
+ *     case (auth pages) without touching the inner-LTR case that the /ar pages
+ *     rely on to keep Latin tickers and figures in Manrope.
+ *   · Every stack below ENDS with the Arabic face before the generic family.
+ *     Font fallback is per-glyph, so an Arabic character in an otherwise Latin
+ *     run resolves to IBM Plex Sans Arabic instead of a system face — no
+ *     selector can catch untagged mixed content, but a stack always can.
+ *
+ * ══ RULES FOR EDITING ══════════════════════════════════════════════════════
+ *   · Every page loads THIS file. Never re-declare a direction-based font
+ *     policy in a page, a component or another stylesheet.
+ *   · A page MAY choose a display face for Latin headings (Sora is used that
+ *     way). It may NOT choose a face for Arabic.
+ *   · Any new stack must name the Arabic face before its generic fallback.
+ *   · Build-gated by scripts/verify-route-aliases.mjs.
+ *
+ * ══ WHY var() WITH A LITERAL FALLBACK ══════════════════════════════════════
+ * The React app self-hosts its fonts through next/font, which exposes them as
+ * --font-arabic / --font-manrope under generated family names; the static HTML
+ * pages load the same families from Google Fonts under their literal names and
+ * define no such variables. `var(--font-arabic, 'IBM Plex Sans Arabic')`
+ * followed by the literal name resolves correctly on BOTH, so this one file is
+ * genuinely shared rather than duplicated. The var() sits in the font-family
+ * declaration itself, never nested inside another custom property, because a
+ * custom property is substituted where it is DECLARED — a stack assembled on
+ * :root would resolve --font-arabic against :root, where next/font has not set
+ * it (it lands on a class on <body>), and would silently degrade.
+ */
+
+/* ══ ARABIC ════════════════════════════════════════════════════════════════
+   Any element whose COMPUTED direction is right-to-left. The leading `html`
+   is deliberate: it lifts specificity to 0,2,3 so this beats the legacy
+   `[dir="ltr"] *:not(…)` policy in app/globals.css (0,2,2) no matter which
+   stylesheet the browser parses first. That legacy rule is intentionally left
+   in place as the fallback for any engine without :dir() support, where the
+   behaviour is simply what shipped before this file existed. */
+html *:dir(rtl):not(.font-mono):not(code):not(pre):not(kbd):not(samp) {
+    font-family:
+        var(--font-arabic, 'IBM Plex Sans Arabic'),
+        'IBM Plex Sans Arabic',
+        var(--font-manrope, Manrope),
+        Manrope,
+        ui-sans-serif,
+        system-ui,
+        sans-serif !important;
+}
+
+/* Arabic explicitly tagged inside an otherwise Latin document — a language
+   switch that reads "العربية" on an English page is the standard case, and
+   marking it is required for screen readers anyway (WCAG 3.1.2, Language of
+   Parts). Kept as a SEPARATE rule, not comma-joined with the :dir() selector
+   above: one unsupported pseudo-class invalidates an entire selector list, so
+   pairing them would lose this rule too on an engine without :dir(). Matches
+   the tagged element only, never its subtree — `[lang="ar"] *` would drag the
+   Latin islands on every /ar page into the Arabic face. */
+html *[lang="ar"]:not(.font-mono):not(code):not(pre):not(kbd):not(samp) {
+    font-family:
+        var(--font-arabic, 'IBM Plex Sans Arabic'),
+        'IBM Plex Sans Arabic',
+        var(--font-manrope, Manrope),
+        Manrope,
+        ui-sans-serif,
+        system-ui,
+        sans-serif !important;
+}
+
+/* ══ DATA / MONOSPACE ══════════════════════════════════════════════════════
+   Figures stay monospaced in both directions — a table of NAVs must stay in
+   column. The Arabic face is named before the generic so an Arabic word inside
+   a mono element (a units label, an as-of line) still lands on IBM Plex Sans
+   Arabic rather than a system mono face. */
+html .font-mono,
+html code,
+html kbd,
+html samp,
+html pre {
+    font-family:
+        var(--font-jetbrains, 'JetBrains Mono'),
+        'IBM Plex Mono',
+        'JetBrains Mono',
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Consolas,
+        var(--font-arabic, 'IBM Plex Sans Arabic'),
+        'IBM Plex Sans Arabic',
+        monospace !important;
+}
+
+/* ══ LATIN GLYPH SAFETY NET ════════════════════════════════════════════════
+   NOT a face override — Latin type is a per-page design decision and Sora is a
+   deliberate display face on the static marketing surfaces. This only supplies
+   the document-level stack, so any element that inherits its font (rather than
+   declaring one) can still resolve an Arabic glyph. Deliberately NOT
+   !important and deliberately not applied to descendants: a page or component
+   that sets its own Latin face keeps it. */
+html,
+body {
+    font-family:
+        var(--font-manrope, Manrope),
+        Manrope,
+        var(--font-arabic, 'IBM Plex Sans Arabic'),
+        'IBM Plex Sans Arabic',
+        ui-sans-serif,
+        system-ui,
+        sans-serif;
+}

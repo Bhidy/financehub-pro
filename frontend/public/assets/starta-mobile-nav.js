@@ -490,7 +490,15 @@
         if (iconWrap) iconWrap.innerHTML = light ? svgMoon() : svgSun();
         setText(".smn-theme-label", light ? t("dark") : t("light"));
         var tag = drawer.querySelector(".smn-foot-lang-tag");
-        if (tag) tag.textContent = t("language");
+        if (tag) {
+            tag.textContent = t("language");
+            // This label always shows the OTHER language's name, so on an English
+            // page it holds Arabic text inside a Latin document. Tag it: the
+            // canonical typography contract gives a [lang="ar"] element the
+            // Arabic face (it was rendering in Manrope, i.e. a system fallback),
+            // and a screen reader needs the same hint (WCAG 3.1.2).
+            tag.setAttribute("lang", lang() === "ar" ? "en" : "ar");
+        }
         if (burger) burger.setAttribute("aria-label", isOpen() ? t("close") : t("open"));
     }
 

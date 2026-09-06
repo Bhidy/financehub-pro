@@ -27,6 +27,11 @@ export const MANAGED_ASSETS = [
   "manager-logos.js",
   "starta-nav.css",
   "starta-nav.js",
+  // The ONE typography contract, loaded by every static page AND by the React
+  // root layout. Hashed like the rest so a font-policy change actually reaches
+  // returning visitors — an unversioned stylesheet is how a stale nav CSS beat
+  // a fresh deploy for weeks.
+  "starta-typography.css",
   "starta-auth-nav.js",
   "starta-i18n.js",
   "starta-lang-boot.js",

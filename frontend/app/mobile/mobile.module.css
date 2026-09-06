@@ -3,10 +3,17 @@
 @font-face{font-family:Manrope;src:url("/assets/starta-mobile/fonts/Manrope-500-normal-17.woff2") format("woff2");font-weight:500;font-display:swap}
 @font-face{font-family:Manrope;src:url("/assets/starta-mobile/fonts/Manrope-700-normal-29.woff2") format("woff2");font-weight:700;font-display:swap}
 @font-face{font-family:"IBM Plex Mono";src:url("/assets/starta-mobile/fonts/IBM_Plex_Mono-500-normal-4.woff2") format("woff2");font-weight:500;font-display:swap}
-@font-face{font-family:"Cairo";src:url("/assets/starta-mobile/fonts/Cairo-500-normal.woff2") format("woff2");font-weight:500;font-display:swap}
-@font-face{font-family:"Cairo";src:url("/assets/starta-mobile/fonts/Cairo-600-normal.woff2") format("woff2");font-weight:600;font-display:swap}
-@font-face{font-family:"Cairo";src:url("/assets/starta-mobile/fonts/Cairo-700-normal.woff2") format("woff2");font-weight:700;font-display:swap}
-@font-face{font-family:"Cairo";src:url("/assets/starta-mobile/fonts/Cairo-800-normal.woff2") format("woff2");font-weight:800;font-display:swap}
+/* IBM Plex Sans Arabic is the site's ONE Arabic face (see DESIGN_SYSTEM.md).
+   This module used to self-host CAIRO in four weights and apply it with
+   !important to every Arabic element, under a comment claiming Cairo was "the
+   brand's Arabic typeface (same as the website)" — both halves false: the root
+   layout loads IBM_Plex_Sans_Arabic and all thirteen static pages request it.
+   So the mobile shell rendered Arabic in a different face from every other
+   surface. The IBM Plex files were already sitting in this directory, unused.
+   Two real weights, declared as ranges so the 600 and 800 steps resolve to the
+   bold face rather than disappearing under `font-synthesis: none`. */
+@font-face{font-family:"IBM Plex Sans Arabic";src:url("/assets/starta-mobile/fonts/IBM_Plex_Sans_Arabic-500-normal-11.woff2") format("woff2");font-weight:400 550;font-display:swap}
+@font-face{font-family:"IBM Plex Sans Arabic";src:url("/assets/starta-mobile/fonts/IBM_Plex_Sans_Arabic-700-normal-19.woff2") format("woff2");font-weight:551 900;font-display:swap}
 
 /* ============================================================================
    STARTA MOBILE — institutional design system
@@ -127,13 +134,13 @@
 .stage[dir="rtl"],
 .stage[dir="rtl"] :where(button, input, textarea, select, p, h1, h2, h3, h4, strong, b, small, span, a, li, label, div, em),
 .stage[dir="rtl"] svg text {
-  font-family: "Cairo", Manrope, system-ui, sans-serif !important;
+  font-family: var(--font-arabic, "IBM Plex Sans Arabic"), "IBM Plex Sans Arabic", Manrope, system-ui, sans-serif !important;
   letter-spacing: 0 !important;
 }
 
-/* Arabic uses Cairo — the brand's Arabic typeface (same as the website) — with
-   real 500/600/700/800 faces, so it mirrors Sora's weight hierarchy exactly.
-   font-synthesis:none is kept as a safety so no weight is ever faux-bolded. */
+/* Arabic uses IBM Plex Sans Arabic — the site's one Arabic face, the same one
+   the web surfaces render. font-synthesis:none is kept as a safety so no weight
+   is ever faux-bolded, which is why the faces above are declared as ranges. */
 .stage[dir="rtl"] * {
   font-synthesis: none !important;
 }
@@ -149,7 +156,7 @@
 .stage[dir="rtl"] .articleMeta2,
 .stage[dir="rtl"] .liveTag,
 .stage[dir="rtl"] .compareRow2 strong {
-  font-family: "Cairo", Manrope, system-ui, sans-serif !important;
+  font-family: var(--font-arabic, "IBM Plex Sans Arabic"), "IBM Plex Sans Arabic", Manrope, system-ui, sans-serif !important;
 }
 
 .device {

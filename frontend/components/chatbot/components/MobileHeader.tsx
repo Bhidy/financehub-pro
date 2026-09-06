@@ -73,13 +73,13 @@ export function MobileHeader({
 
                                 <span className={clsx(
                                     "relative z-10 px-2 text-[8px] font-black uppercase tracking-widest transition-colors duration-200",
-                                    designMode === 'pro' ? "text-[#13b8a6]" : "text-slate-400 dark:text-slate-500"
+                                    designMode === 'pro' ? "text-[#14B8A6]" : "text-slate-400 dark:text-slate-500"
                                 )}>
                                     PRO
                                 </span>
                                 <span className={clsx(
                                     "relative z-10 px-2 text-[8px] font-black uppercase tracking-widest transition-colors duration-200",
-                                    designMode === 'analyst' ? "text-[#13b8a6]" : "text-slate-400 dark:text-slate-500"
+                                    designMode === 'analyst' ? "text-[#14B8A6]" : "text-slate-400 dark:text-slate-500"
                                 )}>
                                     ANALYST
                                 </span>
@@ -92,7 +92,7 @@ export function MobileHeader({
                 <div className="flex items-center gap-2">
                     {!isAuthenticated && remainingQuestions !== undefined && remainingQuestions > 0 && (
                         <div className="px-2.5 py-1 bg-[#0F172A] dark:bg-slate-800 text-white dark:text-slate-200 rounded-full text-[10px] font-bold shadow-md shadow-slate-900/10 dark:shadow-none border border-transparent dark:border-white/[0.08]">
-                            <span className="text-[#13b8a6]">{remainingQuestions}</span> {lang === 'ar' ? 'متبقي' : 'left'}
+                            <span className="text-[#14B8A6]">{remainingQuestions}</span> {lang === 'ar' ? 'متبقي' : 'left'}
                         </div>
                     )}
 
@@ -102,7 +102,7 @@ export function MobileHeader({
                     >
                         <History className="w-5 h-5" />
                         {hasHistory && (
-                            <div className="absolute top-2 right-2 w-2 h-2 bg-[#13b8a6] rounded-full border border-white dark:border-[#111827]" />
+                            <div className="absolute top-2 right-2 w-2 h-2 bg-[#14B8A6] rounded-full border border-white dark:border-[#111827]" />
                         )}
                     </button>
 
@@ -134,8 +134,8 @@ export function MobileHeader({
                             className={clsx(
                                 "w-9 h-9 flex items-center justify-center rounded-lg text-white shadow-lg active:scale-95 transition-all duration-300",
                                 designMode === 'pro'
-                                    ? "bg-[#13b8a6] shadow-[#13b8a6]/20"
-                                    : "bg-[#13b8a6] shadow-[#13b8a6]/20"
+                                    ? "bg-[#14B8A6] shadow-[#14B8A6]/20"
+                                    : "bg-[#14B8A6] shadow-[#14B8A6]/20"
                             )}
                         >
                             <User className="w-4 h-4" />

@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
                                 style={{
                                     width: '48px',
                                     height: '48px',
-                                    backgroundColor: '#13b8a6', // Signature Teal
+                                    backgroundColor: '#14B8A6', // Signature Teal
                                     borderRadius: '12px',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
                                     letterSpacing: '-1px',
                                 }}
                             >
-                                Starta<span style={{ color: '#13b8a6', marginLeft: '8px' }}>AI</span>
+                                Starta<span style={{ color: '#14B8A6', marginLeft: '8px' }}>AI</span>
                             </span>
                         </div>
 
@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
                                     width: '8px',
                                     height: '8px',
                                     borderRadius: '50%',
-                                    backgroundColor: '#13b8a6',
+                                    backgroundColor: '#14B8A6',
                                 }}
                             />
                             <span
@@ -135,7 +135,7 @@ export async function GET(req: NextRequest) {
                                     width: '8px',
                                     height: '8px',
                                     borderRadius: '50%',
-                                    backgroundColor: '#13b8a6',
+                                    backgroundColor: '#14B8A6',
                                 }}
                             />
                         </div>

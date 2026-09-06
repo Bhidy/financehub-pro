@@ -16,6 +16,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { StartaLogo } from "@/components/brand/StartaLogo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -224,15 +225,13 @@ function LoginPageContent() {
                             transition={{ duration: 0.6 }}
                             className="mb-16"
                         >
-                            <div className="flex items-center gap-3">
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-[#14B8A6] rounded-xl blur-xl opacity-50" />
-                                    <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#0D9488] flex items-center justify-center shadow-lg">
-                                        <BarChart3 className="w-5 h-5 text-white" />
-                                    </div>
-                                </div>
-                                <span className="text-xl font-bold text-white tracking-tight">Starta</span>
-                            </div>
+                            {/* The ONE brand lockup (components/brand/StartaLogo.tsx).
+                                This panel drew a lucide BarChart3 glyph beside a
+                                mixed-case "Starta" — a different mark and a
+                                different wordmark from the page the visitor just
+                                left. tone="onDark" because this panel is dark in
+                                both themes. */}
+                            <StartaLogo size="md" tone="onDark" href="/" />
                         </motion.div>
 
                         {/* Main Headline with Gradient */}
@@ -529,12 +528,7 @@ function LoginPageContent() {
             <div className="relative z-10 flex flex-col min-h-[100dvh] p-6">
                 {/* Header */}
                 <header className="flex items-center justify-between py-4">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#14B8A6] to-[#0D9488] flex items-center justify-center">
-                            <BarChart3 className="w-4 h-4 text-white" />
-                        </div>
-                        <span className="font-bold text-slate-900 dark:text-white">Starta</span>
-                    </div>
+                    <StartaLogo size="sm" href="/" />
                 </header>
 
                 {/* Form Content */}

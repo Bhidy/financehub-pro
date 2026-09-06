@@ -15,6 +15,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { StartaLogo } from "@/components/brand/StartaLogo";
 import { track } from '@/lib/analytics';
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -261,18 +262,14 @@ function MobileRegisterPageContent() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6 }}
                         >
-                            <Link href={getRoute('home')} className="flex items-center gap-3">
-                                <div className="relative">
-                                    <div className="absolute inset-0 bg-[#14B8A6] rounded-xl blur-xl opacity-60" />
-                                    <div className="relative w-11 h-11 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#0D9488] flex items-center justify-center shadow-lg shadow-[#14B8A6]/30">
-                                        <TrendingUp className="w-5 h-5 text-white" />
-                                    </div>
-                                </div>
-                                <span className="text-xl font-bold text-white tracking-tight">Starta</span>
+                            {/* The ONE brand lockup — this drew a lucide TrendingUp
+                                glyph while /login two clicks away drew BarChart3. */}
+                            <div className="flex items-center gap-3">
+                                <StartaLogo size="lg" tone="onDark" href={getRoute('home')} />
                                 <div className="ms-2 px-2 py-0.5 bg-[#14B8A6]/20 rounded-full">
                                     <span className="text-[10px] font-bold text-[#14B8A6] uppercase tracking-wider">BETA</span>
                                 </div>
-                            </Link>
+                            </div>
                         </motion.div>
 
                         <div className="flex-1 flex flex-col justify-center -mt-8">
@@ -409,11 +406,8 @@ function MobileRegisterPageContent() {
                 >
                     {/* Logo area */}
                     <div className="flex flex-col items-center mb-8">
-                        <div className="w-20 h-20 relative flex items-center justify-center mb-4">
-                            <div className="absolute inset-0 bg-[#14B8A6]/20 rounded-full blur-xl" />
-                            <div className="relative w-16 h-16 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#0D9488] flex items-center justify-center shadow-lg shadow-[#14B8A6]/30 text-white">
-                                <TrendingUp className="w-8 h-8" />
-                            </div>
+                        <div className="mb-5">
+                            <StartaLogo size="lg" href={getRoute('home')} />
                         </div>
                         <h1 className="text-3xl font-bold tracking-tight text-[#0F172A] dark:text-white mb-2">{t.title}</h1>
                         <p className="text-slate-500 dark:text-slate-400 text-center">{t.mobileSubtitle}</p>

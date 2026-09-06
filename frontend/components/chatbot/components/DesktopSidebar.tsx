@@ -269,14 +269,14 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                     <p className="text-sm text-slate-500 mb-3">Sign in to save your chat history</p>
                                     <button
                                         onClick={onLogin}
-                                        className="text-[#13b8a6] text-sm font-semibold hover:underline"
+                                        className="text-[#14B8A6] text-sm font-semibold hover:underline"
                                     >
                                         Sign In &rarr;
                                     </button>
                                 </div>
                             ) : isLoading && sessions.length === 0 ? (
                                 <div className="flex justify-center py-10">
-                                    <Loader2 className="w-6 h-6 animate-spin text-[#13b8a6]" />
+                                    <Loader2 className="w-6 h-6 animate-spin text-[#14B8A6]" />
                                 </div>
                             ) : sessions.length === 0 ? (
                                 <div className="text-center py-10 text-slate-400 text-sm italic">
@@ -300,7 +300,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                                             className={clsx(
                                                                 "group relative flex items-center rounded-lg transition-all",
                                                                 currentSessionId === session.session_id
-                                                                    ? "bg-[#13b8a6]/10 text-[#13b8a6]"
+                                                                    ? "bg-[#14B8A6]/10 text-[#14B8A6]"
                                                                     : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300"
                                                             )}
                                                         >
@@ -403,7 +403,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                                                         <motion.div
                                                                             layoutId="active-pill"
                                                                             className={clsx(
-                                                                                "absolute top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#13b8a6]",
+                                                                                "absolute top-1/2 -translate-y-1/2 w-0.5 h-4 bg-[#14B8A6]",
                                                                                 lang === 'ar' ? "right-0 rounded-l-full" : "left-0 rounded-r-full"
                                                                             )}
                                                                         />
@@ -427,9 +427,9 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                 <div className="flex gap-2 w-full">
                                     <button
                                         onClick={onSettings}
-                                        className="w-full p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-3 hover:border-[#13b8a6]/30 hover:shadow-md transition-all group"
+                                        className="w-full p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-3 hover:border-[#14B8A6]/30 hover:shadow-md transition-all group"
                                     >
-                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#13b8a6] to-[#0f8f82] flex items-center justify-center text-white text-xs font-bold shadow-sm group-hover:scale-105 transition-transform overflow-hidden relative">
+                                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#14B8A6] to-[#0f8f82] flex items-center justify-center text-white text-xs font-bold shadow-sm group-hover:scale-105 transition-transform overflow-hidden relative">
                                             {user?.avatar_url ? (
                                                 <img
                                                     src={user.avatar_url}
@@ -448,7 +448,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                                 {user?.subscription_plan === 'analyst' || user?.subscription_status === 'active' ? 'Analyst Plan' : 'Free Plan'}
                                             </p>
                                         </div>
-                                        <Settings className="w-4 h-4 text-slate-400 group-hover:text-[#13b8a6] transition-colors" />
+                                        <Settings className="w-4 h-4 text-slate-400 group-hover:text-[#14B8A6] transition-colors" />
                                     </button>
                                     <button
                                         onClick={onLogout}
@@ -459,10 +459,10 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                     </button>
                                     <button
                                         onClick={onToggle}
-                                        className="p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center hover:border-[#13b8a6]/30 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group shrink-0"
+                                        className="p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center hover:border-[#14B8A6]/30 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group shrink-0"
                                         title="Close Sidebar"
                                     >
-                                        <PanelLeftClose className={clsx("w-4 h-4 text-slate-400 group-hover:text-[#13b8a6] transition-colors", lang === 'ar' && "rotate-180")} />
+                                        <PanelLeftClose className={clsx("w-4 h-4 text-slate-400 group-hover:text-[#14B8A6] transition-colors", lang === 'ar' && "rotate-180")} />
                                     </button>
                                 </div>
                             ) : (
@@ -475,10 +475,10 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                                     </button>
                                     <button
                                         onClick={onToggle}
-                                        className="p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center hover:border-[#13b8a6]/30 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group shrink-0"
+                                        className="p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center hover:border-[#14B8A6]/30 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group shrink-0"
                                         title="Close Sidebar"
                                     >
-                                        <PanelLeftClose className={clsx("w-4 h-4 text-slate-400 group-hover:text-[#13b8a6] transition-colors", lang === 'ar' && "rotate-180")} />
+                                        <PanelLeftClose className={clsx("w-4 h-4 text-slate-400 group-hover:text-[#14B8A6] transition-colors", lang === 'ar' && "rotate-180")} />
                                     </button>
                                 </div>
                             )}
@@ -498,7 +498,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                         {/* Open sidebar — sits just above user avatar */}
                         <button
                             onClick={onToggle}
-                            className="w-10 h-10 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500 hover:text-[#13b8a6] hover:border-[#13b8a6]/30 transition-all shadow-sm group"
+                            className="w-10 h-10 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500 hover:text-[#14B8A6] hover:border-[#14B8A6]/30 transition-all shadow-sm group"
                             title="Open Sidebar"
                         >
                             <PanelLeftOpen className={clsx("w-5 h-5 group-hover:scale-110 transition-transform", lang === 'ar' && "rotate-180")} />
@@ -507,7 +507,7 @@ export const DesktopSidebar = memo(function DesktopSidebar({
                         {isAuthenticated ? (
                             <button
                                 onClick={onSettings}
-                                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#13b8a6] to-[#0f8f82] flex items-center justify-center text-white text-xs font-bold shadow-md hover:scale-105 transition-transform overflow-hidden relative"
+                                className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#0f8f82] flex items-center justify-center text-white text-xs font-bold shadow-md hover:scale-105 transition-transform overflow-hidden relative"
                             >
                                 {user?.avatar_url ? (
                                     <img

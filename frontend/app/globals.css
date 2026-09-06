@@ -31,10 +31,10 @@
   --color-brand-primary-dark: #020617;
 
   /* Accent: Midnight Teal - Distinctive, innovative, trustworthy */
-  --color-brand-accent: #13b8a6;
+  --color-brand-accent: #14B8A6;
   --color-brand-accent-light: #2DD4BF;
   --color-brand-accent-dark: #0D9488;
-  --color-brand-accent-subtle: rgba(19, 184, 166, 0.1);
+  --color-brand-accent-subtle: rgba(20,,, 0.1);
 
   /* ========================================================================
      FUNCTIONAL COLORS (Strict Semantic Usage)
@@ -47,10 +47,10 @@
   --color-trust-blue-subtle: rgba(59, 130, 246, 0.1);
 
   /* Success Green: Confirmations, Positive States, Bullish Data */
-  --color-success: #13b8a6;
+  --color-success: #14B8A6;
   --color-success-light: #34D399;
   --color-success-dark: #059669;
-  --color-success-subtle: rgba(19, 184, 166, 0.1);
+  --color-success-subtle: rgba(20,,, 0.1);
 
   /* Market Bullish: Price Increases ONLY */
   --color-bullish: #22C55E;
@@ -211,7 +211,7 @@
 @theme {
   --color-stroke-1: #26242C;
 
-  --color-color-1: #13b8a6;
+  --color-color-1: #14B8A6;
   /* Teal */
   --color-color-2: #3B82F6;
   /* Blue */
@@ -219,7 +219,7 @@
   --color-color-4: #7ADB78;
   --color-color-5: #3B82F6;
   /* Replaced Purple */
-  --color-color-6: #13b8a6;
+  --color-color-6: #14B8A6;
   /* Replaced Pink */
 
   /* Typography Variables */
@@ -250,7 +250,7 @@
   }
 
   .bg-conic-gradient {
-    background-image: conic-gradient(from 225deg, #13b8a6, #3B82F6, #0F172A, #14B8A6, #13b8a6);
+    background-image: conic-gradient(from 225deg, #14B8A6, #3B82F6, #0F172A, #14B8A6, #14B8A6);
   }
 
   .container {

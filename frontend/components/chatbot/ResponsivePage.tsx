@@ -309,9 +309,9 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                 <div className="flex justify-start">
                     <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 flex items-center gap-3 shadow-sm ">
                         <div className="flex gap-1">
-                            <span className="w-2 h-2 bg-[#13b8a6] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                            <span className="w-2 h-2 bg-[#13b8a6] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                            <span className="w-2 h-2 bg-[#13b8a6] rounded-full animate-bounce"></span>
+                            <span className="w-2 h-2 bg-[#14B8A6] rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                            <span className="w-2 h-2 bg-[#14B8A6] rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                            <span className="w-2 h-2 bg-[#14B8A6] rounded-full animate-bounce"></span>
                         </div>
                         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium animate-pulse">{translations[lang].analyzing}</span>
                     </div>
@@ -392,7 +392,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                 designMode === 'pro' ? (
                                     // PRO DESIGN (Green, Centered Input, Vertical Cards)
                                     <div className="flex flex-col items-center justify-center min-h-[70vh] w-full max-w-2xl mx-auto">
-                                        <div className="w-16 h-16 rounded-2xl bg-[#13b8a6] flex items-center justify-center mb-6 shadow-xl shadow-[#13b8a6]/20 animate-in fade-in zoom-in duration-500">
+                                        <div className="w-16 h-16 rounded-2xl bg-[#14B8A6] flex items-center justify-center mb-6 shadow-xl shadow-[#14B8A6]/20 animate-in fade-in zoom-in duration-500">
                                             <BarChart3 className="w-8 h-8 text-white" />
                                         </div>
 
@@ -406,12 +406,12 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                         {/* Centered Input (Pro) - Fixed Light Mode Background */}
                                         <div className="w-full mb-12">
                                             <div className="relative group">
-                                                <div className="absolute inset-0 bg-[#13b8a6]/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                                <div className="relative flex items-center gap-3 p-2 pe-2 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none focus-within:border-[#13b8a6]/50 focus-within:ring-2 focus-within:ring-[#13b8a6]/10 transition-all">
+                                                <div className="absolute inset-0 bg-[#14B8A6]/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                                <div className="relative flex items-center gap-3 p-2 pe-2 rounded-2xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 shadow-xl shadow-slate-200/50 dark:shadow-none focus-within:border-[#14B8A6]/50 focus-within:ring-2 focus-within:ring-[#14B8A6]/10 transition-all">
                                                     <button
                                                         onClick={clearHistory}
                                                         title="New chat"
-                                                        className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-[#13b8a6] hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex-shrink-0"
+                                                        className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-[#14B8A6] hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex-shrink-0"
                                                     >
                                                         <Plus className="w-4 h-4" />
                                                     </button>
@@ -426,7 +426,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                                     <button
                                                         onClick={() => { trackAiChatFirstMessage(); handleSend(); }}
                                                         disabled={isLoading || !query.trim()}
-                                                        className="w-11 h-11 rounded-xl bg-[#13b8a6] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#0f8f82] transition-all shadow-md shadow-[#13b8a6]/20"
+                                                        className="w-11 h-11 rounded-xl bg-[#14B8A6] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#0f8f82] transition-all shadow-md shadow-[#14B8A6]/20"
                                                     >
                                                         {isLoading ? (
                                                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -454,16 +454,16 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                                     <button
                                                         key={idx}
                                                         onClick={() => sendDirectMessage(item.query)}
-                                                        className="p-3.5 rounded-xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 hover:border-[#13b8a6]/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-start group flex flex-col items-center justify-center h-full gap-2"
+                                                        className="p-3.5 rounded-xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-white/10 hover:border-[#14B8A6]/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-start group flex flex-col items-center justify-center h-full gap-2"
                                                     >
                                                         <div className={clsx(
                                                             "w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors",
-                                                            item.color === 'coral' ? "bg-rose-50 text-rose-500 dark:bg-rose-500/10" : "bg-[#13b8a6]/10 text-[#13b8a6] dark:bg-[#13b8a6]/10"
+                                                            item.color === 'coral' ? "bg-rose-50 text-rose-500 dark:bg-rose-500/10" : "bg-[#14B8A6]/10 text-[#14B8A6] dark:bg-[#14B8A6]/10"
                                                         )}>
                                                             {item.icon}
                                                         </div>
                                                         <div className="text-center">
-                                                            <p className="text-xs font-bold text-slate-800 dark:text-white group-hover:text-[#13b8a6] transition-colors line-clamp-1">
+                                                            <p className="text-xs font-bold text-slate-800 dark:text-white group-hover:text-[#14B8A6] transition-colors line-clamp-1">
                                                                 {item.title}
                                                             </p>
                                                             <p className="text-[10px] text-slate-400 leading-tight line-clamp-1">
@@ -479,7 +479,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                     // ANALYST DESIGN (Green, Robot, Bottom Input, Grid Cards)
                                     <div className="flex flex-col items-center justify-center min-h-[70vh]">
                                         <div className="relative w-32 h-32 mx-auto mb-6">
-                                            <div className="absolute inset-0 bg-[#13b8a6]/30 rounded-full blur-[50px] animate-pulse"></div>
+                                            <div className="absolute inset-0 bg-[#14B8A6]/30 rounded-full blur-[50px] animate-pulse"></div>
                                             <Image
                                                 src="/assets/chatbot-icon.png"
                                                 alt="Starta AI"
@@ -488,7 +488,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                             />
                                         </div>
 
-                                        <h1 className="text-3xl font-black text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-[#13b8a6] to-slate-900 dark:from-white dark:via-[#13b8a6] dark:to-white">
+                                        <h1 className="text-3xl font-black text-center mb-2 bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-[#14B8A6] to-slate-900 dark:from-white dark:via-[#14B8A6] dark:to-white">
                                             {translations[lang].hello}, {user?.full_name?.split(' ')[0] || translations[lang].trader}
                                         </h1>
                                         <p className="text-slate-500 dark:text-slate-400 text-base mb-10 text-center max-w-md">
@@ -516,11 +516,11 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                     {(!showWelcome || designMode === 'analyst') && (
                         <div className="flex-shrink-0 border-t border-slate-200 dark:border-white/5 bg-white dark:bg-[#111827] p-4">
                             <div className="max-w-3xl mx-auto">
-                                <div className="flex items-center gap-2 p-2 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus-within:border-[#13b8a6]/50 focus-within:ring-2 focus-within:ring-[#13b8a6]/10 transition-all">
+                                <div className="flex items-center gap-2 p-2 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 focus-within:border-[#14B8A6]/50 focus-within:ring-2 focus-within:ring-[#14B8A6]/10 transition-all">
                                     <button
                                         onClick={clearHistory}
                                         title="New chat"
-                                        className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-[#13b8a6] hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex-shrink-0"
+                                        className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-[#14B8A6] hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex-shrink-0"
                                     >
                                         <Plus className="w-4 h-4" />
                                     </button>
@@ -535,7 +535,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                     <button
                                         onClick={() => { trackAiChatFirstMessage(); handleSend(); }}
                                         disabled={isLoading || !query.trim()}
-                                        className="w-9 h-9 rounded-full bg-[#13b8a6] hover:bg-[#0f8f82] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                        className="w-9 h-9 rounded-full bg-[#14B8A6] hover:bg-[#0f8f82] text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                     >
                                         {isLoading ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -605,7 +605,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                             {designMode === 'pro' ? (
                                 // MOBILE PRO WELCOME (Match Image 2)
                                 <div className="w-full flex flex-col items-center px-2">
-                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#13b8a6] to-[#0f8f82] flex items-center justify-center mb-6 shadow-xl shadow-[#13b8a6]/30 ring-4 ring-[#13b8a6]/10">
+                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#14B8A6] to-[#0f8f82] flex items-center justify-center mb-6 shadow-xl shadow-[#14B8A6]/30 ring-4 ring-[#14B8A6]/10">
                                         <BarChart3 className="w-8 h-8 text-white" />
                                     </div>
                                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-3 text-center tracking-tight">
@@ -619,13 +619,13 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                     <div className="w-full mb-10">
                                         <div className="relative group">
                                             {/* Glow */}
-                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-[#13b8a6]/30 to-[#13b8a6]/30 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-[#14B8A6]/30 to-[#14B8A6]/30 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                                             <div className="relative flex items-center gap-2 p-2 pr-2 rounded-2xl bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-[#1E293B] shadow-lg shadow-slate-200/50 dark:shadow-[#0F172A]/20">
                                                 <button
                                                     onClick={clearHistory}
                                                     title="New chat"
-                                                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-[#13b8a6] hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex-shrink-0"
+                                                    className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-[#14B8A6] hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex-shrink-0"
                                                 >
                                                     <Plus className="w-4 h-4" />
                                                 </button>
@@ -642,7 +642,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                                     className="w-9 h-9 rounded-xl bg-white text-slate-900 hover:bg-slate-50 flex items-center justify-center shadow-md active:scale-95 transition-all"
                                                 >
                                                     {isLoading ? (
-                                                        <Loader2 className="w-4 h-4 animate-spin text-[#13b8a6]" />
+                                                        <Loader2 className="w-4 h-4 animate-spin text-[#14B8A6]" />
                                                     ) : (
                                                         <Send className="w-4 h-4" />
                                                     )}
@@ -657,10 +657,10 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                             {translations[lang].popularRequests}
                                         </p>
                                         {[
-                                            { icon: <CircleDollarSign className="w-5 h-5" />, title: translations[lang].cards.scenario_undervalued.title, query: translations[lang].cards.scenario_undervalued.query, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
+                                            { icon: <CircleDollarSign className="w-5 h-5" />, title: translations[lang].cards.scenario_undervalued.title, query: translations[lang].cards.scenario_undervalued.query, subtitle: translations[lang].askStarta, color: 'bg-[#14B8A6]' },
                                             { icon: <Sparkles className="w-5 h-5" />, title: translations[lang].cards.scenario_hidden_gems.title, query: translations[lang].cards.scenario_hidden_gems.query, subtitle: translations[lang].askStarta, color: 'bg-rose-500' },
-                                            { icon: <BarChart3 className="w-5 h-5" />, title: translations[lang].cards.scenario_score.title, query: translations[lang].cards.scenario_score.query, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
-                                            { icon: <Newspaper className="w-5 h-5" />, title: translations[lang].cards.scenario_news.title, query: translations[lang].cards.scenario_news.query, subtitle: translations[lang].askStarta, color: 'bg-[#13b8a6]' },
+                                            { icon: <BarChart3 className="w-5 h-5" />, title: translations[lang].cards.scenario_score.title, query: translations[lang].cards.scenario_score.query, subtitle: translations[lang].askStarta, color: 'bg-[#14B8A6]' },
+                                            { icon: <Newspaper className="w-5 h-5" />, title: translations[lang].cards.scenario_news.title, query: translations[lang].cards.scenario_news.query, subtitle: translations[lang].askStarta, color: 'bg-[#14B8A6]' },
                                             { icon: <Target className="w-5 h-5" />, title: translations[lang].cards.scenario_market_timing.title, query: translations[lang].cards.scenario_market_timing.query, subtitle: translations[lang].askStarta, color: 'bg-rose-500' },
                                         ].map((item, idx) => (
                                             <button
@@ -672,13 +672,13 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                                     <span className="text-lg">{item.icon}</span>
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[14px] font-bold text-slate-800 dark:text-white truncate group-hover:text-[#13b8a6] transition-colors">{item.title}</p>
+                                                    <p className="text-[14px] font-bold text-slate-800 dark:text-white truncate group-hover:text-[#14B8A6] transition-colors">{item.title}</p>
                                                     <p className="text-[10px] font-semibold text-slate-400 mt-0.5 flex items-center gap-1 uppercase tracking-wide">
                                                         <Sparkles className="w-2.5 h-2.5" />
                                                         {item.subtitle}
                                                     </p>
                                                 </div>
-                                                <div className="w-7 h-7 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 group-hover:bg-[#13b8a6] group-hover:text-white transition-colors">
+                                                <div className="w-7 h-7 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-300 group-hover:bg-[#14B8A6] group-hover:text-white transition-colors">
                                                     <ChevronRight className="w-4 h-4" />
                                                 </div>
                                             </button>
@@ -691,7 +691,7 @@ function ResponsiveAIAnalystContent({ initialSessionId, isSharedView = false, is
                                     {/* Hero Section */}
                                     <div className="flex-none text-center space-y-6 mb-12 relative z-10 w-full max-w-[320px]">
                                         <div className="relative w-28 h-28 mx-auto">
-                                            <div className="absolute inset-0 bg-[#13b8a6]/30 rounded-full blur-[40px] animate-pulse"></div>
+                                            <div className="absolute inset-0 bg-[#14B8A6]/30 rounded-full blur-[40px] animate-pulse"></div>
                                             <div className="relative w-full h-full p-0 filter drop-shadow-2xl hover:scale-105 transition-transform duration-500">
                                                 <Image
                                                     src="/assets/chatbot-icon.png"
@@ -959,9 +959,9 @@ const MessageRenderer = memo(({
                                 <div className="bg-white dark:bg-slate-900 w-full px-6 pb-6 flex flex-col items-center gap-3 relative z-30 pointer-events-auto">
                                     {/* Animated lock with glow */}
                                     <div className="relative">
-                                        <div className="absolute inset-0 bg-[#13b8a6]/20 rounded-full blur-xl animate-pulse" />
-                                        <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-[#13b8a6]/15 to-[#13b8a6]/5 border border-[#13b8a6]/20 flex items-center justify-center shadow-sm">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-[#13b8a6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <div className="absolute inset-0 bg-[#14B8A6]/20 rounded-full blur-xl animate-pulse" />
+                                        <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-[#14B8A6]/15 to-[#14B8A6]/5 border border-[#14B8A6]/20 flex items-center justify-center shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-[#14B8A6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                                                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                                             </svg>
@@ -980,7 +980,7 @@ const MessageRenderer = memo(({
                                     {/* Primary CTA */}
                                     <a
                                         href="/register"
-                                        className="w-full max-w-[220px] mt-1 py-2.5 px-6 rounded-full bg-gradient-to-r from-[#13b8a6] to-[#0f9f94] text-white text-[13.5px] font-semibold text-center shadow-lg shadow-[#13b8a6]/25 hover:shadow-xl hover:shadow-[#13b8a6]/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                                        className="w-full max-w-[220px] mt-1 py-2.5 px-6 rounded-full bg-gradient-to-r from-[#14B8A6] to-[#0f9f94] text-white text-[13.5px] font-semibold text-center shadow-lg shadow-[#14B8A6]/25 hover:shadow-xl hover:shadow-[#14B8A6]/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                                     >
                                         Register Free →
                                     </a>
@@ -988,7 +988,7 @@ const MessageRenderer = memo(({
                                     {/* Secondary CTA */}
                                     <a
                                         href="/login"
-                                        className="text-[12.5px] text-slate-500 hover:text-[#13b8a6] transition-colors cursor-pointer mt-1"
+                                        className="text-[12.5px] text-slate-500 hover:text-[#14B8A6] transition-colors cursor-pointer mt-1"
                                     >
                                         Already have an account? <span className="font-semibold underline underline-offset-2">Log in</span>
                                     </a>
@@ -1009,7 +1009,7 @@ export default function ResponsiveAIAnalystPage(props: ResponsivePageProps = {})
     return (
         <Suspense fallback={
             <div className="min-h-[100dvh] flex items-center justify-center bg-[#F8FAFC] dark:bg-[#0F172A]">
-                <Loader2 className="w-8 h-8 animate-spin text-[#13b8a6]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#14B8A6]" />
             </div>
         }>
             <ResponsiveAIAnalystContent {...props} />

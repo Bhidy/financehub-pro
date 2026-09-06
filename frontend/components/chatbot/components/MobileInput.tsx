@@ -60,7 +60,7 @@ export function MobileInput({ query, setQuery, onSend, isLoading, lang = 'en', o
                             <button
                                 onClick={onNewChat}
                                 title="New chat"
-                                className="flex-none w-9 h-9 mb-0.5 rounded-full flex items-center justify-center text-slate-400 hover:text-[#13b8a6] hover:bg-slate-100 dark:hover:bg-white/10 active:scale-95 transition-all"
+                                className="flex-none w-9 h-9 mb-0.5 rounded-full flex items-center justify-center text-slate-400 hover:text-[#14B8A6] hover:bg-slate-100 dark:hover:bg-white/10 active:scale-95 transition-all"
                             >
                                 <Plus className="w-5 h-5" />
                             </button>

@@ -56,9 +56,9 @@ export default function UsageLimitModal({ isOpen, onClose, isMobile = false }: U
                         <div className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-[32px] shadow-2xl shadow-teal-900/20 max-w-sm w-full overflow-hidden relative pointer-events-auto">
 
                             {/* Premium Decorative Background */}
-                            <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#13b8a6]/10 to-transparent" />
-                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#13b8a6]/20 rounded-full blur-[60px]" />
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#13b8a6] to-transparent opacity-50" />
+                            <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#14B8A6]/10 to-transparent" />
+                            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#14B8A6]/20 rounded-full blur-[60px]" />
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#14B8A6] to-transparent opacity-50" />
 
                             <div className="relative p-6 px-8 flex flex-col items-center text-center">
 
@@ -67,9 +67,9 @@ export default function UsageLimitModal({ isOpen, onClose, isMobile = false }: U
                                     animate={{
                                         y: [0, -6, 0],
                                         boxShadow: [
-                                            "0 10px 30px -5px rgba(19, 184, 166, 0.3)",
-                                            "0 20px 40px -5px rgba(19, 184, 166, 0.5)",
-                                            "0 10px 30px -5px rgba(19, 184, 166, 0.3)"
+                                            "0 10px 30px -5px rgba(20,,, 0.3)",
+                                            "0 20px 40px -5px rgba(20,,, 0.5)",
+                                            "0 10px 30px -5px rgba(20,,, 0.3)"
                                         ]
                                     }}
                                     transition={{
@@ -77,7 +77,7 @@ export default function UsageLimitModal({ isOpen, onClose, isMobile = false }: U
                                         repeat: Infinity,
                                         ease: "easeInOut"
                                     }}
-                                    className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#13b8a6] to-[#0f8f82] flex items-center justify-center mb-6 ring-4 ring-[#13b8a6]/10 relative group"
+                                    className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#14B8A6] to-[#0f8f82] flex items-center justify-center mb-6 ring-4 ring-[#14B8A6]/10 relative group"
                                 >
                                     <div className="absolute inset-0 bg-white/10 rounded-3xl animate-pulse" />
                                     {/* Lock Icon with subtle wiggle on hover/loop */}
@@ -94,7 +94,7 @@ export default function UsageLimitModal({ isOpen, onClose, isMobile = false }: U
                                         transition={{ duration: 2, repeat: Infinity }}
                                         className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-sm"
                                     >
-                                        <Sparkles className="w-3 h-3 text-[#13b8a6]" />
+                                        <Sparkles className="w-3 h-3 text-[#14B8A6]" />
                                     </motion.div>
                                 </motion.div>
 
@@ -105,15 +105,15 @@ export default function UsageLimitModal({ isOpen, onClose, isMobile = false }: U
                                 <p className="text-slate-500 dark:text-slate-400 text-[15px] leading-relaxed mb-8">
                                     You've used your <span className="font-bold text-slate-900 dark:text-white">1 Guest question</span>.
                                     <br />
-                                    Register now for <span className="text-[#13b8a6] font-bold">unlimited access</span>.
+                                    Register now for <span className="text-[#14B8A6] font-bold">unlimited access</span>.
                                 </p>
 
                                 {/* Benefits List */}
                                 <div className="w-full space-y-3 mb-8">
                                     {benefits.map((b, i) => (
                                         <div key={i} className="flex items-start gap-3.5 text-left p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-100 dark:hover:bg-white/10">
-                                            <div className="w-8 h-8 rounded-full bg-[#13b8a6]/10 flex items-center justify-center shrink-0 mt-0.5">
-                                                <b.icon className="w-4 h-4 text-[#13b8a6]" />
+                                            <div className="w-8 h-8 rounded-full bg-[#14B8A6]/10 flex items-center justify-center shrink-0 mt-0.5">
+                                                <b.icon className="w-4 h-4 text-[#14B8A6]" />
                                             </div>
                                             <div>
                                                 <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight mb-1">
@@ -130,7 +130,7 @@ export default function UsageLimitModal({ isOpen, onClose, isMobile = false }: U
                                 {/* Actions */}
                                 <button
                                     onClick={() => router.push("/register")}
-                                    className="w-full py-3.5 bg-gradient-to-r from-[#13b8a6] to-[#0d9488] hover:from-[#2dd4bf] hover:to-[#14b8a6] text-white rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-[#13b8a6]/25 transition-all active:scale-[0.98] group relative overflow-hidden mb-3"
+                                    className="w-full py-3.5 bg-gradient-to-r from-[#14B8A6] to-[#0d9488] hover:from-[#2dd4bf] hover:to-[#14b8a6] text-white rounded-xl font-bold text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-[#14B8A6]/25 transition-all active:scale-[0.98] group relative overflow-hidden mb-3"
                                 >
                                     <span className="relative z-10 flex items-center gap-2">
                                         Register for Free

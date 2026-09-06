@@ -1,4 +1,4 @@
-import { constants, existsSync, readFileSync } from "node:fs";
+import { constants, existsSync, readFileSync, readdirSync } from "node:fs";
 import { access, readFile, readdir } from "node:fs/promises";
 import { assetHashes } from "./sync-asset-versions.mjs";
 import { deriveArRoutes } from "./sync-ar-routes.mjs";
@@ -412,6 +412,144 @@ const checks = [
       /IBM_Plex_Sans_Arabic\(/.test(text) &&
       /variable:\s*"--font-arabic"/.test(text) &&
       !/Cairo\(/.test(text),
+  },
+  {
+    // ══ ONE ARABIC TYPEFACE, EVERYWHERE ═════════════════════════════════════
+    // Checking only app/layout.tsx was not enough. Cairo survived in
+    // app/mobile/mobile.module.css, which self-hosted it in four weights and
+    // applied it with !important to every Arabic element under a comment
+    // claiming Cairo was "the brand's Arabic typeface (same as the website)" —
+    // false on both counts. The Arabic mobile shell therefore rendered in a
+    // different face from every other surface for months. This scans the files
+    // that can actually set a face, so a second Arabic typeface cannot re-enter
+    // through a module nobody thought to check.
+    name: "no banned typeface anywhere that can set a font",
+    files: [
+      "app/globals.css",
+      "app/layout.tsx",
+      "app/mobile/mobile.module.css",
+      "public/assets/starta-typography.css",
+      "public/assets/starta-nav.css",
+      "public/assets/market-pulse.css",
+    ],
+    assert: (text) => {
+      // Comments may NAME a banned face — the history above depends on it.
+      const code = text
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/^\s*\/\/.*$/gm, "");
+      return !/\b(Cairo|Tajawal|Almarai|Changa|Amiri|Noto\s+Sans\s+Arabic|Inter|Poppins|Lato|Open\s+Sans)\b/i.test(code);
+    },
+  },
+  {
+    // A banned face cannot be self-hosted back in through a font file either.
+    name: "no banned typeface is self-hosted in the asset tree",
+    file: "package.json",
+    assert: () => {
+      const dir = path.join(root, "public/assets/starta-mobile/fonts");
+      if (!existsSync(dir)) return true;
+      return !readdirSync(dir).some((f) => /^(Cairo|Tajawal|Almarai|Changa|Amiri|Inter|Poppins|Lato)[-_.]/i.test(f));
+    },
+  },
+  {
+    // ══ EVERY SINGLE-URL PAGE SHIPS BOTH LANGUAGES ══════════════════════════
+    // The site's DEFAULT language is Arabic. /settings had no language support
+    // at all — every string an English literal — so a visitor reading the site
+    // in Arabic clicked into their own account and landed in English, and the
+    // screen's own Language card called Arabic "Coming Soon" months after it
+    // shipped site-wide. A single-URL page has no /ar twin to carry the
+    // language, so it MUST read it from storage.
+    name: "single-URL account pages resolve the language from storage",
+    files: [
+      "app/settings/page.tsx",
+      "app/login/page.tsx",
+      "app/register/page.tsx",
+      "app/forgot-password/page.tsx",
+    ],
+    assert: (text) => /useStoredLang\(\)/.test(text) && /dir=\{/.test(text),
+  },
+  {
+    // …and its copy must exist in BOTH languages. A typed dictionary is what
+    // makes TypeScript refuse a half-translated screen; a Latin word inside an
+    // Arabic value is the shape of a fat-finger that TypeScript cannot catch.
+    name: "settings copy is complete in both languages",
+    file: "lib/settings-i18n.ts",
+    assert: (text) => {
+      const arBlock = text.split("const ar: SettingsLabels = {")[1]?.split("\n};")[0] ?? "";
+      if (!arBlock) return false;
+      const allowed = new Set(["English", "Stripe"]);
+      for (const [, value] of arBlock.matchAll(/:\s*"([^"]+)"/g)) {
+        for (const word of value.match(/[A-Za-z]{2,}/g) ?? []) {
+          if (!allowed.has(word)) return false;
+        }
+      }
+      return true;
+    },
+  },
+  {
+    // ══ THE BRAND LOCKUP ════════════════════════════════════════════════════
+    // FIVE different marks shipped at once: the landing page and public chrome
+    // drew a teal tile carrying the letter S, /login drew a lucide BarChart3,
+    // /register /forgot-password and /settings drew a lucide TrendingUp, and
+    // /mobile drew a bespoke SVG — plus two wordmark casings and three tracking
+    // values. A visitor signing in met a different brand from the page they had
+    // just left. There is now ONE component and these pages must use it.
+    name: "auth and account pages render the canonical brand lockup",
+    files: [
+      "app/login/page.tsx",
+      "app/register/page.tsx",
+      "app/forgot-password/page.tsx",
+      "app/settings/page.tsx",
+    ],
+    assert: (text) => {
+      if (!/StartaLogo/.test(text)) return false;
+      // A lucide glyph sitting in a brand-teal tile is the exact shape of the
+      // drift. Look for the two together rather than banning the icons outright
+      // — TrendingUp is legitimate on a performance figure.
+      const tiles = text.match(/className="[^"]*(?:bg-starta-teal|#14B8A6|#0D9488|#13b8a6)[^"]*"[\s\S]{0,260}?<\/div>/gi) || [];
+      const stockGlyph = /<(BarChart3|TrendingUp|Sparkles|Zap|Activity|LineChart)\b/;
+      return !tiles.some((t) => stockGlyph.test(t));
+    },
+  },
+  {
+    // The wordmark is STARTA, uppercase, tracking-widest. Mixed-case "Starta"
+    // beside a mark is the drifted lockup; "Starta Markets" in prose, titles and
+    // aria-labels is copy and is fine, so this only looks at the LOCKUP shape:
+    // a wordmark span sitting next to a brand tile.
+    name: "brand component keeps the uppercase wordmark and its tracking",
+    file: "components/brand/StartaLogo.tsx",
+    assert: (text) =>
+      /STARTA/.test(text) &&
+      /tracking-widest/.test(text) &&
+      /bg-starta-teal/.test(text) &&
+      !/tracking-tight/.test(text),
+  },
+  {
+    // The tab icon, the home-screen icon and the in-page mark must be ONE mark.
+    // They were three: a teal tile with a white BAR CHART (app/icon.png), a NAVY
+    // tile with a teal bar chart (public/icon.svg), and the teal tile with the
+    // letter S that the site actually uses. Two of them were binaries, so the
+    // drift could not be seen in a diff — they are generated from code now.
+    name: "app icon is generated from the brand contract, not a binary",
+    file: "app/icon.tsx",
+    assert: (text) => /#14B8A6/i.test(text) && />\s*S\s*</.test(text),
+  },
+  {
+    name: "no checked-in icon binary can shadow the generated one",
+    file: "package.json",
+    assert: () =>
+      !existsSync(path.join(root, "app/icon.png")) &&
+      !existsSync(path.join(root, "app/apple-icon.png")),
+  },
+  {
+    // #13b8a6 differs from the brand teal #14B8A6 by one digit and reads as a
+    // slightly different green beside it. It spread through the settings page.
+    name: "no off-brand teal in the shared brand and chrome files",
+    files: [
+      "components/brand/StartaLogo.tsx",
+      "public/assets/starta-nav.css",
+      "public/assets/starta-typography.css",
+    ],
+    assert: (text) => !/#13b8a6/i.test(text),
   },
   {
     // ══ THE TYPOGRAPHY CONTRACT ═════════════════════════════════════════════
@@ -1076,13 +1214,38 @@ async function assertDesignedShellsIntact() {
       failed = true;
       continue;
     }
-    const queries = [...text.matchAll(/`([^`]*FROM market_tickers[^`]*)`/g)].map((m) => m[1]);
+    // Resolve one level of same-file interpolation before judging a query. The
+    // gate is textual, so a route that builds `WHERE … ${EGX_ONLY}` into a
+    // `whereClause` variable and interpolates THAT reads as ungated when it is
+    // perfectly gated — app/api/v1/egx/stocks/route.ts does exactly this.
+    const locals = new Map();
+    for (const m of text.matchAll(/(?:const|let)\s+(\w+)\s*(?::[^=]+)?=\s*`([^`]*)`/g)) {
+      locals.set(m[1], m[2]);
+    }
+    for (const m of text.matchAll(/(?:const|let)\s+(\w+)\s*(?::[^=]+)?=\s*(['"])((?:[^\\]|\\.)*?)\2/g)) {
+      if (!locals.has(m[1])) locals.set(m[1], m[3]);
+    }
+    const expand = (q) =>
+      q.replace(/\$\{(\w+)\}/g, (whole, name) => (locals.has(name) ? locals.get(name) : whole));
+    // Keep BOTH forms: the gate check needs the expanded query, while the
+    // documented exceptions are written against the literal `${EGX_ANY}` token
+    // and stop matching once it has been substituted.
+    const queries = [...text.matchAll(/`([^`]*FROM market_tickers[^`]*)`/g)].map((m) => ({
+      raw: m[1],
+      // Two passes: a whereClause is itself often assembled from another local.
+      resolved: expand(expand(m[1])),
+    }));
     // EGX_ANY (market filter only, no listing gate) is permitted ONLY on the
     // single-symbol identity lookup that renders a non-listed symbol's status
     // page (getTickerAny). Any LIST or aggregate must carry EGX_ONLY.
     // A literal lookup of the EGX30 INDEX line (status `index`, never a company)
     // is the other permitted exception — an index value is not a listing claim.
-    const ungated = queries.filter((q) => !q.includes("EGX_ONLY") && !(q.includes("EGX_ANY") && /WHERE symbol = \$1 AND \$\{EGX_ANY\}/.test(q)) && !/WHERE symbol = 'EGX30'/.test(q));
+    const ungated = queries.filter(
+      ({ raw, resolved }) =>
+        !resolved.includes("EGX_ONLY") &&
+        !(raw.includes("EGX_ANY") && /WHERE symbol = \$1 AND \$\{EGX_ANY\}/.test(raw)) &&
+        !/WHERE symbol = 'EGX30'/.test(raw)
+    );
     if (ungated.length > 0) {
       console.error(
         `FAIL: ${file} has ${ungated.length} market_tickers quer${ungated.length === 1 ? "y" : "ies"} without the EGX_ONLY gate — Saudi rows would publish as EGX companies.`
@@ -1222,11 +1385,17 @@ async function run() {
   const authNav = await readContract();
 
   for (const check of checks) {
-    const fullPath = path.join(root, check.file);
-    const text = await readFile(fullPath, "utf8");
-    if (!check.assert(text, { navConfig, authNav })) {
-      console.error(`FAIL: ${check.name} (${check.file})`);
-      process.exit(1);
+    // A check may name one `file` or a list of `files` that must ALL satisfy the
+    // same assertion — several contracts (the brand lockup, the off-brand teal)
+    // apply identically to a handful of surfaces, and spelling them out as
+    // separate entries invites one being forgotten when a page is added.
+    const targets = check.files ?? [check.file];
+    for (const target of targets) {
+      const text = await readFile(path.join(root, target), "utf8");
+      if (!check.assert(text, { navConfig, authNav })) {
+        console.error(`FAIL: ${check.name} (${target})`);
+        process.exit(1);
+      }
     }
   }
 

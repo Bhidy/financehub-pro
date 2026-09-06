@@ -223,7 +223,7 @@ export function MessageFeedback({ messageId, sessionId, contentToShare = "", lan
                     className={clsx(
                         "p-1.5 rounded-md flex items-center justify-center transition-colors",
                         feedbackState === "like"
-                            ? "text-[#13b8a6] bg-[#13b8a6]/10"
+                            ? "text-[#14B8A6] bg-[#14B8A6]/10"
                             : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
                     )}
                     title="Helpful"
@@ -255,7 +255,7 @@ export function MessageFeedback({ messageId, sessionId, contentToShare = "", lan
                         className={clsx(
                             "px-2 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors",
                             showShareModal
-                                ? "bg-[#13b8a6]/10 text-[#13b8a6]"
+                                ? "bg-[#14B8A6]/10 text-[#14B8A6]"
                                 : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5",
                             !messageId && "opacity-50 cursor-not-allowed"
                         )}
@@ -290,7 +290,7 @@ export function MessageFeedback({ messageId, sessionId, contentToShare = "", lan
                                             <LinkIcon className="w-3.5 h-3.5 text-slate-400" />
                                             {t.shareMenu.copyLink}
                                         </div>
-                                        {copied && <Check className="w-3.5 h-3.5 text-[#13b8a6]" />}
+                                        {copied && <Check className="w-3.5 h-3.5 text-[#14B8A6]" />}
                                     </button>
                                     <div className="h-px bg-slate-100 dark:bg-white/5 my-1" />
 
@@ -348,7 +348,7 @@ export function MessageFeedback({ messageId, sessionId, contentToShare = "", lan
                     >
                         <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-3 border border-slate-200 dark:border-white/10 text-sm">
                             {reportSubmitted ? (
-                                <div className="flex items-center justify-center gap-2 py-4 text-[#13b8a6] font-medium">
+                                <div className="flex items-center justify-center gap-2 py-4 text-[#14B8A6] font-medium">
                                     <Check className="w-5 h-5" />
                                     {t.reportSubmitted}
                                 </div>
@@ -371,7 +371,7 @@ export function MessageFeedback({ messageId, sessionId, contentToShare = "", lan
                                             value={reportReason || ""}
                                             onChange={(e) => setReportReason(e.target.value)}
                                             placeholder={t.reportPlaceholder}
-                                            className="w-full h-24 p-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#13b8a6]/40 focus:border-[#13b8a6]/40 shadow-inner"
+                                            className="w-full h-24 p-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#14B8A6]/40 focus:border-[#14B8A6]/40 shadow-inner"
                                         />
                                     </div>
                                     <div className={clsx("flex gap-2 mt-1", isAr ? "justify-start flex-row-reverse" : "justify-end flex-row")}>
@@ -384,7 +384,7 @@ export function MessageFeedback({ messageId, sessionId, contentToShare = "", lan
                                         <button
                                             onClick={handleReportSubmit}
                                             disabled={!reportReason || !reportReason.trim()}
-                                            className="px-4 py-1.5 text-xs font-bold text-white bg-[#13b8a6] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                                            className="px-4 py-1.5 text-xs font-bold text-white bg-[#14B8A6] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                                         >
                                             {t.submit}
                                         </button>

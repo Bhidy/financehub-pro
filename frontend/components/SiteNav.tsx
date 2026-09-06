@@ -10,6 +10,7 @@ import { AUTH_LABELS } from "@/lib/auth-i18n";
 import navConfig from "@/lib/nav.json";
 import assetVersions from '@/lib/asset-versions.json';
 import { localizedHref } from "@/lib/localized-href";
+import { StartaLogo } from "@/components/brand/StartaLogo";
 
 interface MobileChatActions {
     onNewChat?: () => void;
@@ -64,15 +65,11 @@ export default function SiteNav({ lang = "en", onToggleLang, mobileChatActions }
             {/* ── Nav bar ─────────────────────────────────────────────────── */}
             <nav className="w-full flex-shrink-0 border-b border-slate-200/40 dark:border-white/[0.08] bg-white/80 dark:bg-[#010101]/80 backdrop-blur-xl relative z-50">
                 <div className="max-w-screen-2xl mx-auto px-8 h-20 flex justify-between items-center">
-                    {/* Logo */}
-                    <a href="/" className="flex items-center gap-3 group">
-                        <div className="w-8 h-8 bg-[#14B8A6] rounded flex items-center justify-center font-bold text-white text-xl group-hover:rotate-12 transition-transform">
-                            S
-                        </div>
-                        <span className="text-lg font-bold text-slate-900 dark:text-[#eef2f6] tracking-widest uppercase">
-                            STARTA
-                        </span>
-                    </a>
+                    {/* The ONE brand lockup. This drew the right letter but with a
+                        raw hex tile, no display face on the glyph and `text-slate-900`
+                        instead of the theme token, so it was a near-match rather than
+                        the same mark. */}
+                    <StartaLogo size="sm" href="/" />
 
                     {/* Canonical nav appearance — the SAME stylesheet the static
                         pages and PublicPageShell load, so all three renderers can

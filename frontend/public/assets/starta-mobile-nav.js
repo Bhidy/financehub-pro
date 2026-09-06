@@ -87,10 +87,13 @@
         /* header row */
         .smn-head{ display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1; }
         .smn-brand{ display:flex; align-items:center; gap:.6rem; text-decoration:none; }
+        /* The canonical mark: a WHITE S on the FLAT brand teal. This drew a
+           near-black S (#04201c) on a teal gradient — a different mark from the
+           one in the nav bar directly above it, on every page of the site. */
         .smn-brand-mark{
             width:2rem; height:2rem; border-radius:.55rem; display:flex; align-items:center; justify-content:center;
-            background:linear-gradient(135deg,var(--smn-teal),var(--smn-teal-deep)); color:#04201c;
-            font-weight:800; font-size:1.05rem; box-shadow:0 6px 18px -6px rgba(20,184,166,.7);
+            background:#14B8A6; color:#fff;
+            font-weight:700; font-size:1.05rem;
         }
         .smn-brand-name{ font-weight:800; letter-spacing:.22em; font-size:.95rem; color:var(--smn-text); }
         .smn-close{

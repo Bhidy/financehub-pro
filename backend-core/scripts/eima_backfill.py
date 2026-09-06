@@ -399,9 +399,50 @@ async def verify_written(conn, prune: bool = False) -> int:
     return 1 if (dup or bad_vals) else 0
 
 
+HOLE_FROM = date(2025, 5, 14)
+HOLE_TO = date(2026, 6, 30)
+
+
+async def report_unrecovered(conn, fate: dict[str, str]) -> list[str]:
+    """Name every fund that still has NO observation inside the hole, and why.
+
+    Restricted to the ingested universe, and to funds that actually straddle the
+    window — a fund launched after it, or wound up before it, has no hole to
+    recover and must not be reported as a defect.
+    """
+    rows = await conn.fetch(
+        """SELECT fund_id,
+                  MAX(date) FILTER (WHERE date < $1) AS before_hole,
+                  MIN(date) FILTER (WHERE date > $2) AS after_hole,
+                  COUNT(*) FILTER (WHERE date BETWEEN $1 AND $2) AS inside
+             FROM nav_history
+            WHERE fund_id ~ '^[0-9]+$'
+            GROUP BY fund_id""", HOLE_FROM, HOLE_TO)
+
+    holed = [r for r in rows
+             if r["inside"] == 0 and r["before_hole"] is not None and r["after_hole"] is not None]
+    holed.sort(key=lambda r: r["fund_id"])
+    if not holed:
+        print("[eima] UNRECOVERED: none — every fund that straddles the hole "
+              "now has at least one observation inside it.", flush=True)
+        return []
+
+    print(f"[eima] UNRECOVERED: {len(holed)} fund(s) still have NO observation "
+          f"between {HOLE_FROM} and {HOLE_TO}:", flush=True)
+    for r in holed:
+        fid = r["fund_id"]
+        why = fate.get(fid) or ("no EIMA report name shortlisted for this fund — "
+                                "EIMA does not appear to cover it under a matchable name")
+        span = (r["after_hole"] - r["before_hole"]).days
+        print(f"[eima]   {fid:>9}  {span:>4}d  {r['before_hole']} -> {r['after_hole']}  {why}",
+              flush=True)
+    return [r["fund_id"] for r in holed]
+
+
 async def run(dry_run: bool = False, only_ids: list[str] | None = None,
               limit_reports: int | None = None,
-              delay: float = DEFAULT_DELAY_SECONDS) -> int:
+              delay: float = DEFAULT_DELAY_SECONDS,
+              include_shadow_ids: bool = False) -> int:
     try:
         import httpx
     except ModuleNotFoundError:
@@ -415,12 +456,34 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
         if not dry_run:
             await conn.execute(_MIGRATE)
 
+        # ── THE CANDIDATE UNIVERSE MUST BE THE INGESTED UNIVERSE ──────────
+        # This used to be every mutual_funds row with an English name: 366 of
+        # them. The platform publishes 207 and funds_nav_updater ingests only
+        # `fund_id ~ '^[0-9]+$'`. The surplus are shadow rows keyed by an
+        # ISIN-like code — EGYAZIF, EGYAZFIS, EGYCIAGLD, EGYAIB3 — that 404 on
+        # the site, appear in no sitemap, and receive no NAV run.
+        #
+        # They are not harmless extras. Being duplicates of real funds, they
+        # reconcile just as well, and the ambiguity guard then refuses to write
+        # to EITHER — so a published fund was blocked from recovery by a twin
+        # nobody can see. Measured on the 2026-09-04 dry run:
+        #
+        #   AMBIGUOUS 'AZ Halan…'  ~ 6211 vs EGYAZIF   (medians 0.24% / 0.28%)
+        #   AMBIGUOUS 'AZ Value…'  ~ 5959 vs EGYAZFIS  (medians 0.16% / 0.16%)
+        #
+        # 6211 and 5959 both still carry the full 412-day hole. Nothing in the
+        # ambiguity guard is wrong; it was being fed a universe wider than the
+        # one this pipeline owns. A fund the NAV updater never writes to cannot
+        # be the right target for a NAV backfill.
+        cat_sql = ("SELECT fund_id, fund_name_en, manager_name_en FROM mutual_funds "
+                   "WHERE fund_name_en IS NOT NULL")
+        if not include_shadow_ids:
+            cat_sql += " AND fund_id ~ '^[0-9]+$'"
         catalogue = [{"fund_id": r["fund_id"], "en": r["fund_name_en"] or "",
                       "mgr_en": r["manager_name_en"] or ""}
-                     for r in await conn.fetch(
-                         "SELECT fund_id, fund_name_en, manager_name_en FROM mutual_funds "
-                         "WHERE fund_name_en IS NOT NULL")]
-        print(f"[eima] catalogue: {len(catalogue)} funds with English names", flush=True)
+                     for r in await conn.fetch(cat_sql)]
+        print(f"[eima] catalogue: {len(catalogue)} funds with English names"
+              f"{'' if include_shadow_ids else ' (ingested numeric ids only)'}", flush=True)
 
         with httpx.Client(headers={"User-Agent": UA}, follow_redirects=True,
                           timeout=60.0) as sess:
@@ -538,6 +601,17 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
         candidates = []            # (name, fid, name_score, verdict)
         ambiguous: list[str] = []
         incoherent: list[str] = []
+        # WHY A FUND WAS NOT RECOVERED — accumulated per fund_id so the report at
+        # the end can answer that question for every fund still carrying the
+        # hole. Before this, the run printed aggregate counts (37 no-match, 21
+        # ambiguous, 10 rejected) and named only EIMA report names, so there was
+        # no way to learn what stood between a SPECIFIC fund and its history.
+        # Sixteen funds sat unrecovered for three weeks for want of this line.
+        fate: dict[str, str] = {}
+        def _fate(fid: str, why: str) -> None:
+            # First reason wins: the ladder below is ordered most- to
+            # least-specific, and a later, vaguer reason must not overwrite it.
+            fate.setdefault(fid, why)
         for name in sorted(series):
             # INTERNAL COHERENCE. A single fund's own series cannot jump 3x
             # between adjacent observations except in a redenomination — and a
@@ -567,6 +641,10 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                     passed.append((fid, v))
             if not passed:
                 stats["skipped_no_match"] += 1
+                for fid in short:
+                    _fate(fid, f"shortlisted for '{name.split(chr(0xa7))[0][:30]}' but "
+                               f"reconciliation failed (needs {MIN_OVERLAP_POINTS} overlapping "
+                               f"points, median <{MAX_MEDIAN_ERR_PCT}%, no single point >{MAX_SINGLE_ERR_PCT}%)")
                 continue
             passed.sort(key=lambda t: (
                 -(t[1]["overlap"] or 0),
@@ -582,6 +660,10 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                 if r_med < max(b_med * AMBIGUITY_RATIO, 0.10):
                     ambiguous.append(f"'{name[:36]}' ~ {best[0]} vs {passed[1][0]} "
                                      f"(medians {b['median_abs']:.2f}% / {r['median_abs']:.2f}%)")
+                    for fid in (best[0], passed[1][0]):
+                        _fate(fid, f"ambiguity guard: '{name.split(chr(0xa7))[0][:30]}' fits "
+                                   f"{best[0]} and {passed[1][0]} about equally "
+                                   f"({b['median_abs']:.2f}% vs {r['median_abs']:.2f}%)")
                     continue
             ns = _nm_score(et, cat_toks[best[0]], weights)
             candidates.append((name, best[0], ns, best[1]))
@@ -596,6 +678,8 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
             if fid in used_fid:
                 rejects.append(f"{fid} <- '{name[:38]}': fund already taken by a "
                                f"better-reconciling name")
+                _fate(fid, f"'{name.split(chr(0xa7))[0][:30]}' reconciled here, but that "
+                           f"EIMA name was assigned to a fund it fits better")
                 stats["rejected"] += 1
                 continue
             used_fid.add(fid)
@@ -639,11 +723,15 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                 stats["skipped_redundant"] = stats.get("skipped_redundant", 0) + (before_n - len(new))
 
             if not new:
+                _fate(fid, f"mapped to '{name.split(chr(0xa7))[0][:30]}', but every derived "
+                           f"point was a date we already hold or sits within "
+                           f"{MATCH_WINDOW_DAYS} days of one")
                 continue
             for q in new:
                 by_year[q["date"].year] += 1
                 if date(2025, 5, 14) <= q["date"] <= date(2026, 6, 30):
                     gap_window += 1
+            fate[fid] = f"RECOVERED +{len(new)}"
             per_fund.append((fid, name[:34], len(new),
                              min(q["date"] for q in new), max(q["date"] for q in new),
                              sorted(good)))
@@ -675,6 +763,14 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
             print(f"[eima] rejected {len(rejects)} candidate mappings:", flush=True)
             for r in rejects[:25]:
                 print("   -", r, flush=True)
+
+        # ══ THE UNRECOVERED LEDGER ══════════════════════════════════════════
+        # The counts above describe the RUN. This describes the PROBLEM: every
+        # fund that still has no observation inside the hole, named, with the
+        # reason nothing reached it. Without it the operator reads "37 skipped,
+        # 21 ambiguous" and cannot act, which is exactly how sixteen funds
+        # stayed broken for three weeks after the first successful write.
+        await report_unrecovered(conn, fate)
         return 0
     finally:
         await conn.close()
@@ -694,6 +790,11 @@ def main() -> None:
     ap.add_argument("--purge-eima-ids", type=str, default=None,
                     help="[with --verify-only] delete ALL eima-sourced rows for these "
                          "fund_ids (comma-separated). Only ever touches eima rows.")
+    ap.add_argument("--include-shadow-ids", action="store_true",
+                    help="widen the candidate universe to non-numeric fund_ids "
+                         "(shadow rows the site never publishes and the NAV updater "
+                         "never ingests). Off by default: their duplicates trip the "
+                         "ambiguity guard and block real funds from recovery.")
     ap.add_argument("--prune-redundant", action="store_true",
                     help="[with --verify-only] delete eima rows sitting within a few days "
                          "of a real observation (noise, no information)")
@@ -720,7 +821,8 @@ def main() -> None:
                 await conn.close()
         sys.exit(asyncio.run(_v()))
     sys.exit(asyncio.run(run(dry_run=args.dry_run, only_ids=ids,
-                             limit_reports=args.limit_reports, delay=args.delay)))
+                             limit_reports=args.limit_reports, delay=args.delay,
+                             include_shadow_ids=args.include_shadow_ids)))
 
 
 if __name__ == "__main__":

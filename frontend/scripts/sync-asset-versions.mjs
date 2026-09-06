@@ -36,6 +36,8 @@ export const MANAGED_ASSETS = [
   // hubs so a gate cannot look like two different products.
   "starta-gate.css",
   "starta-gate.js",
+  // Keeps the watchlist gate's promise: the account, not just this browser.
+  "starta-watchlist.js",
   "starta-auth-nav.js",
   "starta-i18n.js",
   "starta-lang-boot.js",

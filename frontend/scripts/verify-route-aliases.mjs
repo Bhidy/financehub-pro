@@ -430,6 +430,29 @@ const checks = [
     assert: (text) => !/RegisterGate|FundGate|starta-gate-clip/.test(text),
   },
   {
+    // ══ A GATE MUST NOT PROMISE WHAT THE PRODUCT DOES NOT DO ════════════════
+    // The watchlist gate tells visitors, in both languages, that a free account
+    // keeps their list "on every device you sign in from". That was FALSE when
+    // it shipped: the list was written to localStorage and nowhere else, while
+    // /user/watchlists and its typed wrappers in lib/api.ts sat unused. Someone
+    // could register for exactly the reason the gate gave and receive nothing.
+    // If the sync goes away, the gate is lying again.
+    name: "the watchlist gate's promise is backed by the account",
+    file: "public/assets/market-pulse.js",
+    assert: (text) =>
+      /startaWatchlist\.add\(/.test(text) &&
+      /startaWatchlist\.remove\(/.test(text) &&
+      /startaWatchlist\.sync\(/.test(text),
+  },
+  {
+    // The first sync after signing in must be a UNION. A visitor who builds a
+    // list as a guest, meets the allowance, registers because of it, and then
+    // finds an empty panel has been punished for doing what we asked.
+    name: "signing in merges the guest watchlist rather than replacing it",
+    file: "public/assets/starta-watchlist.js",
+    assert: (text) => /union/i.test(text) && /alreadyMerged/.test(text),
+  },
+  {
     // ══ THE INVITATION MUST STAY AN INVITATION ══════════════════════════════
     // It stands in for a meter, and it only works as a substitute while it
     // removes nothing. The moment it becomes a modal — fixed position, a scrim,

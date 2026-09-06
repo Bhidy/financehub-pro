@@ -3,10 +3,12 @@ Financial Statements Excel Export Endpoint
 Generates professional Excel files for financial data download.
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from datetime import datetime
 import io
+
+from app.api.v1.endpoints.auth import get_current_active_user
 
 try:
     import openpyxl
@@ -186,10 +188,33 @@ def create_sheet(wb, sheet_name, data_rows, years, currency='EGP', fiscal_note='
 async def export_financials(
     symbol: str,
     period_type: str = Query("annual", enum=["annual", "quarterly"]),
-    limit: int = Query(10, ge=1, le=20)
+    limit: int = Query(10, ge=1, le=20),
+    current_user: dict = Depends(get_current_active_user),
 ):
     """
     Export financial statements to Excel format.
+
+    REQUIRES A (FREE) ACCOUNT.
+    ==========================
+    This endpoint hands over up to twenty years of income statement, balance
+    sheet, cash flow and ratio data for a company in one machine-readable file.
+    It was open to anyone with the URL, which made it the one place on the
+    platform where the entire financial history of every listed company could be
+    drained without ever visiting a page.
+
+    The account requirement is NOT about hiding the numbers — every figure in
+    this workbook is published, free, on the company's own pages, and those
+    pages stay open because they are what search sends people to. This is about
+    BULK: a per-file export is a different act from reading a page, and the free
+    account is what turns an anonymous scrape into a person we can tell when the
+    data changes. See REGISTRATION_STRATEGY.md, tier 2.
+
+    Deliberately NOT gated the same way: /Funds/prices-today.csv. That file
+    exists to be CITED — a stable URL with provenance per row, so another site
+    or an answer engine can quote the platform and say exactly what it quoted.
+    Putting a login in front of a citation artifact defeats the only thing it is
+    for. A downloadable file is not automatically a bulk export; ask what the
+    file is FOR before gating it.
     
     Returns a professionally formatted .xlsx file containing:
     - Income Statement

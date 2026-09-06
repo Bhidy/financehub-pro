@@ -48,13 +48,21 @@ tax on these features; it is the thing that makes them work.
 
 | Feature | Free without an account | Why gating is fair |
 | --- | --- | --- |
-| **Watchlist** | 3 symbols | It lives in one browser today and dies when the visitor clears their data. An account is what makes it survive and follow them to their phone. |
+| **Watchlist** | 5 symbols | It ships seeded with four and lives in one browser, dying when the visitor clears their data. A signed-in list lives on the account and follows them to their phone. |
 | **Fund comparison** | 2 funds side by side | A third fund is a research session, not a glance. |
 | **Company comparison** | 2 companies | Same. |
 | **Fund scorecard, suitability, stress tests** | — | Already gated. Derived analysis, not a published figure. |
-| **Price and NAV alerts** | — | Cannot exist without an account to notify. |
-| **Saved filters and screens** | — | Nothing to save state to. |
-| **CSV export** | — | Bulk extraction is not what the free tier is for. |
+| **Price and NAV alerts** | *not shipped* | Cannot exist without an account to notify — but nothing evaluates them yet, so nothing is gated. See below. |
+| **Saved filters and screens** | *not shipped* | No table, no endpoint. See below. |
+| **Bulk data export** | — | A per-file export of a company's whole financial history is a different act from reading a page, and an account turns an anonymous scrape into someone we can tell when the data changes. |
+
+**A downloadable file is not automatically a bulk export.** `/Funds/prices-today.csv`
+stays open and always will. It exists to be *cited*: a stable URL with the
+as-of date and return source on every row, so another site or an answer engine
+can quote this platform and say exactly what it quoted. Putting a sign-in in
+front of a citation artifact defeats the only thing it is for. Ask what a file
+is FOR before gating it — the Excel export of twenty years of statements and a
+one-line-per-fund price table look alike and are not alike.
 
 Limits are set where they bite **after** interest is demonstrated, not before.
 A visitor who wants one number never meets a gate. A visitor building a
@@ -102,6 +110,30 @@ crawl it can get.
    a page gates in-DOM content without emitting the paywall markup.
 
 ---
+
+## What is deliberately not gated yet
+
+Two things on the original list are **not** shipped, because gating them would
+sell a promise the product cannot keep. That is worse than no gate: it converts
+someone once, on a specific expectation, and then fails them.
+
+**Price alerts.** The backend has the full CRUD — `/user/alerts` will happily
+create, list and delete a row. Nothing ever reads that table. There is no job
+that compares a target against a price and no path that delivers the result; the
+notification service in the backend sends *operational* mail to the team about
+scheduled jobs, not alerts to users. So a visitor could register precisely
+because we offered to tell them when a share hit a level, and never be told. The
+order of work is: build the evaluator and the delivery, confirm one real alert
+arrives, then put the gate in front of it.
+
+**Saved filters and screens.** There is no table and no endpoint at all. Same
+rule: build the thing, then gate it.
+
+The watchlist was in this category until now — the gate promised a list that
+survives the browser while the code wrote only to `localStorage`. That promise
+is now kept: a signed-in visitor's list lives on their account, and the first
+sync after signing in is a union, so the list built as a guest is what they get
+back rather than an empty panel.
 
 ## What we are optimising
 

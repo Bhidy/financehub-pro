@@ -243,13 +243,34 @@
             // their own state; a gate that traps someone at their limit with no
             // way back is a dark pattern, not a prompt.
             list.splice(index, 1);
+            if (window.startaWatchlist) window.startaWatchlist.remove(symbol);
         } else {
             if (window.startaGate && !window.startaGate.allow("watchlist", list.length)) return;
             list.push(symbol);
+            // Mirror to the ACCOUNT. This is the promise the gate makes — that a
+            // list survives this browser — and until starta-watchlist.js existed
+            // nothing kept it.
+            if (window.startaWatchlist) window.startaWatchlist.add(symbol);
         }
         try { localStorage.setItem("starta-watchlist", JSON.stringify(list)); } catch (_) {}
         updateFavBtn(symbol);
         if (state.watchTab === "custom") renderWatchlist();
+    }
+
+    /**
+     * Reconcile with the account once on load. A signed-in visitor's list lives
+     * on their account, so it has to arrive before the panel is meaningful; a
+     * guest's sync resolves immediately with the local list and changes nothing.
+     * Best-effort by design — see starta-watchlist.js — so a failed request can
+     * never empty someone's list or block the page.
+     */
+    function syncWatchlistWithAccount() {
+        if (!window.startaWatchlist) return;
+        window.startaWatchlist.sync().then(function (list) {
+            if (!Array.isArray(list)) return;
+            if (state.watchTab === "custom") renderWatchlist();
+            updateFavBtn(state.selected);
+        }).catch(function () {});
     }
 
     function renderWatchlist() {
@@ -1168,6 +1189,9 @@
         }
         updateAddBtnTitle();
         renderWatchlist();
+        // Then reconcile with the account, which repaints if it differs. Local
+        // first so the panel never waits on the network to show something.
+        syncWatchlistWithAccount();
     }
 
     // ── Slide-in Drawer Logic ──────────────────────────────────────────
@@ -1513,6 +1537,7 @@
             if (window.startaGate && !window.startaGate.allow("watchlist", list.length)) return;
             list.push(symbol);
             try { localStorage.setItem("starta-watchlist", JSON.stringify(list)); } catch (_) {}
+            if (window.startaWatchlist) window.startaWatchlist.add(symbol);
         }
         // Switch to My Watchlist tab
         state.watchTab = "custom";

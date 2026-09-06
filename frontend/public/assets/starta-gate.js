@@ -64,6 +64,10 @@
                 title: "Compare more than two funds",
                 body: "Two funds is a glance; a shortlist is research. A free account holds your comparison so you can come back to it instead of rebuilding it.",
             },
+            export: {
+                title: "Download the full statements",
+                body: "Every figure in this file is published free on the company's own pages. The download bundles the whole history into one workbook, and that needs an account so we can tell you when the data is restated.",
+            },
             cta: "Create a free account",
             signin: "Sign in",
             close: "Close",
@@ -76,6 +80,10 @@
             compareFunds: {
                 title: "قارن أكثر من صندوقين",
                 body: "صندوقان نظرة سريعة، أما القائمة المختصرة فهي بحث. الحساب المجاني يحفظ مقارنتك لتعود إليها بدل أن تبنيها من جديد.",
+            },
+            export: {
+                title: "نزّل القوائم المالية كاملة",
+                body: "كل رقم في هذا الملف منشور مجانًا على صفحات الشركة نفسها، لكن التنزيل يجمع التاريخ كاملًا في ملف واحد، وهذا يحتاج حسابًا حتى نخبرك عند تعديل أي بيان.",
             },
             cta: "أنشئ حسابًا مجانيًا",
             signin: "تسجيل الدخول",

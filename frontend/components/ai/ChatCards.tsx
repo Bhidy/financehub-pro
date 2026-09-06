@@ -2037,7 +2037,17 @@ function FinancialExplorerCard({ data, language = "en" }: FinancialExplorerProps
             const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://starta.46-224-223-172.sslip.io';
             const url = `${API_BASE}/api/v1/financials/${data.symbol}/export?period_type=${displayType === 'annual' ? 'annual' : 'quarterly'}&limit=10`;
 
-            const response = await fetch(url);
+            // The export now requires a free account (see
+            // backend-core/.../financials_export.py): it hands over a company's
+            // entire statement history in one file, which is a different act
+            // from reading a page. Send the bearer so a signed-in user is
+            // unaffected, and say plainly what to do when there isn't one —
+            // "Export failed" would be a lie for a 401.
+            const token = (() => { try { return localStorage.getItem('fh_auth_token'); } catch { return null; } })();
+            const response = await fetch(url, token ? { headers: { Authorization: `Bearer ${token}` } } : undefined);
+            if (response.status === 401 || response.status === 403) {
+                throw new Error('SIGN_IN_REQUIRED');
+            }
             if (!response.ok) {
                 throw new Error('Export failed');
             }
@@ -2052,8 +2062,20 @@ function FinancialExplorerCard({ data, language = "en" }: FinancialExplorerProps
             document.body.removeChild(a);
             URL.revokeObjectURL(downloadUrl);
         } catch (error) {
+            // A 401 is NOT a failure to fall back from. The fallback below
+            // writes a file from whatever is already on screen, so treating a
+            // sign-in requirement as an outage would hand the data over anyway
+            // and make the gate theatre. Prompt instead.
+            if (error instanceof Error && error.message === 'SIGN_IN_REQUIRED') {
+                const gate = (window as unknown as { startaGate?: { show: (r: string) => void } }).startaGate;
+                if (gate) gate.show('export');
+                else window.location.href = `/register?redirect=${encodeURIComponent(window.location.pathname)}`;
+                return;
+            }
             console.error('Export failed:', error);
-            // Fallback to client-side TSV if backend fails
+            // Fallback to client-side TSV when the BACKEND is genuinely down.
+            // It contains only the rows already rendered above, never the full
+            // statement history the gated endpoint returns.
             const headers = ['Line Item', ...uniqueYears];
             const rows = activeRows.map(row => {
                 const values = uniqueYears.map(year => {

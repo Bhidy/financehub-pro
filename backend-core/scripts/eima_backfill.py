@@ -457,7 +457,8 @@ async def report_unrecovered(conn, fate: dict[str, str]) -> list[str]:
 async def run(dry_run: bool = False, only_ids: list[str] | None = None,
               limit_reports: int | None = None,
               delay: float = DEFAULT_DELAY_SECONDS,
-              include_shadow_ids: bool = False) -> int:
+              include_shadow_ids: bool = False,
+              shortlist_floor: float = 0.30) -> int:
     try:
         import httpx
     except ModuleNotFoundError:
@@ -610,7 +611,15 @@ async def run(dry_run: bool = False, only_ids: list[str] | None = None,
                                    if r["source"] not in (SOURCE_PUBLISHED, SOURCE_DERIVED)}
             return real_cache[fid]
 
-        SHORTLIST_FLOOR = 0.30      # generous: recall here, precision from data
+        # Generous: RECALL here, precision from the data. The name only decides
+        # who gets tested; reconciliation against NAV we already hold decides who
+        # is written, so widening this cannot admit a wrong mapping — it can only
+        # spend more time testing hypotheses that then fail. Exposed as a flag so
+        # the funds EIMA appears not to cover can be probed under a lower floor
+        # without weakening anything: 12 of the 14 still-holed funds report "no
+        # EIMA report name shortlisted", and that claim is only worth trusting if
+        # it survives a search that was actually trying.
+        SHORTLIST_FLOOR = shortlist_floor
         AMBIGUITY_RATIO = 2.0       # best median must beat runner-up 2x, else skip
 
         candidates = []            # (name, fid, name_score, verdict)
@@ -805,6 +814,10 @@ def main() -> None:
     ap.add_argument("--purge-eima-ids", type=str, default=None,
                     help="[with --verify-only] delete ALL eima-sourced rows for these "
                          "fund_ids (comma-separated). Only ever touches eima rows.")
+    ap.add_argument("--shortlist-floor", type=float, default=0.30,
+                    help="name-similarity floor for TESTING a fund against an EIMA "
+                         "series (default 0.30). Lowering it only widens the search; "
+                         "reconciliation against held NAV still decides every write.")
     ap.add_argument("--include-shadow-ids", action="store_true",
                     help="widen the candidate universe to non-numeric fund_ids "
                          "(shadow rows the site never publishes and the NAV updater "
@@ -837,7 +850,8 @@ def main() -> None:
         sys.exit(asyncio.run(_v()))
     sys.exit(asyncio.run(run(dry_run=args.dry_run, only_ids=ids,
                              limit_reports=args.limit_reports, delay=args.delay,
-                             include_shadow_ids=args.include_shadow_ids)))
+                             include_shadow_ids=args.include_shadow_ids,
+                             shortlist_floor=args.shortlist_floor)))
 
 
 if __name__ == "__main__":

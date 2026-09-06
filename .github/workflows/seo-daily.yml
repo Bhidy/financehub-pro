@@ -15,7 +15,7 @@ name: SEO Daily Intelligence
 # reporting `configured: false` rather than an estimated figure):
 #   GSC_SERVICE_ACCOUNT_JSON  Google Cloud service-account key (raw JSON or
 #     base64) for a service account added as a user on the Search Console
-#     property. Powers scripts/seo/gsc.mjs.
+#     property. Powers scripts/seo/gsc.mjs and scripts/seo/inspect.mjs.
 #   SERP_PROVIDER + SERP_API_KEY  a licensed SERP provider (dataforseo |
 #     serpapi). Competitor rankings are not available from Search Console and
 #     are never estimated. Powers scripts/seo/serp.mjs.
@@ -49,7 +49,7 @@ jobs:
   intelligence:
     name: Full audit · search intelligence · report
     runs-on: [self-hosted, linux, x64, hetzner]
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v6
@@ -107,6 +107,34 @@ jobs:
         env:
           BING_WEBMASTER_API_KEY: ${{ secrets.BING_WEBMASTER_API_KEY }}
         run: node scripts/seo/bing.mjs --days 30 --out /tmp/seo-bing.json
+
+      - name: Sitemap parity (every advertised URL, not a sample)
+        working-directory: frontend
+        # A sitemap is a promise: every URL in it must answer 200, be
+        # self-canonical and be indexable. The forensic audit above SAMPLES 25
+        # per segment, which is right for template regressions and blind to a
+        # single broken URL — and a single broken URL is what Search Console
+        # reports as "Not found (404)" against a sitemap. This walks the FULL
+        # set (~9,215 URLs) so "zero broken advertised URLs" is measured, not
+        # inferred from a sample.
+        continue-on-error: true
+        run: |
+          node scripts/seo/parity.mjs --out /tmp/seo-parity.json \
+            || echo "::warning::sitemap parity defects — see seo-parity.json in this run's artifact"
+
+      - name: Index coverage (Search Console URL Inspection)
+        working-directory: frontend
+        # Google's own verdict per URL: coverageState ("Submitted and indexed",
+        # "Discovered - currently not indexed", …), canonical disagreements and
+        # rich-result issues. Nothing in this repo used the URL Inspection API,
+        # so the only signal that pages were unindexed was an email to the
+        # owner — which is how the Datasets errors and the 404 bucket were
+        # first noticed on 2026-09-06. Quota is 2,000 URLs/day, so this samples
+        # each segment on a fixed stride and trends the coverage RATE.
+        continue-on-error: true
+        env:
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/seo/inspect.mjs --per-segment 12 --out /tmp/seo-inspect.json
 
       - name: Listing authority drift (EGX registers vs vendor universe)
         working-directory: frontend
@@ -172,6 +200,8 @@ jobs:
             /tmp/seo-duplicates.json
             /tmp/seo-serp.json
             /tmp/seo-bing.json
+            /tmp/seo-parity.json
+            /tmp/seo-inspect.json
             /tmp/seo-report.md
           if-no-files-found: warn
           retention-days: 90

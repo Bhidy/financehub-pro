@@ -505,6 +505,52 @@ function auditPage(url, res) {
         }
     }
 
+    // DANGLING JSON-LD REFERENCES. An `@id` resolves only inside the document
+    // that carries it. 25 files pointed `creator`/`publisher`/`mainEntity` at
+    // `#organization`, which was declared ONLY in the static homepage — so
+    // Google saw an object with an identifier and no type and reported
+    // "Datasets: Invalid object type for field creator" (2026-09-06). The build
+    // gate is scripts/test-structured-data.ts; this is the rendered proof.
+    if (facts.jsonLd.length) {
+        const declared = new Set();
+        const referenced = [];
+        const walkIds = (node, isRoot) => {
+            if (!node || typeof node !== 'object') return;
+            if (Array.isArray(node)) { for (const n of node) walkIds(n, isRoot); return; }
+            const id = node['@id'];
+            if (typeof id === 'string') {
+                // A node that carries a @type DECLARES that id; a bare {'@id'} REFERENCES it.
+                if (node['@type']) declared.add(id);
+                else if (Object.keys(node).length === 1) referenced.push(id);
+            }
+            for (const v of Object.values(node)) if (v && typeof v === 'object') walkIds(v, false);
+        };
+        for (const block of facts.jsonLd) walkIds(block, true);
+        const dangling = [...new Set(referenced.filter((id) => !declared.has(id)))];
+        if (dangling.length) {
+            f.add('medium', 'JSONLD_DANGLING_REF',
+                `${path} references ${dangling.length} JSON-LD @id(s) it never declares (${dangling.slice(0, 3).join(', ')}) — the consumer sees an untyped object`,
+                { url, dangling: dangling.slice(0, 10) });
+        }
+    }
+
+    // DATASET VALIDITY. Google requires name + description, and reports a
+    // missing licence and an untyped creator as errors on the Datasets report.
+    for (const node of jsonLdNodes(facts.jsonLd)) {
+        if (node['@type'] !== 'Dataset') continue;
+        const missing = [];
+        if (!node.name) missing.push('name');
+        if (!node.description) missing.push('description');
+        if (!node.license) missing.push('license');
+        const creator = node.creator;
+        if (!creator || typeof creator !== 'object' || Array.isArray(creator) || !creator['@type']) missing.push('creator(@type)');
+        if (missing.length) {
+            f.add('medium', 'JSONLD_DATASET_INVALID',
+                `${path} publishes a Dataset missing ${missing.join(', ')} — Search Console reports these on the Datasets report`,
+                { url, missing, name: node.name || null });
+        }
+    }
+
     // hreflang reciprocity: a declared alternate must exist, be canonical, and
     // point back. A one-way hreflang is ignored entirely by Google.
     const hl = facts.hreflang;
@@ -873,6 +919,16 @@ function selfTest() {
             { '@type': 'InvestmentFund', url: `${SITE_URL}/Funds/9-x`, amount: { '@type': 'MonetaryAmount', currency: 'EGP', value: 802.43 } },
             { '@type': 'InvestmentFund', url: `${SITE_URL}/Funds/8-y`, amount: { '@type': 'MonetaryAmount', currency: 'EGP', value: 99.9 } },
         ] })}</script>`);
+    // J: a dangling @id publisher and a Dataset with no licence/typed creator.
+    page('/dataset-bad', '<p>x</p>',
+        `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@type': 'Dataset', name: 'D', description: 'd', creator: { '@id': `${SITE_URL}/#organization` } })}</script>`);
+    // K: the same page done correctly — declares the org it points at, and the
+    // Dataset carries a typed creator and a licence.
+    page('/dataset-good', '<p>x</p>',
+        `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', '@graph': [
+            { '@type': 'Organization', '@id': `${SITE_URL}/#organization`, name: 'Starta Markets' },
+            { '@type': 'Dataset', name: 'D', description: 'd', license: `${SITE_URL}/terms`, creator: { '@id': `${SITE_URL}/#organization`, '@type': 'Organization', name: 'Starta Markets' } },
+        ] })}</script>`);
     auditCrossPage();
 
     const codesFor = (path) => new Set(f.all().filter((x) => (x.evidence?.url || '') === `${SITE_URL}${path}`).map((x) => x.code));
@@ -901,6 +957,10 @@ function selfTest() {
         [!f.all().some((x) => x.code === 'METRIC_DRIFT_ACROSS_SURFACES' && x.evidence?.key === 'lead_fund_return_1y'), 'H: …and not also as a drift'],
         [f.all().some((x) => x.code === 'JSONLD_VISIBLE_MISMATCH' && x.evidence?.mismatches?.[0]?.fund === '8'), 'I: a JSON-LD NAV that differs from the visible NAV (Arabic digits) is detected'],
         [!f.all().some((x) => x.code === 'JSONLD_VISIBLE_MISMATCH' && x.evidence?.mismatches?.some((m) => m.fund === '9')), 'I: an equal JSON-LD NAV raises nothing'],
+        [codesFor('/dataset-bad').has('JSONLD_DANGLING_REF'), 'J: a JSON-LD @id that the page never declares is detected'],
+        [codesFor('/dataset-bad').has('JSONLD_DATASET_INVALID'), 'J: a Dataset with no licence and an untyped creator is detected'],
+        [!codesFor('/dataset-good').has('JSONLD_DANGLING_REF'), 'K: a page that declares the org it points at raises nothing'],
+        [!codesFor('/dataset-good').has('JSONLD_DATASET_INVALID'), 'K: a complete Dataset raises nothing'],
         [g.has('AR_PAGE_ENGLISH_SENTENCE'), 'G: an English sentence inside Arabic prose is detected'],
         [g.has('AR_PAGE_ENGLISH_UI_LABELS'), 'G: English comparison row labels on an Arabic page are detected'],
         [!a.has('AR_PAGE_ENGLISH_SENTENCE') && !b.has('AR_PAGE_ENGLISH_SENTENCE') && !d.has('AR_PAGE_ENGLISH_SENTENCE'), 'A/B/D: Arabic pages carrying English proper nouns, labels or a toggle raise no sentence leak'],

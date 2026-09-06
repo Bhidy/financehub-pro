@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { ltrNum } from '@/lib/bidi';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getTicker, getTickerAny, getStats, getStatsMap, getCompanyProfile, getSectorPeers } from '@/lib/public-data';
+import { getTicker, getTickerAny, getStats, getStatsMap, getCompanyProfile, getSectorPeers, getSeasonalitySymbols } from '@/lib/public-data';
+import { symbolSiblings } from '@/lib/symbol-nav';
 import { pairIsPublishable } from '@/content/stock-vs';
 import { canonicalPair } from '@/app/companies/vs/[pair]/renderStockVs';
 import ListingStatusPage from '@/components/seo/ListingStatusPage';
@@ -239,13 +240,17 @@ export default async function ArabicSymbolPage({ params }: Props) {
     const redirectTarget = canonicalRedirectTarget(`/ar/symbol/${id}`, canonicalPath);
     if (redirectTarget) permanentRedirect(redirectTarget);
 
-    const [stats, profile, peers, statsMap] = await Promise.all([
+    const [stats, profile, peers, statsMap, seasonalSet] = await Promise.all([
         getStats(symbol).catch(() => null),
         getCompanyProfile(symbol).catch(() => null),
         ticker.sector_name
             ? getSectorPeers(ticker.sector_name, symbol, 6).catch(() => [] as Ticker[])
             : Promise.resolve([] as Ticker[]),
         getStatsMap().catch(() => ({} as Record<string, Record<string, number | string | null>>)),
+        // Seasonality exists for only ~192 of the symbols, so the tab is opt-in:
+        // linking it unconditionally would point every company at a 404. One
+        // cached set, the same one the English tree consults.
+        getSeasonalitySymbols().catch(() => new Set<string>()),
     ]);
     // Head-to-head pages that clear the comparison gate (content/stock-vs.ts) —
     // the same rule the sitemap uses, so no link can 404. The 634 comparison
@@ -494,12 +499,20 @@ export default async function ArabicSymbolPage({ params }: Props) {
                     </dl>
                 </section>
 
+                {/* THE COMPANY'S OWN PAGES — built by lib/symbol-nav.ts, the module
+                    that owns every sub-page URL. This nav used to hand-write three
+                    of them (financials, dividends, history), so the Arabic
+                    statistics, technicals and seasonality pages were advertised in
+                    the sitemap while NOTHING on the Arabic tree linked to them: they
+                    sat a click deeper than their English twins and Search Console
+                    reported them "Discovered – currently not indexed" (2026-09-06).
+                    A hand-written list is how the two languages drift apart. */}
                 <nav aria-label={`صفحات بيانات ${symbol}`} className="mt-8 flex flex-wrap gap-2 text-sm font-semibold">
                     {(
                         [
-                            [`${symbolPathAr(symbol, name)}/financials`, 'القوائم المالية'],
-                            [`${symbolPathAr(symbol, name)}/dividends`, 'التوزيعات'],
-                            [`${symbolPathAr(symbol, name)}/history`, 'السعر التاريخي'],
+                            ...symbolSiblings(symbol, 'overview', 'ar', name, { seasonality: seasonalSet.has(symbol) }).map(
+                                (sib) => [sib.href, sib.label] as [string, string]
+                            ),
                             [symbolPath(symbol), 'الصفحة الإنجليزية'],
                         ] as Array<[string, string]>
                     ).map(([href, label]) => (

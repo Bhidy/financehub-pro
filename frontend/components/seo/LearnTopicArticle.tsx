@@ -5,6 +5,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import topicsJson from '@/content/learn-topics.generated';
 import { LEARN_FAQS, faqPageJsonLd } from '@/content/learn-faqs';
 import learnImageSizes from '@/lib/learn-image-sizes.json';
+import { publisherRef } from '@/lib/structured-data';
 
 /**
  * Shared server-rendered Learn topic article, used by both the EN
@@ -75,7 +76,7 @@ export default function LearnTopicArticle({ topic, lang }: { topic: LearnTopic; 
         inLanguage: lang,
         mainEntityOfPage: SITE_URL + encodeURI(path),
         image: coverImage ? SITE_URL + coverImage : DEFAULT_OG_IMAGE,
-        publisher: { '@id': `${SITE_URL}/#organization` },
+        publisher: publisherRef(),
         author: {
             '@type': 'Organization',
             name: 'Starta Markets',

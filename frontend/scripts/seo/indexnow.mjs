@@ -34,6 +34,33 @@ const MAX_PER_REQUEST = 10000;
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry-run');
 const ALL = args.includes('--all');
+/**
+ * The pages that must be re-announced after EVERY deploy.
+ *
+ * `--since` is data-driven: it reads sitemap `lastmod`, so it only sees content
+ * changes. A TEMPLATE change — a schema fix, a new internal-link block, a
+ * localisation repair — moves no lastmod anywhere, so all three deploys on
+ * 2026-09-05 submitted 0 URLs and the engines were never told to re-crawl the
+ * pages that had actually changed. This is the fixed list that closes that gap.
+ */
+const MONEY_PAGES = args.includes('--money-pages');
+const MONEY_PATHS = [
+    '/', '/ar',
+    '/Funds', '/ar/Funds',
+    '/Funds/best-mutual-funds-egypt-2026', '/ar/Funds/best-mutual-funds-egypt-2026',
+    '/Funds/prices-today', '/ar/Funds/prices-today',
+    '/Funds/categories', '/ar/Funds/categories',
+    '/Funds/providers', '/ar/Funds/providers',
+    '/Funds/fees', '/ar/Funds/fees',
+    '/Funds/risk', '/ar/Funds/risk',
+    '/companies', '/ar/companies',
+    '/sectors', '/ar/sectors',
+    '/markets', '/ar/markets',
+    '/markets/egx30', '/ar/markets/egx30',
+    '/methodology', '/ar/methodology',
+    '/News', '/ar/News', '/Learn', '/ar/Learn',
+    '/Market-Pulse', '/ar/Market-Pulse',
+];
 const explicit = args.filter((a) => a.startsWith('http'));
 const sinceArg = (() => {
     const i = args.indexOf('--since');
@@ -121,7 +148,10 @@ async function main() {
     console.log(`[indexnow] key file verified at ${KEY_LOCATION}`);
 
     let urls;
-    if (explicit.length) {
+    if (MONEY_PAGES) {
+        urls = MONEY_PATHS.map((p) => SITE_URL + p);
+        console.log(`[indexnow] submitting ${urls.length} money page(s) — every deploy, regardless of lastmod`);
+    } else if (explicit.length) {
         urls = explicit;
         console.log(`[indexnow] submitting ${urls.length} explicit URL(s)`);
     } else {

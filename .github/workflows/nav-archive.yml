@@ -1,0 +1,110 @@
+name: NAV Archive (permanent)
+
+# ============================================================
+# A snapshot of every NAV observation, kept for ever, off the database provider.
+#
+# WHY THIS EXISTS
+# Thirteen months of NAV history vanished for 61 funds and could not be restored,
+# because the history only ever existed in two places: Mubasher's live per-fund
+# CSV and our database. When that CSV froze around 2025-05 the vendor's copy
+# stopped being a copy of anything, and there was no third place to restore from.
+# The recovery had to be reconstructed a year later by inverting return columns
+# out of EIMA's PDFs — imperfectly, and for only some funds.
+#
+# db-backup.yml is disaster recovery, not an archive: `retention-days: 30`.
+# Thirty-one days after a silent deletion the last copy is gone. These assets
+# never expire.
+#
+# THE GUARANTEE
+#   Every (fund_id, date) present in any previous snapshot must still exist.
+# A NAV, once published, is a historical fact. It may be corrected — the manifest
+# digest is over DATES, not values — but it may never disappear. If it does, this
+# run goes red and names every fund that lost history.
+#
+# AND THE ALARM THAT DID NOT EXIST
+# Any fund that was publishing at the last snapshot and is silent now is named.
+# Per fund, on the transition only, against the fund's OWN median cadence, so the
+# 54 weekly funds are never called stale for being weekly. Every staleness signal
+# the platform had before this was a total or a delta over totals, and 61 funds
+# freezing on the same day is invisible in totals — it stayed green for fourteen
+# months.
+#
+# ORDER MATTERS: the snapshot is published BEFORE it is judged. A run that finds
+# missing history must still keep the evidence of what it found.
+#
+# Requires repo secret DATABASE_URL. Needs contents:write to attach the assets.
+# ============================================================
+
+on:
+  schedule:
+    # Fridays 11:00 UTC — after the EIMA backfill (06:00 UTC) has written, so the
+    # snapshot includes the week's recovery.
+    - cron: '0 11 * * 5'
+  workflow_dispatch:
+
+concurrency:
+  group: nav-archive
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  TAG: nav-archive
+
+jobs:
+  archive:
+    name: Snapshot nav_history and check it lost nothing
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: pip install --quiet asyncpg
+
+      - name: Ensure the archive release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" \
+              --title "NAV archive" \
+              --notes "Permanent snapshots of nav_history. Assets never expire. \
+          manifest-latest.json is the integrity manifest the next run compares against." \
+              --latest=false
+
+      - name: Fetch the previous manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release download "$TAG" --pattern 'manifest-latest.json' --output prev.json \
+            || echo "no previous manifest — this is the first run"
+
+      - name: Export the snapshot
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          STAMP="$(date -u +%Y-%m-%d)"
+          echo "STAMP=$STAMP" >> "$GITHUB_ENV"
+          python backend-core/scripts/nav_archive.py \
+            --out "nav-history-$STAMP.csv.gz" \
+            --manifest manifest-latest.json
+
+      - name: Publish (before judging it)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release upload "$TAG" \
+            "nav-history-$STAMP.csv.gz" manifest-latest.json --clobber
+
+      - name: Nothing may have been lost, and nothing may have gone silent
+        run: |
+          set -euo pipefail
+          python backend-core/scripts/nav_archive.py \
+            --compare-files prev.json manifest-latest.json

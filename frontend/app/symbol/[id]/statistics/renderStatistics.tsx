@@ -7,6 +7,7 @@ import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo
 import JsonLd from '@/components/seo/JsonLd';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
 import { STATISTICS, NAV, t, type Lang } from '@/content/symbol-pages-i18n';
+import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
 /**
  * /symbol/{SYM}/statistics and /ar/symbol/{SYM}-{slug}/statistics.
@@ -182,7 +183,8 @@ export async function renderStatistics(id: string, lang: Lang) {
         description: t(STATISTICS.description(name, symbol), lang),
         url: absUrl(pagePath),
         inLanguage: isAr ? 'ar-EG' : 'en',
-        creator: { '@id': `${SITE_URL}/#organization` },
+        creator: publisherRef(),
+        license: DATA_LICENSE_URL,
         // Only figures the page actually displays are asserted.
         variableMeasured: groups.flatMap((g) =>
             g.rows.map(([label, value]) => ({ '@type': 'PropertyValue', name: label, value }))

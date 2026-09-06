@@ -7,6 +7,7 @@ import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo
 import JsonLd from '@/components/seo/JsonLd';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
 import { FINANCIALS, NAV, t, type Lang } from '@/content/symbol-pages-i18n';
+import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
 /**
  * /symbol/{SYM}/financials — server-rendered annual financial statements
@@ -119,13 +120,9 @@ export async function renderFinancials(id: string, lang: Lang) {
         name: `${name} (${symbol}) annual financial statements`,
         description: buildDescription(name, symbol, years.length, minYear, maxYear, lang),
         url: absUrl(pagePath),
-        creator: {
-            '@id': `${SITE_URL}/#organization`,
-            '@type': 'Organization',
-            name: 'Starta Markets',
-        },
+        creator: publisherRef(),
         ...(minYear !== null && maxYear !== null ? { temporalCoverage: `${minYear}/${maxYear}` } : {}),
-        license: `${SITE_URL}/terms`,
+        license: DATA_LICENSE_URL,
     };
 
     const breadcrumbItems = [

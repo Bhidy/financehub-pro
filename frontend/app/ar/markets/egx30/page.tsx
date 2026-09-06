@@ -4,6 +4,7 @@ import { getEgx30Index, getEgx30Constituents, type Ticker } from '@/lib/public-d
 import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
 /** Arabic twin of /markets/egx30 — "مؤشر EGX30 اليوم". */
 
@@ -59,10 +60,10 @@ export default async function Egx30ArPage() {
         name: 'مؤشر EGX30 — القيمة والشركات المكونة',
         description: 'القيمة المباشرة والتغير اليومي والشركات المكونة لمؤشر EGX30 الرئيسي للبورصة المصرية.',
         url: absUrl('/ar/markets/egx30'),
-        creator: { '@id': `${SITE_URL}/#organization`, '@type': 'Organization', name: 'Starta Markets' },
+        creator: publisherRef(),
         ...(quote?.timestamp ? { dateModified: new Date(quote.timestamp).toISOString() } : {}),
         inLanguage: 'ar',
-        license: `${SITE_URL}/terms`,
+        license: DATA_LICENSE_URL,
     };
     const faq = [
         {

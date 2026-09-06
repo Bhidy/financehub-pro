@@ -41,6 +41,21 @@ export const MANAGED_ASSETS = [
   // Decides WHEN the site has earned the right to ask for a registration, and
   // holds the budget that stops it asking twice.
   "starta-engage.js",
+
+  // ── PAGE SCRIPTS ────────────────────────────────────────────────────────
+  // These carry a `?v=` in the markup that was written by HAND and never moved
+  // again. That is not a missing nicety, it is the same defect the shared
+  // assets were fixed for: the file changes, the URL does not, and every
+  // returning visitor keeps running the old copy. market-pulse.js owns the
+  // watchlist and its registration gate, so a change to either was reaching
+  // only first-time visitors. Found 2026-09-07 while testing why a prompt would
+  // not appear — the page was serving a build from before it existed.
+  "market-pulse.js",
+  "news-public.js",
+  "news-covers.js",
+  "fund-logos.js",
+  "portfolio-showcase.js",
+  "portfolio-store.js",
   "starta-auth-nav.js",
   "starta-i18n.js",
   "starta-lang-boot.js",

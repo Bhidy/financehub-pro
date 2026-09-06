@@ -264,6 +264,63 @@
      * Best-effort by design — see starta-watchlist.js — so a failed request can
      * never empty someone's list or block the page.
      */
+    /**
+     * A one-line note in the watchlist panel itself, for signed-out visitors.
+     *
+     * The cap at five is a fine gate but it only speaks when someone REACHES it,
+     * and most visitors never add a symbol at all — so the watchlist's single
+     * best argument for an account (this list dies with your browser) was never
+     * being made. This makes it, once, quietly, where the list is.
+     */
+    function renderWatchlistAccountNote() {
+        if (window.startaGate && window.startaGate.isSignedIn()) {
+            var stale = document.querySelector(".mp-watch-note");
+            if (stale) stale.remove();
+            return;
+        }
+        if (document.querySelector(".mp-watch-note")) return;
+        var panel = byId("watchRows") || byId("watchlistRows");
+        if (!panel || !panel.parentElement) return;
+        var ar = document.documentElement.lang !== "en";
+        var note = document.createElement("p");
+        note.className = "mp-watch-note starta-gate-count";
+        note.style.cssText = "padding:.55rem 1.05rem .8rem;line-height:1.5;display:block";
+        var text = ar
+            ? "هذه القائمة محفوظة في هذا المتصفح فقط. "
+            : "This list lives in this browser only. ";
+        note.appendChild(document.createTextNode(text));
+        var a = document.createElement("a");
+        a.href = (window.startaGate ? "/register?redirect=" + encodeURIComponent(location.pathname) : "/register");
+        a.textContent = ar ? "احفظها في حساب مجاني" : "Keep it with a free account";
+        a.style.cssText = "color:#0F766E;font-weight:700;text-decoration:underline";
+        note.appendChild(a);
+        panel.parentElement.appendChild(note);
+    }
+
+    /**
+     * Mount the note independently of the market-data init.
+     *
+     * It was originally called from the panel's init path, which sits behind
+     * the live-quote fetches — so when those failed the note silently never
+     * appeared. A registration prompt must not be a hostage to a data request:
+     * the argument it makes ("this list dies with your browser") is true whether
+     * or not the quotes loaded.
+     */
+    function mountWatchlistNote() {
+        var tries = 0;
+        var timer = setInterval(function () {
+            tries += 1;
+            renderWatchlistAccountNote();
+            if (document.querySelector(".mp-watch-note") || tries > 20) clearInterval(timer);
+        }, 400);
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", mountWatchlistNote);
+    } else {
+        mountWatchlistNote();
+    }
+
     function syncWatchlistWithAccount() {
         if (!window.startaWatchlist) return;
         window.startaWatchlist.sync().then(function (list) {
@@ -1189,6 +1246,7 @@
         }
         updateAddBtnTitle();
         renderWatchlist();
+        renderWatchlistAccountNote();
         // Then reconcile with the account, which repaints if it differs. Local
         // first so the panel never waits on the network to show something.
         syncWatchlistWithAccount();

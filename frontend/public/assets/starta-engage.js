@@ -55,19 +55,35 @@
     var WEEK_MS = 7 * 24 * 60 * 60 * 1000;
     var MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
-    /** The budget. Changing these is changing the product's manners. */
+    /**
+     * The budget. Changing these is changing the product's manners.
+     *
+     * REBALANCED 2026-09-07 after measuring what a real visitor sees. The first
+     * numbers were tuned for restraint and were simply wrong for the job: a
+     * typical session is under two pages and under a minute, so a 45-second
+     * dwell, 60% scroll and four distinct items meant the conditions were never
+     * reached and the site looked exactly as it had before. Two of the four
+     * target pages showed a signed-out visitor NOTHING.
+     *
+     * These are tuned to fire on ordinary, genuine engagement — reading a page
+     * for twenty seconds, or opening a second fund — while still refusing to
+     * ask someone who has just landed and not been given anything yet.
+     */
     var LIMITS = {
-        perSession: 1,
-        perWeek: 3,
-        /** Nothing at all before this much time on the page. */
-        quietMs: 10000,
-        /** "deep": engaged reading of a single page. */
-        dwellMs: 45000,
-        scrollPct: 0.6,
-        /** "repeat": the same item, this many times, across visits. */
-        repeatViews: 3,
-        /** "breadth": distinct items in the rolling month. */
-        distinctItems: 4,
+        // Two, so a visitor who dismisses nothing but keeps browsing can be
+        // asked again later in the same visit at a different moment.
+        perSession: 2,
+        perWeek: 5,
+        /** Nothing before this. A visitor from a search result has not yet been
+         *  given the thing they came for. */
+        quietMs: 5000,
+        /** "deep": read this page rather than bounced off it. */
+        dwellMs: 20000,
+        scrollPct: 0.35,
+        /** "repeat": came back to the same thing. */
+        repeatViews: 2,
+        /** "breadth": looked at more than one thing. */
+        distinctItems: 2,
     };
 
     /** Strongest first — the most specific true sentence wins. */

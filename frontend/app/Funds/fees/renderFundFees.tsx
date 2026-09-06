@@ -16,6 +16,7 @@ import { fundName } from '@/lib/funds-hub-render';
 import { FEES, t, type Lang } from '@/content/fund-fees';
 import { ltrNum } from '@/lib/bidi';
 import { HOME_PATH } from '@/lib/lang';
+import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
 /**
  * /Funds/fees and /ar/Funds/fees
@@ -218,7 +219,8 @@ export async function renderFundFees(lang: Lang) {
                     name: t(FEES.title, lang),
                     description: t(FEES.description, lang),
                     url: absUrl(isAr ? PATH_AR : PATH_EN),
-                    creator: { '@type': 'Organization', name: 'Starta Markets', url: SITE_URL },
+                    creator: publisherRef(),
+                    license: DATA_LICENSE_URL,
                     isAccessibleForFree: true,
                     variableMeasured: t(C.fee, lang),
                 }}

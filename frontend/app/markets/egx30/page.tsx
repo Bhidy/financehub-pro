@@ -4,6 +4,7 @@ import { getEgx30Index, getEgx30Constituents, type Ticker } from '@/lib/public-d
 import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
 /**
  * /markets/egx30 — the citable "EGX30 today" surface. The audit (2026-07-03)
@@ -65,10 +66,10 @@ export default async function Egx30Page() {
         name: 'EGX 30 Index — value and constituents',
         description: 'Live value, daily change and constituent companies of the EGX 30 benchmark index of the Egyptian Exchange.',
         url: absUrl('/markets/egx30'),
-        creator: { '@id': `${SITE_URL}/#organization`, '@type': 'Organization', name: 'Starta Markets' },
+        creator: publisherRef(),
         ...(quote?.timestamp ? { dateModified: new Date(quote.timestamp).toISOString() } : {}),
         variableMeasured: 'EGX 30 index value (EGP)',
-        license: `${SITE_URL}/terms`,
+        license: DATA_LICENSE_URL,
     };
     const faq = [
         {

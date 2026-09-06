@@ -369,12 +369,123 @@
         return true;
     }
 
+    /* ══ THE GUEST BAR ═══════════════════════════════════════════════════
+       A slim, always-present strip telling a signed-out visitor what an account
+       gives them. It exists because measuring the site proved the clever,
+       threshold-based prompts fired for almost nobody: on the funds hub and on
+       Market Pulse a signed-out visitor saw ZERO invitations to register,
+       because every trigger needed engagement a normal session never reaches.
+
+       So this one has no trigger. It is simply there, on the surfaces where
+       someone is browsing rather than reading, from the first second of the
+       first visit. That is the difference between a growth feature that exists
+       and one that is only theoretically reachable.
+
+       It is still not a wall: one line, in the flow of the page, dismissible,
+       and dismissing it lasts the whole session. It removes nothing, covers
+       nothing, and is injected by script AFTER load, so it never enters the
+       HTML a crawler or an answer engine reads. */
+    var BAR_COPY = {
+        en: {
+            title: "Free account, more of the site",
+            body: "Keep a watchlist that survives this browser, save funds and companies, compare more than two at a time, and set a price alert.",
+            cta: "Create a free account",
+            signin: "Sign in",
+            dismiss: "Not now",
+        },
+        ar: {
+            title: "حساب مجاني، واستفادة أكبر من الموقع",
+            body: "احتفظ بقائمة متابعة لا تختفي مع هذا المتصفح، واحفظ الصناديق والشركات، وقارن أكثر من اثنين معًا، واضبط تنبيهًا للسعر.",
+            cta: "أنشئ حسابًا مجانيًا",
+            signin: "تسجيل الدخول",
+            dismiss: "ليس الآن",
+        },
+    };
+
+    var BAR_DISMISS = "starta-bar-off";
+
+    function barDismissed() {
+        try { return sessionStorage.getItem(BAR_DISMISS) === "1"; } catch (e) { return false; }
+    }
+
+    /**
+     * Render the bar into `anchor`. Returns true when it rendered.
+     * Signed-in visitors never see it; a permanent dismissal of the engagement
+     * prompts silences this too, because someone who said no meant it.
+     */
+    function renderGuestBar(anchor) {
+        if (!anchor || isSignedIn() || barDismissed()) return false;
+        try { if (localStorage.getItem("starta-invite-off") === "1") return false; } catch (e) {}
+        if (document.querySelector(".starta-guestbar")) return false;
+
+        var L = BAR_COPY[lang()];
+        var box = document.createElement("div");
+        box.className = "starta-invite starta-guestbar";
+        box.setAttribute("role", "complementary");
+        box.innerHTML =
+            '<span class="starta-invite-text">' +
+                '<span class="starta-invite-title"></span>' +
+                '<span class="starta-invite-body"></span>' +
+            "</span>" +
+            '<a class="starta-gate-cta"></a>' +
+            '<a class="starta-gate-signin"></a>' +
+            '<button type="button" class="starta-invite-dismiss"></button>';
+
+        box.querySelector(".starta-invite-title").textContent = L.title;
+        box.querySelector(".starta-invite-body").textContent = L.body;
+        var cta = box.querySelector(".starta-gate-cta");
+        cta.textContent = L.cta; cta.href = href("/register");
+        var si = box.querySelector(".starta-gate-signin");
+        si.textContent = L.signin; si.href = href("/login");
+        var no = box.querySelector(".starta-invite-dismiss");
+        no.textContent = L.dismiss;
+        no.addEventListener("click", function () {
+            try { sessionStorage.setItem(BAR_DISMISS, "1"); } catch (e) {}
+            box.remove();
+        });
+
+        anchor.appendChild(box);
+        return true;
+    }
+
+    /**
+     * Place the bar on a static hub automatically. Looks for an explicit slot
+     * first, then falls back to the top of <main> — never above the page's own
+     * <h1>, which is the answer the visitor came for.
+     */
+    function mountGuestBar() {
+        if (isSignedIn()) return;
+        var slot = document.querySelector("[data-starta-guestbar]");
+        if (slot) { renderGuestBar(slot); return; }
+        var main = document.querySelector("main") || document.body;
+        var h1 = main.querySelector("h1");
+        var host = document.createElement("div");
+        if (h1 && h1.parentElement) {
+            // After the heading and its immediate sibling, so the answer lands
+            // first and the offer follows it.
+            var after = h1.parentElement;
+            if (after.nextSibling) after.parentElement.insertBefore(host, after.nextSibling);
+            else after.parentElement.appendChild(host);
+        } else {
+            main.insertBefore(host, main.firstChild);
+        }
+        if (!renderGuestBar(host)) host.remove();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function () { setTimeout(mountGuestBar, 400); });
+    } else {
+        setTimeout(mountGuestBar, 400);
+    }
+
     window.startaGate = {
         isSignedIn: isSignedIn,
         allow: allow,
         show: show,
         notice: notice,
         close: close,
+        renderGuestBar: renderGuestBar,
+        mountGuestBar: mountGuestBar,
         noteVisit: noteVisit,
         shouldInvite: shouldInvite,
         dismissInvite: dismissInvite,

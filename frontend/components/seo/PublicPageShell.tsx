@@ -7,6 +7,7 @@ import assetVersions from '@/lib/asset-versions.json';
 import arTwinRoutes from '@/lib/ar-twin-routes.json';
 import { localizedHref } from '@/lib/localized-href';
 import { langSeedScriptBody } from '@/lib/lang';
+import { siteGraph } from '@/lib/structured-data';
 
 /**
  * Server-rendered chrome for the SEO/public pages — a FAITHFUL replication of
@@ -150,6 +151,17 @@ export default function PublicPageShell({
 
     return (
         <div dir={direction} lang={lang} className={`seo-shell min-h-screen bg-page text-main ${lang === 'ar' ? 'font-arabic' : ''}`}>
+            {/* SITE IDENTITY GRAPH — the Organization and WebSite nodes, on every
+                page. 31 `@id` references across 25 files (Dataset.creator,
+                Article.publisher, AboutPage.mainEntity) pointed at
+                `#organization`, which was declared ONLY in the static
+                public/home.html; a JSON-LD `@id` resolves only within its own
+                document, so Google saw an untyped object and reported "Invalid
+                object type for field creator" (2026-09-06). See lib/structured-data.ts. */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(siteGraph()).replace(/</g, '\\u003c') }}
+            />
             <style dangerouslySetInnerHTML={{ __html: SHELL_CSS }} />
             {/* The root layout hardcodes <html lang="en">, so mirror THIS page's
                 language onto the document element for assistive tech and search

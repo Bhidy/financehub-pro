@@ -13,6 +13,7 @@ import { SITE_URL, symbolPath, absUrl, clampTitle, clampDescription } from '@/li
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import KeyTerms from '@/components/seo/KeyTerms';
+import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
 /**
  * /symbol/{SYM}/{metric} — per-metric programmatic pages (StockAnalysis
@@ -552,13 +553,9 @@ export default async function MetricPage({ params }: Props) {
         name: `${name} (${symbol}) ${view.label}${view.temporal ? ' history' : ''}`,
         description: view.description,
         url: absUrl(pagePath),
-        creator: {
-            '@id': `${SITE_URL}/#organization`,
-            '@type': 'Organization',
-            name: 'Starta Markets',
-        },
+        creator: publisherRef(),
         ...(view.temporal ? { temporalCoverage: `${view.temporal.min}/${view.temporal.max}` } : {}),
-        license: `${SITE_URL}/terms`,
+        license: DATA_LICENSE_URL,
     };
 
     const breadcrumbItems = [

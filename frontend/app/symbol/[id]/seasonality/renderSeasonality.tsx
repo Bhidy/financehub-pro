@@ -15,6 +15,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
 import { SEASONALITY, COMMON, NAV, t, type Lang } from '@/content/symbol-pages-i18n';
 import { ltrNum } from '@/lib/bidi';
+import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
 /**
  * /symbol/{SYM}/seasonality and /ar/symbol/{SYM}-{slug}/seasonality —
@@ -164,7 +165,8 @@ export async function renderSeasonality(id: string, lang: Lang) {
                     '@type': 'Dataset',
                     name: t(SEASONALITY.title(name, symbol, years), lang),
                     description: t(SEASONALITY.method(years), lang),
-                    creator: { '@type': 'Organization', name: 'Starta Markets', url: SITE_URL },
+                    creator: publisherRef(),
+                    license: DATA_LICENSE_URL,
                     isAccessibleForFree: true,
                     temporalCoverage: `P${years}Y`,
                     variableMeasured: [

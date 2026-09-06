@@ -4,6 +4,7 @@ import { SITE_URL, symbolPath, symbolPathAr } from '@/lib/seo';
 import { canonicalNewsPath, newsLang, sanitizeNewsText } from '@/lib/news-display';
 import { ltrNum } from '@/lib/bidi';
 import { HOME_PATH } from '@/lib/lang';
+import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
 /**
  * /Market-Pulse — the designed watchlist + charting tool.
@@ -213,7 +214,8 @@ export async function renderMarketPulse(lang: 'en' | 'ar') {
                       ? `المستوى الحالي لمؤشر EGX 30، المؤشر الرئيسي للبورصة المصرية${asOf ? `، حتى ${asOf} بتوقيت القاهرة` : ''}.`
                       : `Current level of the EGX 30, the Egyptian Exchange benchmark index${asOf ? `, as of ${asOf} Cairo time` : ''}.`,
                   isPartOf: { '@id': `${SITE_URL}/#website` },
-                  creator: { '@id': `${SITE_URL}/#organization` },
+                  creator: publisherRef(),
+                  license: DATA_LICENSE_URL,
                   ...(ts ? { dateModified: ts.toISOString() } : {}),
                   variableMeasured: [
                       { '@type': 'PropertyValue', name: 'EGX 30 index level', value, unitText: 'points' },

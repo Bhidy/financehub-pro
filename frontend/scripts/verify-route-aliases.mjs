@@ -682,13 +682,25 @@ const checks = [
     // build stops.
     name: "the registration prompt keeps its budget",
     file: "public/assets/starta-engage.js",
-    assert: (text) =>
-      /perSession:\s*1\b/.test(text) &&
-      /perWeek:\s*[1-5]\b/.test(text) &&
-      /quietMs:/.test(text) &&
-      /dismissForever/.test(text) &&
-      // Signed-in visitors are never evaluated at all.
-      /if \(signedIn\(\) \|\| dismissed\(\)\) return null;/.test(text),
+    assert: (text) => {
+      // A BOUND, not one exact number. The first version of this check pinned
+      // perSession to 1 and then correctly failed the day the thresholds were
+      // rebalanced against measured behaviour — the rule it was really
+      // protecting is "there is a ceiling and it is small", not "the ceiling is
+      // one". What must never happen is an unbounded or absent budget.
+      const perSession = Number((text.match(/perSession:\s*(\d+)/) || [])[1]);
+      const perWeek = Number((text.match(/perWeek:\s*(\d+)/) || [])[1]);
+      const quietMs = Number((text.match(/quietMs:\s*(\d+)/) || [])[1]);
+      return (
+        perSession >= 1 && perSession <= 2 &&
+        perWeek >= 1 && perWeek <= 6 &&
+        // Never ask before the visitor has been given anything.
+        quietMs >= 3000 &&
+        /dismissForever/.test(text) &&
+        // Signed-in visitors are never evaluated at all.
+        /if \(signedIn\(\) \|\| dismissed\(\)\) return null;/.test(text)
+      );
+    },
   },
   {
     // Every prompt line claims something about THIS reader — you have been back

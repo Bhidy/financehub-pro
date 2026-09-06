@@ -8,6 +8,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import KeyTerms from '@/components/seo/KeyTerms';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
 import { DIVIDENDS, NAV, t, type Lang } from '@/content/symbol-pages-i18n';
+import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
 /**
  * /symbol/{SYM}/dividends — server-rendered dividend history + TradingView
@@ -178,12 +179,8 @@ export async function renderDividends(id: string, lang: Lang) {
         name: `${name} dividend history`,
         description: buildDescription(name, symbol, divYield, lang),
         url: absUrl(pagePath),
-        creator: {
-            '@id': `${SITE_URL}/#organization`,
-            '@type': 'Organization',
-            name: 'Starta Markets',
-        },
-        license: `${SITE_URL}/terms`,
+        creator: publisherRef(),
+        license: DATA_LICENSE_URL,
     };
 
     const breadcrumbItems = [

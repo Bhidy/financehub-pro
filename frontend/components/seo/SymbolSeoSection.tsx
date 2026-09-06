@@ -294,6 +294,16 @@ export default function SymbolSeoSection({
                             {perf?.low_52w != null && perf?.high_52w != null ? `. Its 52-week range is ${cur} ${fmtNum(perf.low_52w)} to ${fmtNum(perf.high_52w)}` : ''}.
                         </p>
                     )}
+
+                    {/* RIGHT AFTER THE ANSWER, not at the foot of the page.
+                        Measured 2026-09-07: mounted at the bottom this sat 95%
+                        down a six-screen document, which is the same as not
+                        existing. The visitor has just been told the price they
+                        searched for — that is the moment to offer to keep it,
+                        and it is still additive: nothing above is touched. */}
+                    <div className="mt-5 flex flex-wrap items-center gap-3">
+                        <SaveButton kind="company" refId={symbol} />
+                    </div>
                 </div>
 
                 {/* Multi-horizon performance — a block every ranker carries. */}
@@ -438,7 +448,6 @@ export default function SymbolSeoSection({
                     real feature now — an evaluator and a delivery path exist
                     (backend-core/app/services/alert_service.py) — which is what
                     finally makes a gate in front of it honest. */}
-                <div className="mt-8"><SaveButton kind="company" refId={symbol} /></div>
                 <PriceAlert symbol={symbol} />
                 <EngagePrompt itemId={`symbol:${symbol}`} />
 

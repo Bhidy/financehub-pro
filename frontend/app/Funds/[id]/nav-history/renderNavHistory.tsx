@@ -8,6 +8,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { NAVHIST, t, type Lang } from '@/content/symbol-pages-i18n';
 import { fundSourceLabel } from '@/lib/fund-sources';
 import { HOME_PATH } from '@/lib/lang';
+import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
 /**
  * /Funds/{id}-{slug}/nav-history and the Arabic twin.
@@ -176,7 +177,8 @@ export async function renderNavHistory(id: string, lang: Lang) {
         description: t(NAVHIST.description(name, humanDate(first.date, lang), humanDate(last.date, lang), points.length), lang),
         url: absUrl(canonicalPath),
         inLanguage: isAr ? 'ar-EG' : 'en',
-        creator: { '@id': `${SITE_URL}/#organization` },
+        creator: publisherRef(),
+        license: DATA_LICENSE_URL,
         temporalCoverage: `${first.date}/${last.date}`,
         dateModified: last.date,
         variableMeasured: {

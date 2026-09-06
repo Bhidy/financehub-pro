@@ -9,6 +9,7 @@ import KeyTerms from '@/components/seo/KeyTerms';
 import { symbolTabPath, symbolSiblings, symbolCrumbs } from '@/lib/symbol-nav';
 import { HISTORY, NAV, t, type Lang } from '@/content/symbol-pages-i18n';
 import { HOME_PATH } from '@/lib/lang';
+import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
 /**
  * /symbol/{SYM}/history — server-rendered daily price history: all-time
@@ -167,8 +168,8 @@ export async function renderHistory(id: string, lang: Lang) {
         description: `Daily open, high, low, close and volume for ${name} (${symbol}) on the Egyptian Exchange (EGX).`,
         url: absUrl(historyPath),
         ...(firstIso && lastIso ? { temporalCoverage: `${firstIso}/${lastIso}` } : {}),
-        creator: { '@type': 'Organization', name: 'Starta Markets', url: SITE_URL },
-        license: SITE_URL + '/terms',
+        creator: publisherRef(),
+        license: DATA_LICENSE_URL,
     };
 
     // Seasonality only exists for symbols with enough history; ask the one

@@ -4,6 +4,7 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { rankByMarketCap, rankedAsOf } from '@/lib/market-rankings';
 
 /** Arabic twin of /markets/largest-companies — "أكبر الشركات في البورصة المصرية". */
 
@@ -36,11 +37,8 @@ const fmtCap = (n: number | null): string => {
 
 export default async function LargestCompaniesArPage() {
     const all = await getAllTickers();
-    const ranked = all
-        .filter((t) => t.market_cap !== null && Number.isFinite(t.market_cap) && (t.market_cap as number) > 0)
-        .sort((a, b) => (b.market_cap as number) - (a.market_cap as number))
-        .slice(0, 50);
-    const asOf = ranked.reduce<string | null>((mx, t) => (t.last_updated && (!mx || new Date(t.last_updated) > new Date(mx)) ? t.last_updated : mx), null);
+    const ranked = rankByMarketCap(all);
+    const asOf = rankedAsOf(ranked);
     const asOfHuman = asOf ? new Date(asOf).toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }) : null;
 
     const itemList = {
@@ -64,8 +62,8 @@ export default async function LargestCompaniesArPage() {
         <PublicPageShell lang="ar" altHref="/markets/largest-companies">
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
-            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { url: '/ar/companies', label: 'الشركات' }, { label: 'الأكبر حسب القيمة السوقية' }], SITE_URL)} />
-            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/companies', label: 'الشركات' }, { label: 'الأكبر حسب القيمة السوقية' }]} />
+            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { url: '/ar/markets', label: 'بيانات السوق' }, { label: 'الأكبر حسب القيمة السوقية' }], SITE_URL)} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/markets', label: 'بيانات السوق' }, { label: 'الأكبر حسب القيمة السوقية' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أكبر الشركات في البورصة المصرية حسب القيمة السوقية</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

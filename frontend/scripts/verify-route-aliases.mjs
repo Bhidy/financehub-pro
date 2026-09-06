@@ -212,6 +212,77 @@ const checks = [
       /meta\[name="description"\]/.test(text),
   },
   {
+    name: "/ar is served by the DESIGNED homepage, not a plain page",
+    file: "app/ar/route.ts",
+    // /ar was a 113 KB hand-written link list while "/" served the 299 KB
+    // designed homepage — and the site's default language is Arabic, so most
+    // organic homepage traffic met the list. It is now the same designed file,
+    // in Arabic, through the shell contract. Never swap it back for a page.tsx.
+    assert: (text) =>
+      /renderStaticHub\(/.test(text) &&
+      /file:\s*'home\.html'/.test(text) &&
+      /lang:\s*'ar'/.test(text) &&
+      /langSeedScript\('ar'\)/.test(text),
+  },
+  {
+    name: "the shell dictionary parser reads template literals",
+    file: "lib/static-hub.ts",
+    // home.html writes its headline strings as backticked template literals
+    // (they contain double quotes). Without backtick support the tokeniser met
+    // the template's text as a bare identifier, readDictionary returned null,
+    // and /ar shipped an ENGLISH <h1> inside <html lang="ar"> with one console
+    // line to show for it.
+    // BOTH scanners must accept a backtick: extractObjectLiteral (which finds the
+    // literal's closing brace) always did, and objectLiteralToJson (which turns
+    // it into JSON) did not — so asserting the pattern merely EXISTS passes on
+    // the wrong one. Count them.
+    assert: (text) =>
+      (text.match(/ch === '"' \|\| ch === "'" \|\| ch === '`'/g) || []).length >= 2 &&
+      /template literal with a substitution is not a constant string/.test(text),
+  },
+  {
+    name: "the market-data hub exists in both language trees",
+    files: ["app/markets/page.tsx", "app/ar/markets/page.tsx"],
+    // Twelve EGX market pages sat in the sitemap while /markets and /ar/markets
+    // both answered 404 — and /ar/markets is exactly the URL the React link
+    // localizer used to mint by prefix-matching. The parent must exist.
+    assert: (text) => /renderMarketsHub\(/.test(text),
+  },
+  {
+    name: "the hub reads the SAME rankings as the pages it links",
+    files: [
+      "app/markets/largest-companies/page.tsx", "app/ar/markets/largest-companies/page.tsx",
+      "app/markets/top-dividend-yield/page.tsx", "app/ar/markets/top-dividend-yield/page.tsx",
+      "app/markets/lowest-pe-stocks/page.tsx", "app/ar/markets/lowest-pe-stocks/page.tsx",
+      "app/markets/renderMarketsHub.tsx",
+    ],
+    // Six files each carried their own copy of the filter, the sort and the
+    // 50-row cut. The hub now states each ranking's leader, so a drifting copy
+    // would advertise a leader the destination does not show — the cross-surface
+    // metric drift this codebase treats as Critical.
+    assert: (text) =>
+      /from '@\/lib\/market-rankings'/.test(text) &&
+      !/\.slice\(0, 50\)/.test(text) &&
+      !/const MAX_PLAUSIBLE_YIELD/.test(text),
+  },
+  {
+    name: "the market cluster is linked from the shared footer, in both languages",
+    file: "components/seo/PublicPageShell.tsx",
+    assert: (text) =>
+      /localizedHref\('\/markets', lang\)/.test(text) &&
+      /localizedHref\('\/Learn\/glossary', lang\)/.test(text) &&
+      /marketData: 'EGX Market Data'/.test(text) &&
+      /marketData: 'بيانات البورصة المصرية'/.test(text),
+  },
+  {
+    name: "an /ar URL outranks stored language in the browser boot",
+    file: "public/assets/starta-lang-boot.js",
+    // The designed shells pick their language from storage and several are also
+    // served under /ar. A visitor whose preference was "en" had the server's
+    // correct <html lang="ar" dir="rtl"> overwritten here, in <head>.
+    assert: (text) => /\^\\\/ar\(\\\/\|\$\)\/\.test\(location\.pathname\)/.test(text),
+  },
+  {
     name: "the language + home contract is executed by the build",
     file: "package.json",
     assert: (text) => {

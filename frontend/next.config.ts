@@ -70,6 +70,8 @@ const nextConfig = {
   // default, so each shell route lists what it reads — the shared chrome
   // dictionary included, or /ar/* routes would silently ship an English nav.
   outputFileTracingIncludes: {
+    // /ar is the designed homepage in Arabic (app/ar/route.ts).
+    '/ar': ['./public/home.html', './public/assets/starta-i18n.js'],
     '/Funds': ['./public/marketplace.html', './public/assets/starta-i18n.js'],
     '/ar/Funds': ['./public/marketplace.html', './public/assets/starta-i18n.js'],
     '/Funds/category/[slug]': ['./public/marketplace.html', './public/assets/starta-i18n.js'],

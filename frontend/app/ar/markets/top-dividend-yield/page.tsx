@@ -4,6 +4,7 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { rankByDividendYield, rankedAsOf } from '@/lib/market-rankings';
 
 /** Arabic twin of /markets/top-dividend-yield — "أعلى الأسهم توزيعًا للأرباح". */
 
@@ -30,15 +31,11 @@ export const metadata: Metadata = {
 // عائد توزيع تجاوز 100% غير منطقي (يعني توزيع أكثر من كامل سعر السهم في سنة) —
 // وهو أثر بيانات (توزيع خاص/عائد رأس مال أو سعر قديم)، لا عائد متكرر. استبعاده
 // يحافظ على مصداقية الترتيب وبيانات ItemList. تدقيق 2026-07-04: SAIB=761%، SEIGA=215%.
-const MAX_PLAUSIBLE_YIELD = 100;
 
 export default async function TopDividendYieldArPage() {
     const all = await getAllTickers();
-    const ranked = all
-        .filter((t) => t.dividend_yield !== null && Number.isFinite(t.dividend_yield) && (t.dividend_yield as number) > 0 && (t.dividend_yield as number) <= MAX_PLAUSIBLE_YIELD)
-        .sort((a, b) => (b.dividend_yield as number) - (a.dividend_yield as number))
-        .slice(0, 50);
-    const asOf = ranked.reduce<string | null>((mx, t) => (t.last_updated && (!mx || new Date(t.last_updated) > new Date(mx)) ? t.last_updated : mx), null);
+    const ranked = rankByDividendYield(all);
+    const asOf = rankedAsOf(ranked);
     const asOfHuman = asOf ? new Date(asOf).toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }) : null;
 
     const itemList = {
@@ -53,8 +50,8 @@ export default async function TopDividendYieldArPage() {
     return (
         <PublicPageShell lang="ar" altHref="/markets/top-dividend-yield">
             <JsonLd data={itemList} />
-            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'أعلى توزيعات الأرباح' }], SITE_URL)} />
-            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'أعلى توزيعات الأرباح' }]} />
+            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { url: '/ar/markets', label: 'بيانات السوق' }, { label: 'أعلى توزيعات الأرباح' }], SITE_URL)} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/markets', label: 'بيانات السوق' }, { label: 'أعلى توزيعات الأرباح' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أعلى الأسهم توزيعًا للأرباح في البورصة المصرية</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

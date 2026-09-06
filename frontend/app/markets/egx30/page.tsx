@@ -96,8 +96,8 @@ export default async function Egx30Page() {
         <PublicPageShell altHref="/ar/markets/egx30">
             <JsonLd data={datasetJsonLd} />
             <JsonLd data={faqJsonLd} />
-            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/Market-Pulse', label: 'Markets' }, { label: 'EGX 30' }], SITE_URL)} />
-            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/Market-Pulse', label: 'Markets' }, { label: 'EGX 30' }]} />
+            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/markets', label: 'Market Data' }, { label: 'EGX 30' }], SITE_URL)} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/markets', label: 'Market Data' }, { label: 'EGX 30' }]} />
 
             <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">EGX 30 Index Today</h1>
 

@@ -24,7 +24,7 @@
  *
  * Run: npm run verify:lang   (part of npm run verify:all)
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { localizedHref } from '@/lib/localized-href';
@@ -121,7 +121,12 @@ function routeCorpus(): string[] {
         'an English-only article link is NOT moved into the Arabic tree (/ar/News/{id} 308s straight back to English, flipping the reader\'s language)',
         localizedHref('/News/858878-arab-moltaqa-investments', 'ar'),
     );
-    ok(localizedHref('/markets', 'ar') === '/markets', '/markets is not prefixed (/ar/markets is a hard 404)', localizedHref('/markets', 'ar'));
+    // /markets WAS the one path prefix matching minted that did not exist. It
+    // exists now (app/ar/markets/page.tsx, the market-data hub), so the rule it
+    // proves has moved: a path is prefixed only when its own Arabic route file
+    // is on disk, and this asserts both halves rather than the old 404.
+    ok(localizedHref('/markets', 'ar') === '/ar/markets', '/markets is prefixed now that its Arabic twin exists', localizedHref('/markets', 'ar'));
+    ok(existsSync(path.join(ROOT, 'app/ar/markets/page.tsx')), 'and /ar/markets is a real page, so the prefixed link cannot 404');
     ok(localizedHref('/symbol/COMI/market-cap', 'ar') === '/symbol/COMI/market-cap', 'an untwinned symbol metric tab keeps its English URL');
     ok(localizedHref('/Funds/Compare?ids=1,2&lang=ar', 'ar') === '/ar/Funds/Compare?ids=1,2&lang=ar', 'a twinned route still gets the prefix, query intact', localizedHref('/Funds/Compare?ids=1,2&lang=ar', 'ar'));
     ok(localizedHref('/symbol/COMI/financials', 'ar') === '/ar/symbol/COMI/financials', 'a twinned symbol tab still gets the prefix');

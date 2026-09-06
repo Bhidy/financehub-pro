@@ -95,11 +95,26 @@ function objectLiteralToJson(literal: string): string {
     let i = 0;
     while (i < literal.length) {
         const ch = literal[i];
-        if (ch === '"' || ch === "'") {
+        if (ch === '"' || ch === "'" || ch === '`') {
             // String: re-emit double-quoted with JSON escaping.
+            //
+            // BACKTICKS COUNT. They were not handled here, and the designed
+            // homepage's dictionary writes its headline values as template
+            // literals (`A Smarter Vision<br>for <span…>Funds.</span>`) because
+            // they contain double quotes. The tokeniser walked straight into the
+            // template's TEXT, met `A` as a bare identifier and threw — so
+            // readDictionary returned null, localizeShell logged one line and
+            // served /ar with an English <h1>. A shell whose dictionary cannot
+            // be parsed is a shell that silently ships the wrong language.
             let j = i + 1;
             let value = '';
             while (j < literal.length && literal[j] !== ch) {
+                // A template literal with a substitution is not a constant and
+                // cannot become a JSON string. Fail loudly rather than emit a
+                // value containing a literal "${…}".
+                if (ch === '`' && literal[j] === '$' && literal[j + 1] === '{') {
+                    throw new Error('template literal with a substitution is not a constant string');
+                }
                 if (literal[j] === '\\') {
                     const next = literal[j + 1];
                     // JS single-char escapes that JSON also accepts pass through;

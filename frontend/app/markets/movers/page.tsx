@@ -103,11 +103,11 @@ export default async function MoversPage() {
         <PublicPageShell altHref="/ar/markets/movers">
             <JsonLd
                 data={breadcrumbJsonLd(
-                    [{ url: '/', label: 'Home' }, { label: 'EGX Movers' }],
+                    [{ url: '/', label: 'Home' }, { url: '/markets', label: 'Market Data' }, { label: 'EGX Movers' }],
                     SITE_URL
                 )}
             />
-            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'EGX Movers' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/markets', label: 'Market Data' }, { label: 'EGX Movers' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 EGX Movers Today — Top Gainers, Losers &amp; Most Active

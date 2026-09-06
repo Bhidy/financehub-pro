@@ -4,6 +4,7 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { rankByLowestPe, rankedAsOf } from '@/lib/market-rankings';
 
 /** Arabic twin of /markets/lowest-pe-stocks — "أرخص أسهم البورصة المصرية حسب مكرر الربحية". */
 
@@ -29,11 +30,8 @@ export const metadata: Metadata = {
 
 export default async function LowestPeStocksArPage() {
     const all = await getAllTickers();
-    const ranked = all
-        .filter((t) => t.pe_ratio !== null && Number.isFinite(t.pe_ratio) && (t.pe_ratio as number) > 0)
-        .sort((a, b) => (a.pe_ratio as number) - (b.pe_ratio as number))
-        .slice(0, 50);
-    const asOf = ranked.reduce<string | null>((mx, t) => (t.last_updated && (!mx || new Date(t.last_updated) > new Date(mx)) ? t.last_updated : mx), null);
+    const ranked = rankByLowestPe(all);
+    const asOf = rankedAsOf(ranked);
     const asOfHuman = asOf ? new Date(asOf).toLocaleDateString('ar-EG-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }) : null;
 
     const itemList = {
@@ -57,8 +55,8 @@ export default async function LowestPeStocksArPage() {
         <PublicPageShell lang="ar" altHref="/markets/lowest-pe-stocks">
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
-            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { url: '/ar/companies', label: 'الشركات' }, { label: 'الأقل مكرر ربحية' }], SITE_URL)} />
-            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/companies', label: 'الشركات' }, { label: 'الأقل مكرر ربحية' }]} />
+            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { url: '/ar/markets', label: 'بيانات السوق' }, { label: 'الأقل مكرر ربحية' }], SITE_URL)} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/markets', label: 'بيانات السوق' }, { label: 'الأقل مكرر ربحية' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أرخص أسهم البورصة المصرية حسب مكرر الربحية</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

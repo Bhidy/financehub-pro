@@ -71,6 +71,11 @@ async function coreEntries(): Promise<Entry[]> {
         ['/ar/Learn', 'weekly', '0.8'], // the Arabic Learn hub (was a 308 to /Learn)
         ['/companies', 'daily', '0.9'],
         ['/sectors', 'daily', '0.7'],
+        // The market-data hub — the parent of every /markets URL below it. Both
+        // /markets and /ar/markets answered 404 until 2026-09-06 while all
+        // twelve children were already listed here.
+        ['/markets', 'daily', '0.8'],
+        ['/ar/markets', 'daily', '0.7'],
         ['/markets/movers', 'hourly', '0.7'],
         // Market screens are added below, gated on actually having rows.
         ['/markets/dividend-calendar', 'daily', '0.7'],

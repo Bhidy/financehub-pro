@@ -20,6 +20,29 @@
     } catch (e) {
         /* storage unavailable (privacy mode): keep the Arabic default */
     }
+    /**
+     * AN /ar URL OUTRANKS STORAGE (lib/lang.ts R3), and records itself.
+     *
+     * The designed shells are single files that pick their language from
+     * storage, and several of them are ALSO served under /ar — /ar, /ar/Funds,
+     * /ar/News, /ar/Learn, /ar/Market-Pulse, /ar/Funds/Compare. A visitor whose
+     * stored preference was "en" got the server's correct <html lang="ar"
+     * dir="rtl"> overwritten to English right here, in the head, and the page's
+     * own dictionary pass then rendered the Arabic URL in English. The routes
+     * inject a seed script for exactly this, but it lands LATER in <head> than
+     * this file, so the document spent the whole render in the wrong direction.
+     * Deciding it here removes the ordering dependency entirely.
+     */
+    try {
+        if (/^\/ar(\/|$)/.test(location.pathname)) {
+            lang = "ar";
+            localStorage.setItem("starta-lang", "ar");
+            localStorage.setItem("lang", "ar");
+            document.cookie = "starta-lang=ar;path=/;max-age=31536000;samesite=lax";
+        }
+    } catch (e) {
+        /* storage unavailable: the language is still forced to Arabic above */
+    }
     var d = document.documentElement;
     d.lang = lang;
     d.dir = lang === "ar" ? "rtl" : "ltr";
@@ -37,7 +60,7 @@
      * time, so a language toggle re-targets every CTA without a re-render.
      */
     var AR_TWIN_ROUTES = ["/Calculators","/Funds","/Learn","/Market-Pulse","/News","/RiskAssessment","/about","/companies","/contact","/corrections","/editorial-policy","/feed.xml","/markets","/methodology","/sectors","/symbol"];
-    var AR_TWIN_PATTERNS = ["^/Calculators$","^/Funds$","^/Funds/Compare$","^/Funds/[^/]+$","^/Funds/[^/]+/nav-history$","^/Funds/best-mutual-funds-egypt-2026$","^/Funds/categories$","^/Funds/category/[^/]+$","^/Funds/fees$","^/Funds/prices-today$","^/Funds/provider/[^/]+$","^/Funds/providers$","^/Funds/risk$","^/Funds/vs/[^/]+$","^/Learn$","^/Learn/[^/]+$","^/Learn/glossary$","^/Learn/glossary/[^/]+$","^/Market-Pulse$","^/News$","^/News/category/[^/]+$","^/RiskAssessment$","^/about$","^/companies$","^/companies/vs/[^/]+$","^/contact$","^/corrections$","^/editorial-policy$","^/feed\\.xml$","^/markets/[^/]+$","^/markets/dividend-calendar$","^/markets/egx30$","^/markets/largest-companies$","^/markets/lowest-pe-stocks$","^/markets/movers$","^/markets/top-dividend-yield$","^/methodology$","^/sectors$","^/sectors/[^/]+$","^/sectors/egx/[^/]+$","^/symbol/[^/]+$","^/symbol/[^/]+/dividends$","^/symbol/[^/]+/financials$","^/symbol/[^/]+/history$","^/symbol/[^/]+/seasonality$","^/symbol/[^/]+/statistics$","^/symbol/[^/]+/technicals$"];
+    var AR_TWIN_PATTERNS = ["^/Calculators$","^/Funds$","^/Funds/Compare$","^/Funds/[^/]+$","^/Funds/[^/]+/nav-history$","^/Funds/best-mutual-funds-egypt-2026$","^/Funds/categories$","^/Funds/category/[^/]+$","^/Funds/fees$","^/Funds/prices-today$","^/Funds/provider/[^/]+$","^/Funds/providers$","^/Funds/risk$","^/Funds/vs/[^/]+$","^/Learn$","^/Learn/[^/]+$","^/Learn/glossary$","^/Learn/glossary/[^/]+$","^/Market-Pulse$","^/News$","^/News/category/[^/]+$","^/RiskAssessment$","^/about$","^/companies$","^/companies/vs/[^/]+$","^/contact$","^/corrections$","^/editorial-policy$","^/feed\\.xml$","^/markets$","^/markets/[^/]+$","^/markets/dividend-calendar$","^/markets/egx30$","^/markets/largest-companies$","^/markets/lowest-pe-stocks$","^/markets/movers$","^/markets/top-dividend-yield$","^/methodology$","^/sectors$","^/sectors/[^/]+$","^/sectors/egx/[^/]+$","^/symbol/[^/]+$","^/symbol/[^/]+/dividends$","^/symbol/[^/]+/financials$","^/symbol/[^/]+/history$","^/symbol/[^/]+/seasonality$","^/symbol/[^/]+/statistics$","^/symbol/[^/]+/technicals$"];
     window.startaLocalizedHref = function (path) {
         var current = document.documentElement.lang === "en" ? "en" : "ar";
         if (current !== "ar") return path;

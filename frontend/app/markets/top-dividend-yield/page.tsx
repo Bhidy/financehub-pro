@@ -4,6 +4,7 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { rankByDividendYield, rankedAsOf } from '@/lib/market-rankings';
 
 /**
  * /markets/top-dividend-yield — EGX stocks ranked by trailing dividend yield.
@@ -35,15 +36,11 @@ export const metadata: Metadata = {
 // data artifacts (a special/return-of-capital distribution or a stale-price /
 // units mismatch), not a repeatable yield. Excluding them keeps the ranking and
 // its ItemList JSON-LD credible. Audit 2026-07-04: SAIB showed 761%, SEIGA 215%.
-const MAX_PLAUSIBLE_YIELD = 100;
 
 export default async function TopDividendYieldPage() {
     const all = await getAllTickers();
-    const ranked = all
-        .filter((t) => t.dividend_yield !== null && Number.isFinite(t.dividend_yield) && (t.dividend_yield as number) > 0 && (t.dividend_yield as number) <= MAX_PLAUSIBLE_YIELD)
-        .sort((a, b) => (b.dividend_yield as number) - (a.dividend_yield as number))
-        .slice(0, 50);
-    const asOf = ranked.reduce<string | null>((mx, t) => (t.last_updated && (!mx || new Date(t.last_updated) > new Date(mx)) ? t.last_updated : mx), null);
+    const ranked = rankByDividendYield(all);
+    const asOf = rankedAsOf(ranked);
     const asOfHuman = asOf ? new Date(asOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }) : null;
 
     const itemList = {
@@ -67,8 +64,8 @@ export default async function TopDividendYieldPage() {
         <PublicPageShell altHref="/ar/markets/top-dividend-yield">
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
-            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { label: 'Top Dividend Yield' }], SITE_URL)} />
-            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'Top Dividend Yield' }]} />
+            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/markets', label: 'Market Data' }, { label: 'Top Dividend Yield' }], SITE_URL)} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/markets', label: 'Market Data' }, { label: 'Top Dividend Yield' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Highest Dividend-Yield Stocks on the EGX</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

@@ -52,6 +52,7 @@ const FOOTER_LABELS: Record<Lang, Record<string, string>> = {
         privacy: 'Privacy Policy', terms: 'Terms of Service',
         editorial: 'Editorial Policy', corrections: 'Corrections', methodology: 'Methodology',
         col4: 'Funds', bestFunds: 'Best Funds 2026', pricesToday: 'Fund Prices Today', providers: 'Fund Providers', categories: 'Fund Categories', riskTable: 'Risk League Table',
+        marketData: 'EGX Market Data', glossary: 'Investing Glossary',
     },
     ar: {
         desc: 'منصة الصناديق الاستثمارية في السوق المصري بالعربية والإنجليزية: أسعار موثّقة لصافي قيمة الوحدة، ومقارنة وبطاقات تقييم للصناديق، وأخبار السوق، وأكاديمية تعليمية، وحاسبات استثمارية.',
@@ -67,6 +68,7 @@ const FOOTER_LABELS: Record<Lang, Record<string, string>> = {
         privacy: 'سياسة الخصوصية', terms: 'شروط الاستخدام',
         editorial: 'سياسة التحرير', corrections: 'التصحيحات', methodology: 'المنهجية',
         col4: 'الصناديق', bestFunds: 'أفضل الصناديق 2026', pricesToday: 'أسعار الصناديق اليوم', providers: 'شركات إدارة الصناديق', categories: 'فئات الصناديق', riskTable: 'جدول المخاطر',
+        marketData: 'بيانات البورصة المصرية', glossary: 'قاموس المصطلحات',
     },
 };
 
@@ -300,6 +302,15 @@ export default function PublicPageShell({
                             <ul className="space-y-2.5 text-sm">
                                 <li><Link href={localizedHref('/News', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.news}</Link></li>
                                 <li><Link href={localizedHref('/Learn', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.learn}</Link></li>
+                                {/* The market-data cluster had no site-wide entry point. /markets and
+                                    /ar/markets 404'd until 2026-09-06, so the twelve EGX data pages —
+                                    the index, the movers, the six screens, the three rankings and the
+                                    dividend calendar — were reachable from one Arabic hub and from the
+                                    sitemap, and from nowhere else. This column is where a reader looks
+                                    for them, in both trees, on every page this shell renders. */}
+                                <li><Link href={localizedHref('/markets', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.marketData}</Link></li>
+                                <li><Link href={localizedHref('/Market-Pulse', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.pulse}</Link></li>
+                                <li><Link href={localizedHref('/Learn/glossary', lang)} prefetch={false} className="text-muted hover:text-starta-darkTeal transition-colors font-medium">{f.glossary}</Link></li>
                             </ul>
                         </div>
                         <div className="space-y-4">

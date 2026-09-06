@@ -105,9 +105,13 @@ export async function renderMarketScreen(slug: string, lang: 'en' | 'ar') {
     const linkFor = (r: Row) =>
         encodeURI(isAr ? symbolPathAr(r.symbol, r.name_ar) : symbolPath(r.symbol));
 
+    // The parent is the market-data hub, not the movers page. /markets existed
+    // only as a URL prefix until 2026-09-06 — both /markets and /ar/markets
+    // 404'd — so these screens hung their trail off a sibling.
+    const hub = isAr ? '/ar/markets' : '/markets';
     const crumbs = [
         { href: HOME_PATH, url: HOME_PATH, label: isAr ? 'الرئيسية' : 'Home' },
-        { href: isAr ? '/ar/markets/movers' : '/markets/movers', url: isAr ? '/ar/markets/movers' : '/markets/movers', label: isAr ? 'حركة السوق' : 'EGX Movers' },
+        { href: hub, url: hub, label: isAr ? 'بيانات السوق' : 'Market Data' },
         { label: h1 },
     ];
 

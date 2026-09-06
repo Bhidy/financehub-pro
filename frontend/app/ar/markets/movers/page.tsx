@@ -72,8 +72,8 @@ export default async function MoversArPage() {
 
     return (
         <PublicPageShell lang="ar" altHref="/markets/movers">
-            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'الأكثر نشاطًا' }], SITE_URL)} />
-            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'الأكثر نشاطًا' }]} />
+            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { url: '/ar/markets', label: 'بيانات السوق' }, { label: 'الأكثر نشاطًا' }], SITE_URL)} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/markets', label: 'بيانات السوق' }, { label: 'الأكثر نشاطًا' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">الأكثر ارتفاعًا وانخفاضًا في البورصة المصرية اليوم</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

@@ -4,6 +4,7 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { rankByMarketCap, rankedAsOf } from '@/lib/market-rankings';
 
 /**
  * /markets/largest-companies — EGX stocks ranked by market capitalisation.
@@ -40,11 +41,8 @@ const fmtCap = (n: number | null): string => {
 
 export default async function LargestCompaniesPage() {
     const all = await getAllTickers();
-    const ranked = all
-        .filter((t) => t.market_cap !== null && Number.isFinite(t.market_cap) && (t.market_cap as number) > 0)
-        .sort((a, b) => (b.market_cap as number) - (a.market_cap as number))
-        .slice(0, 50);
-    const asOf = ranked.reduce<string | null>((mx, t) => (t.last_updated && (!mx || new Date(t.last_updated) > new Date(mx)) ? t.last_updated : mx), null);
+    const ranked = rankByMarketCap(all);
+    const asOf = rankedAsOf(ranked);
     const asOfHuman = asOf ? new Date(asOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }) : null;
     const total = ranked.reduce((s, t) => s + (t.market_cap as number), 0);
 
@@ -70,8 +68,8 @@ export default async function LargestCompaniesPage() {
         <PublicPageShell lang="en" altHref="/ar/markets/largest-companies">
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
-            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/companies', label: 'Companies' }, { label: 'Largest by Market Cap' }], SITE_URL)} />
-            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/companies', label: 'Companies' }, { label: 'Largest by Market Cap' }]} />
+            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/markets', label: 'Market Data' }, { label: 'Largest by Market Cap' }], SITE_URL)} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/markets', label: 'Market Data' }, { label: 'Largest by Market Cap' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Largest Companies on the EGX by Market Cap</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

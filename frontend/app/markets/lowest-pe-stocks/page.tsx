@@ -4,6 +4,7 @@ import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
+import { rankByLowestPe, rankedAsOf } from '@/lib/market-rankings';
 
 /**
  * /markets/lowest-pe-stocks — EGX stocks ranked by lowest trailing P/E ratio
@@ -33,11 +34,8 @@ export const metadata: Metadata = {
 
 export default async function LowestPeStocksPage() {
     const all = await getAllTickers();
-    const ranked = all
-        .filter((t) => t.pe_ratio !== null && Number.isFinite(t.pe_ratio) && (t.pe_ratio as number) > 0)
-        .sort((a, b) => (a.pe_ratio as number) - (b.pe_ratio as number))
-        .slice(0, 50);
-    const asOf = ranked.reduce<string | null>((mx, t) => (t.last_updated && (!mx || new Date(t.last_updated) > new Date(mx)) ? t.last_updated : mx), null);
+    const ranked = rankByLowestPe(all);
+    const asOf = rankedAsOf(ranked);
     const asOfHuman = asOf ? new Date(asOf).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Cairo' }) : null;
 
     const itemList = {
@@ -62,8 +60,8 @@ export default async function LowestPeStocksPage() {
         <PublicPageShell lang="en" altHref="/ar/markets/lowest-pe-stocks">
             <JsonLd data={itemList} />
             <JsonLd data={faqJsonLd} />
-            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/companies', label: 'Companies' }, { label: 'Lowest P/E' }], SITE_URL)} />
-            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/companies', label: 'Companies' }, { label: 'Lowest P/E' }]} />
+            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'Home' }, { url: '/markets', label: 'Market Data' }, { label: 'Lowest P/E' }], SITE_URL)} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/markets', label: 'Market Data' }, { label: 'Lowest P/E' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Lowest P/E Stocks on the EGX</h1>
             <p className="mt-3 max-w-3xl leading-relaxed text-muted">

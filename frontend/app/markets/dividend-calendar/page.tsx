@@ -210,7 +210,7 @@ export default async function DividendCalendarPage() {
         <PublicPageShell altHref="/ar/markets/dividend-calendar">
             <JsonLd
                 data={breadcrumbJsonLd(
-                    [{ url: '/', label: 'Home' }, { label: 'Dividend Calendar' }],
+                    [{ url: '/', label: 'Home' }, { url: '/markets', label: 'Market Data' }, { label: 'Dividend Calendar' }],
                     SITE_URL
                 )}
             />
@@ -225,7 +225,7 @@ export default async function DividendCalendarPage() {
                     })),
                 }}
             />
-            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'Dividend Calendar' }]} />
+            <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/markets', label: 'Market Data' }, { label: 'Dividend Calendar' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 EGX Dividend Calendar — Upcoming &amp; Recent Payouts

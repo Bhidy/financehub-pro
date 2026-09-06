@@ -86,8 +86,8 @@ export default async function Egx30ArPage() {
         <PublicPageShell lang="ar" altHref="/markets/egx30">
             <JsonLd data={datasetJsonLd} />
             <JsonLd data={faqJsonLd} />
-            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'مؤشر EGX30' }], SITE_URL)} />
-            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'مؤشر EGX30' }]} />
+            <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { url: '/ar/markets', label: 'بيانات السوق' }, { label: 'مؤشر EGX30' }], SITE_URL)} />
+            <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/markets', label: 'بيانات السوق' }, { label: 'مؤشر EGX30' }]} />
 
             <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">مؤشر EGX30 اليوم</h1>
 

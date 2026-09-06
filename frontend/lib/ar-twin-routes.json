@@ -47,6 +47,7 @@
     "^/corrections$",
     "^/editorial-policy$",
     "^/feed\\.xml$",
+    "^/markets$",
     "^/markets/[^/]+$",
     "^/markets/dividend-calendar$",
     "^/markets/egx30$",

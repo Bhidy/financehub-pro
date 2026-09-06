@@ -162,6 +162,11 @@ export default async function RootLayout({
         {/* The registration gate, same file the static hubs load. See
             REGISTRATION_STRATEGY.md for what may and may not sit behind it. */}
         <link rel="stylesheet" href={`/assets/starta-gate.css?v=${assetVersions["starta-gate.css"]}`} />
+        {/* The gate's RULES — the free allowances, the distinct-item counting
+            behind the invitation, the dismissal. One implementation for the
+            React tree and the static hubs, so "how many is several" cannot mean
+            two different things on two pages. Renders nothing by itself. */}
+        <Script src={`/assets/starta-gate.js?v=${assetVersions["starta-gate.js"]}`} strategy="afterInteractive" />
       </head>
       <body
         className={`${manrope.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} ${arabic.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}

@@ -430,6 +430,47 @@ const checks = [
     assert: (text) => !/RegisterGate|FundGate|starta-gate-clip/.test(text),
   },
   {
+    // ══ THE INVITATION MUST STAY AN INVITATION ══════════════════════════════
+    // It stands in for a meter, and it only works as a substitute while it
+    // removes nothing. The moment it becomes a modal — fixed position, a scrim,
+    // something you must dismiss before reading — it IS a wall, and a wall on a
+    // news article is exactly the thing that costs the rankings this whole
+    // strategy exists to protect. So: it must be dismissible, and it must sit in
+    // the flow rather than over it.
+    name: "the registration invitation is dismissible and never a modal",
+    file: "public/assets/starta-gate.css",
+    assert: (text) => {
+      const block = (text.match(/\.starta-invite\s*\{[^}]*\}/) || [])[0] || "";
+      return (
+        /\.starta-invite-dismiss/.test(text) &&
+        !/position:\s*fixed/.test(block) &&
+        !/position:\s*absolute/.test(block)
+      );
+    },
+  },
+  {
+    // Dismissal must be permanent. An invitation that returns on the next page
+    // is nagging, and nagging a reader who already said no is how a growth
+    // prompt turns into the reason someone leaves.
+    name: "dismissing the invitation is remembered",
+    file: "public/assets/starta-gate.js",
+    assert: (text) =>
+      /dismissInvite/.test(text) &&
+      /starta-invite-off/.test(text) &&
+      // …and it must count DISTINCT items over a window, not page views, or a
+      // refresh would manufacture the prompt.
+      /shouldInvite/.test(text) &&
+      /WINDOW_MS/.test(text),
+  },
+  {
+    // The free allowances are the strategy's actual numbers. They live in ONE
+    // place; a call site that hardcodes its own limit is how the funds hub and
+    // the watchlist end up disagreeing about what "free" means.
+    name: "capped features ask the shared allowance, never their own number",
+    files: ["public/marketplace.html", "public/assets/market-pulse.js"],
+    assert: (text) => /startaGate\s*&&\s*!window\.startaGate\.allow\(/.test(text),
+  },
+  {
     // A gate that veils in-DOM content shows a crawler more than a person, which
     // is cloaking unless declared. Google applies this to a FREE registration
     // wall exactly as to a paid subscription; the WSJ lost about 44% of its

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import RegisterInvite from '@/components/gate/RegisterInvite';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getNewsArticle, getLatestNewsLight, getNewsPrimaryId, type NewsArticle } from '@/lib/public-data';
@@ -252,6 +253,13 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
                     acting on a good experience. Deliberately not on the hubs or
                     the fund pages. */}
                 <PreferredSource lang={arabic ? 'ar' : 'en'} />
+
+                {/* AFTER the article, never inside it. This is an invitation,
+                    not a gate: the body above is complete and open, and this
+                    line only appears once a reader has come back for several
+                    distinct stories. It renders client-side only, so it never
+                    enters the indexable HTML. */}
+                <RegisterInvite itemId={`news:${article.id}`} />
 
             </article>
 

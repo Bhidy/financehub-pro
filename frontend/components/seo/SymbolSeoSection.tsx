@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import RegisterInvite from '@/components/gate/RegisterInvite';
 import { SITE_URL, symbolPath, slugify, newsPath } from '@/lib/seo';
 import type { Ticker, CompanyProfile, NewsArticle, SymbolPerformance } from '@/lib/public-data';
 import JsonLd from '@/components/seo/JsonLd';
@@ -429,6 +430,10 @@ export default function SymbolSeoSection({
                         ))}
                     </dl>
                 </div>
+
+                {/* Last thing on the page, after every answer has been given.
+                    Client-only, so the crawler's copy of this page is unchanged. */}
+                <RegisterInvite itemId={`symbol:${symbol}`} />
 
                 {/* Hub links — the EN symbol template dead-ended PageRank
                     (no footer/hub links). This routes equity to the directory,

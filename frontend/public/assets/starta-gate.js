@@ -205,6 +205,44 @@
     }
 
     /**
+     * A plain message in the same dialog, with no call to action.
+     *
+     * For a limit that has nothing to do with registration — a signed-in
+     * visitor reaching the maximum comparison width, say. It exists so that
+     * case does not fall back to `window.alert`, which is what the funds hub
+     * used: an OS-chrome box, in the wrong typeface, in the wrong language on
+     * an Arabic page, that cannot be styled or dismissed by clicking away.
+     */
+    function notice(title, body) {
+        if (openDialog) close();
+        var L = COPY[lang()];
+        var root = document.createElement("div");
+        root.className = "starta-gate-dialog-root";
+        root.setAttribute("role", "dialog");
+        root.setAttribute("aria-modal", "true");
+        root.setAttribute("aria-label", title);
+        root.innerHTML =
+            '<div class="starta-gate-dialog-scrim"></div>' +
+            '<div class="starta-gate-panel starta-gate-dialog">' +
+                '<h3 class="starta-gate-dialog-title"></h3>' +
+                '<p class="starta-gate-dialog-body"></p>' +
+                '<div class="starta-gate-dialog-actions">' +
+                    '<button type="button" class="starta-gate-cta"></button>' +
+                "</div>" +
+            "</div>";
+        root.querySelector(".starta-gate-dialog-title").textContent = title;
+        root.querySelector(".starta-gate-dialog-body").textContent = body || "";
+        var btn = root.querySelector(".starta-gate-cta");
+        btn.textContent = L.close;
+        btn.addEventListener("click", close);
+        root.querySelector(".starta-gate-dialog-scrim").addEventListener("click", close);
+        document.addEventListener("keydown", onKey, true);
+        document.body.appendChild(root);
+        openDialog = root;
+        btn.focus();
+    }
+
+    /**
      * The one call sites use: may this visitor take this action?
      *
      * Returns true to proceed. Returns false AND shows the prompt when a
@@ -219,11 +257,121 @@
         return false;
     }
 
+    /* ══ THE INVITATION — Tier 3 ═════════════════════════════════════════
+       Not a gate. Nothing is hidden, nothing is blocked, nothing is counted
+       down. After a visitor has read several DISTINCT things, one dismissible
+       line appears in the flow of the page offering to keep them; dismiss it
+       once and it never returns.
+
+       Why this and not a meter: metering is what costs rankings. A meter set
+       where the average visitor would ever reach it — under two items a session
+       — is a meter that blocks the search traffic this site runs on. An
+       invitation converts on the same signal (demonstrated interest) and
+       removes nothing.
+
+       The count is of DISTINCT items over a rolling 30 days, not page views, so
+       re-reading one article five times is one item. Refreshing a page cannot
+       manufacture a prompt. */
+    var VISITS_KEY = "starta-seen";
+    var DISMISS_KEY = "starta-invite-off";
+    var WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+    /** Distinct items before the line appears. */
+    var INVITE_AFTER = 4;
+
+    function readVisits() {
+        try {
+            var raw = JSON.parse(localStorage.getItem(VISITS_KEY) || "{}");
+            var cutoff = Date.now() - WINDOW_MS;
+            var kept = {};
+            Object.keys(raw).forEach(function (k) {
+                if (typeof raw[k] === "number" && raw[k] > cutoff) kept[k] = raw[k];
+            });
+            return kept;
+        } catch (e) {
+            return {};
+        }
+    }
+
+    /** Record that this visitor looked at a distinct thing. Safe to call twice. */
+    function noteVisit(id) {
+        if (!id || isSignedIn()) return;
+        var seen = readVisits();
+        seen[String(id)] = Date.now();
+        try { localStorage.setItem(VISITS_KEY, JSON.stringify(seen)); } catch (e) {}
+    }
+
+    function inviteDismissed() {
+        try { return localStorage.getItem(DISMISS_KEY) === "1"; } catch (e) { return false; }
+    }
+
+    function dismissInvite() {
+        try { localStorage.setItem(DISMISS_KEY, "1"); } catch (e) {}
+        var el = document.querySelector(".starta-invite");
+        if (el) el.remove();
+    }
+
+    /** Should the line show? Guests only, past the threshold, not dismissed. */
+    function shouldInvite() {
+        if (isSignedIn() || inviteDismissed()) return false;
+        return Object.keys(readVisits()).length >= INVITE_AFTER;
+    }
+
+    var INVITE_COPY = {
+        en: {
+            title: "Keep what you are reading",
+            body: "You have looked at a few of these. A free account keeps your watchlist and your comparisons between visits.",
+            cta: "Create a free account",
+            dismiss: "Not now",
+        },
+        ar: {
+            title: "احتفظ بما تقرأه",
+            body: "اطّلعت على عدد منها. الحساب المجاني يحفظ قائمة متابعتك ومقارناتك بين الزيارات.",
+            cta: "أنشئ حسابًا مجانيًا",
+            dismiss: "ليس الآن",
+        },
+    };
+
+    /**
+     * Render the line into `anchor` (appended). Static pages call this; React
+     * surfaces render their own markup and only borrow shouldInvite(), so the
+     * RULE lives in one place while each renderer owns its own DOM.
+     */
+    function renderInvite(anchor) {
+        if (!anchor || !shouldInvite()) return false;
+        if (document.querySelector(".starta-invite")) return false;
+        var L = INVITE_COPY[lang()];
+        var box = document.createElement("div");
+        box.className = "starta-invite";
+        box.innerHTML =
+            '<span class="starta-invite-text">' +
+                '<span class="starta-invite-title"></span>' +
+                '<span class="starta-invite-body"></span>' +
+            "</span>" +
+            '<a class="starta-gate-cta"></a>' +
+            '<button type="button" class="starta-invite-dismiss"></button>';
+        box.querySelector(".starta-invite-title").textContent = L.title;
+        box.querySelector(".starta-invite-body").textContent = L.body;
+        var cta = box.querySelector(".starta-gate-cta");
+        cta.textContent = L.cta;
+        cta.href = href("/register");
+        var no = box.querySelector(".starta-invite-dismiss");
+        no.textContent = L.dismiss;
+        no.addEventListener("click", dismissInvite);
+        anchor.appendChild(box);
+        return true;
+    }
+
     window.startaGate = {
         isSignedIn: isSignedIn,
         allow: allow,
         show: show,
+        notice: notice,
         close: close,
+        noteVisit: noteVisit,
+        shouldInvite: shouldInvite,
+        dismissInvite: dismissInvite,
+        renderInvite: renderInvite,
+        inviteAfter: INVITE_AFTER,
         limits: LIMITS,
     };
 })();

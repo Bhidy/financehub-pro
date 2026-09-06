@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import RegisterInvite from '@/components/gate/RegisterInvite';
+import EngagePrompt from '@/components/gate/EngagePrompt';
+import SaveButton from '@/components/gate/SaveButton';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getNewsArticle, getLatestNewsLight, getNewsPrimaryId, type NewsArticle } from '@/lib/public-data';
@@ -253,14 +254,16 @@ export async function renderNewsArticle(idParam: string, tree: SiteLang) {
                     because that is where Google's guidance puts it — a reader
                     acting on a good experience. Deliberately not on the hubs or
                     the fund pages. */}
+                <div className="mt-6"><SaveButton kind="article" refId={String(article.id)} /></div>
+
                 <PreferredSource lang={arabic ? 'ar' : 'en'} />
 
-                {/* AFTER the article, never inside it. This is an invitation,
-                    not a gate: the body above is complete and open, and this
-                    line only appears once a reader has come back for several
-                    distinct stories. It renders client-side only, so it never
-                    enters the indexable HTML. */}
-                <RegisterInvite itemId={`news:${article.id}`} />
+                {/* AFTER the article, never inside it. An invitation, not a
+                    gate: the body above is complete and open. It appears only
+                    when the engine says a moment has been earned, at most once a
+                    session, and never again once dismissed. Client-side only, so
+                    it never enters the indexable HTML. */}
+                <EngagePrompt itemId={`news:${article.id}`} />
 
             </article>
 

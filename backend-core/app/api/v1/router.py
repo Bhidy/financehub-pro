@@ -25,6 +25,15 @@ api_router.include_router(ai.router, prefix="/ai", tags=["ai"])
 from app.api.v1.endpoints import websockets
 api_router.include_router(websockets.router, tags=["websockets"])
 api_router.include_router(user.router, prefix="/user", tags=["user"])
+# "Keep this" for every noun on the site — funds, articles, companies, a risk
+# profile, a modelled plan. Mounted under /user because it is per-account state,
+# and every route inside requires a session.
+try:
+    from app.api.v1.endpoints import saved as _saved
+    api_router.include_router(_saved.router, prefix="/user", tags=["saved"])
+except Exception as _saved_error:  # pragma: no cover - never take the API down for one router
+    import logging
+    logging.getLogger(__name__).error(f"saved router not mounted: {_saved_error}")
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 
 # Analytics router for Chatbot Analytics Dashboard

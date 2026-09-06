@@ -38,6 +38,9 @@ export const MANAGED_ASSETS = [
   "starta-gate.js",
   // Keeps the watchlist gate's promise: the account, not just this browser.
   "starta-watchlist.js",
+  // Decides WHEN the site has earned the right to ask for a registration, and
+  // holds the budget that stops it asking twice.
+  "starta-engage.js",
   "starta-auth-nav.js",
   "starta-i18n.js",
   "starta-lang-boot.js",

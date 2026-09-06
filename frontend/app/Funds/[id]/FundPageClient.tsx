@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import EngagePrompt from '@/components/gate/EngagePrompt';
+import SaveButton from '@/components/gate/SaveButton';
 import Link from 'next/link';
 import FundNavChart from './FundNavChart';
 import type { FundLabels, Lang } from './fund-i18n';
@@ -180,6 +182,11 @@ export default function FundPageClient(props: FundClientData) {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2.5">
+                            {/* Beside the fund's own labels, where someone
+                                shortlisting is already looking. Adds a reason to
+                                register without removing a single published
+                                figure from the page. */}
+                            <SaveButton kind="fund" refId={String(fundId)} />
                             {chips.map((c) => (
                                 <span key={c} className="chip">
                                     {c}
@@ -606,6 +613,11 @@ export default function FundPageClient(props: FundClientData) {
                     />
 
                     <FundFeedback fundId={fundId} t={t} />
+
+                    {/* The highest-intent page on the site and, until now, the
+                        one with no prompt on it at all. Last thing on the page,
+                        after every published figure. */}
+                    <EngagePrompt itemId={`fund:${fundId}`} />
                 </aside>
             </div>
 

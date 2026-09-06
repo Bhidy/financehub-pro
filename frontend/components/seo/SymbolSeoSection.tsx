@@ -1,6 +1,7 @@
 import Link from 'next/link';
+import EngagePrompt from '@/components/gate/EngagePrompt';
+import SaveButton from '@/components/gate/SaveButton';
 import PriceAlert from '@/components/gate/PriceAlert';
-import RegisterInvite from '@/components/gate/RegisterInvite';
 import { SITE_URL, symbolPath, slugify, newsPath } from '@/lib/seo';
 import type { Ticker, CompanyProfile, NewsArticle, SymbolPerformance } from '@/lib/public-data';
 import JsonLd from '@/components/seo/JsonLd';
@@ -437,8 +438,9 @@ export default function SymbolSeoSection({
                     real feature now — an evaluator and a delivery path exist
                     (backend-core/app/services/alert_service.py) — which is what
                     finally makes a gate in front of it honest. */}
+                <div className="mt-8"><SaveButton kind="company" refId={symbol} /></div>
                 <PriceAlert symbol={symbol} />
-                <RegisterInvite itemId={`symbol:${symbol}`} />
+                <EngagePrompt itemId={`symbol:${symbol}`} />
 
                 {/* Hub links — the EN symbol template dead-ended PageRank
                     (no footer/hub links). This routes equity to the directory,

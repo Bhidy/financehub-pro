@@ -33,6 +33,7 @@ export interface SettingsLabels {
     };
     /** The section rail. */
     nav: {
+        saved: string;
         personal: string;
         billing: string;
         security: string;
@@ -107,6 +108,16 @@ export interface SettingsLabels {
         title: string;
         subtitle: string;
     };
+    saved: {
+        title: string;
+        subtitle: string;
+        empty: string;
+        emptyHint: string;
+        funds: string;
+        companies: string;
+        articles: string;
+        remove: string;
+    };
     errors: {
         generic: string;
         passwordTooShort: string;
@@ -121,6 +132,7 @@ const en: SettingsLabels = {
         signOut: "Sign out",
     },
     nav: {
+        saved: "Saved",
         personal: "Personal details",
         billing: "Subscription & billing",
         security: "Security",
@@ -193,6 +205,16 @@ const en: SettingsLabels = {
         title: "Help & support",
         subtitle: "Get in touch, or read how our data is produced.",
     },
+    saved: {
+        title: "Saved",
+        subtitle: "The funds, companies and articles you kept.",
+        empty: "Nothing saved yet.",
+        emptyHint: "Press Save on any fund, company or article and it will be waiting here.",
+        funds: "Funds",
+        companies: "Companies",
+        articles: "Articles",
+        remove: "Remove",
+    },
     errors: {
         generic: "Something went wrong. Please try again.",
         passwordTooShort: "Your new password must be at least 6 characters.",
@@ -207,6 +229,7 @@ const ar: SettingsLabels = {
         signOut: "تسجيل الخروج",
     },
     nav: {
+        saved: "المحفوظات",
         personal: "البيانات الشخصية",
         billing: "الاشتراك والفواتير",
         security: "الأمان",
@@ -278,6 +301,16 @@ const ar: SettingsLabels = {
     help: {
         title: "المساعدة والدعم",
         subtitle: "تواصل معنا، أو اطّلع على طريقة إعداد بياناتنا.",
+    },
+    saved: {
+        title: "المحفوظات",
+        subtitle: "ما احتفظت به من صناديق وشركات ومقالات.",
+        empty: "لا يوجد محفوظات بعد.",
+        emptyHint: "اضغط «احفظ» على أي صندوق أو شركة أو مقال وستجده هنا في انتظارك.",
+        funds: "الصناديق",
+        companies: "الشركات",
+        articles: "المقالات",
+        remove: "إزالة",
     },
     errors: {
         generic: "حدث خطأ ما. برجاء المحاولة مرة أخرى.",

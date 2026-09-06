@@ -167,6 +167,10 @@ export default async function RootLayout({
             React tree and the static hubs, so "how many is several" cannot mean
             two different things on two pages. Renders nothing by itself. */}
         <Script src={`/assets/starta-gate.js?v=${assetVersions["starta-gate.js"]}`} strategy="afterInteractive" />
+        {/* The engagement engine: signals, scenarios and the prompt budget. It
+            renders nothing itself and writes nothing into the document — see
+            components/gate/EngagePrompt.tsx. */}
+        <Script src={`/assets/starta-engage.js?v=${assetVersions["starta-engage.js"]}`} strategy="afterInteractive" />
       </head>
       <body
         className={`${manrope.variable} ${jetbrainsMono.variable} ${sora.variable} ${sourceCodePro.variable} ${spaceGrotesk.variable} ${arabic.variable} font-sans antialiased flex flex-col min-h-screen bg-[var(--background)] transition-colors duration-300`}

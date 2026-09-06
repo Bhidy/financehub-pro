@@ -375,6 +375,8 @@ async def lifespan(app: FastAPI):
                 try:
                     from app.services.alert_service import ensure_schema as ensure_alert_schema
                     await ensure_alert_schema()
+                    from app.api.v1.endpoints.saved import ensure_schema as ensure_saved_schema
+                    await ensure_saved_schema()
                 except Exception as _alert_schema_error:
                     # print(), not logger: main.py defines no module-level logger
                     # and `lifespan` has none either, so a logger call in this

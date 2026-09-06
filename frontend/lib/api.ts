@@ -1201,3 +1201,33 @@ export const createCustomerPortalSession = async () => {
     const { data } = await api.post("/subscriptions/customer-portal");
     return data; // { url }
 };
+
+
+// ── SAVED ITEMS ──────────────────────────────────────────────────────────────
+// One store behind every "keep this" on the site (backend: endpoints/saved.py).
+// `kind` says what it is, `ref_id` which one, `payload` carries a snapshot for
+// the kinds that ARE values rather than pointers — a risk profile and a
+// modelled plan must not silently change when the inputs behind them change.
+export type SavedKind = "fund" | "article" | "company" | "risk_profile" | "plan";
+
+export interface SavedItem {
+    kind: SavedKind;
+    ref_id: string;
+    payload?: Record<string, unknown> | null;
+    created_at?: string;
+}
+
+export const listSaved = async (kind?: SavedKind): Promise<SavedItem[]> => {
+    const { data } = await api.get("/user/saved", { params: kind ? { kind } : undefined });
+    return Array.isArray(data) ? data : [];
+};
+
+export const saveItem = async (kind: SavedKind, ref_id: string, payload?: Record<string, unknown>) => {
+    const { data } = await api.post("/user/saved", { kind, ref_id, payload });
+    return data;
+};
+
+export const unsaveItem = async (kind: SavedKind, ref_id: string) => {
+    const { data } = await api.delete(`/user/saved/${kind}/${encodeURIComponent(ref_id)}`);
+    return data;
+};

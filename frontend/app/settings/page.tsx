@@ -57,20 +57,21 @@ import { useTheme } from "@/contexts/ThemeContext";
 import {
     Loader2, User as UserIcon, Phone, Lock, Check, AlertCircle, Sun, Moon, Mail,
     LogOut, Globe, Shield, ChevronLeft, ChevronRight, Bell, CreditCard,
-    HelpCircle, Users, ArrowLeft, ArrowRight,
+    HelpCircle, Users, ArrowLeft, ArrowRight, Bookmark, Trash2,
 } from "lucide-react";
 import clsx from "clsx";
 import Link from "next/link";
 import {
     updateProfile, changePassword, createCustomerPortalSession,
     createCheckoutSession, fetchNotificationPreferences, updateNotificationPreferences,
+    listSaved, unsaveItem, type SavedItem,
 } from "@/lib/api";
 import type { NotificationPreferences } from "@/lib/api";
 import { StartaLogo } from "@/components/brand/StartaLogo";
 import { useStoredLang, LANG_CHANGE_EVENT, type StoredLang } from "@/hooks/useStoredLang";
 import { SETTINGS_LABELS, type SettingsLabels } from "@/lib/settings-i18n";
 
-type Section = "personal" | "billing" | "security" | "app" | "notifications";
+type Section = "saved" | "personal" | "billing" | "security" | "app" | "notifications";
 
 const ANALYST_PRICE_ID = "price_1T66bq2UXuH5fA2IQIuSelxJ";
 
@@ -426,6 +427,86 @@ function NotificationsSection({ t }: { t: SettingsLabels }) {
     );
 }
 
+function SavedSection({ t, lang }: { t: SettingsLabels; lang: StoredLang }) {
+    const [items, setItems] = useState<SavedItem[] | null>(null);
+
+    useEffect(() => {
+        let alive = true;
+        listSaved()
+            .then((rows) => { if (alive) setItems(rows); })
+            .catch(() => { if (alive) setItems([]); });
+        return () => { alive = false; };
+    }, []);
+
+    const drop = async (kind: SavedItem["kind"], refId: string) => {
+        setItems((prev) => (prev ?? []).filter((i) => !(i.kind === kind && i.ref_id === refId)));
+        try { await unsaveItem(kind, refId); } catch { /* the list refreshes on next load */ }
+    };
+
+    if (items === null) {
+        return (
+            <Card title={t.saved.title} subtitle={t.saved.subtitle}>
+                <Loader2 className="w-5 h-5 animate-spin text-starta-teal" aria-hidden="true" />
+            </Card>
+        );
+    }
+
+    if (items.length === 0) {
+        // An empty state that says what to DO. "Nothing saved yet" alone tells a
+        // reader they are in the wrong place; it must name the action that fills it.
+        return (
+            <Card title={t.saved.title} subtitle={t.saved.subtitle}>
+                <p className="text-sm text-main">{t.saved.empty}</p>
+                <p className="mt-1 text-sm text-muted">{t.saved.emptyHint}</p>
+            </Card>
+        );
+    }
+
+    // `ref_id` is a POINTER to something the site publishes openly, so a saved
+    // row is just a link back to a page anyone can read. Nothing here is gated
+    // content, and the pages these point at stay open to everyone.
+    const groups: { kind: SavedItem["kind"]; label: string; href: (id: string) => string }[] = [
+        { kind: "fund", label: t.saved.funds, href: (id) => `/Funds/${id}` },
+        { kind: "company", label: t.saved.companies, href: (id) => `/symbol/${id}` },
+        { kind: "article", label: t.saved.articles, href: (id) => `/News/${id}` },
+    ];
+
+    return (
+        <div className="space-y-6">
+            {groups.map(({ kind, label, href }) => {
+                const rows = items.filter((i) => i.kind === kind);
+                if (!rows.length) return null;
+                return (
+                    <Card key={kind} title={label}>
+                        <ul className="divide-y divide-border">
+                            {rows.map((row) => (
+                                <li key={`${row.kind}:${row.ref_id}`} className="flex items-center gap-3 py-3">
+                                    <Bookmark className="w-4 h-4 text-starta-teal shrink-0" aria-hidden="true" />
+                                    <Link
+                                        href={href(row.ref_id)}
+                                        className="min-w-0 flex-1 truncate text-sm font-semibold text-main hover:text-starta-teal transition-colors"
+                                        dir={kind === "company" ? "ltr" : undefined}
+                                    >
+                                        {row.ref_id}
+                                    </Link>
+                                    <button
+                                        type="button"
+                                        onClick={() => drop(row.kind, row.ref_id)}
+                                        aria-label={`${t.saved.remove} ${row.ref_id}`}
+                                        className="p-2 rounded-lg text-muted hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" aria-hidden="true" />
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </Card>
+                );
+            })}
+        </div>
+    );
+}
+
 function BillingSection({ t, user }: { t: SettingsLabels; user: any }) {
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
@@ -502,6 +583,7 @@ export default function SettingsPage() {
     const Chevron = isRtl ? ChevronLeft : ChevronRight;
 
     const rail: { id: Section; label: string; icon: React.ElementType }[] = [
+        { id: "saved", label: t.nav.saved, icon: Bookmark },
         { id: "personal", label: t.nav.personal, icon: UserIcon },
         { id: "billing", label: t.nav.billing, icon: CreditCard },
         { id: "security", label: t.nav.security, icon: Shield },
@@ -612,6 +694,7 @@ export default function SettingsPage() {
 
                     {/* ── Panel ──────────────────────────────────────────── */}
                     <div className="min-w-0">
+                        {section === "saved" && <SavedSection t={t} lang={lang} />}
                         {section === "personal" && <PersonalSection t={t} user={user} updateUser={updateUser} />}
                         {section === "billing" && <BillingSection t={t} user={user} />}
                         {section === "security" && <SecuritySection t={t} logout={logout} />}

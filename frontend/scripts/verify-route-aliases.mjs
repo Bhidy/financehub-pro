@@ -672,6 +672,54 @@ const checks = [
     assert: (text) => /union/i.test(text) && /alreadyMerged/.test(text),
   },
   {
+    // ══ THE PROMPT BUDGET IS THE PRODUCT'S MANNERS ══════════════════════════
+    // There are five registration scenarios now. Five prompts with no budget is
+    // nagware, and nagware on a site whose only channel is organic search is a
+    // bounce rate problem dressed as a growth feature. The budget is what makes
+    // "a lot of things making the user register" survivable: one prompt per
+    // session, three a week, a quiet period at the start of every visit, and a
+    // dismissal that ends ALL of them for good. Remove any of those and the
+    // build stops.
+    name: "the registration prompt keeps its budget",
+    file: "public/assets/starta-engage.js",
+    assert: (text) =>
+      /perSession:\s*1\b/.test(text) &&
+      /perWeek:\s*[1-5]\b/.test(text) &&
+      /quietMs:/.test(text) &&
+      /dismissForever/.test(text) &&
+      // Signed-in visitors are never evaluated at all.
+      /if \(signedIn\(\) \|\| dismissed\(\)\) return null;/.test(text),
+  },
+  {
+    // Every prompt line claims something about THIS reader — you have been back
+    // three times, you were here yesterday. A claim the engine cannot prove is
+    // worse than silence, so the renderer must take its counts from the engine's
+    // own stats rather than inventing a number to sound impressive.
+    name: "prompt copy is driven by measured signals, not invented ones",
+    file: "components/gate/EngagePrompt.tsx",
+    assert: (text) =>
+      /engage\.stats\(\)/.test(text) &&
+      /engage\.pick\(/.test(text) &&
+      /recordPrompt\(\)/.test(text) &&
+      // It must not render on the server: that is what keeps it out of the HTML
+      // a crawler and an answer engine read.
+      /'use client'/.test(text) &&
+      /if \(isLoading \|\| user\) return;/.test(text),
+  },
+  {
+    // Saving is an ADDITION, never a subtraction. The button points at pages the
+    // site publishes openly; if it ever starts wrapping content in a gate it has
+    // stopped being a growth feature and started being a wall.
+    name: "the save control adds value without hiding any",
+    file: "components/gate/SaveButton.tsx",
+    assert: (text) =>
+      /'use client'/.test(text) &&
+      !/starta-gate-clip/.test(text) &&
+      // The press must survive the sign-up round trip, or the reader does the
+      // work twice and learns not to bother.
+      /PENDING_KEY/.test(text),
+  },
+  {
     // ══ THE INVITATION MUST STAY AN INVITATION ══════════════════════════════
     // It stands in for a meter, and it only works as a substitute while it
     // removes nothing. The moment it becomes a modal — fixed position, a scrim,

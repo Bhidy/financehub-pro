@@ -2,6 +2,8 @@
 
 import { useParams, useRouter } from "next/navigation";
 import BlurGate from '@/components/gate/BlurGate';
+import navConfig from '@/lib/nav.json';
+import { localizedHref } from '@/lib/localized-href';
 import { symbolFromArParam } from "@/lib/seo";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -842,15 +844,29 @@ export default function SymbolDetailPage() {
             {/* NAVIGATION */}
             <nav className="site-nav">
                 <div className="nav-inner">
-                    <a className="brand" href="/"><span className="brand-mark">S</span><span className="brand-name">STARTA</span></a>
+                    <a className="brand" href={localizedHref("/", lang)}><span className="brand-mark">S</span><span className="brand-name">STARTA</span></a>
+                    {/* THE CANONICAL NAV, not a fourth hand-written copy.
+                        What this replaced was a private list with RAW hrefs, so
+                        every item on an Arabic page sent the reader to the
+                        ENGLISH version — the reported bug. It had also drifted:
+                        it advertised /Portfolio, a hidden noindex route, and an
+                        #about-us anchor, while missing Wealth Calculators and
+                        Assess Your Investment entirely.
+
+                        lib/nav.json is the ONE definition (see
+                        canonical-nav-architecture); localizedHref keeps an
+                        Arabic reader inside the Arabic tree. */}
                     <div className="nav-links hidden lg:flex">
-                        <a href="/">{t.nav_home}</a>
-                        <a href="/Funds">{t.nav_funds}</a>
-                        <a className="active" href="/Market-Pulse">{t.nav_pulse}</a>
-                        <a href="/News">{t.nav_news}</a>
-                        <a href="/Learn">{t.nav_learn}</a>
-                        <a href="/Portfolio">{t.nav_portfolio}</a>
-                        <a href="#about-us">{t.nav_about}</a>
+                        {navConfig.items.map((item) => (
+                            <a
+                                key={item.key}
+                                href={localizedHref(item.href, lang)}
+                                data-key={item.key}
+                                className={item.href === "/Market-Pulse" ? "active" : undefined}
+                            >
+                                {lang === "ar" ? item.ar : item.en}
+                            </a>
+                        ))}
                     </div>
                     <div className="flex items-center gap-3">
                         <ThemeToggle />

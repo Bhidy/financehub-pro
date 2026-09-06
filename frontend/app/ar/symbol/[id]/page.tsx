@@ -520,6 +520,12 @@ export default async function ArabicSymbolPage({ params }: Props) {
                             key={href}
                             href={href}
                             prefetch={false}
+                            /* The last entry of this list points at the ENGLISH
+                               tree on purpose. components/i18n/LangLinkGuard
+                               corrects any Arabic-page link that leaks into the
+                               English tree, so the one link that is SUPPOSED to
+                               has to say so, or the reader could never leave. */
+                            data-lang-switch={href === symbolPath(symbol) ? '' : undefined}
                             className="rounded-full border border-border bg-surface px-4 py-2 text-[13px] font-semibold text-muted transition-colors hover:border-teal-300 hover:text-teal-700"
                         >
                             {label}

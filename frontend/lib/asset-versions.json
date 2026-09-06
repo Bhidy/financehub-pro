@@ -1,7 +1,7 @@
 {
   "manager-logos.js": "58702e60",
   "starta-nav.css": "ceb33d4b",
-  "starta-nav.js": "841056d6",
+  "starta-nav.js": "d0d30022",
   "starta-typography.css": "9a6818ac",
   "starta-gate.css": "63f172f5",
   "starta-gate.js": "e85f728f",
@@ -15,7 +15,7 @@
   "portfolio-store.js": "0627066c",
   "starta-auth-nav.js": "931b5110",
   "starta-i18n.js": "d7977252",
-  "starta-lang-boot.js": "22f7e3ba",
+  "starta-lang-boot.js": "63a5d2ae",
   "starta-theme.js": "2ac18a0a",
   "starta-mobile-nav.js": "2e7e5a80"
 }

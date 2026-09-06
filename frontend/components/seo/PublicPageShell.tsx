@@ -212,7 +212,11 @@ export default function PublicPageShell({
                         `var s=String(p||""),q="",c=s.search(/[?#]/);` +
                         `if(c>=0){q=s.slice(c);s=s.slice(0,c);}` +
                         `if(s.length>1&&s.charAt(s.length-1)==="/")s=s.slice(0,-1);` +
-                        `for(var i=0;i<P.length;i++){if(new RegExp(P[i]).test(s))return "/ar"+s+q;}return p;};})();`,
+                        // Same file-segment rule as lib/localized-href.ts: a
+                        // dynamic pattern must not localize a filename.
+                        `var f=/\\.[A-Za-z0-9]{1,8}$/.test(s.slice(s.lastIndexOf("/")+1));` +
+                        `for(var i=0;i<P.length;i++){if(!new RegExp(P[i]).test(s))continue;` +
+                        `if(f&&P[i].indexOf("[^/]+")!==-1)continue;return "/ar"+s+q;}return p;};})();`,
                 }}
             />
             {/* Canonical nav appearance, the SAME file the static pages load.
@@ -266,7 +270,13 @@ export default function PublicPageShell({
                         <div className="nav-controls">
                             <ThemeToggle />
                             {altHref && (
-                                <a href={altHref} className="control-btn font-display text-xs font-bold" aria-label={lang === 'ar' ? 'English version' : 'النسخة العربية'}>
+                                /* THE ONE LINK THAT MAY CROSS THE TREES.
+                                   components/i18n/LangLinkGuard rewrites any
+                                   Arabic-page link pointing into the English
+                                   tree; without this marker it would rewrite
+                                   the language switcher too, and the switcher
+                                   would silently stop switching. */
+                                <a href={altHref} data-lang-switch className="control-btn font-display text-xs font-bold" aria-label={lang === 'ar' ? 'English version' : 'النسخة العربية'}>
                                     {lang === 'ar' ? 'EN' : 'ع'}
                                 </a>
                             )}

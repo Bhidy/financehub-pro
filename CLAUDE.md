@@ -27,7 +27,18 @@ The short version, so a mistake is obvious even before you open it:
   `bg-page` / `bg-surface` / `bg-panel` / `text-main` / `text-muted` /
   `border-border`, never hardcoded hex or `slate-*`.
 - **Nav** — defined once in `frontend/lib/nav.json`; run
-  `node scripts/sync-nav.mjs` after editing it.
+  `node scripts/sync-nav.mjs` after editing it. Three renderers read it —
+  `components/SiteNav.tsx`, `components/seo/PublicPageShell.tsx` and
+  `public/assets/starta-nav.js`. **Never write a fourth.** A repo-wide gate
+  fails the build when any file names three or more nav destinations in literal
+  hrefs, because a fourth nav is how `/ar/symbol/[id]` shipped Arabic labels
+  over English links.
+- **Links on a bilingual page** — never build an href from a bare path. Pass it
+  through `localizedHref(path, lang)` (React) or `window.startaLocalizedHref`
+  (static). `components/i18n/LangLinkGuard.tsx` catches what you forget at click
+  time on every React route; a link that crosses to the other language ON
+  PURPOSE must carry `data-lang-switch` or `hrefLang="en"` so the guard leaves
+  it alone. `npm run verify:arlinks` audits the deployed site.
 - **Language** — the site default is Arabic. Every user-facing page ships both
   languages on day one, with copy in a typed dictionary.
 

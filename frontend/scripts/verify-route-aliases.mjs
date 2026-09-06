@@ -499,6 +499,87 @@ const checks = [
     },
   },
   {
+    // ══ A FOURTH NAV IS STILL A FOURTH NAV ══════════════════════════════════
+    // The symbol page carried its OWN hand-written nav for the whole life of
+    // the canonical-nav work, and it broke two contracts at once. Its hrefs
+    // were raw, so every link on an /ar page sent the reader to the ENGLISH
+    // version — reported by the owner, and exactly the failure
+    // localized-href.ts exists to prevent. And its list had drifted: it
+    // advertised /Portfolio, a hidden noindex route, plus an #about-us anchor,
+    // while omitting Wealth Calculators and Assess Your Investment.
+    //
+    // It now reads lib/nav.json like every other surface and routes each href
+    // through localizedHref.
+    name: "the symbol page renders the canonical nav, localised",
+    file: "app/symbol/[id]/SymbolPageClient.tsx",
+    assert: (text) =>
+      /navConfig\.items\.map/.test(text) &&
+      /localizedHref\(item\.href, lang\)/.test(text) &&
+      // No private list may come back.
+      !/href="\/Funds">/.test(text) &&
+      !/href="\/Portfolio"/.test(text),
+  },
+  {
+    // ══ THE SAFETY NET, NOT ANOTHER FIXED CALL SITE ═════════════════════════
+    // Every check above this one fixes a PLACE. This one fixes the CLASS.
+    //
+    // The static pages have never shipped this bug, and not because their
+    // authors are more careful: starta-lang-boot.js installs a delegated
+    // capture-phase anchor localizer, so whatever anyone writes is corrected
+    // before the browser acts on it. The React tree had no equivalent, so ~40
+    // server routes plus every client island depended on each author
+    // remembering localizedHref at each call site — and /ar/symbol/[id] is
+    // what forgetting looks like.
+    //
+    // components/i18n/LangLinkGuard.tsx is that net for the React tree, and it
+    // is worth nothing unless it is actually mounted.
+    name: "the language link guard is mounted for every React route",
+    file: "app/layout.tsx",
+    assert: (text) =>
+      /import LangLinkGuard from "@\/components\/i18n\/LangLinkGuard"/.test(text) &&
+      /<LangLinkGuard \/>/.test(text),
+  },
+  {
+    // The guard must localize with the CANONICAL helper — the one
+    // scripts/test-lang-contract.ts executes against its browser twin — and it
+    // must leave the language switcher alone. A guard that "corrects" the EN /
+    // ع control rewrites it back to Arabic on every click, and the reader can
+    // never leave the Arabic tree: a worse bug than the one being fixed.
+    name: "the language link guard uses the canonical helper and spares the switcher",
+    file: "components/i18n/LangLinkGuard.tsx",
+    assert: (text) =>
+      /import \{ localizedHref \} from '@\/lib\/localized-href'/.test(text) &&
+      /data-lang-switch/.test(text) &&
+      /hreflang/.test(text) &&
+      // Modified clicks stay the reader's to control.
+      /metaKey \|\| event\.ctrlKey \|\| event\.shiftKey \|\| event\.altKey/.test(text),
+  },
+  {
+    // The one link that is SUPPOSED to cross the trees has to say so.
+    name: "the shell's language switcher is exempt from the guard",
+    file: "components/seo/PublicPageShell.tsx",
+    assert: (text) => /<a href=\{altHref\} data-lang-switch/.test(text),
+  },
+  {
+    // ══ RENDER THE RIGHT HREF, DO NOT ONLY REPAIR IT ════════════════════════
+    // Measured on production: /ar/Market-Pulse, /ar/Funds, /ar/News and
+    // /ar/Learn each shipped six nav anchors with Arabic labels over ENGLISH
+    // destinations. Readers never saw it, because the click-time localizer
+    // corrected each one in the instant before navigation — but a crawler that
+    // renders JS saw an Arabic page whose every internal link left the Arabic
+    // tree, which is the internal-linking failure that left the Arabic money
+    // pages with no inbound links from their own section.
+    //
+    // data-starta-href must carry the LANGUAGE-NEUTRAL path, or the click
+    // localizer can no longer recompute in both directions and the link stays
+    // pinned to Arabic after a toggle back to English.
+    name: "the static nav localizes hrefs at render, keeping the neutral path",
+    file: "public/assets/starta-nav.js",
+    assert: (text) =>
+      /window\.startaLocalizedHref\(item\.href\)/.test(text) &&
+      /data-starta-href="' \+ item\.href \+ '"/.test(text),
+  },
+  {
     // Both React navs must render from the canonical list, never a local copy.
     // The Market-Pulse pattern below is a LOCAL-LIST canary, not a ban on the
     // page: `href: "/Market-Pulse"` in object-literal form can only come from a
@@ -1979,6 +2060,91 @@ async function run() {
       process.exit(1);
     }
     console.log(`OK: home is one URL — ${scanned} source files carry no hand-rolled /ar home href.`);
+  }
+
+  // ══ NO FOURTH NAV. NO FIFTH. ═══════════════════════════════════════════════
+  // lib/nav.json is the ONE nav definition and three renderers read it:
+  // components/SiteNav.tsx, components/seo/PublicPageShell.tsx and the mirrored
+  // public/assets/starta-nav.js. A fourth existed anyway — hand-written inside
+  // app/symbol/[id]/SymbolPageClient.tsx — and it broke both contracts at once:
+  //
+  //   · its hrefs were raw, so on /ar/symbol/COMI every item carried an Arabic
+  //     label over an English destination (measured live: /Funds «الصناديق
+  //     الاستثمارية», /Market-Pulse «نبض السوق», /News «أخبار السوق»,
+  //     /Learn «تعلّم»), which is the defect the owner reported;
+  //   · and its LIST had drifted — it advertised /Portfolio, a hidden noindex
+  //     route, plus an #about-us anchor, while omitting Wealth Calculators and
+  //     Assess Your Investment.
+  //
+  // Named gates catch named files. This one catches the NEXT file, whatever it
+  // is called: three or more canonical nav destinations written as literal
+  // hrefs in one file can only come from a hand-written nav list.
+  //
+  // Verified against deliberate breakage: run over the pre-fix
+  // SymbolPageClient.tsx it matches 4 of 6 and fails.
+  {
+    const navItems = JSON.parse(await readFile(path.join(root, "lib/nav.json"), "utf8")).items;
+    // "/" is every brand lockup and every home link — not evidence of a nav.
+    const hrefs = navItems.map((i) => i.href).filter((h) => h !== "/");
+    if (hrefs.length < 4) {
+      console.error("FAIL: lib/nav.json yielded too few hrefs to police — the nav scan would pass vacuously.");
+      process.exit(1);
+    }
+    const probes = hrefs.map((h) => ({
+      href: h,
+      // href="/Funds" | href={'/Funds'} | href: "/Funds"
+      re: new RegExp(`href=(?:\\{\\s*)?["'\`]${h}["'\`]|href:\\s*["'\`]${h}["'\`]`),
+    }));
+    // The canonical definition, its three sanctioned renderers, and the tools
+    // that generate and police them.
+    const ALLOWED = new Set([
+      path.join("lib", "nav.json"),
+      path.join("components", "SiteNav.tsx"),
+      path.join("components", "seo", "PublicPageShell.tsx"),
+      path.join("public", "assets", "starta-nav.js"),
+      path.join("public", "assets", "starta-mobile-nav.js"),
+    ]);
+    const offenders = [];
+    let navScanned = 0;
+    async function scanNav(dir) {
+      let entries;
+      try {
+        entries = await readdir(dir, { withFileTypes: true });
+      } catch {
+        return;
+      }
+      for (const e of entries) {
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) {
+          if (e.name === "node_modules" || e.name === ".next" || e.name.startsWith(".")) continue;
+          await scanNav(full);
+          continue;
+        }
+        if (!/\.(ts|tsx|js)$/.test(e.name)) continue;
+        const rel = path.relative(root, full);
+        if (ALLOWED.has(rel)) continue;
+        navScanned++;
+        const text = await readFile(full, "utf8");
+        const hit = probes.filter((pr) => pr.re.test(text)).map((pr) => pr.href);
+        if (hit.length >= 3) offenders.push(`${rel}  (${hit.join(", ")})`);
+      }
+    }
+    for (const dir of ["app", "components", "lib", "public/assets"]) await scanNav(path.join(root, dir));
+    // A repo-wide scan that silently walks zero files passes exactly as loudly
+    // as one that walks five hundred. This repo has shipped that failure.
+    if (navScanned < 200) {
+      console.error(`FAIL: the hand-written-nav scan examined only ${navScanned} files — it is not reaching the source tree.`);
+      process.exit(1);
+    }
+    if (offenders.length) {
+      console.error(
+        `FAIL: ${offenders.length} file(s) hand-write a nav list instead of rendering lib/nav.json:\n` +
+        offenders.map((f) => `       ${f}`).join("\n") +
+        "\n       Render navConfig.items and route every href through localizedHref()."
+      );
+      process.exit(1);
+    }
+    console.log(`OK: one nav definition — ${navScanned} files carry no hand-written nav list.`);
   }
 
     const mustStayEnglish = ["/News/838616-x", "/symbol/COMI/pe-ratio", "/symbol/COMI/revenue"];

@@ -71,8 +71,28 @@ export function localizedHref(path: string, lang: Lang | string): string {
     // the designed homepage IN ARABIC. Never reinstate the '/ar' mapping.
     if (bare === '' || bare === '/') return HOME_PATH + rest;
 
+    /**
+     * A DYNAMIC PATTERN MATCHES A FILENAME TOO, AND THAT MINTS A 404.
+ *
+     * `^/Funds/[^/]+$` is derived from app/ar/Funds/[id], so it matches
+     * `/Funds/prices-today.csv` — the CSV download offered on the fund-prices page
+     * — and localized it to `/ar/Funds/prices-today.csv`, which does not exist:
+ *
+     *     /Funds/prices-today.csv     200
+     *     /ar/Funds/prices-today.csv  404      (measured 2026-09-07)
+ *
+     * Nothing called the helper on that path, so the defect sat dormant until
+     * components/i18n/LangLinkGuard began routing EVERY internal anchor through
+     * it; the audit caught it before it shipped. A path whose last segment carries
+     * an extension is a FILE, and a file may only be localized by an EXACT
+     * pattern — `^/feed\.xml$` has a real /ar twin and still works — never by a
+     * dynamic one, which is guessing.
+     */
+    const looksLikeFile = /\.[A-Za-z0-9]{1,8}$/.test(bare.slice(bare.lastIndexOf('/') + 1));
     for (const re of AR_TWIN_PATTERNS) {
-        if (re.test(bare)) return `/ar${bare}${rest}`;
+        if (!re.test(bare)) continue;
+        if (looksLikeFile && re.source.includes('[^/]+')) continue;
+        return `/ar${bare}${rest}`;
     }
     // Not a twinned route (single-URL pages keep their language via storage) —
     // never invent an /ar URL that would 404 or 308 back to English.

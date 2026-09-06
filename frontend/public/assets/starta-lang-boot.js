@@ -85,8 +85,20 @@
         // Both halves are executed against each other by
         // scripts/test-lang-contract.ts. Do not add an /ar mapping here.
         if (bare === "" || bare === "/") return "/" + rest;
+        // A DYNAMIC PATTERN MATCHES A FILENAME TOO, AND THAT MINTS A 404.
+        // "^/Funds/[^/]+$" comes from app/ar/Funds/[id] and so matches
+        // "/Funds/prices-today.csv", whose /ar form does not exist (404,
+        // measured 2026-09-07). A path whose last segment carries an extension
+        // is a FILE: only an EXACT pattern may localize it ("^/feed\.xml$" has
+        // a real twin and still works), never a dynamic one. The React twin in
+        // lib/localized-href.ts carries the identical rule and
+        // scripts/test-lang-contract.ts executes the two against each other.
+        var seg = bare.slice(bare.lastIndexOf("/") + 1);
+        var looksLikeFile = /\.[A-Za-z0-9]{1,8}$/.test(seg);
         for (var i = 0; i < AR_TWIN_PATTERNS.length; i++) {
-            if (new RegExp(AR_TWIN_PATTERNS[i]).test(bare)) return "/ar" + bare + rest;
+            if (!new RegExp(AR_TWIN_PATTERNS[i]).test(bare)) continue;
+            if (looksLikeFile && AR_TWIN_PATTERNS[i].indexOf("[^/]+") !== -1) continue;
+            return "/ar" + bare + rest;
         }
         // Not a twinned route (static single-URL pages keep language via
         // storage) — never invent an /ar URL that might 404.

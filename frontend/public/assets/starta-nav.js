@@ -92,7 +92,27 @@
 
         row.innerHTML = ITEMS.map(function (item) {
             var active = isActive(item.href) ? " text-starta-darkTeal" : "";
-            return '<a href="' + item.href + '" class="' + linkClass + active +
+            /**
+             * LOCALIZE THE HREF AT RENDER, not only at click.
+             *
+             * starta-lang-boot.js installs a click-time anchor localizer, and
+             * it was doing ALL the work here: on /ar/Market-Pulse, /ar/Funds,
+             * /ar/News and /ar/Learn this row shipped Arabic labels over
+             * ENGLISH destinations, corrected only in the instant before the
+             * browser followed one. A reader never saw the defect; a crawler
+             * that renders JS saw nothing but internal links out of the Arabic
+             * tree, which is the internal-linking failure that left the Arabic
+             * money pages with no inbound links from their own section.
+             *
+             * data-starta-href keeps the LANGUAGE-NEUTRAL path so the click
+             * localizer can still recompute in both directions after a
+             * language toggle — writing the localized value there would pin
+             * the link to Arabic for the rest of the session. render() re-runs
+             * on <html lang> changes (the observer below), so both halves stay
+             * in agreement.
+             */
+            var href = window.startaLocalizedHref ? window.startaLocalizedHref(item.href) : item.href;
+            return '<a href="' + href + '" data-starta-href="' + item.href + '" class="' + linkClass + active +
                 '" data-key="' + item.key + '">' + item[L] + "</a>";
         }).join("");
 

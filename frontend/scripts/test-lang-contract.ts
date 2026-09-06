@@ -131,6 +131,30 @@ function routeCorpus(): string[] {
     ok(localizedHref('/Funds/Compare?ids=1,2&lang=ar', 'ar') === '/ar/Funds/Compare?ids=1,2&lang=ar', 'a twinned route still gets the prefix, query intact', localizedHref('/Funds/Compare?ids=1,2&lang=ar', 'ar'));
     ok(localizedHref('/symbol/COMI/financials', 'ar') === '/ar/symbol/COMI/financials', 'a twinned symbol tab still gets the prefix');
     ok(localizedHref('/ar/Funds', 'ar') === '/ar/Funds', 'an already-Arabic path is never double-prefixed');
+
+    // ── A DYNAMIC PATTERN MUST NOT LOCALIZE A FILENAME ──────────────────────
+    // `^/Funds/[^/]+$` is derived from app/ar/Funds/[id] and therefore also
+    // matches the CSV the fund-prices page offers for download. Localizing it
+    // produced /ar/Funds/prices-today.csv — a 404 (measured 2026-09-07), and
+    // dormant only because nothing called the helper on that path until
+    // components/i18n/LangLinkGuard started routing every anchor through it.
+    // Both implementations carry the rule; both are asserted here.
+    ok(
+        localizedHref('/Funds/prices-today.csv', 'ar') === '/Funds/prices-today.csv',
+        'a downloadable file is not localized by a dynamic pattern',
+        localizedHref('/Funds/prices-today.csv', 'ar'),
+    );
+    ok(
+        browserLocalize('/Funds/prices-today.csv') === '/Funds/prices-today.csv',
+        'browser twin agrees: the CSV keeps its one URL',
+        browserLocalize('/Funds/prices-today.csv'),
+    );
+    ok(!existsSync(path.join(ROOT, 'app/ar/Funds/prices-today.csv')), 'and no /ar CSV route exists to justify prefixing it');
+    // The exception that proves the rule: /feed.xml has an EXACT pattern and a
+    // real app/ar/feed.xml/route.ts, so it must still be localized.
+    ok(localizedHref('/feed.xml', 'ar') === '/ar/feed.xml', 'a file with its OWN exact Arabic route is still localized', localizedHref('/feed.xml', 'ar'));
+    ok(browserLocalize('/feed.xml') === '/ar/feed.xml', 'browser twin agrees on /feed.xml', browserLocalize('/feed.xml'));
+    ok(existsSync(path.join(ROOT, 'app/ar/feed.xml/route.ts')), 'and /ar/feed.xml is a real route');
     ok(browserLocalize('/') === '/', 'browser startaLocalizedHref("/") === "/"', browserLocalize('/'));
     ok(browserLocalize('') === '/', 'browser startaLocalizedHref("") === "/"', browserLocalize(''));
     ok(browserLocalize('/?a=1') === '/?a=1', 'the query survives the home rule', browserLocalize('/?a=1'));

@@ -8,6 +8,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import { ToastProvider } from "@/components/ToastProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import TimedRegisterDialog from "@/components/gate/TimedRegisterDialog";
+import LangLinkGuard from "@/components/i18n/LangLinkGuard";
 import assetVersions from "@/lib/asset-versions.json";
 
 // Manrope - Landing Page Match (Google Fonts)
@@ -258,6 +259,13 @@ export default async function RootLayout({
                   deciding for itself which routes it may appear on. It renders
                   null everywhere else, including the home page, which it must
                   never appear on. See the component for the full rule set. */}
+              {/* EVERY React route's language safety net. The static pages
+                  have had a delegated anchor localizer since starta-lang-boot
+                  shipped; this tree never did, so a nav written with raw hrefs
+                  on /ar/symbol/[id] sent Arabic readers to English pages and
+                  nothing caught it. Renders nothing; see the file for why it
+                  costs search and answer engines exactly zero. */}
+              <LangLinkGuard />
               <TimedRegisterDialog />
             </ToastProvider>
           </ThemeProvider>

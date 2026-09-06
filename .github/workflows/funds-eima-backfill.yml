@@ -54,11 +54,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'write commits then self-verifies (also the scheduled mode); dry-run reports only; verify audits existing rows; prune deletes redundant eima rows'
+        description: 'write commits then self-verifies (also the scheduled mode); dry-run reports only; probe re-tests the funds EIMA appears not to cover, under a lower name floor, writing nothing; verify audits existing rows; prune deletes redundant eima rows'
         required: true
         default: 'write'
         type: choice
-        options: [write, dry-run, verify, prune]
+        options: [write, dry-run, probe, verify, prune]
 
 concurrency:
   group: funds-eima-backfill
@@ -95,6 +95,16 @@ jobs:
               python backend-core/scripts/eima_backfill.py --verify-only ;;
             dry-run)
               python backend-core/scripts/eima_backfill.py --delay 2.0 --dry-run ;;
+            probe)
+              # Twelve of the funds still carrying the 412-day hole report "no
+              # EIMA report name shortlisted". That claim is only worth trusting
+              # if it survives a search that was actually trying, so this re-runs
+              # them at a much lower NAME floor. It cannot admit a wrong mapping:
+              # the name decides only who gets TESTED, and every reconciliation
+              # gate is untouched. Dry-run, always — this answers a question, it
+              # does not commit an answer.
+              python backend-core/scripts/eima_backfill.py --delay 2.0 --dry-run \
+                --shortlist-floor 0.10 ;;
             *)
               echo "unknown mode: $MODE" >&2; exit 1 ;;
           esac

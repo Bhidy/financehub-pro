@@ -42,6 +42,21 @@ class SchedulerService:
                 coalesce=True
             )
 
+            # --- TIER 1A2: Price alerts, right behind the price refresh ---
+            # Runs on the SAME cadence as the intraday job above and five
+            # minutes offset from it, so it always reads a quote that was just
+            # written rather than racing the writer. Confined to the trading
+            # session on purpose: the evaluator refuses any price older than six
+            # hours, so running it overnight would do nothing but query.
+            self.scheduler.add_job(
+                self.run_price_alerts_job,
+                CronTrigger(day_of_week='sun,mon,tue,wed,thu', hour='10-16', minute='2-57/5', timezone='Africa/Cairo'),
+                id='tier1a2_price_alerts',
+                replace_existing=True,
+                max_instances=1,
+                coalesce=True
+            )
+
             # --- TIER 1B: Market Close (Daily 15:30) ---
             self.scheduler.add_job(
                 self.run_market_job_loud,
@@ -420,6 +435,25 @@ class SchedulerService:
             await refresh_all_prices()
         except Exception as e:
             logger.error(f"Intraday job error: {e}")
+
+    async def run_price_alerts_job(self):
+        """
+        Evaluate armed price alerts and deliver the ones that have triggered.
+
+        Wrapped, like every job here, so a failure can never take the API down
+        with it. The evaluator is itself safe to run twice at once — it claims
+        each alert with a conditional UPDATE before sending — so `coalesce` and
+        `max_instances=1` are belt and braces rather than the actual guarantee.
+        """
+        try:
+            from app.services.alert_service import evaluate_alerts
+            result = await evaluate_alerts()
+            # Only speak when something happened. A line every five minutes
+            # saying "0 alerts" is how a log stops being read.
+            if result.get("sent") or result.get("failed"):
+                logger.info(f"Price alerts: {result}")
+        except Exception as e:
+            logger.error(f"Price alert job error: {e}")
 
     async def run_market_job_loud(self):
         try:

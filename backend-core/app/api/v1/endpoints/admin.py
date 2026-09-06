@@ -1684,3 +1684,28 @@ async def debug_trigger_decypha(background_tasks: BackgroundTasks):
     background_tasks.add_task(scheduler_service.run_decypha_job)
     return {"status": "triggered", "message": "Decypha Sync Job started in background. Check logs/email."}
 
+
+@router.post("/debug/run_price_alerts", dependencies=[Depends(require_admin_token)])
+async def debug_run_price_alerts():
+    """
+    Run ONE price-alert evaluation pass now and return what it did.
+
+    This exists because the alert chain is otherwise unobservable: the job runs
+    on a five-minute cron inside the trading session, and "no mail arrived" is
+    equally consistent with the evaluator working perfectly (nothing was due)
+    and with it never running at all. That ambiguity is exactly how a feature
+    ships broken — the alerts CRUD sat writing rows that nothing read for months
+    without anyone noticing.
+
+    The summary distinguishes the two: `checked` proves the query ran against
+    the live table, `sent`/`failed` prove the delivery path was exercised.
+    Safe to call at any time — the evaluator claims each alert with a
+    conditional UPDATE, so this cannot double-send alongside the cron.
+    """
+    from app.services.alert_service import evaluate_alerts, ALERT_MAX_PRICE_AGE_HOURS
+    result = await evaluate_alerts()
+    return {
+        "ok": "error" not in result,
+        "max_price_age_hours": ALERT_MAX_PRICE_AGE_HOURS,
+        **result,
+    }

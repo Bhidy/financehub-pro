@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import PriceAlert from '@/components/gate/PriceAlert';
 import RegisterInvite from '@/components/gate/RegisterInvite';
 import { SITE_URL, symbolPath, slugify, newsPath } from '@/lib/seo';
 import type { Ticker, CompanyProfile, NewsArticle, SymbolPerformance } from '@/lib/public-data';
@@ -431,8 +432,12 @@ export default function SymbolSeoSection({
                     </dl>
                 </div>
 
-                {/* Last thing on the page, after every answer has been given.
-                    Client-only, so the crawler's copy of this page is unchanged. */}
+                {/* Both client-only, so the crawler's copy of this page is
+                    unchanged and every answer above stays open. The alert is a
+                    real feature now — an evaluator and a delivery path exist
+                    (backend-core/app/services/alert_service.py) — which is what
+                    finally makes a gate in front of it honest. */}
+                <PriceAlert symbol={symbol} />
                 <RegisterInvite itemId={`symbol:${symbol}`} />
 
                 {/* Hub links — the EN symbol template dead-ended PageRank

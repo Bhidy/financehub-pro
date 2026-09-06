@@ -52,7 +52,7 @@ tax on these features; it is the thing that makes them work.
 | **Fund comparison** | 2 funds side by side | A third fund is a research session, not a glance. |
 | **Company comparison** | 2 companies | Same. |
 | **Fund scorecard, suitability, stress tests** | — | Already gated. Derived analysis, not a published figure. |
-| **Price and NAV alerts** | *not shipped* | Cannot exist without an account to notify — but nothing evaluates them yet, so nothing is gated. See below. |
+| **Price alerts** | — | An alert has nowhere to be delivered without an account. Evaluator and delivery shipped 2026-09-06; the gate followed, not the other way round. |
 | **Saved filters and screens** | *not shipped* | No table, no endpoint. See below. |
 | **Bulk data export** | — | A per-file export of a company's whole financial history is a different act from reading a page, and an account turns an anonymous scrape into someone we can tell when the data changes. |
 
@@ -113,18 +113,23 @@ crawl it can get.
 
 ## What is deliberately not gated yet
 
-Two things on the original list are **not** shipped, because gating them would
+One thing on the original list is **not** shipped, because gating it would
 sell a promise the product cannot keep. That is worse than no gate: it converts
 someone once, on a specific expectation, and then fails them.
 
-**Price alerts.** The backend has the full CRUD — `/user/alerts` will happily
-create, list and delete a row. Nothing ever reads that table. There is no job
-that compares a target against a price and no path that delivers the result; the
-notification service in the backend sends *operational* mail to the team about
-scheduled jobs, not alerts to users. So a visitor could register precisely
-because we offered to tell them when a share hit a level, and never be told. The
-order of work is: build the evaluator and the delivery, confirm one real alert
-arrives, then put the gate in front of it.
+**Price alerts — now built, and therefore now gated.** This was the worked
+example of the rule. `/user/alerts` had full CRUD and nothing ever read the
+table it wrote to: no evaluator, no delivery. The gate was withheld until that
+stopped being true. `alert_service.py` now evaluates armed alerts on the
+trading-session cron and emails the level, the price that crossed it and when
+that price was observed. It refuses to fire on a quote older than six hours —
+the site's fourteen-day staleness rule is right for displaying a company row and
+absurd for telling someone a share crossed a level — claims each alert with a
+conditional update so it sends exactly once, and leaves an alert armed rather
+than silently spending it when the reader has notifications switched off.
+
+There is no free allowance on alerts, and that is not stinginess: an alert has
+nowhere to be delivered without an account. The promise *is* the account.
 
 **Saved filters and screens.** There is no table and no endpoint at all. Same
 rule: build the thing, then gate it.

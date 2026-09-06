@@ -430,6 +430,32 @@ const checks = [
     assert: (text) => !/RegisterGate|FundGate|starta-gate-clip/.test(text),
   },
   {
+    // ══ AN ALERT MUST BE EVALUATED AND DELIVERED ════════════════════════════
+    // The alerts CRUD wrote rows into `price_alerts` that NOTHING ever read —
+    // no evaluator, no delivery — for the whole life of the account system. The
+    // gate in front of alerts was deliberately withheld until that was untrue.
+    // If the evaluator or its schedule is removed, the gate goes back to selling
+    // a promise the product cannot keep, so the build must stop.
+    name: "price alerts are evaluated and delivered, not just stored",
+    file: "../backend-core/app/services/alert_service.py",
+    assert: (text) =>
+      /async def evaluate_alerts/.test(text) &&
+      /_send_email/.test(text) &&
+      // Fire once: the claim is what stops a double-send.
+      /is_active IS TRUE\s*\n\s*RETURNING id/.test(text) &&
+      // Never on a stale quote.
+      /ALERT_MAX_PRICE_AGE_HOURS/.test(text) &&
+      /last_updated > NOW\(\) - /.test(text),
+  },
+  {
+    name: "the alert evaluator is actually scheduled",
+    file: "../backend-core/app/services/scheduler.py",
+    assert: (text) =>
+      /run_price_alerts_job/.test(text) &&
+      /tier1a2_price_alerts/.test(text) &&
+      /evaluate_alerts/.test(text),
+  },
+  {
     // ══ A GATE MUST NOT PROMISE WHAT THE PRODUCT DOES NOT DO ════════════════
     // The watchlist gate tells visitors, in both languages, that a free account
     // keeps their list "on every device you sign in from". That was FALSE when

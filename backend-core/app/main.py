@@ -363,6 +363,27 @@ async def lifespan(app: FastAPI):
                 await conn.execute("CREATE INDEX IF NOT EXISTS idx_user_notif_uid ON user_notification_settings(user_id)")
 
                 # ============================================================
+                # PRICE ALERTS (evaluator columns, added 2026-09-06)
+                # ============================================================
+                # `price_alerts` predates this file and has no DDL in the repo —
+                # it exists in the database and only the RLS migration mentions
+                # it. The evaluator needs bookkeeping columns to fire an alert
+                # exactly once and to bound delivery retries, so it adds what is
+                # missing, idempotently, and touches nothing else. Kept in the
+                # service next to the code that reads them rather than inlined
+                # here, so the column list and its consumer stay together.
+                try:
+                    from app.services.alert_service import ensure_schema as ensure_alert_schema
+                    await ensure_alert_schema()
+                except Exception as _alert_schema_error:
+                    # print(), not logger: main.py defines no module-level logger
+                    # and `lifespan` has none either, so a logger call in this
+                    # handler would raise NameError and turn a harmless schema
+                    # hiccup into a failed startup. The surrounding block uses
+                    # print for the same reason.
+                    print(f"Price alert schema check failed (non-fatal): {_alert_schema_error}")
+
+                # ============================================================
                 # PORTFOLIO ENHANCEMENTS (Added 2026-01-19)
                 # ============================================================
 

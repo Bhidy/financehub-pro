@@ -21,6 +21,21 @@ name: Funds EIMA Backfill
 # SELF-COMPLETING: each new weekly report's 12-month column is anchored 52 weeks
 # back, so every week that passes fills one more week of Aug-Dec 2025.
 #
+# SCHEDULED RUNS WRITE (changed 2026-09-07). They used to stay in --dry-run,
+# "committed only after a human reads the reconciliation report" — prudent while
+# the mapping logic was new, and wrong once it was proven. The first write on
+# 2026-08-15 repaired 45 of the 61 holed funds. The three scheduled runs since
+# (08-21, 08-28, 09-04) each parsed 31 reports, reconstructed the points, printed
+# them, and threw them away, because nobody dispatched a write. Self-completing
+# recovery that requires a human every Friday is not self-completing.
+#
+# What makes writing safe is unchanged and does not depend on the mode: a
+# mapping is accepted only when it reconciles against NAV we already hold,
+# ON CONFLICT DO NOTHING means a real published value always beats a derived
+# one, every row is stamped with its source, and the write ALWAYS re-runs its
+# own audit in the same job so a bad write turns the run red. `dry-run` remains
+# available on dispatch for inspecting a change before it lands.
+#
 # SELF-AUDITING: a write run ALWAYS verifies its own output afterwards in the
 # same job — duplicates, value ranges, redundancy, join plausibility — so a
 # write that fails its own audit turns the run RED.
@@ -39,11 +54,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'dry-run reports; write commits (then self-verifies); verify audits existing rows; prune deletes redundant eima rows'
+        description: 'write commits then self-verifies (also the scheduled mode); dry-run reports only; verify audits existing rows; prune deletes redundant eima rows'
         required: true
-        default: 'dry-run'
+        default: 'write'
         type: choice
-        options: [dry-run, write, verify, prune]
+        options: [write, dry-run, verify, prune]
 
 concurrency:
   group: funds-eima-backfill
@@ -74,12 +89,12 @@ jobs:
               python backend-core/scripts/eima_backfill.py --verify-only ;;
             prune)
               python backend-core/scripts/eima_backfill.py --verify-only --prune-redundant ;;
-            write)
+            write|'')
               python backend-core/scripts/eima_backfill.py --delay 2.0
               # A write must survive its own audit or the run goes red.
               python backend-core/scripts/eima_backfill.py --verify-only ;;
-            *)
-              # Scheduled runs stay in dry-run: writes into fund NAV history are
-              # committed only after a human reads the reconciliation report.
+            dry-run)
               python backend-core/scripts/eima_backfill.py --delay 2.0 --dry-run ;;
+            *)
+              echo "unknown mode: $MODE" >&2; exit 1 ;;
           esac

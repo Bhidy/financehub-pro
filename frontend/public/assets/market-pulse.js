@@ -1268,7 +1268,18 @@
         state.drawerDays = 90;
         const periodButtons = byId("drawerChartPeriodControls").querySelectorAll("button");
         periodButtons.forEach((btn, index) => btn.classList.toggle("active", index === 1)); // 3M is active by default
-        
+
+        // VEIL the financials pane for signed-out visitors. Safe: this drawer is
+        // built in the browser from fetched data and appears nowhere in the
+        // server response, so no crawler and no answer engine was ever shown it
+        // — nothing is withheld and nothing needs declaring. The Overview,
+        // Chart and News tabs stay open, and every number the page itself
+        // publishes (the index, the movers, the tape, the market reading) is
+        // untouched. See REGISTRATION_STRATEGY.md.
+        if (window.startaGate && window.startaGate.veil) {
+            window.startaGate.veil(byId("drawerTabMetrics"), "drawerFinancials");
+        }
+
         populateDrawer();
         drawer.classList.add("active");
         drawer.setAttribute("aria-hidden", "false");

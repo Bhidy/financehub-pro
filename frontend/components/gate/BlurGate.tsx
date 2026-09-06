@@ -64,6 +64,10 @@ const COPY = {
             title: 'See the earnings forecasts',
             body: 'Analyst estimates and the price target for this company — free with an account.',
         },
+        navChart: {
+            title: 'Chart this fund’s history',
+            body: 'Trace the unit price across every published date, and read the shape rather than the numbers. The values themselves stay open below and on the full history page.',
+        },
     },
     ar: {
         cta: 'أنشئ حسابًا مجانيًا',
@@ -80,10 +84,14 @@ const COPY = {
             title: 'اطّلع على توقعات الأرباح',
             body: 'تقديرات المحللين والسعر المستهدف لهذه الشركة — مجانًا مع الحساب.',
         },
+        navChart: {
+            title: 'ارسم تاريخ هذا الصندوق',
+            body: 'تتبّع سعر الوثيقة عبر كل تاريخ منشور، واقرأ شكل المسار لا الأرقام وحدها. الأرقام نفسها تبقى مفتوحة أسفل الصفحة وفي صفحة التاريخ الكامل.',
+        },
     },
 } as const;
 
-export type BlurReason = 'ownership' | 'technicals' | 'forecasts';
+export type BlurReason = 'ownership' | 'technicals' | 'forecasts' | 'navChart';
 
 export interface BlurGateProps {
     reason: BlurReason;

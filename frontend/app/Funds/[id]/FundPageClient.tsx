@@ -4,6 +4,7 @@ import { useState } from 'react';
 import SaveButton from '@/components/gate/SaveButton';
 import Link from 'next/link';
 import FundNavChart from './FundNavChart';
+import BlurGate from '@/components/gate/BlurGate';
 import type { FundLabels, Lang } from './fund-i18n';
 import type { FundAnalytics } from '@/lib/fund-analytics';
 import { Scorecard, Suitability, Insights, StressTest } from './FundAnalytics';
@@ -270,7 +271,17 @@ export default function FundPageClient(props: FundClientData) {
                         )}
                     </div>
 
-                    <FundNavChart fundId={fundId} currency={currency} lang={lang} />
+                    {/* The CHART is veiled for guests; the NUMBERS are not.
+                        Safe to veil and verified rather than assumed: the chart
+                        is client-rendered and absent from the server response
+                        (a fetch of this page finds no Recharts markup), so no
+                        crawler and no answer engine was ever shown it. The
+                        server-rendered table of the last twelve published NAVs
+                        below, and the full-history page it links to, stay open —
+                        the values a search asks for are never behind this. */}
+                    <BlurGate reason="navChart">
+                        <FundNavChart fundId={fundId} currency={currency} lang={lang} />
+                    </BlurGate>
                     {/* The full published series as a page, not a chart: annual closes,
                         latest values, dates — server-rendered and quotable. Additive link;
                         the chart and its design are untouched. */}

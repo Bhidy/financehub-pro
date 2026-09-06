@@ -720,6 +720,31 @@ const checks = [
     },
   },
   {
+    // ══ THE HUBS' CONTENT IS NEVER VEILED ═══════════════════════════════════
+    // Measured 2026-09-07: the funds hub is 489KB of server-rendered fund cards
+    // and the news hub is a server-rendered list of headlines. That IS the
+    // indexable answer on both — a veil there would hide from readers exactly
+    // what search sends them for, and would need a paywall declaration to avoid
+    // being cloaking. The veil belongs on client-built blocks only, which is why
+    // the ones that shipped are the fund's NAV CHART, the company's ownership
+    // and technical panels, and the Market Pulse drawer's financials pane.
+    name: "the funds and news hub renderers veil nothing",
+    files: ["lib/funds-hub-render.ts", "lib/news-hub.ts"],
+    assert: (text) => !/starta-gate-clip|BlurGate|startaGate\.veil/.test(text),
+  },
+  {
+    // The vanilla veil must keep the same shape and stylesheet as the React one,
+    // or one surface starts looking like a different product.
+    name: "the static veil matches the React one",
+    file: "public/assets/starta-gate.js",
+    assert: (text) =>
+      /function veil\(/.test(text) &&
+      /starta-gate-clip/.test(text) &&
+      /starta-gate-panel/.test(text) &&
+      // Signed-in visitors never see it.
+      /if \(!el \|\| isSignedIn\(\)\) return false;/.test(text),
+  },
+  {
     // ══ NO PROMOTIONAL STRIP MAY BE APPENDED TO A PAGE ══════════════════════
     // The registration ask is a DIALOG over the page, or a veil around a
     // section that is already there. It is never a new band of furniture

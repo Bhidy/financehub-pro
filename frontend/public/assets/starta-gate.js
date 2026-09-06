@@ -324,6 +324,77 @@
         return Object.keys(readVisits()).length >= INVITE_AFTER;
     }
 
+    /* ══ THE VEIL, FOR STATIC PAGES ══════════════════════════════════════
+       components/gate/BlurGate.tsx does this on the React routes. Same shape,
+       same stylesheet, same rule about WHERE it may be used:
+
+         ONLY around a block that is not in the server-rendered HTML.
+
+       When gated content IS in the response, a crawler reads what a person
+       cannot and the page must declare it (lib/paywall-jsonld.ts) or it is
+       cloaking. A block the browser builds after load was never shown to a
+       crawler, so there is nothing to declare and the cost is exactly zero.
+
+       Before veiling anything new, prove it:
+           curl -s https://startamarkets.com/<path> | grep -c "<a phrase>"
+       Anything but 0 and it does not belong here. */
+    var VEIL_COPY = {
+        en: {
+            drawerFinancials: {
+                title: "Open this company's financials",
+                body: "Revenue, earnings, margins and the balance-sheet lines behind the price — free with an account.",
+            },
+        },
+        ar: {
+            drawerFinancials: {
+                title: "افتح القوائم المالية لهذه الشركة",
+                body: "الإيرادات والأرباح والهوامش وبنود المركز المالي وراء السعر — مجانًا مع الحساب.",
+            },
+        },
+    };
+
+    /**
+     * Veil `el` in place: it stays where it is, softly hidden, with the panel
+     * over it. Returns true when it veiled. Idempotent — calling it twice on
+     * the same element does nothing the second time.
+     */
+    function veil(el, reason) {
+        if (!el || isSignedIn()) return false;
+        if (el.parentElement && el.parentElement.classList.contains("starta-gate")) return false;
+        var c = (VEIL_COPY[lang()] || {})[reason];
+        if (!c) return false;
+
+        var wrap = document.createElement("div");
+        wrap.className = "starta-gate";
+        var clip = document.createElement("div");
+        clip.className = "starta-gate-clip";
+        clip.setAttribute("aria-hidden", "true");
+
+        el.parentElement.insertBefore(wrap, el);
+        clip.appendChild(el);
+        wrap.appendChild(clip);
+
+        var panel = document.createElement("div");
+        panel.className = "starta-gate-panel";
+        panel.innerHTML =
+            '<span class="starta-gate-lock">' + lockIcon() + "</span>" +
+            '<h3 class="starta-gate-dialog-title"></h3>' +
+            '<p class="starta-gate-dialog-body"></p>' +
+            '<div class="starta-gate-dialog-actions">' +
+                '<a class="starta-gate-cta"></a>' +
+                '<a class="starta-gate-signin"></a>' +
+            "</div>";
+        panel.querySelector(".starta-gate-dialog-title").textContent = c.title;
+        panel.querySelector(".starta-gate-dialog-body").textContent = c.body;
+        var L = TIMED_COPY[lang()];
+        var cta = panel.querySelector(".starta-gate-cta");
+        cta.textContent = L.cta; cta.href = href("/register");
+        var si = panel.querySelector(".starta-gate-signin");
+        si.textContent = L.signin; si.href = href("/login");
+        wrap.appendChild(panel);
+        return true;
+    }
+
     /* ══ THE TIMED INVITATION, FOR THE STATIC HUBS ═══════════════════════
        components/gate/TimedRegisterDialog.tsx does this for the React routes.
        It cannot serve /Funds, /News or /Market-Pulse: those are Route Handlers
@@ -464,6 +535,7 @@
         show: show,
         notice: notice,
         close: close,
+        veil: veil,
         noteVisit: noteVisit,
         shouldInvite: shouldInvite,
         dismissInvite: dismissInvite,

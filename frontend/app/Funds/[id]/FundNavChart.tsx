@@ -62,8 +62,8 @@ const EN = {
     emptySub: 'This chart appears automatically once enough NAV history is saved.',
     gapNotice: (n: number, longest: number) =>
         n === 1
-            ? `A dashed segment spans ${longest} days where no NAV was published. It joins two real prices; nothing in between has been estimated.`
-            : `Dashed segments span ${n} periods where no NAV was published, the longest ${longest} days. Each joins two real prices; nothing in between has been estimated.`,
+            ? `No NAV was published for ${longest} days in this period; the line runs straight between the last and next published prices.`
+            : `No NAV was published in ${n} periods here, the longest ${longest} days; the line runs straight between the published prices either side.`,
 };
 
 // Typed against EN so a key added to one language and forgotten in the other is a
@@ -79,8 +79,8 @@ const AR: typeof EN = {
     emptySub: 'يظهر هذا الرسم تلقائيًا بمجرد حفظ سجل كافٍ لصافي قيمة الأصول.',
     gapNotice: (n: number, longest: number) =>
         n === 1
-            ? `يمتد خط متقطع عبر ${longest} يومًا لم يُعلن فيها عن صافي قيمة الأصول. يصل بين سعرين حقيقيين، ولم يُقدَّر أي رقم بينهما.`
-            : `تمتد خطوط متقطعة عبر ${n} فترات لم يُعلن فيها عن صافي قيمة الأصول، أطولها ${longest} يومًا. كل منها يصل بين سعرين حقيقيين، ولم يُقدَّر أي رقم بينهما.`,
+            ? `لم يُعلن عن صافي قيمة الأصول لمدة ${longest} يومًا في هذه الفترة؛ يمتد الخط مباشرةً بين آخر سعر معلن والسعر التالي.`
+            : `لم يُعلن عن صافي قيمة الأصول في ${n} فترات هنا، أطولها ${longest} يومًا؛ يمتد الخط مباشرةً بين الأسعار المعلنة على الجانبين.`,
 };
 
 function rangeCutoff(range: Range): number | null {
@@ -430,22 +430,31 @@ export default function FundNavChart({
                     priceLineVisible: false,
                     lastValueVisible: false,
                 });
-            // The BRIDGE. A hole used to leave the line severed, which reads as a
-            // broken chart even though it was the honest rendering. So the runs
-            // are now joined — but a bridge is drawn as a thin DASHED line with no
-            // area fill, between two REAL observations and nothing in between. No
-            // value is invented: the segment has exactly two points, both measured.
-            // Solid-filling it would assert a path through the hole that nobody
-            // published, on a chart people price decisions against.
+            // The BRIDGE, drawn IDENTICALLY to observed data.
+            //
+            // Three renderings were tried. Severing the line was the most literal
+            // and read as a broken chart — which is what started this. A thin
+            // dashed connector was worse: on a 3Y window an eight-month span of
+            // dashes with no fill under it reads as a hole in the product, not as
+            // a note about the data.
+            //
+            // Dropping the whitespace instead would compress the hole to one bar
+            // and draw a near-vertical jump — a price shock that never happened,
+            // which is the defect lib/nav-gaps.ts exists to prevent.
+            //
+            // So: the time axis keeps the hole's true width, and the segment
+            // across it is a normal line with the normal area fill. It is a
+            // straight run between the last real price and the next real one,
+            // which is exactly what this chart already draws between any two
+            // consecutive observations — a weekly fund's line is straight for six
+            // days at a time and nobody calls that invented. NO synthetic point
+            // enters the data: the series has two points, both measured, and the
+            // tooltip below can only ever land on a real one.
             makeBridgeRef.current = () =>
-                chart.addSeries(LWC.LineSeries, {
-                    color: 'rgba(20, 184, 166, 0.45)',
-                    lineWidth: 1,
-                    lineStyle: 2,                 // dashed
+                chart.addSeries(LWC.AreaSeries, {
+                    ...seriesOptions,
                     priceLineVisible: false,
                     lastValueVisible: false,
-                    crosshairMarkerVisible: false,
-                    pointMarkersVisible: false,
                 });
 
             chartRef.current = chart;

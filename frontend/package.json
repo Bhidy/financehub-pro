@@ -46,6 +46,7 @@
     "verify:master": "npx tsx scripts/test-security-master.ts",
     "verify:universe": "node scripts/fund-universe-reconcile.mjs --check",
     "verify:schema": "npx tsx scripts/test-structured-data.ts",
+    "qa:gated": "node scripts/qa-gated-surfaces.mjs",
     "seo:parity": "node scripts/seo/parity.mjs",
     "seo:inspect": "node scripts/seo/inspect.mjs --per-segment 12"
   },

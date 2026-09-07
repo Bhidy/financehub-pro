@@ -88,6 +88,7 @@ from data_pipeline.pg_resilient import (  # noqa: E402
 UA = ("StartaMarkets-NAV-Backfill/1.0 (+https://startamarkets.com; "
       "contact via site) python-httpx")
 DEFAULT_DELAY = 1.5
+MAX_ARCHIVE_ATTEMPTS = 3
 
 SOURCE_AZIMUT = "azimut_site"
 SOURCE_CICAP = "cicapital_site"
@@ -410,12 +411,30 @@ def fetch_mubasher_news(sess, delay: float) -> dict[str, dict]:
 
     seen_dates: set[str] = set()
     parsed = 0
+    misses = 0
     for ts, url in sorted(arts):
         time.sleep(delay)
         snap = WAYBACK.format(ts=ts, url=url)
-        try:
-            raw = sess.get(snap, headers={"user-agent": UA}, timeout=120).text
-        except Exception:  # noqa: BLE001 — one capture must not stop the sweep
+        # RETRY, BECAUSE ONE ARTICLE CARRIES THE WHOLE MAPPING. Only two of the
+        # 114 captures predate the freeze, and they are the only ones that can
+        # prove which fund a series belongs to. Losing one to a flaky archive
+        # fetch does not cost a few points, it costs the entire fund: run to run
+        # the same code mapped 31 funds, then 14, purely on which captures came
+        # back. Three attempts with backoff, and a body too short to be an
+        # article is treated as a failure rather than an empty result.
+        raw = ""
+        for attempt in range(MAX_ARCHIVE_ATTEMPTS):
+            try:
+                body = sess.get(snap, headers={"user-agent": UA}, timeout=120).text
+                if len(body) > 20_000:
+                    raw = body
+                    break
+            except Exception:  # noqa: BLE001 — one capture must not stop the sweep
+                pass
+            if attempt + 1 < MAX_ARCHIVE_ATTEMPTS:
+                time.sleep(delay * (attempt + 2))
+        if not raw:
+            misses += 1
             continue
         body = re.sub(r"<script.*?</script>", "", raw, flags=re.S)
         text = html.unescape(re.sub(r"<[^>]+>", " ", body))
@@ -437,7 +456,7 @@ def fetch_mubasher_news(sess, delay: float) -> dict[str, dict]:
                                          "source": SOURCE_MUBNEWS})
             rec["pts"].setdefault(when, v)
     print(f"[manager] mubasher_news: {len(out)} fund names across {parsed} "
-          f"publication dates", flush=True)
+          f"publication dates ({misses} capture(s) unreachable)", flush=True)
     return out
 
 

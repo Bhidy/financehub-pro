@@ -116,16 +116,24 @@ async def main() -> None:
         # authenticates but fails require_admin's `is_active` check, which
         # presents as the same "not an administrator" screen and is maddening
         # to diagnose. Promotion means promotion.
+        #
+        # Decided in Python, not in a CASE on $2. Binding one parameter as both
+        # a SET value and a comparand made asyncpg's prepare fail outright with
+        # "inconsistent types deduced for parameter $2" — the placeholder is
+        # typed from `role` in one position and from an unknown literal in the
+        # other. Two parameters, two unambiguous types.
+        active = True if target == "admin" else row["is_active"]
         updated = await conn.fetchrow(
             """
             UPDATE users
                SET role = $2,
-                   is_active = CASE WHEN $2 = 'admin' THEN TRUE ELSE is_active END
+                   is_active = $3
              WHERE id = $1
             RETURNING role, is_active
             """,
             row["id"],
             target,
+            active,
         )
         print(f"\nUPDATED   : role {row['role']} -> {updated['role']}, active={updated['is_active']}")
 

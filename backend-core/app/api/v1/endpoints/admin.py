@@ -1199,7 +1199,14 @@ async def trigger_backfill(symbol: Optional[str] = None):
     }
 
 
-@router.get("/data/stats")
+# Gated 2026-09-07. These four were the last unauthenticated routes under
+# /admin and each returned real data to anonymous callers: pipeline state,
+# ticker/coverage counts (including the Saudi rows the public product does
+# not sell), refresh timestamps and a per-symbol data inventory. Read-only
+# is not the same as harmless — this is a map of the ingestion estate.
+# data-freshness-monitor.yml now sends X-Admin-Token; nothing else called
+# them.
+@router.get("/data/stats", dependencies=[Depends(require_admin_token)])
 async def get_data_stats():
     """
     Get statistics on data coverage
@@ -1226,7 +1233,7 @@ async def get_data_stats():
     }
 
 
-@router.get("/data/freshness")
+@router.get("/data/freshness", dependencies=[Depends(require_admin_token)])
 async def get_data_freshness():
     """
     Check when data was last updated
@@ -1596,7 +1603,7 @@ async def trigger_ticker_refresh(background_tasks: BackgroundTasks):
     return await trigger_price_refresh(background_tasks)
 
 
-@router.get("/refresh/status")
+@router.get("/refresh/status", dependencies=[Depends(require_admin_token)])
 async def get_refresh_status():
     """Get current refresh status"""
     return refresh_status
@@ -1607,7 +1614,7 @@ async def get_refresh_status():
 # were unreachable dead code that silently shadowed nothing — but kept future
 # editors changing the wrong copy.)
 
-@router.get("/data/available/{symbol}")
+@router.get("/data/available/{symbol}", dependencies=[Depends(require_admin_token)])
 async def get_available_data_for_symbol(symbol: str):
     """
     Check what data is available for a specific symbol.

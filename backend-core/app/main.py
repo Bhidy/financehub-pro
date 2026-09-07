@@ -541,12 +541,38 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"DATABASE SHUTDOWN ERROR (non-fatal): {e}")
 
+# Interactive API docs are OFF on the public internet (audit 2026-09-07).
+# /docs, /redoc and /api/v1/openapi.json were all reachable by anyone and
+# published the complete 164-path surface — every admin route, every parameter,
+# every schema — which is a reconnaissance map, not documentation.
+#
+# The machine-readable schema is still available to the operator, behind the
+# same X-Admin-Token as the rest of /admin (see the gated route below). The
+# Swagger and ReDoc PAGES stay off rather than gated, deliberately: their HTML
+# fetches the schema over XHR without our header, so a gated page would render
+# an empty spec and look broken. And a `?token=` escape hatch is worse than no
+# page at all — Swagger's own assets come from cdn.jsdelivr.net, so the token
+# would ride the Referer header straight off-origin.
+#
+# To read the spec:
+#   curl -H "X-Admin-Token: $ADMIN_API_TOKEN" \
+#        https://starta.46-224-223-172.sslip.io/api/v1/openapi.json > openapi.json
+# then open it in any local viewer, or run the API locally where docs are on.
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    openapi_url=None,
+    docs_url=None,
+    redoc_url=None,
     version="5.0.0-SECURE",
     lifespan=lifespan
 )
+
+
+@app.get(f"{settings.API_V1_STR}/openapi.json", include_in_schema=False,
+         dependencies=[Depends(require_admin_token)])
+async def gated_openapi():
+    """The OpenAPI schema, for the operator only. Same credential as /admin."""
+    return app.openapi()
 # Removed deprecated @app.on_event("startup") - handled in lifespan
 
 # Set all CORS enabled origins - allow all for production

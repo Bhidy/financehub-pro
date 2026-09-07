@@ -1,0 +1,99 @@
+name: Security - Admin Gate Self-Test
+
+# ============================================================
+# Proves BOTH directions of the /admin credential gate, on demand and weekly:
+#   without a token  -> 403 (or 404 for the docs pages)
+#   with the token   -> 200
+#
+# Why both. A gate is only correct if it closes AND opens. Asserting only the
+# closed direction is how you ship a wall that also locks out your own crons;
+# asserting only the open direction is how you ship a gate that was never
+# wired up. The repo has been bitten by the second kind before — a verify
+# script that scanned zero files and passed.
+#
+# Why this is safe in a PUBLIC repo: it prints STATUS CODES ONLY. No response
+# body is ever echoed, so no ticker counts, timestamps, schema or PII reach the
+# log, and the token itself is a masked secret.
+#
+# Requires repo secret: ADMIN_API_TOKEN.
+# ============================================================
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'   # Mondays 06:17 UTC — drift catcher
+  workflow_dispatch:
+
+concurrency:
+  group: admin-gate-selftest
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    name: Assert the admin gate closes and opens
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      API: https://starta.46-224-223-172.sslip.io
+    steps:
+      - name: Anonymous callers must be refused
+        run: |
+          set -u
+          FAIL=0
+          # path:expected — the docs PAGES are removed (404); everything else is
+          # gated (403), or 503 if the server lost its ADMIN_API_TOKEN entirely.
+          for entry in \
+            "/api/v1/admin/refresh/status:403" \
+            "/api/v1/admin/data/stats:403" \
+            "/api/v1/admin/data/freshness:403" \
+            "/api/v1/admin/data/available/COMI:403" \
+            "/api/v1/admin/backup/status:403" \
+            "/api/v1/admin/debug/scheduler_jobs:403" \
+            "/api/v1/openapi.json:403" \
+            "/docs:404" \
+            "/redoc:404" ; do
+            path="${entry%:*}"; want="${entry##*:}"
+            got=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 --retry 2 --retry-all-errors "$API$path" || echo 000)
+            if [ "$got" = "$want" ]; then
+              echo "  ok    $path -> $got"
+            else
+              echo "::error::$path returned $got, expected $want — this endpoint is EXPOSED or has moved."
+              FAIL=1
+            fi
+          done
+          [ "$FAIL" = "0" ] || exit 1
+
+      - name: The operator credential must still open them
+        env:
+          ADMIN_API_TOKEN: ${{ secrets.ADMIN_API_TOKEN }}
+        run: |
+          set -u
+          if [ -z "$ADMIN_API_TOKEN" ]; then
+            echo "::error::ADMIN_API_TOKEN is not set — cannot prove the gate opens."
+            exit 1
+          fi
+          FAIL=0
+          # Reads only. Never add a /refresh/* POST here: this runs on a
+          # schedule and must not move production data to test a header.
+          for path in \
+            "/api/v1/admin/refresh/status" \
+            "/api/v1/admin/data/stats" \
+            "/api/v1/admin/data/freshness" \
+            "/api/v1/admin/data/available/COMI" \
+            "/api/v1/openapi.json" ; do
+            got=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 --retry 2 --retry-all-errors \
+              -H "X-Admin-Token: $ADMIN_API_TOKEN" "$API$path" || echo 000)
+            if [ "$got" = "200" ]; then
+              echo "  ok    $path -> 200 with token"
+            else
+              echo "::error::$path returned $got WITH the admin token — the gate is locking out our own crons (data-freshness-monitor reads the first three)."
+              FAIL=1
+            fi
+          done
+          [ "$FAIL" = "0" ] || exit 1
+
+      - name: Summary
+        if: success()
+        run: echo "## ✅ Admin gate verified — closed to anonymous, open to the operator token" >> "$GITHUB_STEP_SUMMARY"

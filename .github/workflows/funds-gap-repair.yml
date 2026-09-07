@@ -31,11 +31,14 @@ name: Funds Gap Repair (Mubasher pages)
 #     real market history; chasing it would be chasing a hole that belongs there.
 #   · Only the ingested numeric-id universe is considered.
 #
-# NO SUDO ON THIS RUNNER. `playwright install --with-deps` apt-installs system
-# packages as root and failed on its first run for exactly that reason — the
-# same constraint db-backup.yml documents for pg_dump. The browser binary alone
-# needs no privileges, and it is cached under the runner's home so the download
-# happens once rather than every week.
+# NO SUDO ON THIS RUNNER, AND CHROMIUM NEEDS SYSTEM LIBRARIES ANYWAY.
+# `playwright install --with-deps` apt-installs them as root and fails here; the
+# browser then fails at LAUNCH with `libnspr4.so: cannot open shared object
+# file`, which is a much later and more confusing place to discover it. So the
+# libraries are downloaded as .debs and unpacked into a cache under the runner's
+# home, with LD_LIBRARY_PATH pointed at it — exactly what db-backup.yml already
+# does for postgresql-client-17 on this same box. It is cached, so it happens
+# once, and a launch check runs before any fund is touched.
 #
 # CREDENTIALS
 # Needs MUBASHER_USER and MUBASHER_PASS as repository secrets. Until they are
@@ -66,12 +69,13 @@ permissions:
 
 env:
   PLAYWRIGHT_BROWSERS_PATH: /home/github-runner/.cache/ms-playwright
+  CHROME_DEPS: /home/github-runner/.cache/chromium-deps
 
 jobs:
   repair:
     name: Re-read holed funds from their own Mubasher pages
     runs-on: [self-hosted, linux, x64, hetzner]
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -90,13 +94,49 @@ jobs:
             echo "have=yes" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Install Playwright (browser only — no sudo on this runner)
+      - name: Install Playwright and the browser
         if: steps.creds.outputs.have == 'yes'
         run: |
           set -euo pipefail
           pip install --quiet playwright asyncpg
           python -m playwright install chromium
-          echo "browser cache:"; ls -1 "$PLAYWRIGHT_BROWSERS_PATH" 2>/dev/null || true
+
+      - name: Chromium's system libraries, without root
+        if: steps.creds.outputs.have == 'yes'
+        run: |
+          set -euo pipefail
+          LIBDIR="$CHROME_DEPS/usr/lib/x86_64-linux-gnu"
+          if [ -f "$CHROME_DEPS/.ok" ]; then
+            echo "cached: $(ls -1 "$LIBDIR" 2>/dev/null | wc -l) library files"
+          else
+            echo "cache miss — fetching Chromium's runtime libraries as .debs"
+            rm -rf "$CHROME_DEPS"; mkdir -p "$CHROME_DEPS/debs"
+            # Ubuntu 24.04 renamed several of these with a t64 suffix; both
+            # spellings are listed and whichever resolves is taken.
+            PKGS="libnspr4 libnss3 libnssutil3 libsmime3
+                  libatk1.0-0t64 libatk1.0-0 libatk-bridge2.0-0t64 libatk-bridge2.0-0
+                  libatspi2.0-0t64 libatspi2.0-0 libcups2t64 libcups2
+                  libasound2t64 libasound2 libxkbcommon0 libxcomposite1 libxdamage1
+                  libxfixes3 libxrandr2 libgbm1 libdrm2 libxshmfence1
+                  libpango-1.0-0 libpangocairo-1.0-0 libcairo2 libdbus-1-3"
+            cd "$CHROME_DEPS/debs"
+            GOT=0
+            for p in $PKGS; do
+              if apt-get download "$p" >/dev/null 2>&1; then GOT=$((GOT+1)); fi
+            done
+            echo "downloaded $GOT package(s)"
+            if [ "$GOT" -eq 0 ]; then
+              echo "::error::could not download any Chromium dependency. apt lists may be missing on this runner."
+              exit 1
+            fi
+            for d in *.deb; do dpkg -x "$d" "$CHROME_DEPS"; done
+            rm -f ./*.deb
+            touch "$CHROME_DEPS/.ok"
+            echo "unpacked: $(ls -1 "$LIBDIR" 2>/dev/null | wc -l) library files"
+          fi
+          # Ahead of the system path, so the unpacked copies win where they exist
+          # and the system's own libraries still serve everything else.
+          echo "LD_LIBRARY_PATH=$LIBDIR:$CHROME_DEPS/usr/lib:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
 
       - name: Can the browser actually start?
         if: steps.creds.outputs.have == 'yes'

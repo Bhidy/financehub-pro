@@ -84,20 +84,26 @@ def collect(article_ids, *, cache_dir=None, verbose=True, bridge=False):
     ones — so the alias table, learned from recent statements, maps almost
     nothing on the older ones that cover the deepest part of the hole.
 
-    A bridge is a proposal, never a decision:
-      * it must be UNAMBIGUOUS (exactly one known fund resembles the name);
-      * the fund's whole reconstructed series still has to clear
-        `reconcile_series`, closure included. Two different funds sit at
-        different price levels entirely, so a wrong bridge cannot join our held
-        data on both sides of the gap.
-    Every bridge taken is reported, so the inference is never invisible.
+    A name resemblance is NOT evidence of identity, and this was proven the
+    expensive way: bridging on names alone mapped rows onto fund 5989 whose own
+    held value that day was 21.898 against a printed 0.83604 — 96% wrong — and
+    onto 5809, 88% wrong. Different funds, similar names. The gate caught them,
+    but a fund sitting inside the gap has no overlapping date for the gate to
+    catch anything with.
+
+    So `collect` no longer decides bridges. It records the unmapped rows WITH
+    their values, and `run` accepts a bridge only when the proposed fund's own
+    stored NAV corroborates the printed price on dates we already hold. The
+    name only narrows the search; the value decides, exactly as the alias table
+    itself is built.
     """
-    from mubasher_statement import propose_bridge
     aliases = load_aliases()
     by_fund: dict[str, dict[str, float]] = defaultdict(dict)
     bridged: dict[str, str] = {}
+    unmapped_rows: dict[str, dict] = defaultdict(dict)
     report = {"read": 0, "refused": 0, "rows": 0, "mapped": 0, "bridged": bridged,
-              "unmapped": defaultdict(int), "errors": []}
+              "unmapped": defaultdict(int), "unmapped_rows": unmapped_rows,
+              "errors": []}
     for aid in article_ids:
         try:
             page = fetch_article(aid, cache_dir=cache_dir)
@@ -121,15 +127,10 @@ def collect(article_ids, *, cache_dir=None, verbose=True, bridge=False):
         for row in rows:
             key = normalise_name(row.name)
             fund_id = aliases.get(key)
-            if not fund_id and bridge:
-                if key in bridged:
-                    fund_id = bridged[key]
-                else:
-                    proposals = propose_bridge(row.name, aliases)
-                    if len(proposals) == 1:
-                        fund_id = bridged[key] = proposals[0]
             if not fund_id:
                 report["unmapped"][row.name] += 1
+                if bridge and row.decimals >= 4:
+                    unmapped_rows[row.name][iso] = row.value
                 continue
             report["mapped"] += 1
             # Two statements can carry the same fund on the same day (the
@@ -284,6 +285,54 @@ async def learn_aliases(conn, article_ids, *, cache_dir, out_path, min_dates=3,
     return doc
 
 
+def corroborate_bridges(unmapped_rows, aliases, held, *, min_hits=2, tol_pct=0.002):
+    """
+    Turn unmapped printed names into fund ids — by VALUE, with the name only
+    narrowing the search.
+
+    Mubasher renamed its columns between eras ("Horus M.M" -> "HORUS - AFIM"),
+    so the alias table learned from recent statements maps little on the older
+    ones. The tempting shortcut is to match those names by resemblance. It does
+    not work: measured 2026-09-07, name-only bridging put rows on fund 5989
+    whose own held NAV that day was 21.898 against a printed 0.83604, and on
+    5809, 88% out. Similar names, different funds.
+
+    So a proposal is only accepted when the candidate fund's OWN stored NAV
+    equals the printed price on at least `min_hits` dates we already hold. That
+    is the same standard the alias table is built to; the name merely says
+    which funds are worth testing.
+
+    Returns (accepted {name_key: fund_id}, rejected [(name, why)]).
+    """
+    from mubasher_statement import normalise_name, propose_bridge
+    accepted, rejected = {}, []
+    for name, series in unmapped_rows.items():
+        proposals = propose_bridge(name, aliases)
+        if not proposals:
+            continue
+        scored = []
+        for fund_id in proposals:
+            own = held.get(fund_id, {})
+            hits = sum(1 for d, v in series.items()
+                       if d in own and own[d]
+                       and abs(v - own[d]) / own[d] * 100 < tol_pct)
+            if hits:
+                scored.append((hits, fund_id))
+        if not scored:
+            rejected.append((name, "no date where the printed price matches a candidate"))
+            continue
+        scored.sort(reverse=True)
+        best_hits, best_fund = scored[0]
+        if best_hits < min_hits:
+            rejected.append((name, f"only {best_hits} corroborating date(s), need {min_hits}"))
+            continue
+        if len(scored) > 1 and scored[1][0] == best_hits:
+            rejected.append((name, "two candidates corroborate equally well"))
+            continue
+        accepted[normalise_name(name)] = best_fund
+    return accepted, rejected
+
+
 def report_plan(candidate, held, *, show=12, inferred=frozenset(), quiet=False):
     """
     The dry-run report: what reconciliation would accept, and what it refuses.
@@ -349,13 +398,35 @@ async def run(article_ids, *, cache_dir, commit, held_archive=None,
         print("nothing to write.")
         return 0
 
+    def _apply_bridges(held_all):
+        """Second pass: value-corroborated bridges, merged into the candidate set."""
+        if not bridge or not report["unmapped_rows"]:
+            return
+        from mubasher_statement import load_aliases as _la
+        ok, bad = corroborate_bridges(report["unmapped_rows"], _la(), held_all)
+        for key, fund_id in ok.items():
+            report["bridged"][key] = fund_id
+        for name, series in report["unmapped_rows"].items():
+            from mubasher_statement import normalise_name as _nn
+            fund_id = ok.get(_nn(name))
+            if not fund_id:
+                continue
+            for d, v in series.items():
+                candidate.setdefault(fund_id, {}).setdefault(d, v)
+        print(f"\nbridges corroborated by value: {len(ok)}   rejected: {len(bad)}")
+        for key, fund_id in list(ok.items())[:10]:
+            print(f"   {key[:42]:42} -> fund {fund_id}")
+        for name, why in bad[:6]:
+            print(f"   rejected {name[:34]:34} {why}")
+
     # ---- offline rehearsal ------------------------------------------------
     if held_archive:
         if commit:
             raise SystemExit("--held-archive is a rehearsal against a snapshot; "
                              "it must never be combined with --commit.")
-        held = load_held_archive(held_archive, candidate.keys())
+        held = load_held_archive(held_archive)      # all funds: bridges need them
         print(f"\n[offline rehearsal against {held_archive}]")
+        _apply_bridges(held)
         report_plan(candidate, held, inferred=set(report['bridged'].values()))
         print("\nDRY RUN — no database was contacted, nothing written.")
         return 0
@@ -368,7 +439,11 @@ async def run(article_ids, *, cache_dir, commit, held_archive=None,
 
     conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0)
     try:
-        held = await load_held(conn, candidate.keys())
+        need = set(candidate)
+        if bridge:
+            need |= set(load_aliases().values())
+        held = await load_held(conn, need)
+        _apply_bridges(held)
         accepted, total_new = report_plan(
             candidate, held, inferred=set(report['bridged'].values()))
 
@@ -468,8 +543,37 @@ def _self_test() -> int:
     # -- era bridging --------------------------------------------------
     src_collect = _inspect.getsource(collect)
     check("bridge is opt-in", "bridge=False" in src_collect)
-    check("a bridge must be unambiguous", "len(proposals) == 1" in src_collect)
-    check("bridges are reported, never silent", '"bridged"' in src_collect)
+    check("collect never decides a bridge from a name",
+          "propose_bridge" not in src_collect)
+    check("collect records unmapped rows with their values",
+          "unmapped_rows" in src_collect)
+
+    # -- value-corroborated bridging -----------------------------------
+    # Name resemblance is not identity. Name-only bridging put rows on fund
+    # 5989 whose held NAV that day was 21.898 against a printed 0.83604.
+    al2 = {normalise_name("HORUS - AFIM"): "5906",
+           normalise_name("Aafaq Investment Fund"): "5751"}
+    heldb = {"5906": {"2026-01-01": 20.0, "2026-01-02": 20.01, "2026-01-03": 20.02},
+             "5751": {"2026-01-01": 250.0, "2026-01-02": 250.1, "2026-01-03": 250.2}}
+
+    ok, bad = corroborate_bridges(
+        {"Horus M.M": {"2026-01-01": 20.0, "2026-01-02": 20.01}}, al2, heldb)
+    check("a bridge corroborated on 2 dates is accepted",
+          ok.get(normalise_name("Horus M.M")) == "5906")
+
+    ok, bad = corroborate_bridges(
+        {"Horus M.M": {"2026-01-01": 20.0}}, al2, heldb)
+    check("one corroborating date is not enough", not ok and bad)
+
+    # the failure that motivated this: a similar name, wildly wrong values
+    ok, bad = corroborate_bridges(
+        {"Horus MM USD": {"2026-01-01": 0.836, "2026-01-02": 0.837}}, al2, heldb)
+    check("a name match with no value agreement is refused", not ok)
+    check("the refusal says why", bad and "match" in bad[0][1])
+
+    src_bridge = _inspect.getsource(corroborate_bridges)
+    check("bridging compares against held NAVs", "held.get(fund_id" in src_bridge)
+    check("ties between candidates are refused", "corroborate equally well" in src_bridge)
 
     src_plan2 = _inspect.getsource(report_plan)
     check("inferred funds need a two-sided anchor",

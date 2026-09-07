@@ -94,7 +94,8 @@ def test_chart_timestamps_are_read_as_utc():
     first live run wrote 13,313 rows and 100% of them were one-day-shifted
     duplicates carrying the NEXT day's value."""
     assert "datetime.fromtimestamp(ts / 1000.0, timezone.utc)" in SRC
-    assert "from datetime import datetime, timezone" in SRC
+    assert "from datetime import datetime, timedelta, timezone" in SRC
+    # the bare, timezone-naive form must never come back
     assert "datetime.fromtimestamp(ts / 1000.0).date()" not in SRC
 
 
@@ -128,4 +129,24 @@ def test_alignment_is_judged_against_rows_this_scraper_did_not_write():
 
 def test_the_run_reports_what_it_refused():
     assert "refused" in SRC and "written" in SRC
-    assert "::warning::" in SRC
+    # An error, not a warning: a refusal means the source's date convention
+    # moved, and the previous incident looked like a success while writing
+    # 13,313 wrong rows.
+    assert "::error::" in SRC
+
+
+def test_the_chart_date_convention_is_corrected_not_assumed():
+    """Measured, not guessed: the alignment gate scored 46 of 46 funds at +1 day,
+    fitting to 0.0002% median versus 0.0566% at the dates the chart claims. The
+    per-fund CSV is authoritative, so the chart is what gets brought into line."""
+    assert "CHART_DATE_OFFSET_DAYS = 1" in SRC
+    assert "timedelta(days=CHART_DATE_OFFSET_DAYS)" in SRC
+
+
+def test_a_refusal_reds_the_run():
+    """Once the convention is corrected for, every fund with overlapping data
+    should align. A refusal means it moved, and the previous incident looked
+    exactly like a success while writing 13,313 wrong rows."""
+    assert "::error::" in SRC
+    assert "raise SystemExit(1)" in SRC
+    assert re.search(r"if refused:\s*\n\s*print\(f?\"::error::", SRC)

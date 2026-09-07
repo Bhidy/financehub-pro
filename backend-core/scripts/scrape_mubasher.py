@@ -4,7 +4,7 @@ import os
 import csv
 import aiohttp
 import asyncpg
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from playwright.async_api import async_playwright
 import sys, os as _os
 sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
@@ -229,7 +229,8 @@ async def extract_highcharts_history(page):
                         # day's value. That is worse than a missing point — it
                         # makes a weekly fund look like it publishes twice a
                         # week and corrupts cadence, gaps and every return.
-                        dt = datetime.fromtimestamp(ts / 1000.0, timezone.utc).date()
+                        dt = (datetime.fromtimestamp(ts / 1000.0, timezone.utc).date()
+                              + timedelta(days=CHART_DATE_OFFSET_DAYS))
                         history.append({'date': dt, 'nav': float(val)})
                      except Exception: pass
         return history
@@ -386,6 +387,26 @@ async def gapped_fund_ids(conn) -> set:
 
 SOURCE_TAG = "mubasher_page"
 
+# ══ THE CHART DATES A NAV ONE DAY BEFORE THE PRICE FILE DOES ════════════════
+# Not a bug in our reading — a convention difference in the source, measured
+# rather than assumed. The alignment gate scored every fund in the 2026-09-07
+# run at offsets -2..+2 against NAV we already hold, and the answer was
+# unanimous:
+#
+#     46 of 46 funds  ->  best fit at +1 day
+#     at +1 : median 0.0002%, max 0.0030%, all 52 samples under 0.01%
+#     at  0 : median 0.0566%, max 0.9221%
+#
+# The per-fund CSV is the platform's authoritative source and every stored row
+# follows it, so the chart is what must be brought into line, not the reverse.
+#
+# THIS CONSTANT IS NOT TRUSTED. It is applied, and then the same gate re-checks
+# every fund at the corrected dates. If Mubasher ever changes the convention,
+# every fund with overlapping data is refused and the log states the new offset
+# outright — a loud, self-diagnosing failure rather than a silent re-run of the
+# incident this exists to prevent.
+CHART_DATE_OFFSET_DAYS = 1
+
 
 async def purge_scraped(conn) -> int:
     """Remove rows THIS script wrote, and only those.
@@ -482,6 +503,7 @@ async def main(test_mode=False, gaps_only=False, purge=False):
             print("⚠️ TEST MODE: Processing first 3 funds only.")
         
         written = refused = 0
+        failed = False
         for i, fund in enumerate(all_funds):
             print(f"[{i+1}/{len(all_funds)}] Processing {fund['name']} ({fund['fund_id']})...")
             
@@ -525,13 +547,23 @@ async def main(test_mode=False, gaps_only=False, purge=False):
                 
         print(f"\n📊 {written} history point(s) written, {refused} fund(s) REFUSED "
               f"for misaligned dates.")
+        # A REFUSAL IS NOT A WARNING. Once the chart's date convention has been
+        # measured and corrected for, every fund with overlapping data should
+        # align. A refusal therefore means the convention moved, and the run
+        # must go RED rather than quietly write less than it should — the
+        # previous incident looked like a success in exactly that way.
         if refused:
-            print("::warning::some funds were refused because their dates did not "
-                  "line up with NAV already held. Nothing was written for them.")
+            print(f"::error::{refused} fund(s) refused: their dates no longer line "
+                  f"up with NAV already held. The source's date convention has "
+                  f"probably changed — the offsets printed above say by how much. "
+                  f"Nothing was written for them.")
+            failed = True
         await browser.close()
 
     await conn.close()
     print("🏁 Scraping Complete.")
+    if failed:
+        raise SystemExit(1)
 
 if __name__ == "__main__":
     import sys

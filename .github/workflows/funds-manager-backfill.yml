@@ -16,7 +16,8 @@ name: Funds Manager Backfill
 #   azimut         app.azimut.eg/api/fund/{id} → `graph`, the full
 #                  [epoch_ms, nav] series behind the "Growth of Investment"
 #                  chart on azimut.eg. Recovered 4,672 observations across 13
-#                  funds on its first run.
+#                  funds on its first run. Reads floats from a JSON API and
+#                  never touches markup.
 #
 #   mubasher_news  THE VENDOR HAD THE DATA THE WHOLE TIME. Mubasher's per-fund
 #                  price FILE froze on 2025-05-14; their news desk went on
@@ -40,6 +41,14 @@ name: Funds Manager Backfill
 # "Menthum" against our fund 6157 at 41% error, and separates Maksab USD (our
 # 6121, 0.004%) from our 6193 (4.567%).
 #
+# REPAIR MODE. A price rendered as `19.<span>40456</span>` was once read as
+# "19." and written as 19.0 — a wrong NAV on a live page, not a missing one. The
+# parser now reads the number whole and refuses anything still ending in a
+# separator, but the rows already written had to come out. `purge` deletes rows
+# by source and is restricted to the three sources this script writes: no vendor
+# observation and no other pipeline's row can be reached from it. Everything it
+# removes is re-derivable by a subsequent write.
+#
 # BE KIND: self-identifying UA, a delay between requests, one pass over each
 # archived article. The Internet Archive is a public service; Azimut's API is
 # the one their own public site calls.
@@ -55,13 +64,13 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'write commits what reconciles (also the scheduled mode); dry-run reports only'
+        description: 'write commits what reconciles (also the scheduled mode); dry-run reports only; purge deletes this script own rows for the chosen source'
         required: true
         default: 'write'
         type: choice
-        options: [write, dry-run]
+        options: [write, dry-run, purge]
       source:
-        description: 'restrict to one source (blank = all)'
+        description: 'restrict to one source (blank = all; required for purge)'
         required: false
         default: ''
         type: choice
@@ -96,6 +105,14 @@ jobs:
           ARGS=""
           [ -n "$SRC" ] && ARGS="--only $SRC"
           case "$MODE" in
+            purge)
+              case "$SRC" in
+                azimut)        PS=azimut_site ;;
+                mubasher_news) PS=mubasher_news_archive ;;
+                cicapital)     PS=cicapital_site ;;
+                *) echo "purge needs an explicit source" >&2; exit 1 ;;
+              esac
+              python backend-core/scripts/manager_nav_backfill.py --purge-source "$PS" ;;
             dry-run)
               python backend-core/scripts/manager_nav_backfill.py --dry-run $ARGS ;;
             write|'')

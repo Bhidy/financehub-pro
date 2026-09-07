@@ -31,11 +31,16 @@ name: Funds Gap Repair (Mubasher pages)
 #     real market history; chasing it would be chasing a hole that belongs there.
 #   · Only the ingested numeric-id universe is considered.
 #
+# NO SUDO ON THIS RUNNER. `playwright install --with-deps` apt-installs system
+# packages as root and failed on its first run for exactly that reason — the
+# same constraint db-backup.yml documents for pg_dump. The browser binary alone
+# needs no privileges, and it is cached under the runner's home so the download
+# happens once rather than every week.
+#
 # CREDENTIALS
-# Needs MUBASHER_USER and MUBASHER_PASS as repository secrets. They exist today
-# only inside the backend service's environment, which is why this path has been
-# unavailable to every scheduled job. Until they are set this workflow says so
-# and exits 0, rather than reporting a red run every week for a known reason.
+# Needs MUBASHER_USER and MUBASHER_PASS as repository secrets. Until they are
+# set this workflow says so and exits 0, rather than reporting a red run every
+# week for a known reason.
 # ============================================================
 
 on:
@@ -59,6 +64,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  PLAYWRIGHT_BROWSERS_PATH: /home/github-runner/.cache/ms-playwright
+
 jobs:
   repair:
     name: Re-read holed funds from their own Mubasher pages
@@ -77,16 +85,40 @@ jobs:
         run: |
           if [ -z "${MUBASHER_USER}" ]; then
             echo "have=no" >> "$GITHUB_OUTPUT"
-            echo "::notice title=Dormant::MUBASHER_USER / MUBASHER_PASS are not set as repository secrets, so the gap repair cannot run. This is the single change that unlocks the only source able to reach every fund and every date."
+            echo "::notice title=Dormant::MUBASHER_USER / MUBASHER_PASS are not set as repository secrets, so the gap repair cannot run."
           else
             echo "have=yes" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Install Playwright
+      - name: Install Playwright (browser only — no sudo on this runner)
         if: steps.creds.outputs.have == 'yes'
         run: |
+          set -euo pipefail
           pip install --quiet playwright asyncpg
-          python -m playwright install --with-deps chromium
+          python -m playwright install chromium
+          echo "browser cache:"; ls -1 "$PLAYWRIGHT_BROWSERS_PATH" 2>/dev/null || true
+
+      - name: Can the browser actually start?
+        if: steps.creds.outputs.have == 'yes'
+        run: |
+          set -euo pipefail
+          # A missing shared library only shows at LAUNCH, and it would otherwise
+          # surface fifty funds into the real run. Find out in five seconds.
+          python - <<'PY'
+          import asyncio
+          from playwright.async_api import async_playwright
+
+          async def main():
+              async with async_playwright() as p:
+                  b = await p.chromium.launch(headless=True,
+                                              args=['--disable-blink-features=AutomationControlled'])
+                  page = await b.new_page()
+                  await page.goto('about:blank')
+                  await b.close()
+              print('chromium launches cleanly')
+
+          asyncio.run(main())
+          PY
 
       - name: Repair the gaps
         if: steps.creds.outputs.have == 'yes'

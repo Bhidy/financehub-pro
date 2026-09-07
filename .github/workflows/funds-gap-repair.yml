@@ -98,7 +98,10 @@ jobs:
         if: steps.creds.outputs.have == 'yes'
         run: |
           set -euo pipefail
-          pip install --quiet playwright asyncpg
+          # Every third-party import scrape_mubasher makes. aiohttp and
+          # python-dotenv were missing and only announced themselves after the
+          # browser had already been installed and launched.
+          pip install --quiet playwright asyncpg aiohttp python-dotenv
           python -m playwright install chromium
 
       - name: Chromium's system libraries, without root

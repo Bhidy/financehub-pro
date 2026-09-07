@@ -17,7 +17,11 @@ def test_gap_mode_turns_the_resume_guard_off():
     assert "if gaps_only:" in SRC
     # Matched across line breaks: the message wraps, and a regex anchored to a
     # single physical line broke the moment the wording grew.
-    m = re.search(r"if gaps_only:.*?elif history_count > 10 and is_fresh:", SRC, re.S)
+    # Anchored to the NEAREST `if gaps_only:` — the file has two, and a plain
+    # non-greedy match ran from the first (the fund-list selection, ~190 lines
+    # earlier) all the way down to the guard.
+    m = re.search(r"if gaps_only:(?:(?!if gaps_only:).)*?elif history_count > 10 and is_fresh:",
+                  SRC, re.S)
     assert m, "gap mode must short-circuit the resume guard, not sit after it"
     assert len(m.group(0)) < 400, "the two branches must be adjacent, not separated by other logic"
 

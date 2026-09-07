@@ -1,312 +1,531 @@
 {
- "_comment": "printed statement name (normalised) -> our fund_id. Learned by VALUE FINGERPRINT: the printed price equalled our stored NAV on >=2 distinct dates, and the candidate set intersected to exactly one fund. Never hand-written, never inferred from name similarity.",
+ "_comment": "printed statement name (normalised) -> our fund_id. Learned ONLY by VALUE FINGERPRINT: the printed price equalled our stored NAV (within 20 ppm; our archive stores 4dp, the statement 5dp) on >=3 DISTINCT dates AND the candidate set intersected to exactly one fund. Never hand-written, never inferred from name similarity. \"disagreements\" counts dates where this alias resolved but the printed value differed >0.05% from ours — those are VENDOR errors, not mapping errors (verified for Zaldi/6392, which ran 1.457%% high for five days in Aug 2026 then snapped back).",
  "_built": "2026-09-07",
- "_source": "mubasher.info general/equity daily NAV statements, 21 statements 2025-08..2026-09",
+ "_min_dates": 3,
+ "_tolerance_pct": 0.002,
+ "_source": "mubasher.info daily NAV statements, 21 statements 2025-08..2026-09",
  "aliases": {
-  "cash mubasher": {
-   "fund_id": "2665",
-   "printed": "Cash Mubasher Fund Price",
-   "fund_name": "صندوق استثمار مباشر كابيتال ذو العائد اليومي التراكمي - كاش مباشر"
-  },
   "nbk money market": {
    "fund_id": "2723",
    "printed": "NBK Money Market",
+   "dates": 8,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار بنك الكويت الوطني مصر النقدي - إشراق"
   },
   "az idkhar": {
    "fund_id": "5729",
    "printed": "AZ - IDKHAR",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق أزيموت لأدوات الدخل الثابت - ادخار AZ"
   },
   "al siola ni capital": {
    "fund_id": "5737",
    "printed": "Al-Siola Fund-NI Capital",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار إن أي كابيتال النقدي - السيولة"
-  },
-  "ataa charity": {
-   "fund_id": "5750",
-   "printed": "Ataa Charity Fund",
-   "fund_name": "صندوق الاستثمار الخيري لدعم ذوي الإعاقة - عطاء"
   },
   "aafaq": {
    "fund_id": "5751",
    "printed": "Aafaq Investment Fund",
+   "dates": 8,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار آفاق للأوراق المالية"
   },
   "az foras": {
    "fund_id": "5753",
    "printed": "AZ - FORAS",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق أزيموت لفرص الأسهم - فرص AZ"
   },
   "wethaq": {
    "fund_id": "5784",
    "printed": "Wethaq Investment",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار شركة وثاق للتأمين التكافلي النقدى ذو العائد اليومى الترا"
   },
   "delta life assurance": {
    "fund_id": "5808",
    "printed": "Delta Life Assurance",
+   "dates": 3,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار شركة الدلتا لتأمينات الحياة"
   },
   "az estehkak t27 usd": {
    "fund_id": "5809",
    "printed": "AZ - Estehkak T27 USD",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق أزيموت استحقاق 2027 - الإصدار الأول بالدولا الأمريكي"
   },
   "gig money market": {
    "fund_id": "5822",
    "printed": "GIG Money Market",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار شركة جي آي جي للتأمين النقدي للسيولة"
   },
   "misr tkaful money market": {
    "fund_id": "5823",
    "printed": "Misr Tkaful Money Market",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار شركة مصر للتأمين التكافلي النقدى الإسلامي"
   },
   "istsmar w aman": {
    "fund_id": "5901",
    "printed": "Istsmar w Aman",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق مصر للتأمين حماية رأس المال - استثمار وأمان"
   },
   "horus afim": {
    "fund_id": "5906",
    "printed": "HORUS - AFIM",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار حورس النقدي - حورس"
   },
   "tamayoz afim": {
    "fund_id": "5988",
    "printed": "Tamayoz - AFIM",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق إستثمار شركة الأهلي لإدارة الاستثمارات المالية و صندوق التأمين ا"
   },
   "az gold": {
    "fund_id": "5989",
    "printed": "AZ-GOLD",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق أزيموت للمعادن النفيسة الإسلامي - الإصدار الأول - جولد - AZ"
   },
   "beltone fixed income egp": {
    "fund_id": "6035",
    "printed": "Beltone Fixed Income EGP",
+   "dates": 3,
+   "disagreements": 0,
    "fund_name": "صندوق بلتون للأوراق المالية ذات العائد الثابت - بي سيكيور"
   },
   "iskan kol youm": {
    "fund_id": "6037",
    "printed": "Iskan - Kol Youm",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار شركة إسكان للتأمين النقدي - كل يوم"
   },
   "weladna charity": {
    "fund_id": "6038",
    "printed": "Weladna Charity fund",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق الاستثمار الخيري - ولادنا"
   },
   "el fanar cash": {
    "fund_id": "6047",
    "printed": "El Fanar Cash Fund",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "الفنار النقدي"
   },
   "bareeq": {
    "fund_id": "6062",
    "printed": "Bareeq fund",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار بريق للدخل ثابت"
   },
   "dahab afim": {
    "fund_id": "6120",
    "printed": "Dahab - AFIM",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار شركة الأهلي لإدارة الإستثمارات المالية وايفولف للاستثمار"
   },
   "ciam shariah equity": {
    "fund_id": "6144",
    "printed": "CIAM - Shariah Equity",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار سي آي استس مانجمنت للاسثتمار في مؤشر الشريعة EGX33 - مصر"
   },
   "mubasher equity": {
    "fund_id": "6145",
    "printed": "Mubasher Equity Fund Price",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق مباشر للاستثمار في الأسهم المصرية - أسهم مباشر"
   },
   "beltone egx100": {
    "fund_id": "6148",
    "printed": "Beltone EGX100 Fund",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أسهم مؤشر EGX100 - الإصدار ال"
   },
   "beltone egx33 shariah": {
    "fund_id": "6149",
    "printed": "Beltone EGX33 Shariah",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أسهم مؤشر الشريعة EGX33 - الإ"
   },
   "ci ctor building": {
    "fund_id": "6197",
    "printed": "CI-ctor Building",
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
-  },
-  "citechnology": {
-   "fund_id": "6198",
-   "printed": "Citechnology",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
   },
   "ci ctor technology": {
    "fund_id": "6198",
    "printed": "CI-ctor Technology",
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
-  },
-  "ciam exporting": {
-   "fund_id": "6199",
-   "printed": "CIAM Exporting",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
   },
   "ci ctor exporting": {
    "fund_id": "6199",
    "printed": "CI-ctor Exporting",
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
-  },
-  "ci consuming": {
-   "fund_id": "6200",
-   "printed": "CI Consuming",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
   },
   "ci ctor consuming": {
    "fund_id": "6200",
    "printed": "CI-ctor Consuming",
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
-  },
-  "ci digital pay": {
-   "fund_id": "6201",
-   "printed": "Ci digital pay",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
   },
   "ci ctor digital pay": {
    "fund_id": "6201",
    "printed": "CI-ctor Digital Pay",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
-  },
-  "beltone financial": {
-   "fund_id": "6202",
-   "printed": "Beltone Financial Fund",
-   "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أسهم القطاعات المالية - الإصد"
   },
   "beltone real estate": {
    "fund_id": "6203",
    "printed": "Beltone Real Estate Fund",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أسهم القطاعات العقارية - الإص"
   },
   "beltone industrial": {
    "fund_id": "6204",
    "printed": "Beltone Industrial Fund",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أسهم القطاعات الصناعية - الإص"
   },
   "beltone consumer": {
    "fund_id": "6205",
    "printed": "Beltone Consumer",
+   "dates": 3,
+   "disagreements": 0,
    "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أسهم القطاعات الاستهلاكية - ا"
-  },
-  "beltone fixed income usd": {
-   "fund_id": "6212",
-   "printed": "Beltone Fixed Income USD",
-   "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أدوات الدخل الثابت - الإصدار "
   },
   "kenz shariah": {
    "fund_id": "6250",
    "printed": "Kenz Shariah",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار شركة العربي الأفريقى للاستثمارات القابضة AAIH للاسثمار ف"
   },
   "kenz foras aaih": {
    "fund_id": "6251",
    "printed": "Kenz Foras AAIH",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار شركة العربي الأفريقى للاستثمارات القابضة AAIH للاسثمار ف"
-  },
-  "odin equity": {
-   "fund_id": "6376",
-   "printed": "Odin Equity Fund",
-   "fund_name": "صندوق استثمار أودن للإستثمار في الأسهم المقيدة بالبورصة - تريند"
   },
   "target fixed income": {
    "fund_id": "6391",
    "printed": "Target Fixed Income Fund",
+   "dates": 8,
+   "disagreements": 0,
    "fund_name": "صندوق تارجت الأول للدخل الثابت"
   },
   "zaldi money market": {
    "fund_id": "6392",
    "printed": "Zaldi Money Market",
+   "dates": 3,
+   "disagreements": 5,
    "fund_name": "صندوق استثمار زالدي النقدي - زالدي استار"
   },
   "cairo capital cumulative": {
    "fund_id": "6410",
    "printed": "Cairo Capital Cumulative",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار كايرو كابيتال التراكمي - مومنتم"
-  },
-  "granite": {
-   "fund_id": "6411",
-   "printed": "Granite fund",
-   "fund_name": "صندوق استثمار جرانيت لأدوات الدخل الثابت - الإصدار الأول النقدي بالجني"
   },
   "pfi cashi": {
    "fund_id": "6412",
    "printed": "PFI Cashi fund",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار بي إف أي للسيولة النقدية - الإصدار الأول - كاشي PFI"
   },
   "gosour equity cumulativ": {
    "fund_id": "6442",
    "printed": "Gosour Equity Cumulativ",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "جسور للاستثمار في الأسهم"
-  },
-  "cithequant6": {
-   "fund_id": "6451",
-   "printed": "CITHEQUANT6",
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
   },
   "ci thequant 6": {
    "fund_id": "6451",
    "printed": "CI THEQUANT 6",
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
-  },
-  "ciam8issue ipo": {
-   "fund_id": "6453",
-   "printed": "CIAM8Issue-IPO",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
   },
   "ci sec 8": {
    "fund_id": "6453",
    "printed": "CI SEC 8",
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
-  },
-  "ci20hd7": {
-   "fund_id": "6454",
-   "printed": "CI20HD7",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
   },
   "ci 20hd 7": {
    "fund_id": "6454",
    "printed": "CI 20HD 7",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
   },
   "mubasher silver": {
    "fund_id": "6472",
    "printed": "Mubasher Silver Fund",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار مباشر وإمبراطورية الذهب للاستثمار في الفضة - فضة مباشر"
-  },
-  "kenzegx70": {
-   "fund_id": "6479",
-   "printed": "KenzEGX70",
-   "fund_name": "صندوق استثمار شركة العربي الأفريقي للاستثمارات القابضة AAIH للاسثمار ف"
   },
   "kenz egx70": {
    "fund_id": "6479",
    "printed": "Kenz EGX70",
-   "fund_name": "صندوق استثمار شركة العربي الأفريقي للاستثمارات القابضة AAIH للاسثمار ف"
-  },
-  "kenzegx35lv": {
-   "fund_id": "6480",
-   "printed": "KenzEGX35LV",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار شركة العربي الأفريقي للاستثمارات القابضة AAIH للاسثمار ف"
   },
   "kenz egx 35 lv": {
    "fund_id": "6480",
    "printed": "Kenz EGX 35 LV",
+   "dates": 4,
+   "disagreements": 0,
    "fund_name": "صندوق استثمار شركة العربي الأفريقي للاستثمارات القابضة AAIH للاسثمار ف"
+  }
+ },
+ "quarantine": {
+  "afaaq": {
+   "fund_id": "5751",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "cash mubasher": {
+   "fund_id": "2665",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "azimut target maturity usd 2025": {
+   "fund_id": "2678",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ishraq": {
+   "fund_id": "2723",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "rwlopgwi": {
+   "fund_id": "6145",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "az uoj": {
+   "fund_id": "5753",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "citechnology": {
+   "fund_id": "6198",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "ciam exporting": {
+   "fund_id": "6199",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "ci digital pay": {
+   "fund_id": "6201",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "ci consuming": {
+   "fund_id": "6200",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "100 00jgi": {
+   "fund_id": "6148",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "pgiogejlilgu": {
+   "fund_id": "6410",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "kenzegx70": {
+   "fund_id": "6479",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "kenzegx35lv": {
+   "fund_id": "6480",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "ci20hd7": {
+   "fund_id": "6454",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "ciam8issue ipo": {
+   "fund_id": "6453",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "cithequant6": {
+   "fund_id": "6451",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "egymubmca": {
+   "fund_id": "2665",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "beltone financial": {
+   "fund_id": "6202",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "granite": {
+   "fund_id": "6411",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "beltone fixed income usd": {
+   "fund_id": "6212",
+   "dates": 2,
+   "why": "below evidence floor"
   },
   "target second issuance": {
    "fund_id": "6488",
-   "printed": "Target Second Issuance",
-   "fund_name": "صندوق تارجت الثاني للعائد الثابت بالدولار"
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "lo pgwi": {
+   "fund_id": "6145",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "az uoji": {
+   "fund_id": "5753",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "gligslpe": {
+   "fund_id": "5903",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "100 100 jgi": {
+   "fund_id": "6148",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "pgiogojlighl": {
+   "fund_id": "6410",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "likillilla": {
+   "fund_id": "5823",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ojag ugil": {
+   "fund_id": "6149",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "g az": {
+   "fund_id": "5989",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "sllgi gil": {
+   "fund_id": "6212",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "t27glwl az": {
+   "fund_id": "5809",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "qiillvollceli": {
+   "fund_id": "6488",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "odin money market": {
+   "fund_id": "6375",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ataa charity": {
+   "fund_id": "5750",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "sabayek belton": {
+   "fund_id": "6061",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "odin equity": {
+   "fund_id": "6376",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "bokra gold": {
+   "fund_id": "6467",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "maksab oz usd": {
+   "fund_id": "6121",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "zaldi el masry": {
+   "fund_id": "6456",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "dollar mubasher fi": {
+   "fund_id": "6459",
+   "dates": 1,
+   "why": "below evidence floor"
   }
  }
 }

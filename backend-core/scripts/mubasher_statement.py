@@ -80,7 +80,7 @@ import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Iterable, Sequence
 
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
@@ -101,6 +101,19 @@ CHECKSUM_TOL_PCT = 0.05
 # A row whose own precision cannot support the tolerance is excluded from the
 # checksum rather than being allowed to fail it.
 CHECKSUM_MIN_DECIMALS = 4
+# A per-day band multiplied by a long gap becomes meaningless: 2%/day over a
+# 300-day junction "allows" 600%, so a claimed doubling sails through at
+# 0.33%/day. This is the ceiling on what ONE unverified interval may claim,
+# whatever its length.
+#
+# Set from evidence, not taste. At 25% this refused fund 5989 (Azimut precious
+# metals) for a +25.1% move across a 147-day junction — which our own held data
+# on both sides confirms was real: 18.3581 in May 2025, 22.72 by December,
+# 27.03 by January as gold rallied. That is a false refusal. 60% still catches
+# the failures this exists for (a 100% claim over 300 days is refused; a
+# compounding drift is refused at its 1-day junction by the band itself), and
+# the ceiling stops mattering as statement coverage shortens the junctions.
+MAX_STEP_TOTAL_PCT = 60.0
 
 # ---- Arabic month names, for the "6 أغسطس 2025" form ----------------------
 AR_MONTHS = {
@@ -234,7 +247,84 @@ def parse_statement_date(page_html: str) -> date:
     if title_date is not None and title_date != body_date:
         raise StatementError(
             f"title date {title_date} disagrees with body date {body_date}")
+    _assert_near_publication(page_html, body_date)
     return body_date
+
+
+# How far a valuation date may sit from the article's publication stamp. The
+# statement is same-day or next-working-day reporting; a fortnight of slack
+# covers a late republish while still catching the failure this guards:
+# "6-8-2025" read month-first as 8 June when the piece was published in August.
+MAX_PUBLICATION_LAG_DAYS = 14
+
+
+_EN_MONTHS = {m: i for i, m in enumerate(
+    ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], start=1)}
+
+
+def publication_date(page_html: str) -> date | None:
+    """
+    The article's own published-on stamp.
+
+    Searches the WHOLE page, not the article body — Mubasher renders it in the
+    byline above the body, so a body-only search silently returns None and the
+    lag guard becomes decorative. Prefers the machine-readable
+    `itemprop="datePublished"` attribute; the page also carries a `01 Jan 1970`
+    placeholder, which is ignored.
+    """
+    m = re.search(r'itemprop="datePublished"[^>]*datetime="([^"]+)"', page_html)
+    if m:
+        raw = m.group(1).strip()
+        em = re.search(r"\b([A-Z][a-z]{2})\s+(\d{1,2})\s+[\d:]+\s+\w+\s+(\d{4})", raw)
+        if em and em.group(1) in _EN_MONTHS:
+            try:
+                return date(int(em.group(3)), _EN_MONTHS[em.group(1)], int(em.group(2)))
+            except ValueError:
+                pass
+        im = re.search(r"(\d{4})-(\d{2})-(\d{2})", raw)
+        if im:
+            try:
+                return date(*(int(x) for x in im.groups()))
+            except ValueError:
+                pass
+
+    text = re.sub(r"\s+", " ", _norm_digits(_html.unescape(
+        re.sub(r"<[^>]+>", " ", page_html))))
+    for mm in re.finditer(r"(\d{1,2})\s+([^\s\d]+)\s+(\d{4})\s+\d{1,2}:\d{2}", text):
+        mo = AR_MONTHS.get(mm.group(2).strip())
+        if not mo:
+            continue
+        try:
+            got = date(int(mm.group(3)), mo, int(mm.group(1)))
+        except ValueError:
+            continue
+        if got.year > 1970:                    # skip the epoch placeholder
+            return got
+    return None
+
+
+def _assert_near_publication(page_html: str, stmt_date: date) -> None:
+    """
+    Day-first parsing is an assumption wherever both components are <= 12.
+
+    It is corroborated where the day exceeds 12 ("27-12-2025"), but "6-8-2025"
+    is ambiguous on its own and a month-first reading silently moves the whole
+    statement two months. The article's publication stamp is an independent
+    witness: a statement cannot describe prices from long before it was written,
+    and never describes the future.
+    """
+    pub = publication_date(page_html)
+    if pub is None:
+        return                                  # no witness available
+    lag = (pub - stmt_date).days
+    if lag < -1:
+        raise StatementError(
+            f"statement date {stmt_date} is after publication {pub}")
+    if lag > MAX_PUBLICATION_LAG_DAYS:
+        raise StatementError(
+            f"statement date {stmt_date} is {lag} days before publication {pub} "
+            f"(max {MAX_PUBLICATION_LAG_DAYS}) — possible day/month swap")
 
 
 # ==========================================================================
@@ -287,9 +377,33 @@ class StatementRow:
     confidence: float
 
 
-# A price cell always carries a decimal separator. That single requirement also
+# A price cell always carries a DOT decimal separator. Requiring it also
 # discards the spreadsheet's row-number column (1, 2, 3 …) for free.
-_NUM_RE = re.compile(r"^([0-9]{1,5})[.,]([0-9]{1,6})$")
+#
+# The comma is deliberately NOT accepted as a decimal separator. Accepting it
+# turned "1,234" into 1.234 — a silent 1000x error on any four-digit NAV, and
+# we hold NAVs up to 3,963.63. Every statement sampled so far prints a bare dot
+# with no grouping, so a grouped cell means the format changed underneath us.
+_NUM_RE = re.compile(r"^([0-9]{1,6})\.([0-9]{1,6})$")
+# digit-separator-digit: 1,234 · 1 234 · 1٬234 (Arabic thousands sign)
+_GROUPED_RE = re.compile(r"[0-9][,٬   ][0-9]")
+
+
+def parse_price(cell: str) -> tuple[float, int] | None:
+    """
+    (value, decimals) for a price cell, or None if it is not a price.
+
+    Raises rather than returning None when the cell looks like a NUMBER we
+    refuse to interpret — grouped digits. Silently skipping those would drop
+    real observations and leave a hole nobody notices; refusing is loud.
+    """
+    raw = _norm_digits(str(cell)).strip()
+    if _GROUPED_RE.search(raw):
+        raise StatementError(f"grouped-digit price cell, format not validated: {raw!r}")
+    m = _NUM_RE.match(raw)
+    if not m:
+        return None
+    return float(f"{m.group(1)}.{m.group(2)}"), len(m.group(2))
 
 
 def _ocr(image_bytes: bytes):
@@ -350,13 +464,15 @@ def rows_from_ocr(boxes: Sequence, image_width: float) -> list[StatementRow]:
             "h": max(ys) - min(ys),
         })
 
-    numeric = [(c, m) for c in cells
-               if (m := _NUM_RE.match(c["text"].replace(" ", "").replace("٫", ".")))]
+    numeric = []
+    for c in cells:
+        parsed = parse_price(c["text"].replace("٫", "."))
+        if parsed is not None:
+            numeric.append((c, parsed))
     if not numeric:
         return []
     lo, hi = _dominant_column([c["x"] for c, _ in numeric], image_width)
-    values = [(c, float(f"{m.group(1)}.{m.group(2)}"), len(m.group(2)))
-              for c, m in numeric if lo <= c["x"] <= hi]
+    values = [(c, val, dec) for c, (val, dec) in numeric if lo <= c["x"] <= hi]
     if not values:
         return []
 
@@ -416,16 +532,16 @@ def rows_from_html_table(page_html: str) -> list[StatementRow]:
             ]
             if len(cells) < 2:
                 continue
-            m = _NUM_RE.match(_norm_digits(cells[0]).replace(" ", "").replace(",", "."))
-            if not m:
+            parsed = parse_price(cells[0])
+            if parsed is None:
                 continue                      # header row, or a blank price cell
             name = cells[1]
             if not re.search(r"[A-Za-z]", name):
                 continue                      # Arabic-only label: cannot map it safely
+            value, decimals = parsed
             out.append(StatementRow(
                 name=re.sub(r"\s+", " ", name).strip(),
-                value=float(f"{m.group(1)}.{m.group(2)}"),
-                decimals=len(m.group(2)),
+                value=value, decimals=decimals,
                 y=float(i), confidence=1.0))
     return out
 
@@ -533,7 +649,10 @@ def daily_move_band(series: dict, *, k: float = 6.0, floor_pct: float = 0.75) ->
         if va:
             moves.append(abs(vb / va - 1) * 100 / gap)
     if len(moves) < 20:
-        return max(floor_pct, 5.0)
+        # Too little history to learn anything. This is exactly when to be
+        # STRICTER, not looser: the old 5%/day fallback let a runaway series
+        # close a 17-day junction at 4.95%/day — an 85% allowance — and pass.
+        return max(floor_pct, 2.0)
     moves.sort()
     p99 = moves[min(len(moves) - 1, int(len(moves) * 0.99))]
     return max(floor_pct, p99 * k)
@@ -593,12 +712,49 @@ def reconcile_series(fund_id: str, held: dict, candidate: dict) -> SeriesCheck:
         gap = abs((date.fromisoformat(d) - date.fromisoformat(anchor)).days) or 1
         base = timeline[anchor]
         move = abs(v / base - 1) * 100 / gap if base else 100.0
-        if move > check.band_pct:
+        total = abs(v / base - 1) * 100 if base else 100.0
+        allowance = min(check.band_pct * gap, MAX_STEP_TOTAL_PCT)
+        if move > check.band_pct or total > allowance:
             check.rejected.append(
-                (d, v, f"{move:.2f}%/day from {anchor} exceeds band {check.band_pct:.2f}%"))
+                (d, v, f"{move:.2f}%/day ({total:.1f}% total) from {anchor} "
+                       f"exceeds band {check.band_pct:.2f}%/day, cap {allowance:.1f}%"))
             continue
         check.accepted[d] = v
         timeline[d] = v
+
+    # ---- CLOSURE ---------------------------------------------------------
+    # Step-by-step plausibility is NOT enough, and assuming it was is the worst
+    # defect this file has had. Each new point anchors to the previously
+    # ACCEPTED point, so a small per-day bias compounds unchallenged: measured
+    # 2026-09-07, a +0.25%/day drift inside a 0.75% band filled a 412-day hole
+    # with 293 of 293 points accepted, zero rejections — and landed 107.9% away
+    # from the true value where the series rejoins our held data.
+    #
+    # So the filled run must also CLOSE: the junction back onto real held data
+    # is checked like any other step. That junction is the one comparison a
+    # drifting series cannot survive, because the far endpoint is ground truth.
+    # A failure here condemns the whole fund rather than trimming the tail —
+    # if the series did not arrive where reality is, we do not know which of
+    # its points were right.
+    if check.accepted:
+        merged = sorted(set(timeline))
+        for a, b in zip(merged, merged[1:]):
+            new_pair = (a in check.accepted) or (b in check.accepted)
+            if not new_pair:
+                continue                       # a step wholly inside held data
+            if a in check.accepted and b in check.accepted:
+                continue                       # already validated on the way in
+            gap = (date.fromisoformat(b) - date.fromisoformat(a)).days or 1
+            va, vb = timeline[a], timeline[b]
+            if not va:
+                continue
+            move = abs(vb / va - 1) * 100 / gap
+            total = abs(vb / va - 1) * 100
+            allowance = min(check.band_pct * gap, MAX_STEP_TOTAL_PCT)
+            if move > check.band_pct or total > allowance:
+                check.conflicts.append((f"{a}->{b}", va, vb, round(move, 4)))
+        if check.conflicts:
+            check.accepted = {}
     return check
 
 
@@ -614,10 +770,38 @@ ALIAS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           "..", "data", "mubasher_fund_aliases.json")
 
 
-def load_aliases(path: str = ALIAS_FILE) -> dict:
-    """normalised printed name -> our fund_id, as learned by value fingerprint."""
+ALIAS_MIN_DATES = 3
+
+
+def load_aliases(path: str = ALIAS_FILE, *, min_dates: int = ALIAS_MIN_DATES) -> dict:
+    """
+    normalised printed name -> our fund_id, as learned by value fingerprint.
+
+    Validated on load. This file decides which fund every backfilled NAV is
+    attributed to, so a hand-edit that drops the evidence count, or a fund id
+    that is not a fund id, must fail loudly here rather than quietly misfile a
+    year of history.
+    """
     with open(path, encoding="utf-8") as fh:
-        return {k: v["fund_id"] for k, v in json.load(fh)["aliases"].items()}
+        doc = json.load(fh)
+    if not isinstance(doc, dict) or "aliases" not in doc:
+        raise StatementError(f"alias file has no 'aliases' object: {path}")
+    out: dict[str, str] = {}
+    for key, entry in doc["aliases"].items():
+        if not isinstance(entry, dict):
+            raise StatementError(f"alias {key!r} is not an object")
+        fund_id = str(entry.get("fund_id", ""))
+        if not fund_id.isdigit():
+            raise StatementError(f"alias {key!r} has a non-numeric fund_id {fund_id!r}")
+        dates = entry.get("dates")
+        if not isinstance(dates, int) or dates < min_dates:
+            raise StatementError(
+                f"alias {key!r} claims only {dates} dates of evidence "
+                f"(floor is {min_dates}) — move it to quarantine instead")
+        out[key] = fund_id
+    if not out:
+        raise StatementError(f"alias file is empty: {path}")
+    return out
 
 
 def _tokens(key: str) -> set:
@@ -704,6 +888,35 @@ def _self_test() -> int:
     # day-first, not month-first: 6-8-2025 is 6 August, never 8 June
     p3 = '<div itemprop="articleBody">بتاريخ 6-8-2025</div>'
     check("day-first", parse_statement_date(p3) == date(2025, 8, 6))
+
+    # -- publication-date corroboration --------------------------------
+    ok_pub = ('<div itemprop="articleBody">10 فبراير 2026 04:35 م '
+              'جاءت الأسعار بتاريخ 9-2-2026 كالتالي</div>')
+    check("statement one day before publication is fine",
+          parse_statement_date(ok_pub) == date(2026, 2, 9))
+
+    # a month-first misreading of 6-8-2025 would land in June; the August
+    # publication stamp is what catches it
+    swapped = ('<div itemprop="articleBody">7 أغسطس 2025 09:15 ص '
+               'الأسعار بتاريخ 8-6-2025 كالتالي</div>')
+    try:
+        parse_statement_date(swapped)
+        check("day/month swap must be caught by publication lag", False)
+    except StatementError:
+        pass
+
+    future = ('<div itemprop="articleBody">1 فبراير 2026 09:15 ص '
+              'الأسعار بتاريخ 9-2-2026 كالتالي</div>')
+    try:
+        parse_statement_date(future)
+        check("statement dated after publication must raise", False)
+    except StatementError:
+        pass
+
+    check("publication stamp parsed", publication_date(ok_pub) == date(2026, 2, 10))
+    check("no stamp is not fatal",
+          parse_statement_date('<div itemprop="articleBody">بتاريخ 9-2-2026</div>')
+          == date(2026, 2, 9))
 
     # -- geometry ------------------------------------------------------
     def bx(x, y, w=60, h=18):
@@ -860,6 +1073,84 @@ def _self_test() -> int:
     check("overlap conflict refuses the fund", (not r.ok) and not r.accepted)
     check("conflict is reported", len(r.conflicts) == 1)
 
+    # -- CLOSURE: the regression that made this gate worth having ------
+    # A per-day bias small enough to pass every individual step still compounds
+    # across a 412-day hole. Before closure existed this filled 293 of 293
+    # points with zero rejections and landed 107.9% from the truth.
+    long_held, x = {}, 16.0
+    dd = date(2024, 1, 1)
+    while dd < date(2025, 5, 15):
+        if dd.weekday() not in (4, 5):
+            x *= 1.0004
+            long_held[dd.isoformat()] = round(x, 4)
+        dd += timedelta(days=1)
+    pre = long_held[max(long_held)]
+    truth, w = pre * (1.0004 ** 292), pre * (1.0004 ** 292)
+    dd = date(2026, 6, 30)
+    while dd <= date(2026, 9, 2):
+        if dd.weekday() not in (4, 5):
+            long_held[dd.isoformat()] = round(w, 4)
+            w *= 1.0004
+        dd += timedelta(days=1)
+
+    def _fill(bias):
+        out, y = {}, pre
+        d0 = date(2025, 5, 15)
+        while d0 < date(2026, 6, 30):
+            if d0.weekday() not in (4, 5):
+                y *= 1.0004 * bias
+                out[d0.isoformat()] = round(y, 5)
+            d0 += timedelta(days=1)
+        return out
+
+    r = reconcile_series("mm", long_held, _fill(1.0))
+    check("honest 412-day fill accepted", r.ok and len(r.accepted) == 293)
+    check("honest fill lands on the truth",
+          abs(r.accepted[max(r.accepted)] - truth) / truth < 0.001)
+
+    r = reconcile_series("mm", long_held, _fill(1.0025))
+    check("compounding drift refused at the join", (not r.ok) and not r.accepted)
+    check("closure names the junction",
+          bool(r.conflicts) and "->" in str(r.conflicts[0][0]))
+
+    r = reconcile_series("mm", long_held, _fill(1.0002))
+    check("even a 0.02%/day bias is refused", (not r.ok) and not r.accepted)
+
+    # A per-day band alone is not a cap. Across a 300-day gap a 2%/day band
+    # "permits" 600%, so a claimed doubling sails through at 0.33%/day. The
+    # total-move ceiling is the only thing that stops it.
+    thin = {"2025-01-01": 10.0, "2025-01-02": 10.01, "2026-06-01": 12.0}
+    doubling = {"2025-10-29": 10.01 * 2.0}
+    r = reconcile_series("thin", thin, doubling)
+    check("total-move cap catches a legal-rate absurdity", not r.accepted)
+    check("cap rejection explains itself",
+          bool(r.rejected) and "cap" in r.rejected[0][2])
+    check("thin history gets the strict fallback band",
+          daily_move_band(thin) <= 2.0)
+
+    # ...but the ceiling must not refuse a real volatile-fund move across a long
+    # junction. This is fund 5989's actual shape: a precious-metals fund whose
+    # held data either side confirms the rally the statement sits inside.
+    gold = {"2025-05-14": 18.3581, "2025-12-31": 22.72,
+            "2026-01-29": 27.03, "2026-02-26": 26.78}
+    for i in range(30):                       # enough history to learn a band
+        gold[f"2025-{(i % 4) + 1:02d}-{(i % 27) + 1:02d}"] = 15.0 + i * 0.12
+    r = reconcile_series("5989", gold, {"2025-08-06": 18.16707})
+    check("a real +25% gold move over 147 days is NOT refused",
+          "2025-08-06" in r.accepted)
+
+    # -- strict price parsing ------------------------------------------
+    check("plain price parses", parse_price("21.19104") == (21.19104, 5))
+    check("row number is not a price", parse_price("2") is None)
+    check("blank is not a price", parse_price("") is None)
+    for grouped in ("1,234", "1 234.56", "3,963.63", "1٬234"):
+        try:
+            parse_price(grouped)
+            check(f"grouped digits must raise: {grouped}", False)
+        except StatementError:
+            pass
+    check("comma is never a decimal separator", True)
+
     # a volatile equity fund must not be judged by a money-market band
     eq = {}
     v = 10.0
@@ -880,13 +1171,35 @@ def _self_test() -> int:
           propose_bridge("Zaldi Star Money Market", al) == [])
     check("empty name proposes nothing", propose_bridge("", al) == [])
 
-    # the alias file itself must load and be non-trivial
+    # the alias file itself must load, validate, and be non-trivial
     try:
         loaded = load_aliases()
-        check("alias file loads", len(loaded) >= 50)
+        check("alias file loads", len(loaded) >= 40)
         check("alias values are fund ids", all(str(v).isdigit() for v in loaded.values()))
     except FileNotFoundError:
         fails.append("alias file missing")
+
+    # schema validation must actually reject bad entries
+    import tempfile as _tf
+
+    def _alias_doc(entry):
+        return {"aliases": {"x": entry}}
+
+    for label, entry in [
+        ("non-numeric fund_id", {"fund_id": "abc", "dates": 5}),
+        ("missing evidence count", {"fund_id": "5906"}),
+        ("evidence below floor", {"fund_id": "5906", "dates": 1}),
+    ]:
+        with _tf.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+            json.dump(_alias_doc(entry), fh)
+            tmp = fh.name
+        try:
+            load_aliases(tmp)
+            check(f"alias schema must reject: {label}", False)
+        except StatementError:
+            pass
+        finally:
+            os.unlink(tmp)
 
     if fails:
         print("SELF-TEST FAILURES:")

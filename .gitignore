@@ -54,6 +54,9 @@ debug_*.png
 # learned by value fingerprint. mubasher_statement.py loads it at import and
 # the NAV backfill cannot identify a single fund without it.
 !backend-core/data/mubasher_fund_aliases.json
+# Mubasher statement manifest — the article ids the NAV backfill walks. The
+# workflow reads it from the repo, so it MUST be tracked.
+!backend-core/data/mubasher_statement_manifest.json
 !frontend/content/fund-universe-reconciliation.json
 !frontend/content/fund-taxonomy-overrides.json
 !frontend/scripts/fixtures/egx-official-listed.json

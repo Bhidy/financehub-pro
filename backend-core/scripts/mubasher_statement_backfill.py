@@ -152,6 +152,30 @@ def load_held_archive(path: str, fund_ids=None):
     return held
 
 
+def load_manifest(path: str) -> list:
+    """
+    Article ids from the statement manifest.
+
+    Accepts a bare list, a bare {id: slug} map, or the documented wrapper
+    {"articles": {...}, "_comment": ...}. The wrapper is why this exists: a
+    naive `list(doc.keys())` would happily return "_comment" and "_built" as
+    article ids and then report them as fetch failures, which reads like a
+    source outage rather than a bug here.
+    """
+    doc = json.load(open(path, encoding="utf-8"))
+    if isinstance(doc, list):
+        raw = doc
+    elif isinstance(doc, dict):
+        raw = doc.get("articles", doc)
+        raw = list(raw.keys()) if isinstance(raw, dict) else list(raw)
+    else:
+        raise SystemExit(f"unrecognised manifest shape: {path}")
+    ids = [str(x) for x in raw if str(x).isdigit()]
+    if not ids:
+        raise SystemExit(f"manifest contains no article ids: {path}")
+    return ids
+
+
 def report_plan(candidate, held, *, show=12):
     """The dry-run report: what reconciliation would accept, and what it refuses."""
     accepted, refused, rejected_pts = {}, [], 0
@@ -285,6 +309,30 @@ def _self_test() -> int:
     check("planner performs no writes",
           "INSERT" not in src_plan and "execute" not in src_plan)
 
+    # manifest shapes — the wrapper form must not leak "_comment" as an id
+    import tempfile as _tf
+
+    def _mf(doc):
+        with _tf.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+            json.dump(doc, fh)
+            return fh.name
+
+    for label, doc, want in [
+        ("wrapped", {"_comment": "x", "_count": 2,
+                     "articles": {"4477495": "a", "4668930": "b"}},
+         ["4477495", "4668930"]),
+        ("bare map", {"4477495": "a"}, ["4477495"]),
+        ("bare list", ["4477495", 4668930], ["4477495", "4668930"]),
+    ]:
+        path = _mf(doc)
+        try:
+            check(f"manifest shape: {label}", load_manifest(path) == want)
+        finally:
+            os.unlink(path)
+    check("metadata keys never become article ids",
+          "_comment" not in load_manifest(_mf(
+              {"_comment": "x", "articles": {"4477495": "a"}})))
+
     src = __import__("inspect").getsource(run)
     check("commit is opt-in", "if not commit:" in src)
     check("dry run reports before writing", "DRY RUN" in src)
@@ -318,8 +366,7 @@ def main() -> int:
 
     ids = list(args.articles or [])
     if args.manifest:
-        doc = json.load(open(args.manifest, encoding="utf-8"))
-        ids += list(doc.keys()) if isinstance(doc, dict) else list(doc)
+        ids += load_manifest(args.manifest)
     if not ids:
         ap.error("--manifest or --articles required")
     if args.limit:

@@ -66,3 +66,23 @@ def test_a_census_failure_never_ends_the_run():
 
 def test_the_fund_page_url_is_derived_from_the_id():
     assert 'countries/EG/funds/{r[\'fund_id\']}' in SRC or "countries/EG/funds/" in SRC
+
+
+def test_gap_mode_writes_history_only():
+    """Its fund list comes from the DB with PLACEHOLDER metadata — manager
+    'Unknown', latest_nav 0, last_update_date today. Fed to the upsert those are
+    destructive: a live NAV set to 0, and today stamped onto a fund whose real
+    last publication was months ago, which is the exact signal the staleness
+    alarms read."""
+    assert "history_only=gaps_only" in SRC
+    assert re.search(r"if not history_only:\s*\n\s*await conn\.execute", SRC)
+    assert "if profile_data and not history_only:" in SRC
+
+
+def test_every_upsert_parameter_is_cast():
+    """$2 fills two columns; without a cast asyncpg cannot deduce one type for
+    it and the run died with 'inconsistent types deduced for parameter $2'
+    AFTER reading 1,108 points off a chart."""
+    assert "$1::text, $2::text, $2::text" in SRC
+    assert "$6::numeric, $7::date" in SRC
+    assert "$1::text, $2::date, $3::numeric" in SRC, "the nav_history insert too"

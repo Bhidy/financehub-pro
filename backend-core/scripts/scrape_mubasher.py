@@ -249,29 +249,49 @@ async def scrape_profile_and_history(page, url):
         
     return data, history
 
-async def save_fund_data(conn, fund, history, profile_data):
-    """Save all data to DB."""
+async def save_fund_data(conn, fund, history, profile_data, history_only=False):
+    """Save all data to DB.
+
+    HISTORY_ONLY EXISTS BECAUSE GAP MODE HAS NO METADATA TO OFFER, AND WRITING
+    WHAT IT DOES HAVE WOULD BE DESTRUCTIVE. Its fund list comes from
+    get_existing_funds_from_db, which fills the metadata fields with
+    placeholders — manager 'Unknown', latest_nav 0, last_update_date today. Fed
+    to the upsert below those are not harmless: `latest_nav = COALESCE(EXCLUDED
+    .latest_nav, ...)` would set a live NAV to 0, and
+    `GREATEST(..., EXCLUDED.last_update_date)` would stamp today onto a fund
+    whose real last publication was months ago — which is precisely the freshness
+    signal the staleness alarms read.
+
+    A repair job exists to add missing history. It has no business touching
+    anything else.
+    """
     # 1. Upsert Fund
-    await conn.execute('''
-        INSERT INTO mutual_funds (fund_id, fund_name, fund_name_en, market, manager_name, owner, latest_nav, last_update_date, updated_at)
-        VALUES ($1, $2, $2, $3, $4, $5, $6, $7, NOW())
-        ON CONFLICT (fund_id) DO UPDATE SET
-            -- freshest-wins / fill-don't-null: never overwrite a populated metadata
-            -- field with a blank scrape, and never regress the NAV date.
-            latest_nav = COALESCE(EXCLUDED.latest_nav, mutual_funds.latest_nav),
-            last_update_date = GREATEST(mutual_funds.last_update_date, EXCLUDED.last_update_date),
-            market = COALESCE(NULLIF(EXCLUDED.market, ''), mutual_funds.market),
-            manager_name = COALESCE(NULLIF(EXCLUDED.manager_name, ''), mutual_funds.manager_name),
-            owner = COALESCE(NULLIF(EXCLUDED.owner, ''), mutual_funds.owner),
-            fund_name = COALESCE(NULLIF(EXCLUDED.fund_name, ''), mutual_funds.fund_name),
-            -- fund_name_en is what the funds API/sitemap require to make a fund visible;
-            -- the census name is English, so seed it here (Arabic fund_name filled later).
-            fund_name_en = COALESCE(NULLIF(mutual_funds.fund_name_en, ''), EXCLUDED.fund_name_en),
-            updated_at = NOW()
-    ''', fund['fund_id'], fund['name'], fund['market'], fund['manager'], fund['owner'], fund['latest_nav'], fund['last_update_date'])
-    
+    if not history_only:
+        await conn.execute('''
+            INSERT INTO mutual_funds (fund_id, fund_name, fund_name_en, market, manager_name, owner, latest_nav, last_update_date, updated_at)
+            -- $2 fills two columns, and without a cast asyncpg cannot deduce one
+            -- type for it: "inconsistent types deduced for parameter $2". Every
+            -- parameter is cast, so the statement can never again depend on
+            -- inference across a growing column list.
+            VALUES ($1::text, $2::text, $2::text, $3::text, $4::text, $5::text,
+                    $6::numeric, $7::date, NOW())
+            ON CONFLICT (fund_id) DO UPDATE SET
+                -- freshest-wins / fill-don't-null: never overwrite a populated metadata
+                -- field with a blank scrape, and never regress the NAV date.
+                latest_nav = COALESCE(EXCLUDED.latest_nav, mutual_funds.latest_nav),
+                last_update_date = GREATEST(mutual_funds.last_update_date, EXCLUDED.last_update_date),
+                market = COALESCE(NULLIF(EXCLUDED.market, ''), mutual_funds.market),
+                manager_name = COALESCE(NULLIF(EXCLUDED.manager_name, ''), mutual_funds.manager_name),
+                owner = COALESCE(NULLIF(EXCLUDED.owner, ''), mutual_funds.owner),
+                fund_name = COALESCE(NULLIF(EXCLUDED.fund_name, ''), mutual_funds.fund_name),
+                -- fund_name_en is what the funds API/sitemap require to make a fund visible;
+                -- the census name is English, so seed it here (Arabic fund_name filled later).
+                fund_name_en = COALESCE(NULLIF(mutual_funds.fund_name_en, ''), EXCLUDED.fund_name_en),
+                updated_at = NOW()
+        ''', fund['fund_id'], fund['name'], fund['market'], fund['manager'], fund['owner'], fund['latest_nav'], fund['last_update_date'])
+
     # 2. Update Profile Data
-    if profile_data:
+    if profile_data and not history_only:
         await conn.execute('''
             UPDATE mutual_funds SET
                 ytd_return = COALESCE($2, ytd_return),
@@ -427,7 +447,8 @@ async def main(test_mode=False, gaps_only=False):
             if fund.get('url'):
                  profile_data, history = await scrape_profile_and_history(page, fund['url'])
             
-            await save_fund_data(conn, fund, history, profile_data)
+            await save_fund_data(conn, fund, history, profile_data,
+                                 history_only=gaps_only)
                 
         await browser.close()
     

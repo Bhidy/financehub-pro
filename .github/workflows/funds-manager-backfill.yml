@@ -1,0 +1,98 @@
+name: Funds Manager Backfill
+
+# ============================================================
+# Recovers NAV history from the fund MANAGERS, for the funds EIMA does not cover.
+#
+# WHY THIS EXISTS
+# After the EIMA recovery, fourteen funds still carried the full 412-day hole
+# (2025-05-14 → 2026-06-30) that Mubasher's frozen per-fund CSV opened. EIMA's
+# weekly report covers mainstream Egyptian-pound retail funds; every one of the
+# fourteen is a foreign-currency, charitable or specialised-issuance fund. That
+# was tested, not assumed — re-running the EIMA matcher at a third of its name
+# floor returned the same fourteen.
+#
+# The managers publish their own NAV. The vendor was only ever a courier for it.
+#
+# SOURCES
+#   azimut     app.azimut.eg/api/fund/{id} → `graph`, the full [epoch_ms, nav]
+#              series behind the "Growth of Investment" chart on azimut.eg.
+#   cicapital  cicapital.com/fundprice/ publishes one table of unit prices and
+#              overwrites it daily; the Internet Archive holds captures, so each
+#              capture is the manager's own published price on a known date.
+#
+# MAPPING IS DECIDED BY DATA, NEVER BY A NAME. A series is attached to a fund
+# only when it agrees with NAV we already hold at dates where both exist — tight
+# median, bounded tail. The same test rejected Azimut's "Menthum" against our
+# fund 6157 at 41% median error, because Azimut's Menthum is the EGP fund and
+# ours is the CI-managed USD one.
+#
+# WHAT IT WILL NOT DO. The CI sector family (6197-6201) has ZERO overlap between
+# the archive captures and NAV we hold, and all five funds' value corridors
+# overlap each other — so a swap between them would be undetectable and the
+# mapping would rest on the name alone. The gate therefore writes nothing for
+# them, and that is correct. If the archive gains a capture outside the hole, or
+# CI publishes history, they become writable with no code change.
+#
+# BE KIND: self-identifying UA, a delay between requests, no more requests than
+# the job needs. Azimut's API is the one their own public site calls; the
+# Internet Archive is a public service.
+#
+# Requires repo secret DATABASE_URL.
+# ============================================================
+
+on:
+  schedule:
+    # Fridays 07:30 UTC — after the EIMA backfill (06:00) and before the NAV
+    # archive (11:00), so a week's recovery from both lands in one snapshot.
+    - cron: '30 7 * * 5'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'write commits what reconciles (also the scheduled mode); dry-run reports only'
+        required: true
+        default: 'write'
+        type: choice
+        options: [write, dry-run]
+      source:
+        description: 'restrict to one source (blank = all)'
+        required: false
+        default: ''
+        type: choice
+        options: ['', azimut, cicapital]
+
+concurrency:
+  group: funds-manager-backfill
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backfill:
+    name: Backfill NAV history from fund managers
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: pip install --quiet httpx asyncpg
+
+      - name: Run manager backfill
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          MODE="${{ github.event.inputs.mode }}"
+          SRC="${{ github.event.inputs.source }}"
+          ARGS=""
+          [ -n "$SRC" ] && ARGS="--only $SRC"
+          case "$MODE" in
+            dry-run)
+              python backend-core/scripts/manager_nav_backfill.py --dry-run $ARGS ;;
+            write|'')
+              python backend-core/scripts/manager_nav_backfill.py $ARGS ;;
+            *)
+              echo "unknown mode: $MODE" >&2; exit 1 ;;
+          esac

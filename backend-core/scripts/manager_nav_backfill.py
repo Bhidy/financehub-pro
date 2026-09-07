@@ -309,8 +309,42 @@ MUBASHER_CDX = ("http://web.archive.org/cdx/search/cdx?url=english.mubasher.info
 WAYBACK = "http://web.archive.org/web/{ts}/{url}"
 
 # "Fund Name: X (y) Price per Certificate (EGP): 12.68316"
+# THE NUMBER IS SPLIT BY MARKUP, AND READING HALF OF IT IS WORSE THAN READING
+# NONE. Newer articles render the price as `19.<span>40456</span>`; stripping
+# tags to a space turns that into "19. 40456", and a regex that stops at the
+# first space captures "19." — which parses as 19.0 and is a wrong NAV, not a
+# missing one. That reached production: fund 6120 received 14.0 between two
+# observations of 146, and 6392 received 1.0424 between two of 108.
+#
+# So the value class admits the spaces, which are then removed, and
+# _clean_price refuses anything that still looks truncated.
 _ROW = re.compile(r"Fund Name:\s*(.+?)\s*Price per Certificate \((EGP|USD|EUR)\):"
-                  r"\s*([0-9][0-9,]*\.?[0-9]*)")
+                  r"\s*([0-9][0-9,.\s]*)")
+
+
+def _clean_price(raw: str) -> float | None:
+    """A price, or nothing. Never half a price.
+
+    Rejects a value ending in a separator — "19." is the signature of a number
+    cut in half by an element boundary, and is the one shape that silently
+    becomes plausible-looking garbage.
+    """
+    v = re.sub(r"\s+", "", raw or "")
+    v = v.rstrip(".,")
+    if not v or v.count(".") > 1:
+        return None
+    if not re.fullmatch(r"[0-9][0-9,]*(\.[0-9]+)?", v):
+        return None
+    # A bare integer where the source always prints decimals is the same
+    # truncation wearing a different hat, so require the fraction the raw string
+    # promised: if it contained a dot, the cleaned value must still have one.
+    if "." in raw and "." not in v:
+        return None
+    try:
+        f = float(v.replace(",", ""))
+    except ValueError:
+        return None
+    return f if 1e-6 < f < 1e9 else None
 # The as-of line comes in several shapes, and the year is present in some of
 # them and absent in others:
 #     "as of 5 April 2025 compared with the previous prices"
@@ -395,11 +429,8 @@ def fetch_mubasher_news(sess, delay: float) -> dict[str, dict]:
         seen_dates.add(when)
         parsed += 1
         for name, cur, val in rowsx:
-            try:
-                v = float(val.replace(",", ""))
-            except ValueError:
-                continue
-            if not (1e-6 < v < 1e9):
+            v = _clean_price(val)
+            if v is None:
                 continue
             label = f"{name.strip()} [{cur}]"
             rec = out.setdefault(label, {"pts": {}, "url": snap,
@@ -571,8 +602,44 @@ async def run(dry_run: bool, only: str | None, only_ids: list[str] | None,
         await conn.close()
 
 
+async def purge(sources: list[str]) -> int:
+    """Remove rows this script wrote, and only those.
+
+    Needed the day it shipped: a markup change split prices across an element
+    boundary and a truncated "19." was written as 19.0. Those rows are wrong,
+    they are on live fund pages, and every one of them is re-derivable — so the
+    safe repair is to drop the whole source and re-run the fixed parser rather
+    than to hand-pick outliers.
+
+    The source filter is not a convenience. It is what makes this impossible to
+    turn into an accident: no vendor observation, and no row from any other
+    pipeline, can be reached from here.
+    """
+    allowed = {SOURCE_AZIMUT, SOURCE_CICAP, SOURCE_MUBNEWS}
+    bad = set(sources) - allowed
+    if bad:
+        raise SystemExit(f"refusing to purge sources this script does not own: {sorted(bad)}")
+    conn = await connect_resilient(load_db_url())
+    try:
+        if await database_is_read_only(conn):
+            print("[manager] database is READ-ONLY — not purging.", flush=True)
+            return 0
+        rows = await conn.fetch(
+            "DELETE FROM nav_history WHERE source = ANY($1::text[]) RETURNING fund_id",
+            list(sources))
+        funds = sorted({r["fund_id"] for r in rows})
+        print(f"[manager] PURGED {len(rows)} row(s) from {sources} "
+              f"across {len(funds)} fund(s)", flush=True)
+        return 0
+    finally:
+        await conn.close()
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Backfill NAV history from fund managers")
+    ap.add_argument("--purge-source", type=str, default=None,
+                    help="delete every row written by these sources (comma-separated) "
+                         "and exit. Only this script's own sources may be named.")
     ap.add_argument("--dry-run", action="store_true",
                     help="collect and reconcile, report what WOULD be written")
     ap.add_argument("--only", choices=sorted(SOURCES), default=None,
@@ -582,6 +649,8 @@ def main() -> None:
     ap.add_argument("--delay", type=float, default=DEFAULT_DELAY,
                     help="seconds between upstream requests (be kind; default 1.5)")
     a = ap.parse_args()
+    if a.purge_source:
+        sys.exit(asyncio.run(purge([x.strip() for x in a.purge_source.split(",") if x.strip()])))
     ids = [x.strip() for x in a.ids.split(",")] if a.ids else None
     sys.exit(asyncio.run(run(a.dry_run, a.only, ids, a.delay)))
 

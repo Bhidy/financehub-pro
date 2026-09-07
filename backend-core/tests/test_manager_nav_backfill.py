@@ -228,3 +228,51 @@ def test_the_lede_wins_over_the_related_articles_rail():
 
 def test_no_as_of_line_means_no_date():
     assert article_date("Prices of investment funds", "20251029115735") is None
+
+
+# ── the truncated price, which reached production ───────────────────────────
+
+clean = mnb._clean_price
+ROW = mnb._ROW
+
+
+def test_a_price_split_by_markup_is_read_whole():
+    """Newer articles render `19.<span>40456</span>`. Stripping tags to a space
+    gives "19. 40456", and reading "19." wrote 19.0 into live fund pages."""
+    text = "Fund Name: Azimut Idkhar AZ Price per Certificate (EGP): 19. 40456 Fund Name: Next"
+    name, cur, val = ROW.findall(text)[0]
+    assert clean(val) == 19.40456
+
+
+def test_a_truncated_price_is_refused_outright():
+    """The one shape that becomes plausible-looking garbage rather than an
+    obvious error. Fund 6120 got 14.0 between two observations of 146."""
+    assert clean("14.") is None
+    assert clean("1.") is None
+    assert clean("108.") is None
+
+
+def test_thousands_separators_survive_the_split():
+    assert clean("2,230. 97") == 2230.97
+    assert clean("1,110.05") == 1110.05
+
+
+def test_a_genuine_integer_price_is_kept():
+    assert clean("149") == 149.0
+
+
+def test_nonsense_is_refused():
+    for junk in ("", "  ", "1.2.3", "abc", "12abc", "0", "1e12"):
+        assert clean(junk) is None, junk
+
+
+def test_purge_cannot_reach_another_pipeline_s_rows():
+    """The source filter is what stops this becoming an accident."""
+    import asyncio
+    for forbidden in (["mubasher_csv"], ["eima_derived"], ["unrecorded"],
+                      ["mubasher_news_archive", "mubasher_csv"]):
+        try:
+            asyncio.run(mnb.purge(forbidden))
+            assert False, f"{forbidden} must be refused"
+        except SystemExit as e:
+            assert "refusing to purge" in str(e)

@@ -10,36 +10,31 @@ name: Funds Gap Repair (Mubasher pages)
 # published funds on 2026-09-07: 143 carry a genuine hole, 31,682 fund-days
 # missing in total.
 #
-# scrape_mubasher reads a fund's FULL chart series off its page, so it is the
-# one source that can go back for a specific date. It has been running daily
-# and re-reading nothing: its resume guard skips any fund with more than ten
-# points that was touched today, and the list-API sync touches every fund every
-# morning. --gaps-only drives it from the gap ledger instead, where the guard is
-# off by construction — a fund is on that list precisely because its history is
-# incomplete.
-#
-# WHERE IT MATTERS MOST
-# The newer funds have no per-fund CSV at all (the file is empty for every one
-# checked). They live entirely on the daily one-price trickle, so when
-# funds-nav-update failed six runs in a row from 15 to 20 August 2026, 17 funds
-# lost those days permanently. This is the route back.
+# WHAT THE FIRST FULL RUN ESTABLISHED (2026-09-07)
+# With the chart's date convention corrected, 53 of 53 funds aligned at the
+# dates claimed (median 0.0002%) and none were refused — but of 33,667 points
+# offered, ZERO were new. Mubasher's chart carries the same series as their
+# price file, holes included. That closes the chart as a route to the 2025 gap,
+# and leaves one case still worth testing: the newest funds, which have no CSV
+# at all, so the chart is the only thing they have.
 #
 # SAFETY
+#   · Dates are PROVEN before they are written. nav_alignment scores the series
+#     at offsets -2..+2 against NAV already held and refuses the write if some
+#     other offset fits decisively better. A tolerance on VALUES would not have
+#     caught the incident this exists for: money-market funds move ~0.01% a day,
+#     so a one-day shift still agrees to 0.01%. The values were never wrong.
+#     The dates were.
+#   · A refusal REDS the run. Once the convention is corrected for, every fund
+#     with overlapping data should align, so a refusal means the source changed
+#     and the log prints the new offset outright.
 #   · ON CONFLICT DO NOTHING — it fills holes, it never overwrites a held value.
-#   · Rows are stamped `mubasher_page`, so its output stays distinguishable —
-#     which is what made the timezone incident below fully reversible.
-#   · The 2011 EGX closure (2011-01-27 → 2011-03-23) is excluded in SQL. That is
-#     real market history; chasing it would be chasing a hole that belongs there.
-#   · Only the ingested numeric-id universe is considered.
+#   · Rows are stamped `mubasher_page`, which is what made the 13,313 misdated
+#     rows of the first run fully reversible.
 #   · Gap mode writes history ONLY. Its fund list carries placeholder metadata,
 #     and writing that would zero live NAVs and stamp today onto stale funds.
-#
-# PURGE MODE EXISTS BECAUSE IT WAS NEEDED ON DAY ONE. Highcharts sends epoch
-# milliseconds at UTC midnight and the reader used local time, so the first live
-# run wrote 13,313 rows dated one day early, each carrying the following day's
-# value. Purge removes rows by source, restricted to this scraper's own tag, and
-# it opens no browser and does not log in — a repair for a bad write must not
-# depend on the site being reachable.
+#   · The 2011 EGX closure (2011-01-27 → 2011-03-23) is excluded in SQL. That is
+#     real market history; chasing it would be chasing a hole that belongs there.
 #
 # NO SUDO ON THIS RUNNER, AND CHROMIUM NEEDS SYSTEM LIBRARIES ANYWAY.
 # `playwright install --with-deps` apt-installs them as root and fails here; the
@@ -64,11 +59,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'gaps repairs only the funds carrying a 90+ day hole (also the scheduled mode); test reads three funds and stops; purge removes every row this scraper wrote'
+        description: 'gaps repairs the funds carrying a 90+ day hole (also the scheduled mode); gaps-small goes down to 14 days, which is where the CSV-less funds live; test reads three funds and stops; purge removes every row this scraper wrote'
         required: true
         default: 'gaps'
         type: choice
-        options: [gaps, test, purge]
+        options: [gaps, gaps-small, test, purge]
 
 concurrency:
   group: funds-gap-repair
@@ -187,6 +182,10 @@ jobs:
           set -euo pipefail
           case "${{ github.event.inputs.mode }}" in
             purge) python backend-core/scripts/scrape_mubasher.py --purge-scraped ;;
+            # The newest funds have no per-fund CSV at all, so a failed run costs
+            # them those days permanently. Seventeen lost 15-20 August 2026 that
+            # way — a 17-19 day hole no 90-day threshold will ever see.
+            gaps-small) python backend-core/scripts/scrape_mubasher.py --gaps-only --min-gap-days 14 ;;
             test)  python backend-core/scripts/scrape_mubasher.py --test ;;
             *)     python backend-core/scripts/scrape_mubasher.py --gaps-only ;;
           esac

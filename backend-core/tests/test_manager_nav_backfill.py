@@ -276,3 +276,25 @@ def test_purge_cannot_reach_another_pipeline_s_rows():
             assert False, f"{forbidden} must be refused"
         except SystemExit as e:
             assert "refusing to purge" in str(e)
+
+
+# ── ranking: agreement beats quantity of agreement ──────────────────────────
+
+def test_a_perfect_match_outranks_a_loose_one_with_more_overlap():
+    """Fund 5906 Horus and 5911 Makaseb are two money-market funds 0.08% apart.
+    Mubasher's "Al Ahly (AFIM) and EgyptAir (Horus)" = 15.78626 on 2025-04-06
+    matches 5906 at 0.0003% and 5911 at 0.0623%. 5911 overlapped on three dates
+    and 5906 on one, so ranking by overlap gave the series to the wrong fund and
+    left Horus with its 412-day hole."""
+    horus = reconcile({"2025-04-06": 15.78626}, {"2025-04-06": 15.7863})
+    makaseb = reconcile({"2025-04-06": 15.78626, "2025-04-05": 15.78626,
+                         "2025-04-07": 15.78626},
+                        {"2025-04-06": 15.7961, "2025-04-05": 15.7869,
+                         "2025-04-07": 15.8052})
+    assert horus["ok"] and horus["exact"]
+    assert not makaseb["exact"]
+
+    key = lambda v: (0 if v.get("exact") else 1,
+                     v["median"] if v["median"] is not None else 9e9,
+                     -(v["overlap"] or 0))
+    assert key(horus) < key(makaseb), "the exact match must win"

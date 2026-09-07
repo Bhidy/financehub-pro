@@ -547,7 +547,22 @@ async def run(dry_run: bool, only: str | None, only_ids: list[str] | None,
                     rejected.append(f"{fid} <- '{label[:38]}': {v['why']} "
                                     f"({v['overlap']} overlapping)")
 
-        candidates.sort(key=lambda t: (-(t[2]["overlap"] or 0), t[2]["median"] or 9e9))
+        # ── RANK BY AGREEMENT, NOT BY HOW MUCH OF IT THERE IS ───────────────
+        # This sorted on overlap first, and that handed a series to the wrong
+        # fund. Two Egyptian money-market funds sit 0.08% apart:
+        #
+        #   "Al Ahly (AFIM) and EgyptAir Insurance (Horus)" = 15.78626 on
+        #   2025-04-06, against 5906 Horus at 0.0003% and 5911 Makaseb at
+        #   0.0623%.
+        #
+        # The name says Horus and the value says Horus to four decimal places —
+        # but 5911 happened to overlap on three dates and 5906 on one, so
+        # overlap-first put the LOOSE match ahead of the exact one and 5906 was
+        # left with its 412-day hole. A perfect match on one date is a stronger
+        # claim than an approximate match on three; count only breaks ties.
+        candidates.sort(key=lambda t: (0 if t[2].get("exact") else 1,
+                                       t[2]["median"] if t[2]["median"] is not None else 9e9,
+                                       -(t[2]["overlap"] or 0)))
         used_fid: set[str] = set()
         used_label: set[str] = set()
         assigned = []

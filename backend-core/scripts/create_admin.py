@@ -32,6 +32,14 @@ async def main() -> None:
     if len(password) < 12:
         sys.exit("ADMIN_PASSWORD must be at least 12 characters. Nothing was changed.")
 
+    # Lower-cased to match what signup stores (lib/auth-errors.normalizeEmail) and
+    # what login looks up (get_user_by_email uses LOWER()). Without this, an
+    # ADMIN_EMAIL typed as "Me@Gmail.com" misses the ON CONFLICT on the existing
+    # "me@gmail.com" row and INSERTS A SECOND ACCOUNT — a duplicate the login
+    # query then resolves by `ORDER BY id LIMIT 1`, i.e. the OLD one, so the new
+    # password appears not to work at all.
+    email = email.strip().lower()
+
     database_url = os.getenv("DATABASE_URL")
     if not database_url:
         try:

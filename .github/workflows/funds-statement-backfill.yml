@@ -1,0 +1,112 @@
+name: Funds NAV Statement Backfill
+
+# ============================================================
+# Fills the 2025-05-14 .. 2026-06-30 NAV hole from Mubasher's newsroom price
+# statements — the only source that still carries it.
+#
+# Our own ingestion is NOT at fault and must not be "fixed": measured
+# 2026-09-07 the per-fund CSV offers 203,582 observations and we already hold
+# 203,581. The data simply is not in the CSV any more.
+#
+# SAFETY, in the script (backend-core/scripts/mubasher_statement_backfill.py):
+#   * ON CONFLICT (fund_id, date) DO NOTHING — an existing NAV is never
+#     overwritten. This fills holes; it does not restate history.
+#   * every row stamped source='mubasher_statement', so the batch is auditable
+#     and purgeable.
+#   * reconcile_series() is per-fund all-or-nothing: overlapping dates must
+#     agree, each new point must sit inside the fund's own learned daily-move
+#     band, AND the filled run must CLOSE onto real held data. Without that
+#     last check a +0.25%/day drift filled a 412-day hole with 293 of 293
+#     points accepted and landed 107.9% from the truth.
+#
+# POLITENESS: mubasher.info robots.txt allows /news/ for every agent and asks
+# for Crawl-delay: 5. The fetcher honours it, which is why each run takes a
+# bounded slice rather than the whole manifest.
+# ============================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'rehearse (dry run) or commit (write)'
+        required: true
+        default: 'rehearse'
+        type: choice
+        options: [rehearse, commit]
+      limit:
+        description: 'max statements to process this run'
+        required: false
+        default: '150'
+        type: string
+  schedule:
+    # 03:00 Cairo daily. Idempotent, so a run that finds nothing new is a no-op.
+    - cron: '0 1 * * *'
+
+concurrency:
+  group: funds-statement-backfill
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backfill:
+    name: Backfill NAV from newsroom statements
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Dormancy guard
+        id: guard
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          # Stay dormant rather than fail loudly every night if the secret is
+          # absent — a red run nobody can fix trains people to ignore red runs.
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL is not configured; skipping."
+            echo "run=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-python@v6
+        if: steps.guard.outputs.run == 'yes'
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        if: steps.guard.outputs.run == 'yes'
+        run: |
+          # rapidocr-onnxruntime is pip-only (no system packages), which is why
+          # it was chosen: this runner has no sudo.
+          pip install --quiet asyncpg rapidocr-onnxruntime
+
+      - name: Self-test the gates before touching anything
+        if: steps.guard.outputs.run == 'yes'
+        run: |
+          python backend-core/scripts/mubasher_statement.py --self-test
+          python backend-core/scripts/mubasher_statement_backfill.py --self-test
+
+      - name: Rehearse
+        if: steps.guard.outputs.run == 'yes'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          LIMIT="${{ github.event.inputs.limit || '150' }}"
+          python backend-core/scripts/mubasher_statement_backfill.py \
+            --manifest backend-core/data/mubasher_statement_manifest.json \
+            --cache-dir "$RUNNER_TEMP/statement-cache" \
+            --limit "$LIMIT"
+
+      - name: Commit the backfill
+        if: steps.guard.outputs.run == 'yes' && github.event.inputs.mode == 'commit'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          LIMIT="${{ github.event.inputs.limit || '150' }}"
+          python backend-core/scripts/mubasher_statement_backfill.py \
+            --manifest backend-core/data/mubasher_statement_manifest.json \
+            --cache-dir "$RUNNER_TEMP/statement-cache" \
+            --limit "$LIMIT" --commit

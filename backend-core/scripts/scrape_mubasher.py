@@ -285,13 +285,42 @@ async def save_fund_data(conn, fund, history, profile_data):
     if history:
         records = [(fund['fund_id'], h['date'], h['nav']) for h in history]
         await conn.executemany('''
-            INSERT INTO nav_history (fund_id, date, nav)
-            VALUES ($1, $2, $3)
+            INSERT INTO nav_history (fund_id, date, nav, source, ingested_at)
+            VALUES ($1, $2, $3, 'mubasher_page', NOW())
             ON CONFLICT (fund_id, date) DO NOTHING
         ''', records)
         print(f"   Saved {len(records)} history points.")
 
-async def main(test_mode=False):
+# A hole no publication cadence explains. The widest genuine rhythm in the book
+# is monthly; three months of silence is missing data.
+GAP_DAYS = 90
+
+SQL_GAPPED_FUNDS = """
+    WITH d AS (
+        SELECT fund_id, date,
+               LAG(date) OVER (PARTITION BY fund_id ORDER BY date) AS prev
+          FROM nav_history
+         WHERE fund_id ~ '^[0-9]+$'
+    )
+    SELECT fund_id, MAX(date - prev) AS worst
+      FROM d
+     WHERE prev IS NOT NULL
+       -- The EGX was genuinely shut 2011-01-27 -> 2011-03-23. That is real
+       -- market history and re-scraping for it would be chasing a hole that
+       -- is supposed to be there.
+       AND NOT (prev < DATE '2011-03-23' AND date > DATE '2011-01-27')
+     GROUP BY fund_id
+    HAVING MAX(date - prev) >= $1
+     ORDER BY MAX(date - prev) DESC
+"""
+
+
+async def gapped_fund_ids(conn) -> set:
+    rows = await conn.fetch(SQL_GAPPED_FUNDS, GAP_DAYS)
+    return {r["fund_id"] for r in rows}
+
+
+async def main(test_mode=False, gaps_only=False):
     print("🚀 Mubasher Scraper Started (Authenticated Mode)")
     conn = await get_db_connection()
     
@@ -312,6 +341,30 @@ async def main(test_mode=False):
         if not all_funds:
             all_funds = await get_existing_funds_from_db(conn)
 
+        # ── GAP-DRIVEN MODE ─────────────────────────────────────────────────
+        # THE RESUME GUARD IS WHY THIS JOB NEVER REPAIRED ANYTHING. It skips a
+        # fund that has more than ten points and was touched today — which is
+        # every fund, because the list-API sync writes today's price to all of
+        # them every morning. So the one source that can read a fund's FULL
+        # chart history has been running daily and re-reading nothing.
+        #
+        # That mattered most for the funds it was needed for. The newer funds
+        # have no per-fund CSV at all (checked: the file is empty for every one
+        # of them), so they live entirely on that daily one-price trickle, and
+        # when the NAV job failed six runs in a row in August 2026 those days
+        # were lost permanently. There was no way to go back for them.
+        #
+        # In this mode the fund list is the GAP LEDGER, and the guard is off by
+        # construction: a fund is here precisely because its history is
+        # incomplete, so "we already have history" is not a reason to skip it.
+        gapped = set()
+        if gaps_only:
+            gapped = await gapped_fund_ids(conn)
+            all_funds = [f for f in all_funds if f["fund_id"] in gapped]
+            print(f"🎯 GAP MODE: {len(all_funds)} fund(s) carry a {GAP_DAYS}+ day hole.")
+            if not all_funds:
+                print("   Nothing to repair.")
+
         if test_mode:
             all_funds = all_funds[:3]
             print("⚠️ TEST MODE: Processing first 3 funds only.")
@@ -331,7 +384,9 @@ async def main(test_mode=False):
                 if meta_row and meta_row['updated_at']:
                      is_fresh = meta_row['updated_at'].date() >= datetime.now().date()
 
-                if history_count > 10 and is_fresh:
+                if gaps_only:
+                    print(f"   🎯 Re-reading full history (carries a {GAP_DAYS}+ day gap).")
+                elif history_count > 10 and is_fresh:
                     print(f"   ⏭️ Skipping (Found {history_count} points & updated today).")
                     continue
                 elif history_count > 10:
@@ -360,4 +415,5 @@ async def main(test_mode=False):
 if __name__ == "__main__":
     import sys
     test = '--test' in sys.argv
-    asyncio.run(main(test))
+    gaps = '--gaps-only' in sys.argv
+    asyncio.run(main(test, gaps))

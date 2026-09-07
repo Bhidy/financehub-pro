@@ -72,15 +72,31 @@ SQL_WRITE = """
 # ==========================================================================
 # extraction
 # ==========================================================================
-def collect(article_ids, *, cache_dir=None, verbose=True):
+def collect(article_ids, *, cache_dir=None, verbose=True, bridge=False):
     """
     (fund_id -> {iso date: nav}), plus a per-article report.
 
     A statement that cannot be read is skipped and counted, never guessed at.
+
+    `bridge` additionally allows a printed name the alias table has never seen
+    to be PROPOSED against a known one. Mubasher renamed its own columns
+    between eras — "Horus M.M" on the 2025 sheets is "HORUS - AFIM" on the 2026
+    ones — so the alias table, learned from recent statements, maps almost
+    nothing on the older ones that cover the deepest part of the hole.
+
+    A bridge is a proposal, never a decision:
+      * it must be UNAMBIGUOUS (exactly one known fund resembles the name);
+      * the fund's whole reconstructed series still has to clear
+        `reconcile_series`, closure included. Two different funds sit at
+        different price levels entirely, so a wrong bridge cannot join our held
+        data on both sides of the gap.
+    Every bridge taken is reported, so the inference is never invisible.
     """
+    from mubasher_statement import propose_bridge
     aliases = load_aliases()
     by_fund: dict[str, dict[str, float]] = defaultdict(dict)
-    report = {"read": 0, "refused": 0, "rows": 0, "mapped": 0,
+    bridged: dict[str, str] = {}
+    report = {"read": 0, "refused": 0, "rows": 0, "mapped": 0, "bridged": bridged,
               "unmapped": defaultdict(int), "errors": []}
     for aid in article_ids:
         try:
@@ -103,7 +119,15 @@ def collect(article_ids, *, cache_dir=None, verbose=True):
         report["rows"] += len(rows)
         iso = stmt_date.isoformat()
         for row in rows:
-            fund_id = aliases.get(normalise_name(row.name))
+            key = normalise_name(row.name)
+            fund_id = aliases.get(key)
+            if not fund_id and bridge:
+                if key in bridged:
+                    fund_id = bridged[key]
+                else:
+                    proposals = propose_bridge(row.name, aliases)
+                    if len(proposals) == 1:
+                        fund_id = bridged[key] = proposals[0]
             if not fund_id:
                 report["unmapped"][row.name] += 1
                 continue
@@ -260,11 +284,29 @@ async def learn_aliases(conn, article_ids, *, cache_dir, out_path, min_dates=3,
     return doc
 
 
-def report_plan(candidate, held, *, show=12):
-    """The dry-run report: what reconciliation would accept, and what it refuses."""
-    accepted, refused, rejected_pts = {}, [], 0
+def report_plan(candidate, held, *, show=12, inferred=frozenset(), quiet=False):
+    """
+    The dry-run report: what reconciliation would accept, and what it refuses.
+
+    `inferred` names funds whose identity came from a BRIDGE rather than the
+    fingerprinted alias table. Those are held to a stricter rule: their new
+    points must be ENCLOSED by data we already hold, so the closure check has
+    an anchor on both sides. Without a closing anchor a wrong bridge could
+    extend a series off the end of our data unchallenged, and an inference is
+    exactly the case where that must not be possible.
+    """
+    emit = (lambda *a, **k: None) if quiet else print
+    accepted, refused, rejected_pts, unanchored = {}, [], 0, []
     for fund_id, series in sorted(candidate.items()):
-        check = reconcile_series(fund_id, held.get(fund_id, {}), series)
+        own = held.get(fund_id, {})
+        if fund_id in inferred and series:
+            first, last = min(series), max(series)
+            before = any(d < first for d in own)
+            after = any(d > last for d in own)
+            if not (before and after):
+                unanchored.append(fund_id)
+                continue
+        check = reconcile_series(fund_id, own, series)
         rejected_pts += len(check.rejected)
         if not check.ok:
             refused.append((fund_id, check.conflicts[:2]))
@@ -272,24 +314,33 @@ def report_plan(candidate, held, *, show=12):
         if check.accepted:
             accepted[fund_id] = check.accepted
     total = sum(len(v) for v in accepted.values())
-    print(f"\nfunds offered {len(candidate)}  cleared {len(accepted)}  "
+    emit(f"\nfunds offered {len(candidate)}  cleared {len(accepted)}  "
           f"REFUSED by reconciliation {len(refused)}")
-    print(f"individual points rejected in-flight: {rejected_pts}")
-    print(f"NEW observations that would be written: {total}")
+    emit(f"individual points rejected in-flight: {rejected_pts}")
+    emit(f"NEW observations that would be written: {total}")
+    if unanchored:
+        emit(f"inferred funds skipped for want of a two-sided anchor: "
+              f"{len(unanchored)} {unanchored[:8]}")
     for fund_id, conflicts in refused[:show]:
-        print(f"   refused {fund_id}: {conflicts}")
+        emit(f"   refused {fund_id}: {conflicts}")
     rank = sorted(accepted.items(), key=lambda kv: -len(kv[1]))
     for fund_id, rows in rank[:show]:
         ds = sorted(rows)
-        print(f"   +{len(rows):>4}  fund {fund_id:>6}  {ds[0]} .. {ds[-1]}")
+        emit(f"   +{len(rows):>4}  fund {fund_id:>6}  {ds[0]} .. {ds[-1]}")
     return accepted, total
 
 
-async def run(article_ids, *, cache_dir, commit, held_archive=None, verbose=True):
+async def run(article_ids, *, cache_dir, commit, held_archive=None,
+              bridge=False, verbose=True):
     print(f"reading {len(article_ids)} statements ...")
-    candidate, report = collect(article_ids, cache_dir=cache_dir, verbose=verbose)
+    candidate, report = collect(article_ids, cache_dir=cache_dir,
+                                verbose=verbose, bridge=bridge)
     print(f"\nstatements read {report['read']}, refused {report['refused']}, "
           f"rows {report['rows']}, mapped {report['mapped']}")
+    if report["bridged"]:
+        print(f"era-bridged names (proposed, still gated): {len(report['bridged'])}")
+        for k, v in list(report["bridged"].items())[:10]:
+            print(f"   {k[:40]:40} -> fund {v}")
     if report["unmapped"]:
         top = sorted(report["unmapped"].items(), key=lambda kv: -kv[1])[:8]
         print(f"unmapped printed names ({len(report['unmapped'])} distinct): "
@@ -305,7 +356,7 @@ async def run(article_ids, *, cache_dir, commit, held_archive=None, verbose=True
                              "it must never be combined with --commit.")
         held = load_held_archive(held_archive, candidate.keys())
         print(f"\n[offline rehearsal against {held_archive}]")
-        report_plan(candidate, held)
+        report_plan(candidate, held, inferred=set(report['bridged'].values()))
         print("\nDRY RUN — no database was contacted, nothing written.")
         return 0
 
@@ -318,7 +369,8 @@ async def run(article_ids, *, cache_dir, commit, held_archive=None, verbose=True
     conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0)
     try:
         held = await load_held(conn, candidate.keys())
-        accepted, total_new = report_plan(candidate, held)
+        accepted, total_new = report_plan(
+            candidate, held, inferred=set(report['bridged'].values()))
 
         if not commit:
             print("\nDRY RUN — nothing written. Re-run with --commit to write.")
@@ -413,6 +465,34 @@ def _self_test() -> int:
             check(f"manifest shape: {label}", load_manifest(path) == want)
         finally:
             os.unlink(path)
+    # -- era bridging --------------------------------------------------
+    src_collect = _inspect.getsource(collect)
+    check("bridge is opt-in", "bridge=False" in src_collect)
+    check("a bridge must be unambiguous", "len(proposals) == 1" in src_collect)
+    check("bridges are reported, never silent", '"bridged"' in src_collect)
+
+    src_plan2 = _inspect.getsource(report_plan)
+    check("inferred funds need a two-sided anchor",
+          "before and after" in src_plan2)
+    check("unanchored inferred funds are skipped and named",
+          "unanchored" in src_plan2)
+
+    # an inferred fund whose points run off the END of our data must be skipped:
+    # closure has nothing to check against, which is exactly when a wrong bridge
+    # would go unchallenged.
+    held_x = {"2026-01-01": 10.0, "2026-01-02": 10.004, "2026-01-05": 10.016}
+    tail = {"2026-02-01": 10.2, "2026-02-02": 10.21}          # beyond our last date
+    acc, tot = report_plan({"9001": tail}, {"9001": held_x}, inferred={"9001"}, quiet=True)
+    check("inferred fund with no closing anchor is skipped", tot == 0)
+
+    middle = {"2026-01-03": 10.008, "2026-01-04": 10.012}     # enclosed
+    acc, tot = report_plan({"9001": middle}, {"9001": held_x}, inferred={"9001"}, quiet=True)
+    check("inferred fund enclosed by held data is allowed through", tot == 2)
+
+    # the same tail is fine for a fingerprinted (non-inferred) fund
+    acc, tot = report_plan({"9001": tail}, {"9001": held_x}, quiet=True)
+    check("non-inferred funds are not held to the enclosure rule", tot >= 1)
+
     src_learn = _inspect.getsource(learn_aliases)
     check("alias learning writes no NAV rows",
           "INSERT" not in src_learn and "SQL_WRITE" not in src_learn)
@@ -445,6 +525,9 @@ def main() -> int:
     ap.add_argument("--articles", nargs="*", default=None, help="explicit article ids")
     ap.add_argument("--cache-dir", default=None)
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--bridge", action="store_true",
+                    help="allow era-renamed fund names to be proposed against known "
+                         "aliases; every proposal is still gated by reconciliation")
     ap.add_argument("--learn-aliases", metavar="OUT",
                     help="regenerate the alias table from the statements and write "
                          "it to OUT (reads the database, writes no NAV rows)")
@@ -481,7 +564,7 @@ def main() -> int:
         return asyncio.run(_learn())
 
     return asyncio.run(run(ids, cache_dir=args.cache_dir, commit=args.commit,
-                       held_archive=args.held_archive))
+                           held_archive=args.held_archive, bridge=args.bridge))
 
 
 if __name__ == "__main__":

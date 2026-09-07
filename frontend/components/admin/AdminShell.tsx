@@ -46,7 +46,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ArrowUpRight, LogOut, Menu, X } from "lucide-react";
 import { StartaLogo } from "@/components/brand/StartaLogo";
 import { useAuth } from "@/contexts/AuthContext";
-import { ADMIN_NAV, activeAdminItem } from "@/lib/admin-nav";
+import { VISIBLE_ADMIN_NAV, activeAdminItem } from "@/lib/admin-nav";
 
 function RailContent({ onNavigate }: { onNavigate?: () => void }) {
     const pathname = usePathname();
@@ -65,7 +65,7 @@ function RailContent({ onNavigate }: { onNavigate?: () => void }) {
 
             <nav className="flex-1 px-3" aria-label="Admin sections">
                 <ul className="space-y-1">
-                    {ADMIN_NAV.map((item) => {
+                    {VISIBLE_ADMIN_NAV.map((item) => {
                         const Icon = item.icon;
                         const isActive = active?.href === item.href;
                         return (

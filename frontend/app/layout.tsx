@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import SiteAnalytics from "@/components/analytics/SiteAnalytics";
 import { JetBrains_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
@@ -217,31 +218,12 @@ export default async function RootLayout({
             })();
           `}
         </Script>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-X86G4NMVFJ"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-
-            gtag('config', 'G-X86G4NMVFJ');
-          `}
-        </Script>
-        <Script id="hotjar-snippet" strategy="afterInteractive">
-          {`
-            (function(h,o,t,j,a,r){
-                h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-                h._hjSettings={hjid:6628829,hjsv:6};
-                a=o.getElementsByTagName('head')[0];
-                r=o.createElement('script');r.async=1;
-                r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-                a.appendChild(r);
-            })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
-          `}
-        </Script>
+        {/* GA + Hotjar live in a client component so they can be withheld from
+            /admin: Hotjar records sessions, and /admin/users shows every
+            account's name, email and phone. See components/analytics. */}
+        <Suspense fallback={null}>
+          <SiteAnalytics />
+        </Suspense>
         <div id="build-id" data-timestamp={new Date().toISOString()} className="hidden" />
         <Suspense fallback={null}>
           <BuildInfo />

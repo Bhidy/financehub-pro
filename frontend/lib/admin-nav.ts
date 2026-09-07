@@ -26,6 +26,15 @@ export interface AdminNavItem {
     /** Shown under the label in the drawer; also the page's own subtitle. */
     description: string;
     icon: LucideIcon;
+    /**
+     * Kept out of the rail, but still routed and still gated.
+     *
+     * Hidden rather than deleted (owner instruction, 2026-09-07): the pages
+     * work, their URLs stay valid, and `activeAdminItem` still lights the
+     * right entry if one is opened directly — restoring one is deleting a
+     * single line, not rebuilding a page.
+     */
+    hidden?: boolean;
 }
 
 export const ADMIN_NAV: AdminNavItem[] = [
@@ -34,6 +43,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
         label: "Analytics",
         description: "Assistant health, demand and newsletter engagement",
         icon: BarChart3,
+        hidden: true,
     },
     {
         href: "/admin/users",
@@ -46,6 +56,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
         label: "Guest sessions",
         description: "Pre-registration activity and conversion",
         icon: Radio,
+        hidden: true,
     },
 ];
 
@@ -58,6 +69,9 @@ export const ADMIN_NAV: AdminNavItem[] = [
  * the prefix-matching version of this bug on /ar routes, where parent-route
  * prefix matching 404'd every news article.
  */
+/** What the rail renders. Hidden entries stay routable, just unlisted. */
+export const VISIBLE_ADMIN_NAV: AdminNavItem[] = ADMIN_NAV.filter((i) => !i.hidden);
+
 export function activeAdminItem(pathname: string): AdminNavItem | undefined {
     return ADMIN_NAV.filter(
         (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)

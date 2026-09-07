@@ -177,12 +177,35 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     user = await get_user_by_email(email=token_data.email)
     if user is None:
         raise credentials_exception
+
+    # THIS is what makes "Last seen" a measurement rather than a login log.
+    # Stamping only on login/refresh reports when someone last authenticated,
+    # which with a 15-minute access token and a 7-day refresh token can lag
+    # real usage badly. Every authenticated request passes through here, so
+    # this is the one place that sees actual activity.
+    #
+    # Throttled to once per LAST_SEEN_THROTTLE: the row is already loaded, so
+    # the check costs nothing, and a busy user produces one indexed UPDATE by
+    # primary key every few minutes instead of one per request.
+    try:
+        seen = user.get("last_login")
+        if seen is None or (datetime.now(seen.tzinfo) - seen) > LAST_SEEN_THROTTLE:
+            await touch_last_seen(user["id"])
+    except Exception as e:  # pragma: no cover - never fail a request on telemetry
+        print(f"last-seen throttle check failed: {type(e).__name__}: {e}")
+
     return user
 
 async def get_current_active_user(current_user: Annotated[dict, Depends(get_current_user)]):
     if not current_user['is_active']:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+# How stale "last seen" is allowed to get for an actively-browsing user. Small
+# enough that the console is honest, large enough that a busy session is one
+# write every few minutes rather than one per request.
+LAST_SEEN_THROTTLE = timedelta(minutes=5)
+
 
 async def touch_last_seen(user_id: int) -> None:
     """Stamp `last_login` — the column the admin console shows as "Last seen".

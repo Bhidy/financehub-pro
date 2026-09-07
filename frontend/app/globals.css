@@ -1302,6 +1302,17 @@ a:focus-visible {
   border-color: var(--color-border);
 }
 
+/* Second line of defence for the console. components/analytics/SiteAnalytics
+   withholds Hotjar on a hard load of /admin, but a client-side navigation from
+   a public page arrives with it already injected, and Hotjar has no supported
+   teardown. Its widget mounts on <body>, outside the console subtree, so this
+   keys off the console's presence anywhere in the document instead. */
+body:has(.admin-light) ._hj_feedback_container,
+body:has(.admin-light) [class*="_hj_feedback"],
+body:has(.admin-light) iframe[title*="Hotjar" i] {
+  display: none !important;
+}
+
 .admin-light input::placeholder,
 .admin-light textarea::placeholder {
   color: var(--color-muted);

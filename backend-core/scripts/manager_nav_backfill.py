@@ -124,6 +124,41 @@ MAX_TAIL_FRACTION = 0.01    # at most 1% of overlapping points may be in it
 EXACT_ANCHOR_PCT = 0.05     # six-figure agreement, i.e. the same published number
 MIN_EXACT_ANCHORS = 1
 
+# ══ THE DOCUMENT CACHE ══════════════════════════════════════════════════════
+# Every run re-fetched all 114 archived articles from the Internet Archive, and
+# the result swung on which of them came back that minute: 33 publication dates
+# one run, 17 the next, 25 the next. Funds appeared and disappeared from the
+# mapping for no reason but network weather, a 60-minute job spent almost all of
+# it re-downloading documents that have not changed since 2025, and the retries
+# that fixed the flakiness pushed it to the timeout.
+#
+# An archived snapshot is immutable. Fetching one twice is pure waste. Parsed
+# documents are stored, so run N+1 reads them from the database in milliseconds
+# and only fetches what is genuinely new — which makes the job fast, its output
+# deterministic, and its coverage MONOTONIC: every article ever successfully
+# read stays read, so the recovery only ever improves.
+SQL_DOC_DDL = """
+CREATE TABLE IF NOT EXISTS nav_source_docs (
+    source     TEXT NOT NULL,
+    url        TEXT NOT NULL,
+    as_of      DATE,
+    payload    JSONB NOT NULL,
+    fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (source, url)
+);
+CREATE INDEX IF NOT EXISTS nav_source_docs_source_asof ON nav_source_docs (source, as_of);
+"""
+
+SQL_DOC_GET = "SELECT url, as_of, payload FROM nav_source_docs WHERE source = $1"
+SQL_DOC_PUT = """INSERT INTO nav_source_docs (source, url, as_of, payload)
+     VALUES ($1, $2, $3, $4::jsonb)
+     ON CONFLICT (source, url) DO UPDATE
+        SET as_of = EXCLUDED.as_of, payload = EXCLUDED.payload, fetched_at = NOW()"""
+
+# A run fetches at most this many NEW documents, so it always finishes inside
+# the job window and converges over a few runs instead of timing out on one.
+MAX_NEW_DOCS_PER_RUN = 45
+
 SQL_INSERT = """INSERT INTO nav_history (fund_id, date, nav, source, source_url, ingested_at)
    SELECT fid, d, nav, src, url, NOW()
    FROM unnest($1::text[], $2::date[], $3::numeric[], $4::text[], $5::text[]) AS t(fid, d, nav, src, url)
@@ -203,6 +238,9 @@ def fetch_azimut(sess, delay: float) -> dict[str, dict]:
 CDX = ("http://web.archive.org/cdx/search/cdx?url=cicapital.com%2Ffundprice%2F"
        "&output=json&filter=statuscode:200&collapse=timestamp:8&limit=600")
 SNAPSHOT = "http://web.archive.org/web/{ts}id_/https://www.cicapital.com/fundprice/"
+# One provenance note for the whole series; the per-document URL lives in
+# nav_source_docs, which is where an auditor should look for a specific date.
+WAYBACK_NOTE = "https://web.archive.org/ (mubasher price tables)"
 
 # "Last update: Monday, August 25, 2025"
 _UPDATED = re.compile(r"Last update:\s*(?:\w+,\s*)?([A-Z][a-z]+ \d{1,2}, \d{4})")
@@ -399,7 +437,8 @@ def _article_date(text: str, capture_ts: str) -> str | None:
     return None
 
 
-def fetch_mubasher_news(sess, delay: float) -> dict[str, dict]:
+def fetch_mubasher_news(sess, delay: float, cache: dict | None = None,
+                        store=None) -> dict[str, dict]:
     out: dict[str, dict] = {}
     try:
         rows = sess.get(MUBASHER_CDX, headers={"user-agent": UA}, timeout=120).json()
@@ -409,10 +448,37 @@ def fetch_mubasher_news(sess, delay: float) -> dict[str, dict]:
     arts = [(r[1], r[2]) for r in rows[1:]] if rows else []
     print(f"[manager] mubasher_news: {len(arts)} archived price articles", flush=True)
 
+    cache = cache or {}
     seen_dates: set[str] = set()
     parsed = 0
     misses = 0
+    fetched = 0
+    reused = 0
+
+    def absorb(when: str, rows: list) -> None:
+        """Fold one document's prices into the per-name series."""
+        if when in seen_dates:
+            return
+        seen_dates.add(when)
+        for label, v in rows:
+            rec = out.setdefault(label, {"pts": {}, "url": WAYBACK_NOTE,
+                                         "source": SOURCE_MUBNEWS})
+            rec["pts"].setdefault(when, v)
+
+    # Cached documents first: they cost nothing and they are the reason a
+    # re-run cannot be worse than the run before it.
+    for url, (when, rows) in cache.items():
+        if when and rows:
+            absorb(when, rows)
+            reused += 1
+            parsed += 1
+
     for ts, url in sorted(arts):
+        if url in cache:
+            continue
+        if fetched >= MAX_NEW_DOCS_PER_RUN:
+            break
+        fetched += 1
         time.sleep(delay)
         snap = WAYBACK.format(ts=ts, url=url)
         # RETRY, BECAUSE ONE ARTICLE CARRIES THE WHOLE MAPPING. Only two of the
@@ -440,23 +506,22 @@ def fetch_mubasher_news(sess, delay: float) -> dict[str, dict]:
         text = html.unescape(re.sub(r"<[^>]+>", " ", body))
         text = re.sub(r"\s+", " ", text)
         when = _article_date(text, ts)
-        if not when or when in seen_dates:
-            continue
-        rowsx = _ROW.findall(text)
-        if not rowsx:
-            continue
-        seen_dates.add(when)
-        parsed += 1
-        for name, cur, val in rowsx:
+        rows = []
+        for name, cur, val in _ROW.findall(text):
             v = _clean_price(val)
-            if v is None:
-                continue
-            label = f"{name.strip()} [{cur}]"
-            rec = out.setdefault(label, {"pts": {}, "url": snap,
-                                         "source": SOURCE_MUBNEWS})
-            rec["pts"].setdefault(when, v)
+            if v is not None:
+                rows.append((f"{name.strip()} [{cur}]", v))
+        # Store even an unparseable document, so it is never fetched again.
+        if store:
+            store(url, when, rows)
+        if not when or not rows:
+            continue
+        absorb(when, rows)
+        parsed += 1
+    remaining = max(0, len(arts) - len(cache) - fetched)
     print(f"[manager] mubasher_news: {len(out)} fund names across {parsed} "
-          f"publication dates ({misses} capture(s) unreachable)", flush=True)
+          f"publication dates ({reused} cached, {fetched} newly fetched, "
+          f"{misses} unreachable, {remaining} still to collect)", flush=True)
     return out
 
 
@@ -525,16 +590,47 @@ async def run(dry_run: bool, only: str | None, only_ids: list[str] | None,
             catalogue = [c for c in catalogue if c[0] in set(only_ids)]
         print(f"[manager] catalogue: {len(catalogue)} ingested funds", flush=True)
 
+        await conn.execute(SQL_DOC_DDL)
+        cached_docs = {r["url"]: (r["as_of"].isoformat() if r["as_of"] else None,
+                                  [(x[0], float(x[1])) for x in (r["payload"] or [])])
+                       for r in await conn.fetch(SQL_DOC_GET, SOURCE_MUBNEWS)}
+        if cached_docs:
+            print(f"[manager] document cache: {len(cached_docs)} article(s) already read",
+                  flush=True)
+
+        pending_docs: list[tuple[str, str | None, list]] = []
+
+        def remember(url: str, when: str | None, rows: list) -> None:
+            pending_docs.append((url, when, rows))
+
         series: dict[str, dict] = {}
         with httpx.Client(follow_redirects=True, timeout=90.0) as sess:
             for name, fn in SOURCES.items():
                 if only and name != only:
                     continue
                 try:
-                    series.update(fn(sess, delay))
+                    if name == "mubasher_news":
+                        series.update(fn(sess, delay, cached_docs, remember))
+                    else:
+                        series.update(fn(sess, delay))
                 except Exception as e:  # noqa: BLE001 — one source must not kill the run
                     print(f"[manager] source {name} failed: {type(e).__name__}: {e}",
                           flush=True)
+
+        # Persist what was read BEFORE anything else can fail. A document
+        # fetched and then lost to a later error is the whole problem this
+        # cache exists to end, and it costs nothing to be safe here.
+        if pending_docs and not dry_run:
+            for url, when, rows in pending_docs:
+                try:
+                    await conn.execute(
+                        SQL_DOC_PUT, SOURCE_MUBNEWS, url,
+                        date.fromisoformat(when) if when else None,
+                        json.dumps(rows))
+                except Exception as e:  # noqa: BLE001 — per-document isolation
+                    print(f"[manager] could not cache {url[:60]}: {type(e).__name__}",
+                          flush=True)
+            print(f"[manager] cached {len(pending_docs)} newly read article(s)", flush=True)
         print(f"[manager] {len(series)} manager series collected", flush=True)
 
         # Held NAV, EXCLUDING anything this pipeline wrote, so a mapping cannot

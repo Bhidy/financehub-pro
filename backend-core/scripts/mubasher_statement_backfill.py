@@ -50,8 +50,8 @@ from datetime import date
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mubasher_statement import (            # noqa: E402
-    SOURCE_TAG, StatementError, fetch_article, load_aliases, normalise_name,
-    read_statement, reconcile_series,
+    CHECKSUM_TOL_PCT, SOURCE_TAG, StatementError, fetch_article, load_aliases,
+    normalise_name, read_statement, reconcile_series,
 )
 
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -337,6 +337,40 @@ def corroborate_bridges(unmapped_rows, aliases, held, *, min_hits=2, tol_pct=0.0
     return accepted, rejected
 
 
+# A date is a VENDOR-STALE day when the statement disagrees with our stored NAV
+# for many funds at once. Measured 2026-09-07: on 2026-07-06 and 2026-07-27
+# Mubasher republished the previous day's sheet, and the printed value for fund
+# 6120 was exactly our 2026-07-05 figure. Roughly twenty funds conflicted on
+# each of those two days.
+#
+# A per-fund conflict RATE cannot see that. With ~24 overlapping dates, two
+# stale days is 8.3% — over any sane per-fund threshold — so the rule condemned
+# 26 of 57 funds for a defect none of them had. Conflicts shared across many
+# funds are evidence about the DATE, not about any fund's identity.
+VENDOR_STALE_MIN_FUNDS = 5
+VENDOR_STALE_MIN_SHARE = 0.30
+
+
+def vendor_stale_dates(candidate, held):
+    """Dates the statement gets wrong for a large share of funds at once."""
+    conflicts, present = defaultdict(set), defaultdict(set)
+    for fund_id, series in candidate.items():
+        own = held.get(fund_id, {})
+        for d, v in series.items():
+            base = own.get(d)
+            if base is None:
+                continue
+            present[d].add(fund_id)
+            if abs(v - base) / base * 100 > CHECKSUM_TOL_PCT:
+                conflicts[d].add(fund_id)
+    bad = {}
+    for d, funds in conflicts.items():
+        share = len(funds) / max(len(present[d]), 1)
+        if len(funds) >= VENDOR_STALE_MIN_FUNDS and share >= VENDOR_STALE_MIN_SHARE:
+            bad[d] = (len(funds), len(present[d]))
+    return bad
+
+
 def report_plan(candidate, held, *, show=12, inferred=frozenset(), quiet=False):
     """
     The dry-run report: what reconciliation would accept, and what it refuses.
@@ -349,6 +383,13 @@ def report_plan(candidate, held, *, show=12, inferred=frozenset(), quiet=False):
     exactly the case where that must not be possible.
     """
     emit = (lambda *a, **k: None) if quiet else print
+    stale = vendor_stale_dates(candidate, held)
+    if stale:
+        emit(f"vendor-stale dates excluded ({len(stale)}): "
+             + ", ".join(f"{d} ({n}/{m} funds)" for d, (n, m) in
+                         sorted(stale.items())[:6]))
+        candidate = {f: {d: v for d, v in ser.items() if d not in stale}
+                     for f, ser in candidate.items()}
     accepted, refused, rejected_pts, unanchored = {}, [], 0, []
     for fund_id, series in sorted(candidate.items()):
         own = held.get(fund_id, {})
@@ -555,6 +596,42 @@ def _self_test() -> int:
             check(f"manifest shape: {label}", load_manifest(path) == want)
         finally:
             os.unlink(path)
+    # -- vendor-stale dates ---------------------------------------------
+    # The real shape: on 2026-07-06 Mubasher republished the previous day's
+    # sheet, so ~20 funds disagreed on that ONE date. With ~24 overlapping
+    # dates each, two such days is 8.3% per fund — over any per-fund threshold
+    # — and 26 of 57 funds were condemned for a defect none of them had.
+    held_many = {str(9100 + i): {"2026-07-05": 10.0 + i, "2026-07-06": 10.1 + i,
+                                 "2026-07-07": 10.2 + i} for i in range(10)}
+    cand_many = {f: {"2026-07-05": v["2026-07-05"],
+                     "2026-07-06": v["2026-07-05"],      # stale: yesterday's value
+                     "2026-07-07": v["2026-07-07"]}
+                 for f, v in held_many.items()}
+    stale = vendor_stale_dates(cand_many, held_many)
+    check("a date wrong across many funds is flagged stale", "2026-07-06" in stale)
+    check("dates that agree are not flagged",
+          "2026-07-05" not in stale and "2026-07-07" not in stale)
+    check("the flag records how widespread it was", stale["2026-07-06"][0] == 10)
+
+    # one fund disagreeing on a date is NOT a vendor problem — that is the
+    # signal that the fund itself is mismatched, and must stay visible.
+    one_off = {f: dict(v) for f, v in cand_many.items()}
+    for f in one_off:
+        one_off[f]["2026-07-06"] = held_many[f]["2026-07-06"]
+    one_off["9100"]["2026-07-06"] = 99.0
+    check("a single fund's disagreement is not called vendor-stale",
+          "2026-07-06" not in vendor_stale_dates(one_off, held_many))
+
+    # End to end: with a genuinely new date alongside the stale one, every fund
+    # must still contribute. Before this rule the stale day refused them all.
+    with_new = {f: {**v, "2026-07-08": held_many[f]["2026-07-07"] * 1.0004}
+                for f, v in cand_many.items()}
+    acc, tot = report_plan(with_new, held_many, quiet=True)
+    check("every fund survives a vendor-stale day", len(acc) == len(with_new))
+    check("the new observation still lands", tot == len(with_new))
+    check("the stale date itself is never written",
+          all("2026-07-06" not in rows for rows in acc.values()))
+
     # -- era bridging --------------------------------------------------
     src_collect = _inspect.getsource(collect)
     check("bridge is opt-in", "bridge=False" in src_collect)

@@ -3,13 +3,12 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import {
     Activity, BarChart3, MessageSquare, Users, TrendingUp, TrendingDown,
     AlertTriangle, Clock, Globe, Inbox, ChevronRight, Download, RefreshCw,
     CheckCircle, XCircle, HelpCircle, Zap, Filter, Info, ArrowUpRight, ArrowDownRight,
-    Search, LayoutDashboard, Flag, UserCheck, ShieldAlert, Sparkles, ThumbsUp, ThumbsDown, Eye, X
+    Search, LayoutDashboard, Flag, UserCheck, Sparkles, ThumbsUp, ThumbsDown, Eye, X
 } from "lucide-react";
 
 // ============================================================
@@ -341,8 +340,7 @@ function Tooltip({ content, children, side = "top" }: { content: string; childre
 // ============================================================
 
 export default function ChatbotAnalyticsPage() {
-    const router = useRouter();
-    const { user, isAuthenticated, isLoading: authLoading, getToken } = useAuth();
+    const { user, isAuthenticated, getToken } = useAuth();
 
     // Filters
     const [period, setPeriod] = useState("30d");
@@ -374,12 +372,10 @@ export default function ChatbotAnalyticsPage() {
     const [isNewsletterSectionOpen, setIsNewsletterSectionOpen] = useState(false);
     const [dataError, setDataError] = useState<string | null>(null);
 
-    // Admin check
-    useEffect(() => {
-        if (!authLoading && (!isAuthenticated || user?.role !== 'admin')) {
-            router.push('/login');
-        }
-    }, [isAuthenticated, authLoading, user, router]);
+    // No admin check here: app/admin/layout.tsx wraps every page under /admin in
+    // AdminGate, which is the single authorization boundary. This page's own
+    // copy used to router.push('/login') with no ?redirect=, which is how a
+    // signed-in non-admin ended up staring at a login form.
 
     const getAdminRequestHeaders = () => {
         const token =
@@ -596,25 +592,8 @@ export default function ChatbotAnalyticsPage() {
         setNewsletterPreviewLoading(false);
     };
 
-    if (authLoading) {
-        return (
-            <div className="min-h-screen bg-slate-50 dark:bg-[#151925] flex items-center justify-center">
-                <RefreshCw className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
-            </div>
-        );
-    }
-
-    if (!isAuthenticated || user?.role !== 'admin') {
-        return (
-            <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] flex items-center justify-center">
-                <div className="text-center">
-                    <ShieldAlert className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Access Denied</h1>
-                    <p className="text-slate-500 dark:text-slate-400">This dashboard is restricted to administrators.</p>
-                </div>
-            </div>
-        );
-    }
+    // Loading / signed-out / not-an-admin are all rendered by AdminGate in the
+    // layout; by the time this component mounts the viewer IS an admin.
 
     const newsletterEmailTypes = newsletterStats?.email_types?.length ? newsletterStats.email_types : newsletterStats ? [
         {

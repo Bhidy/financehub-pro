@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
 import {
     Users, Search, Download, RefreshCw, Mail, Phone, Calendar,
-    Shield, ChevronLeft, ChevronRight, Loader2, AlertCircle
+    ChevronLeft, ChevronRight, Loader2, AlertCircle
 } from "lucide-react";
 
 interface User {
@@ -28,7 +27,6 @@ interface UsersResponse {
 }
 
 export default function AdminUsersPage() {
-    const router = useRouter();
     const { user, isAuthenticated, getToken } = useAuth();
     const [users, setUsers] = useState<User[]>([]);
     const [total, setTotal] = useState(0);
@@ -39,17 +37,11 @@ export default function AdminUsersPage() {
 
     const limit = 20;
 
-    // Check admin access
-    useEffect(() => {
-        if (!isAuthenticated) {
-            router.push('/login');
-            return;
-        }
-        if (user?.role !== 'admin') {
-            setError('Admin access required');
-            return;
-        }
-    }, [isAuthenticated, user, router]);
+    // No admin check here: app/admin/layout.tsx wraps this page in AdminGate.
+    // The copy that lived here read isAuthenticated WITHOUT isLoading, and
+    // isAuthenticated is !!user — null for the first render while AuthProvider
+    // restores the session — so a hard load of this URL redirected to /login
+    // every single time, for real admins too.
 
     // Fetch users
     const fetchUsers = async () => {
@@ -129,24 +121,6 @@ export default function AdminUsersPage() {
     };
 
     const totalPages = Math.ceil(total / limit);
-
-    if (error === 'Admin access required') {
-        return (
-            <div className="flex-1 flex items-center justify-center p-6">
-                <div className="text-center">
-                    <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-slate-900 mb-2">Access Denied</h1>
-                    <p className="text-slate-500 mb-4">You don't have permission to view this page.</p>
-                    <button
-                        onClick={() => router.push('/')}
-                        className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                    >
-                        Go Home
-                    </button>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#0B1121] transition-colors duration-300 relative">

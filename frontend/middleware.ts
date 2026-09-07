@@ -80,6 +80,21 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(url, 308);
     }
 
+    // 2b) The admin area has no index dashboard; its console is /admin/analytics.
+    // This redirect lives HERE rather than in app/admin/page.tsx because that
+    // page's redirect() stopped producing an HTTP redirect the moment the admin
+    // layout began rendering a client component (AdminGate): the response
+    // starts streaming, so Next downgrades redirect() to a client-side hop and
+    // answers 200. The gate then ran at /admin and sent people to
+    // /login?redirect=/admin — an extra hop that raced the redirect it was
+    // racing against. Middleware runs before any of that. 307, not 308: /admin
+    // may earn a real index one day and a permanent redirect is uncacheable
+    // back out of a browser that already stored it.
+    if (url.pathname === '/admin' || url.pathname === '/admin/') {
+        url.pathname = '/admin/analytics';
+        return NextResponse.redirect(url, 307);
+    }
+
     // 3) Legacy query-param fund URL -> path URL (query stripped; the page
     // then 308s on to the slugged canonical /Funds/{id}-{slug}).
     if (url.pathname === '/Fund') {

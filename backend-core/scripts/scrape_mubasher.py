@@ -6,6 +6,9 @@ import aiohttp
 import asyncpg
 from datetime import datetime, timezone
 from playwright.async_api import async_playwright
+import sys, os as _os
+sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))
+from data_pipeline.nav_alignment import check_alignment, describe
 from dotenv import load_dotenv
 import io
 import ssl
@@ -313,6 +316,31 @@ async def save_fund_data(conn, fund, history, profile_data, history_only=False):
 
     # 3. Batch Insert History
     if history:
+        # ── PROVE THE DATES BEFORE WRITING THEM ─────────────────────────────
+        # Every other NAV source here reconciles against data already held
+        # before it writes. This one did not, and on its first live run it
+        # wrote 13,313 rows dated one day early, each carrying the following
+        # day's value.
+        #
+        # Note what would NOT have caught it: a tolerance on the values. Most
+        # of these are money-market funds moving ~0.01% a day, so a one-day
+        # shift still agrees to 0.01%. The values were never wrong; the dates
+        # were. So the check asks which alignment best explains the series, and
+        # refuses to write when some offset other than zero fits decisively
+        # better — whatever the errors look like at zero.
+        #
+        # Validated against rows this scraper did NOT write, so a bad run can
+        # never ratify itself on a later one.
+        held = {r["date"]: float(r["nav"]) for r in await conn.fetch(
+            "SELECT date, nav FROM nav_history "
+            "WHERE fund_id = $1 AND COALESCE(source, '') <> $2",
+            fund['fund_id'], SOURCE_TAG)}
+        verdict = check_alignment({h['date']: float(h['nav']) for h in history}, held)
+        if not verdict["ok"]:
+            print(f"   ⛔ REFUSED — {describe(verdict)}")
+            return {"written": 0, "refused": 1}
+        print(f"   ✅ {describe(verdict)}")
+
         records = [(fund['fund_id'], h['date'], h['nav']) for h in history]
         # EXPLICIT CASTS. Adding the source column left asyncpg unable to
         # deduce a type for $2 across the statement — "inconsistent types
@@ -324,6 +352,8 @@ async def save_fund_data(conn, fund, history, profile_data, history_only=False):
             ON CONFLICT (fund_id, date) DO NOTHING
         ''', records)
         print(f"   Saved {len(records)} history points.")
+        return {"written": len(records), "refused": 0}
+    return {"written": 0, "refused": 0}
 
 # A hole no publication cadence explains. The widest genuine rhythm in the book
 # is monthly; three months of silence is missing data.
@@ -451,6 +481,7 @@ async def main(test_mode=False, gaps_only=False, purge=False):
             all_funds = all_funds[:3]
             print("⚠️ TEST MODE: Processing first 3 funds only.")
         
+        written = refused = 0
         for i, fund in enumerate(all_funds):
             print(f"[{i+1}/{len(all_funds)}] Processing {fund['name']} ({fund['fund_id']})...")
             
@@ -487,11 +518,18 @@ async def main(test_mode=False, gaps_only=False, purge=False):
             if fund.get('url'):
                  profile_data, history = await scrape_profile_and_history(page, fund['url'])
             
-            await save_fund_data(conn, fund, history, profile_data,
-                                 history_only=gaps_only)
+            res = await save_fund_data(conn, fund, history, profile_data,
+                                       history_only=gaps_only) or {}
+            written += res.get("written", 0)
+            refused += res.get("refused", 0)
                 
+        print(f"\n📊 {written} history point(s) written, {refused} fund(s) REFUSED "
+              f"for misaligned dates.")
+        if refused:
+            print("::warning::some funds were refused because their dates did not "
+                  "line up with NAV already held. Nothing was written for them.")
         await browser.close()
-    
+
     await conn.close()
     print("🏁 Scraping Complete.")
 

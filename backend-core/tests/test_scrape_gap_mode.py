@@ -109,3 +109,23 @@ def test_the_purge_needs_no_browser():
     m = re.search(r"if purge:\s*\n\s*try:\s*\n\s*await purge_scraped\(conn\)[\s\S]{0,120}?return", SRC)
     assert m, "purge must run and return before async_playwright is entered"
     assert SRC.index("if purge:") < SRC.index("async with async_playwright")
+
+
+def test_dates_are_proved_before_they_are_written():
+    """The scraper wrote 13,313 misdated rows because nothing stood between
+    reading and writing. Every other NAV source here reconciles first."""
+    assert "from data_pipeline.nav_alignment import check_alignment" in SRC
+    assert "verdict = check_alignment(" in SRC
+    assert re.search(r"if not verdict\[\"ok\"\]:\s*\n\s*print\([^\n]*REFUSED", SRC)
+    # the refusal must come BEFORE the insert
+    assert SRC.index("check_alignment(") < SRC.index("INSERT INTO nav_history")
+
+
+def test_alignment_is_judged_against_rows_this_scraper_did_not_write():
+    """Otherwise a bad run ratifies itself on the next one."""
+    assert "COALESCE(source, '') <> $2" in SRC
+
+
+def test_the_run_reports_what_it_refused():
+    assert "refused" in SRC and "written" in SRC
+    assert "::warning::" in SRC

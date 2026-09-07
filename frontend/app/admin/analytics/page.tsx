@@ -184,9 +184,9 @@ interface NewsletterAnalytics {
 }
 
 const NEWSLETTER_TYPE_META: Record<NewsletterEmailTypeKey, { color: string; accent: string; shortLabel: string }> = {
-    weekly_pulse: { color: "bg-[#3C50E0]", accent: "text-[#3C50E0]", shortLabel: "Weekly" },
+    weekly_pulse: { color: "bg-[#6366F1]", accent: "text-[#6366F1]", shortLabel: "Weekly" },
     monthly_dive: { color: "bg-[#0EA5E9]", accent: "text-[#0EA5E9]", shortLabel: "Monthly" },
-    academy: { color: "bg-[#14B8A6]", accent: "text-[#14B8A6]", shortLabel: "Academy" },
+    academy: { color: "bg-starta-teal", accent: "text-starta-teal", shortLabel: "Academy" },
     flash_alerts: { color: "bg-[#F97316]", accent: "text-[#F97316]", shortLabel: "Flash" },
 };
 
@@ -320,11 +320,11 @@ function Tooltip({ content, children, side = "top" }: { content: string; childre
                     ref={bubbleRef}
                     id={tooltipId}
                     role="tooltip"
-                    className="pointer-events-none fixed z-[120] max-w-[280px] rounded-xl border border-[#243854]/80 bg-[#0B1323]/95 px-3.5 py-2.5 text-[11px] font-semibold leading-relaxed text-slate-100 shadow-[0_24px_70px_rgba(2,6,23,0.55)] backdrop-blur-md"
+                    className="pointer-events-none fixed z-[120] max-w-[280px] rounded-xl border border-border/80 bg-surface px-3.5 py-2.5 text-[11px] font-semibold leading-relaxed text-main shadow-[0_24px_70px_rgba(2,6,23,0.55)] backdrop-blur-md"
                     style={{ left: position.x, top: position.y }}
                 >
                     <span
-                        className={`absolute h-2.5 w-2.5 rotate-45 border border-[#243854]/80 bg-[#0B1323]/95 ${arrowClass}`}
+                        className={`absolute h-2.5 w-2.5 rotate-45 border border-border/80 bg-surface ${arrowClass}`}
                         aria-hidden="true"
                     />
                     {content}
@@ -642,24 +642,26 @@ export default function ChatbotAnalyticsPage() {
     const newsletterSectionTriggerId = "newsletter-engagement-trigger";
 
     return (
-        <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#1A222C] transition-colors duration-300">
-            {/* Background Ambient Glow */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-20%] left-[-15%] w-[60%] h-[60%] bg-[#14B8A6]/5 rounded-full blur-[100px]" />
-                <div className="absolute bottom-[-20%] right-[-15%] w-[60%] h-[60%] bg-[#3B82F6]/5 rounded-full blur-[100px]" />
-            </div>
-            {/* 1. TOP HEADER & FILTERS */}
-            <header className="sticky top-0 z-40 w-full bg-white dark:bg-[#24303F] border-b border-slate-200 dark:border-[#2E3A47]">
+        // No page background and no min-h-screen: AdminShell owns the canvas
+        // now. The two fixed inset-0 "ambient glow" blobs that used to sit here
+        // were removed with it — fixed positioning is viewport-relative, so
+        // they painted across the console rail as well as the content column.
+        <div>
+            {/* 1. TOP HEADER & FILTERS.
+                Static on mobile, sticky from lg up: the shell already pins a
+                bar at top:0 on small screens, and two elements both sticking to
+                top:0 overlap each other. */}
+            <header className="static lg:sticky lg:top-0 z-20 w-full bg-surface border-b border-border">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
 
                         {/* Title */}
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md flex items-center justify-center shadow-sm border border-slate-200 dark:border-[#2E3A47]">
-                                <LayoutDashboard className="w-5 h-5 text-[#14B8A6]" />
+                            <div className="w-10 h-10 bg-page rounded-md flex items-center justify-center shadow-sm border border-border">
+                                <LayoutDashboard className="w-5 h-5 text-starta-teal" />
                             </div>
                             <div>
-                                <h1 className="text-xl font-bold text-slate-900 dark:text-white">Analytics</h1>
+                                <h1 className="font-display text-xl font-bold text-main">Analytics</h1>
                             </div>
                         </div>
 
@@ -669,11 +671,11 @@ export default function ChatbotAnalyticsPage() {
                             {/* User Type */}
                             <Tooltip content="Filter by user authentication status">
                                 <div className="relative group">
-                                    <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#14B8A6] transition-colors" />
+                                    <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-starta-teal transition-colors" />
                                     <select
                                         value={userType}
                                         onChange={(e) => setUserType(e.target.value)}
-                                        className="pl-9 pr-4 py-2 bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200 dark:border-[#2E3A47] rounded-md text-sm font-medium text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-[#3C50E0] outline-none appearance-none cursor-pointer shadow-sm"
+                                        className="pl-9 pr-4 py-2 bg-page border border-border rounded-md text-sm font-medium text-main focus:ring-1 focus:ring-starta-teal outline-none appearance-none cursor-pointer shadow-sm"
                                     >
                                         <option value="all">All Users</option>
                                         <option value="user">Registered</option>
@@ -685,11 +687,11 @@ export default function ChatbotAnalyticsPage() {
                             {/* Language */}
                             <Tooltip content="Filter by detected conversation language">
                                 <div className="relative group">
-                                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#14B8A6] transition-colors" />
+                                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted group-focus-within:text-starta-teal transition-colors" />
                                     <select
                                         value={language}
                                         onChange={(e) => setLanguage(e.target.value)}
-                                        className="pl-9 pr-4 py-2 bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200 dark:border-[#2E3A47] rounded-md text-sm font-medium text-slate-700 dark:text-slate-300 focus:ring-1 focus:ring-[#3C50E0] outline-none appearance-none cursor-pointer shadow-sm"
+                                        className="pl-9 pr-4 py-2 bg-page border border-border rounded-md text-sm font-medium text-main focus:ring-1 focus:ring-starta-teal outline-none appearance-none cursor-pointer shadow-sm"
                                     >
                                         <option value="all">All Languages</option>
                                         <option value="en">English (EN)</option>
@@ -698,18 +700,18 @@ export default function ChatbotAnalyticsPage() {
                                 </div>
                             </Tooltip>
 
-                            <div className="h-6 w-px bg-slate-200 dark:bg-white/[0.08] mx-1"></div>
+                            <div className="h-6 w-px bg-panel mx-1"></div>
 
                             {/* Period Selection */}
                             <Tooltip content="Select time range for all metrics">
-                                <div className="flex bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md p-1 border border-slate-200 dark:border-[#2E3A47] shadow-sm">
+                                <div className="flex bg-page rounded-md p-1 border border-border shadow-sm">
                                     {['today', '7d', '30d'].map(p => (
                                         <button
                                             key={p}
                                             onClick={() => setPeriod(p)}
                                             className={`px-3 py-1.5 rounded-sm text-xs font-medium transition-all ${period === p
-                                                ? 'bg-white dark:bg-[#24303F] text-[#3C50E0] shadow-sm border border-slate-200 dark:border-[#2E3A47]'
-                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                                                ? 'bg-surface text-starta-teal shadow-sm border border-border'
+                                                : 'text-muted hover:text-main'
                                                 }`}
                                         >
                                             {p === 'today' ? '24H' : p.toUpperCase()}
@@ -721,9 +723,9 @@ export default function ChatbotAnalyticsPage() {
                             <Tooltip content="Refresh all data">
                                 <button
                                     onClick={fetchData}
-                                    className="p-2.5 bg-[#F1F5F9] dark:bg-[#1A222C] rounded-md transition-colors border border-slate-200 dark:border-[#2E3A47] text-slate-500 dark:text-slate-400 shadow-sm"
+                                    className="p-2.5 bg-page rounded-md transition-colors border border-border text-muted shadow-sm"
                                 >
-                                    <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#14B8A6]' : ''}`} />
+                                    <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-starta-teal' : ''}`} />
                                 </button>
                             </Tooltip>
                         </div>
@@ -733,12 +735,12 @@ export default function ChatbotAnalyticsPage() {
 
             <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
                 {dataError && (
-                    <section className="rounded-2xl border border-amber-200/80 bg-amber-50/90 px-5 py-4 text-amber-900 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100">
+                    <section className="rounded-2xl border border-amber-200/80 bg-amber-50/90 px-5 py-4 text-amber-900 shadow-sm">
                         <div className="flex items-start gap-3">
-                            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-300" />
+                            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
                             <div>
                                 <p className="text-sm font-semibold">Analytics data issue detected</p>
-                                <p className="mt-1 text-sm text-amber-800/90 dark:text-amber-100/80">{dataError}</p>
+                                <p className="mt-1 text-sm text-amber-800/90">{dataError}</p>
                             </div>
                         </div>
                     </section>
@@ -821,17 +823,17 @@ export default function ChatbotAnalyticsPage() {
                             aria-controls={newsletterSectionPanelId}
                             aria-expanded={isNewsletterSectionOpen}
                             onClick={() => setIsNewsletterSectionOpen((open) => !open)}
-                            className="group flex w-full flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white/70 px-5 py-4 text-left shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-[#3C50E0]/20 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3C50E0]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#F1F5F9] dark:border-[#2E3A47] dark:bg-[#111827]/60 dark:hover:border-[#3C50E0]/30 dark:focus-visible:ring-offset-[#1A222C] md:flex-row md:items-center md:justify-between"
+                            className="group flex w-full flex-col gap-4 rounded-2xl border border-border/80 bg-surface px-5 py-4 text-left shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-starta-teal/20 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-starta-teal/40 focus-visible:ring-offset-2 focus-visible:ring-offset-page md:flex-row md:items-center md:justify-between"
                         >
                             <span className="flex min-w-0 items-center gap-3">
-                                <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-[#3C50E0]/15 bg-[#3C50E0]/10 shadow-[0_10px_30px_rgba(60,80,224,0.08)]">
-                                    <Inbox className="w-5 h-5 text-[#3C50E0]" />
+                                <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-starta-teal/15 bg-starta-teal/10 shadow-[0_10px_30px_rgba(60,80,224,0.08)]">
+                                    <Inbox className="w-5 h-5 text-starta-teal" />
                                 </span>
                                 <span className="min-w-0">
-                                    <span className="block text-xl font-bold text-slate-900 dark:text-white">
+                                    <span className="block text-xl font-bold text-main">
                                         Newsletter & Engagement
                                     </span>
-                                    <span className="mt-1 block text-sm text-slate-500 dark:text-slate-400">
+                                    <span className="mt-1 block text-sm text-muted">
                                         Subscriber health, list distribution, and dispatch telemetry
                                     </span>
                                 </span>
@@ -842,21 +844,21 @@ export default function ChatbotAnalyticsPage() {
                                     ? newsletterStats.is_scheduler_running
                                         ? "flex items-center gap-1.5 text-sm font-medium text-[#10B981]"
                                         : "flex items-center gap-1.5 text-sm font-medium text-amber-500"
-                                    : "flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-300"}
+                                    : "flex items-center gap-1.5 text-sm font-medium text-muted"}
                                 >
                                     <span className={`h-2 w-2 rounded-full ${newsletterStats
                                         ? newsletterStats.is_scheduler_running
                                             ? "bg-[#10B981] animate-pulse"
                                             : "bg-amber-500"
-                                        : "bg-slate-400 dark:bg-slate-500"}`
+                                        : "bg-muted"}`
                                     }></span>
                                     {newsletterStats
                                         ? `Scheduler: ${newsletterStats.is_scheduler_running ? "Active Dispatching" : "Idle / Waiting"}`
                                         : "Scheduler: Data unavailable"}
                                 </span>
-                                <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-semibold text-slate-500 transition-colors duration-300 group-hover:border-[#3C50E0]/20 group-hover:text-[#3C50E0] dark:border-[#2E3A47] dark:bg-[#0F172A]/60 dark:text-slate-300">
+                                <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-muted transition-colors duration-300 group-hover:border-starta-teal/20 group-hover:text-starta-teal">
                                     {isNewsletterSectionOpen ? "Hide details" : "Show details"}
-                                    <ChevronRight className={`h-4 w-4 transition-transform duration-300 ${isNewsletterSectionOpen ? "rotate-90 text-[#3C50E0]" : ""}`} />
+                                    <ChevronRight className={`h-4 w-4 transition-transform duration-300 ${isNewsletterSectionOpen ? "rotate-90 text-starta-teal" : ""}`} />
                                 </span>
                             </span>
                         </button>
@@ -877,34 +879,34 @@ export default function ChatbotAnalyticsPage() {
                                 {newsletterStats ? (
                                     <div className="grid gap-6 pt-2 md:grid-cols-3">
                                         {/* Card 1: Subscriber Base */}
-                                        <div className="premium-glass rounded-xl border border-slate-200 p-6 transition-shadow hover:shadow-md dark:border-[#2E3A47]">
+                                        <div className="bg-surface border border-border shadow-sm rounded-xl p-6 transition-shadow hover:shadow-md">
                                             <div className="mb-4 flex items-center justify-between">
-                                                <h3 className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200">
-                                                    <Users className="h-5 w-5 text-[#3C50E0]" />
+                                                <h3 className="flex items-center gap-2 font-semibold text-main">
+                                                    <Users className="h-5 w-5 text-starta-teal" />
                                                     Subscribers
                                                 </h3>
-                                                <span className="text-2xl font-bold text-slate-900 dark:text-white">{newsletterStats.active_subscribers}</span>
+                                                <span className="text-2xl font-bold text-main">{newsletterStats.active_subscribers}</span>
                                             </div>
                                             <div className="space-y-3">
                                                 <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-slate-500 dark:text-slate-400">Total Opt-ins</span>
-                                                    <span className="font-medium text-slate-700 dark:text-slate-300">{newsletterStats.total_subscribers}</span>
+                                                    <span className="text-muted">Total Opt-ins</span>
+                                                    <span className="font-medium text-main">{newsletterStats.total_subscribers}</span>
                                                 </div>
                                                 <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-slate-500 dark:text-slate-400">Unsubscribed</span>
+                                                    <span className="text-muted">Unsubscribed</span>
                                                     <span className="font-medium text-red-500">{newsletterStats.unsubscribed_count}</span>
                                                 </div>
                                                 <div className="flex items-center justify-between text-sm">
-                                                    <span className="text-slate-500 dark:text-slate-400">Retention Rate</span>
+                                                    <span className="text-muted">Retention Rate</span>
                                                     <span className="font-medium text-[#10B981]">{newsletterStats.retention_rate.toFixed(1)}%</span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Card 2: List Distribution */}
-                                        <div className="premium-glass rounded-xl border border-slate-200 p-6 transition-shadow hover:shadow-md dark:border-[#2E3A47]">
-                                            <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200">
-                                                <BarChart3 className="h-5 w-5 text-[#14B8A6]" />
+                                        <div className="bg-surface border border-border shadow-sm rounded-xl p-6 transition-shadow hover:shadow-md">
+                                            <h3 className="mb-4 flex items-center gap-2 font-semibold text-main">
+                                                <BarChart3 className="h-5 w-5 text-starta-teal" />
                                                 Active Lists
                                             </h3>
                                             <div className="space-y-3">
@@ -915,26 +917,26 @@ export default function ChatbotAnalyticsPage() {
                                                             key={list.key}
                                                             type="button"
                                                             onClick={() => openNewsletterPreview(list)}
-                                                            className="flex w-full items-center gap-3 rounded-xl border border-slate-200/70 bg-white/60 px-3 py-3 text-left transition-colors hover:bg-slate-50 dark:border-[#2E3A47] dark:bg-[#0B1121]/40 dark:hover:bg-[#111827]"
+                                                            className="flex w-full items-center gap-3 rounded-xl border border-border/70 bg-surface px-3 py-3 text-left transition-colors hover:bg-page"
                                                         >
                                                             <div className={`h-2 w-2 rounded-full ${meta.color}`} />
                                                             <div className="min-w-0 flex-1">
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{list.label}</span>
+                                                                    <span className="text-sm font-medium text-main">{list.label}</span>
                                                                     <Eye className={`h-3.5 w-3.5 ${meta.accent}`} />
                                                                 </div>
-                                                                <div className="mt-1 flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400">
+                                                                <div className="mt-1 flex items-center gap-3 text-[11px] text-muted">
                                                                     <span>{list.subscriber_count} subscribed</span>
                                                                     <span>{list.sent_total} sent</span>
                                                                 </div>
                                                             </div>
-                                                            <div className="h-1.5 w-16 flex-shrink-0 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                                            <div className="h-1.5 w-16 flex-shrink-0 overflow-hidden rounded-full bg-panel">
                                                                 <div
                                                                     className={`h-full ${meta.color}`}
                                                                     style={{ width: `${(list.subscriber_count / Math.max(newsletterStats.active_subscribers, 1)) * 100}%` }}
                                                                 />
                                                             </div>
-                                                            <ChevronRight className="h-4 w-4 text-slate-400" />
+                                                            <ChevronRight className="h-4 w-4 text-muted" />
                                                         </button>
                                                     );
                                                 })}
@@ -942,8 +944,8 @@ export default function ChatbotAnalyticsPage() {
                                         </div>
 
                                         {/* Card 3: Dispatch Health */}
-                                        <div className="premium-glass rounded-xl border border-slate-200 p-6 transition-shadow hover:shadow-md dark:border-[#2E3A47]">
-                                            <h3 className="mb-4 flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200">
+                                        <div className="bg-surface border border-border shadow-sm rounded-xl p-6 transition-shadow hover:shadow-md">
+                                            <h3 className="mb-4 flex items-center gap-2 font-semibold text-main">
                                                 <Zap className="h-5 w-5 text-amber-500" />
                                                 Last Dispatch
                                             </h3>
@@ -953,37 +955,37 @@ export default function ChatbotAnalyticsPage() {
                                                     return (
                                                         <div key={dispatch.key} className="flex items-start justify-between gap-4 text-sm">
                                                             <div>
-                                                                <span className="font-medium text-slate-700 dark:text-slate-200">{meta.shortLabel}</span>
-                                                                <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                                                                <span className="font-medium text-main">{meta.shortLabel}</span>
+                                                                <p className="mt-1 text-[11px] text-muted">
                                                                     {dispatch.last_dispatch_sent_count} sent / {dispatch.last_dispatch_error_count} failed
                                                                 </p>
                                                             </div>
                                                             {dispatch.last_sent ? (
-                                                                <span className="text-right font-medium text-slate-900 dark:text-white">
+                                                                <span className="text-right font-medium text-main">
                                                                     {new Date(dispatch.last_sent).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                                                 </span>
                                                             ) : (
-                                                                <span className="italic text-slate-400 dark:text-slate-500">Never</span>
+                                                                <span className="italic text-muted">Never</span>
                                                             )}
                                                         </div>
                                                     );
                                                 })}
                                                 {!newsletterEmailTypes.length && (
-                                                    <div className="text-sm italic text-slate-400">No dispatch telemetry yet</div>
+                                                    <div className="text-sm italic text-muted">No dispatch telemetry yet</div>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="pt-2">
-                                        <div className="premium-glass rounded-xl border border-dashed border-slate-300/80 p-6 text-center dark:border-[#2E3A47]">
-                                            <Inbox className="mx-auto h-8 w-8 text-slate-400 dark:text-slate-500" />
-                                            <p className="mt-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Newsletter analytics is currently unavailable</p>
-                                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">The section stays visible so you can retry without losing context.</p>
+                                        <div className="bg-surface border border-border shadow-sm rounded-xl border-dashed p-6 text-center">
+                                            <Inbox className="mx-auto h-8 w-8 text-muted" />
+                                            <p className="mt-3 text-sm font-semibold text-main">Newsletter analytics is currently unavailable</p>
+                                            <p className="mt-1 text-xs text-muted">The section stays visible so you can retry without losing context.</p>
                                             <button
                                                 type="button"
                                                 onClick={fetchData}
-                                                className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-[#2E3A47] dark:bg-[#1A222C] dark:text-slate-200"
+                                                className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-main transition-colors hover:bg-page"
                                             >
                                                 <RefreshCw className="h-3.5 w-3.5" />
                                                 Retry Newsletter Data
@@ -1003,20 +1005,20 @@ export default function ChatbotAnalyticsPage() {
                     <div className="lg:col-span-2 space-y-8 lg:h-full lg:min-h-0 lg:flex lg:flex-col">
 
                         {/* DEMAND INTELLIGENCE & TOP QUESTIONS — TABBED */}
-                        <section className="relative group premium-glass rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] overflow-hidden transition-all hover:shadow-md duration-300 lg:h-full lg:min-h-0 lg:flex lg:flex-col">
-                            <div className="p-6 border-b border-slate-100 dark:border-[#2E3A47] flex items-center justify-between">
+                        <section className="relative group bg-surface border border-border shadow-sm rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all hover:shadow-md duration-300 lg:h-full lg:min-h-0 lg:flex lg:flex-col">
+                            <div className="p-6 border-b border-border flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-slate-50 dark:bg-[#1A222C] rounded-md flex items-center justify-center border border-slate-200 dark:border-[#2E3A47]">
-                                        {demandTab === 'demand' ? <TrendingUp className="w-6 h-6 text-[#14B8A6]" /> : <HelpCircle className="w-6 h-6 text-[#3B82F6]" />}
+                                    <div className="w-12 h-12 bg-page rounded-md flex items-center justify-center border border-border">
+                                        {demandTab === 'demand' ? <TrendingUp className="w-6 h-6 text-starta-teal" /> : <HelpCircle className="w-6 h-6 text-starta-teal" />}
                                     </div>
                                     <div>
-                                        <h2 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2">
+                                        <h2 className="font-display font-bold text-xl text-main flex items-center gap-2">
                                             {demandTab === 'demand' ? 'Demand Intelligence' : 'Top Questions'}
                                             <Tooltip content={demandTab === 'demand' ? 'Trending topics based on volume growth' : 'Most frequently asked questions'}>
-                                                <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                                                <Info className="w-4 h-4 text-muted cursor-help" />
                                             </Tooltip>
                                         </h2>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                        <p className="text-sm text-muted font-medium mt-0.5">
                                             {demandTab === 'demand' ? 'Market query velocity & trends' : 'Highest volume user inquiries'}
                                         </p>
                                     </div>
@@ -1025,21 +1027,21 @@ export default function ChatbotAnalyticsPage() {
                                     {demandTab === 'questions' && (
                                         <button
                                             onClick={() => exportToCSV(topQuestions, 'top_questions')}
-                                            className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-1"
+                                            className="text-xs font-medium text-starta-teal hover:text-starta-darkTeal flex items-center gap-1"
                                         >
                                             <Download className="w-3 h-3" /> CSV
                                         </button>
                                     )}
-                                    <div className="flex bg-[#F1F5F9] dark:bg-[#1A222C] rounded-lg p-1 border border-slate-200 dark:border-[#2E3A47]">
+                                    <div className="flex bg-page rounded-lg p-1 border border-border">
                                         <button
                                             onClick={() => setDemandTab('demand')}
-                                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${demandTab === 'demand' ? 'bg-white dark:bg-[#24303F] text-[#14B8A6] shadow-sm border border-slate-200 dark:border-[#2E3A47]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${demandTab === 'demand' ? 'bg-surface text-starta-teal shadow-sm border border-border' : 'text-muted hover:text-main'}`}
                                         >
                                             <TrendingUp className="w-3.5 h-3.5 inline-block mr-1" />Demand
                                         </button>
                                         <button
                                             onClick={() => setDemandTab('questions')}
-                                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${demandTab === 'questions' ? 'bg-white dark:bg-[#24303F] text-[#3B82F6] shadow-sm border border-slate-200 dark:border-[#2E3A47]' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${demandTab === 'questions' ? 'bg-surface text-starta-teal shadow-sm border border-border' : 'text-muted hover:text-main'}`}
                                         >
                                             <HelpCircle className="w-3.5 h-3.5 inline-block mr-1" />Questions
                                         </button>
@@ -1051,7 +1053,7 @@ export default function ChatbotAnalyticsPage() {
                             {demandTab === 'demand' && (
                                 <div className="overflow-x-auto overflow-y-auto max-h-[300px] custom-scrollbar lg:max-h-none lg:min-h-0 lg:flex-1">
                                     <table className="w-full relative">
-                                        <thead className="sticky top-0 z-20 bg-[#F1F5F9] dark:bg-[#1A222C] text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shadow-sm after:content-[''] after:absolute after:-bottom-[1px] after:left-0 after:right-0 after:border-b after:border-slate-200 dark:after:border-[#2E3A47]">
+                                        <thead className="sticky top-0 z-20 bg-page text-left text-xs font-bold text-muted uppercase tracking-wider shadow-sm after:content-[''] after:absolute after:-bottom-[1px] after:left-0 after:right-0 after:border-b after:border-border">
                                             <tr>
                                                 <th className="px-6 py-3">Trending Query</th>
                                                 <th className="px-6 py-3">Volume</th>
@@ -1060,26 +1062,26 @@ export default function ChatbotAnalyticsPage() {
                                                 <th className="px-6 py-3">Status</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-200 dark:divide-[#2E3A47]">
+                                        <tbody className="divide-y divide-border">
                                             {demandInsights.length === 0 ? (
-                                                <tr><td colSpan={5} className="p-8 text-center text-slate-500">No trending data available</td></tr>
+                                                <tr><td colSpan={5} className="p-8 text-center text-muted">No trending data available</td></tr>
                                             ) : (
                                                 demandInsights.map((d, i) => (
-                                                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-colors">
-                                                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{d.query_text}</td>
-                                                        <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{d.volume}</td>
+                                                    <tr key={i} className="hover:bg-page transition-colors">
+                                                        <td className="px-6 py-4 font-medium text-main">{d.query_text}</td>
+                                                        <td className="px-6 py-4 text-muted">{d.volume}</td>
                                                         <td className="px-6 py-4">
-                                                            <span className={`flex items-center gap-1 font-bold ${d.growth_rate > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                                            <span className={`flex items-center gap-1 font-bold ${d.growth_rate > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                                 {d.growth_rate > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                                                                 {Math.abs(d.growth_rate)}%
                                                             </span>
                                                         </td>
-                                                        <td className="px-6 py-4 text-xs text-slate-500 dark:text-slate-400 font-mono uppercase">{d.intent}</td>
+                                                        <td className="px-6 py-4 text-xs text-muted font-mono uppercase">{d.intent}</td>
                                                         <td className="px-6 py-4">
                                                             {d.is_new ? (
-                                                                <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-xs font-bold">NEW</span>
+                                                                <span className="px-2 py-0.5 rounded bg-starta-teal/15 text-blue-700 text-xs font-bold">NEW</span>
                                                             ) : (
-                                                                <span className="text-xs text-slate-400">Recurring</span>
+                                                                <span className="text-xs text-muted">Recurring</span>
                                                             )}
                                                         </td>
                                                     </tr>
@@ -1092,31 +1094,31 @@ export default function ChatbotAnalyticsPage() {
 
                             {/* TAB: Top Questions */}
                             {demandTab === 'questions' && (
-                                <div className="divide-y divide-slate-200 dark:divide-[#2E3A47] max-h-[300px] overflow-y-auto custom-scrollbar lg:max-h-none lg:min-h-0 lg:flex-1">
+                                <div className="divide-y divide-border max-h-[300px] overflow-y-auto custom-scrollbar lg:max-h-none lg:min-h-0 lg:flex-1">
                                     {topQuestions.length === 0 ? (
-                                        <div className="p-8 text-center text-slate-400">No data yet</div>
+                                        <div className="p-8 text-center text-muted">No data yet</div>
                                     ) : (
                                         topQuestions.map((q, i) => (
-                                            <div key={i} className="p-4 hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-colors group">
+                                            <div key={i} className="p-4 hover:bg-page transition-colors group">
                                                 <div className="flex items-center justify-between gap-4">
                                                     <div className="flex items-center gap-3 min-w-0">
-                                                        <span className="w-6 h-6 rounded-full bg-slate-100 dark:bg-[#2A303C] flex items-center justify-center text-xs font-bold text-slate-500">
+                                                        <span className="w-6 h-6 rounded-full bg-panel flex items-center justify-center text-xs font-bold text-muted">
                                                             {i + 1}
                                                         </span>
                                                         <div className="min-w-0">
-                                                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate pr-4">{q.normalized_text}</p>
+                                                            <p className="text-sm font-medium text-main truncate pr-4">{q.normalized_text}</p>
                                                             <div className="flex items-center gap-2 mt-0.5">
-                                                                <span className="text-[10px] uppercase font-bold text-slate-400">{q.top_intent}</span>
-                                                                <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
-                                                                <span className={`text-[10px] font-bold ${q.success_rate > 80 ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                                                                <span className="text-[10px] uppercase font-bold text-muted">{q.top_intent}</span>
+                                                                <div className="w-1 h-1 bg-muted rounded-full"></div>
+                                                                <span className={`text-[10px] font-bold ${q.success_rate > 80 ? 'text-green-600' : 'text-orange-600'}`}>
                                                                     {q.success_rate.toFixed(0)}% Success
                                                                 </span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div className="text-right shrink-0">
-                                                        <p className="text-base font-bold text-slate-900 dark:text-white">{q.count}</p>
-                                                        <p className="text-xs text-slate-400">requests</p>
+                                                        <p className="text-base font-bold text-main">{q.count}</p>
+                                                        <p className="text-xs text-muted">requests</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1133,13 +1135,13 @@ export default function ChatbotAnalyticsPage() {
                     <div className="space-y-8">
 
                         {/* SYSTEM PERFORMANCE (Right Top) */}
-                        <section className="relative group premium-glass rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] overflow-hidden transition-all hover:shadow-md duration-300">
-                            <div className="p-6 border-b border-slate-100 dark:border-[#2E3A47] flex items-center justify-between relative z-10">
+                        <section className="relative group bg-surface border border-border shadow-sm rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all hover:shadow-md duration-300">
+                            <div className="p-6 border-b border-border flex items-center justify-between relative z-10">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-slate-50 dark:bg-[#1A222C] rounded-md flex items-center justify-center border border-slate-200 dark:border-[#2E3A47]">
-                                        <Activity className="w-6 h-6 text-[#14B8A6]" />
+                                    <div className="w-12 h-12 bg-page rounded-md flex items-center justify-center border border-border">
+                                        <Activity className="w-6 h-6 text-starta-teal" />
                                     </div>
-                                    <h2 className="font-bold text-xl text-slate-900 dark:text-white">System Health</h2>
+                                    <h2 className="font-display font-bold text-xl text-main">System Health</h2>
                                 </div>
                                 <div className="flex items-center gap-2 bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
                                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
@@ -1147,28 +1149,28 @@ export default function ChatbotAnalyticsPage() {
                                 </div>
                             </div>
                             <div className="p-6 grid grid-cols-2 gap-4 relative z-10">
-                                <div className="p-5 rounded-2xl bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
-                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">Avg Latency</p>
-                                    <p className="text-2xl font-black text-slate-900 dark:text-white">
-                                        {performanceMetrics?.avg_latency_ms?.toFixed(0) || 0}<span className="text-sm font-medium text-slate-400 ml-1">ms</span>
+                                <div className="p-5 rounded-2xl bg-page border border-border/[0.05] hover:border-starta-teal/30 transition-all hover:bg-page group/bg-surface border-border">
+                                    <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2 group-hover/card:text-starta-teal transition-colors">Avg Latency</p>
+                                    <p className="text-2xl font-black text-main">
+                                        {performanceMetrics?.avg_latency_ms?.toFixed(0) || 0}<span className="text-sm font-medium text-muted ml-1">ms</span>
                                     </p>
                                 </div>
-                                <div className="p-5 rounded-2xl bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
-                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">P95 Latency</p>
-                                    <p className="text-2xl font-black text-slate-900 dark:text-white">
-                                        {performanceMetrics?.p95_latency_ms?.toFixed(0) || 0}<span className="text-sm font-medium text-slate-400 ml-1">ms</span>
+                                <div className="p-5 rounded-2xl bg-page border border-border/[0.05] hover:border-starta-teal/30 transition-all hover:bg-page group/bg-surface border-border">
+                                    <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2 group-hover/card:text-starta-teal transition-colors">P95 Latency</p>
+                                    <p className="text-2xl font-black text-main">
+                                        {performanceMetrics?.p95_latency_ms?.toFixed(0) || 0}<span className="text-sm font-medium text-muted ml-1">ms</span>
                                     </p>
                                 </div>
-                                <div className="p-5 rounded-2xl bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
-                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">Throughput</p>
-                                    <p className="text-2xl font-black text-slate-900 dark:text-white">
-                                        {((healthKPIs?.total_messages || 0) / (30 * 24)).toFixed(1)}<span className="text-xs font-bold text-slate-400 ml-1">MSG/HR</span>
+                                <div className="p-5 rounded-2xl bg-page border border-border/[0.05] hover:border-starta-teal/30 transition-all hover:bg-page group/bg-surface border-border">
+                                    <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2 group-hover/card:text-starta-teal transition-colors">Throughput</p>
+                                    <p className="text-2xl font-black text-main">
+                                        {((healthKPIs?.total_messages || 0) / (30 * 24)).toFixed(1)}<span className="text-xs font-bold text-muted ml-1">MSG/HR</span>
                                     </p>
                                 </div>
-                                <div className="p-5 rounded-2xl bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200/50 dark:border-white/[0.05] hover:border-[#14B8A6]/30 dark:hover:border-[#14B8A6]/30 transition-all hover:bg-slate-50 dark:hover:bg-[#0B1121] group/card">
-                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 group-hover/card:text-[#14B8A6] transition-colors">Error Rate</p>
+                                <div className="p-5 rounded-2xl bg-page border border-border/[0.05] hover:border-starta-teal/30 transition-all hover:bg-page group/bg-surface border-border">
+                                    <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2 group-hover/card:text-starta-teal transition-colors">Error Rate</p>
                                     <p className={`text-2xl font-black ${(performanceMetrics?.error_rate ?? 0) > 1 ? 'text-red-500' : 'text-emerald-500'}`}>
-                                        {performanceMetrics?.error_rate || 0}<span className="text-sm font-medium text-slate-400 ml-1">%</span>
+                                        {performanceMetrics?.error_rate || 0}<span className="text-sm font-medium text-muted ml-1">%</span>
                                     </p>
                                 </div>
                             </div>
@@ -1177,48 +1179,48 @@ export default function ChatbotAnalyticsPage() {
                         {/* Right column: only System Health remains */}
 
                         {/* USER GEOGRAPHY */}
-                        <section className="relative group premium-glass rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] overflow-hidden transition-all hover:shadow-md duration-300">
-                            <div className="p-6 border-b border-slate-100 dark:border-[#2E3A47] flex items-center justify-between relative z-10">
+                        <section className="relative group bg-surface border border-border shadow-sm rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden transition-all hover:shadow-md duration-300">
+                            <div className="p-6 border-b border-border flex items-center justify-between relative z-10">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-slate-50 dark:bg-[#1A222C] rounded-md flex items-center justify-center border border-slate-200 dark:border-[#2E3A47]">
-                                        <Globe className="w-6 h-6 text-[#3B82F6]" />
+                                    <div className="w-12 h-12 bg-page rounded-md flex items-center justify-center border border-border">
+                                        <Globe className="w-6 h-6 text-starta-teal" />
                                     </div>
                                     <div>
-                                        <h2 className="font-bold text-xl text-slate-900 dark:text-white">User Geography</h2>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">All users by country</p>
+                                        <h2 className="font-display font-bold text-xl text-main">User Geography</h2>
+                                        <p className="text-sm text-muted font-medium mt-0.5">All users by country</p>
                                     </div>
                                 </div>
                                 <Tooltip content="Country detected via IP geolocation for all users">
-                                    <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                                    <Info className="w-4 h-4 text-muted cursor-help" />
                                 </Tooltip>
                             </div>
                             <div className="p-4 max-h-[300px] overflow-y-auto custom-scrollbar relative z-10">
                                 {geoDistribution.length === 0 ? (
-                                    <div className="p-6 text-center text-slate-400 text-sm">
-                                        <Globe className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                                    <div className="p-6 text-center text-muted text-sm">
+                                        <Globe className="w-8 h-8 mx-auto mb-2 text-muted" />
                                         <p>No geo data yet. Data populates as users interact with the chatbot.</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
                                         {geoDistribution.map((g, i) => (
-                                            <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-[#F1F5F9] dark:bg-[#1A222C] border border-slate-200/50 dark:border-white/[0.05] hover:border-[#3B82F6]/30 dark:hover:border-[#3B82F6]/30 transition-all group/geo">
+                                            <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-page border border-border/[0.05] hover:border-starta-teal/30 transition-all group/geo">
                                                 <span className="text-2xl flex-shrink-0" title={g.country_name}>
                                                     {g.country_code.toUpperCase().replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt(0)))}
                                                 </span>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between mb-1">
-                                                        <span className="text-sm font-bold text-slate-900 dark:text-white truncate">{g.country_name}</span>
-                                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-2 shrink-0">{g.percentage}%</span>
+                                                        <span className="text-sm font-bold text-main truncate">{g.country_name}</span>
+                                                        <span className="text-xs font-bold text-muted ml-2 shrink-0">{g.percentage}%</span>
                                                     </div>
-                                                    <div className="w-full bg-slate-200 dark:bg-[#0B1121] rounded-full h-1.5">
+                                                    <div className="w-full bg-panel rounded-full h-1.5">
                                                         <div
-                                                            className="h-1.5 rounded-full bg-gradient-to-r from-[#3B82F6] to-[#14B8A6] transition-all duration-500"
+                                                            className="h-1.5 rounded-full bg-gradient-to-r from-starta-accent to-starta-teal transition-all duration-500"
                                                             style={{ width: `${Math.min(g.percentage, 100)}%` }}
                                                         />
                                                     </div>
                                                     <div className="flex items-center gap-3 mt-1">
-                                                        <span className="text-[10px] font-bold text-slate-400">{g.users} sessions</span>
-                                                        <span className="text-[10px] font-bold text-slate-400">{g.messages} msgs</span>
+                                                        <span className="text-[10px] font-bold text-muted">{g.users} sessions</span>
+                                                        <span className="text-[10px] font-bold text-muted">{g.messages} msgs</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1232,27 +1234,27 @@ export default function ChatbotAnalyticsPage() {
                 </div>
 
                 {/* 6. USER FEEDBACK REPORTS (Full Width) */}
-                <section className="bg-white dark:bg-[#0B1121]/80 backdrop-blur-xl rounded-2xl border border-slate-200/60 dark:border-white/[0.08] shadow-sm overflow-hidden relative group mt-8">
-                    <div className="p-8 border-b border-slate-100 dark:border-white/[0.08] relative z-10">
+                <section className="bg-surface backdrop-blur-xl rounded-2xl border border-border/[0.08] shadow-sm overflow-hidden relative group mt-8">
+                    <div className="p-8 border-b border-border/[0.08] relative z-10">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-slate-50 dark:bg-[#1A222C] rounded-md flex items-center justify-center border border-slate-200 dark:border-[#2E3A47]">
+                            <div className="w-12 h-12 bg-page rounded-md flex items-center justify-center border border-border">
                                 <MessageSquare className="w-6 h-6 text-blue-500" />
                             </div>
                             <div>
-                                <h2 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2">
+                                <h2 className="font-display font-bold text-xl text-main flex items-center gap-2">
                                     User Feedback Reports
                                     <Tooltip content="Direct feedback from users (thumbs up/down and text reports)">
-                                        <Info className="w-4 h-4 text-slate-400 cursor-help" />
+                                        <Info className="w-4 h-4 text-muted cursor-help" />
                                     </Tooltip>
                                 </h2>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Continuous improvement signal</p>
+                                <p className="text-sm text-muted font-medium mt-0.5">Continuous improvement signal</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="overflow-x-auto relative z-10">
                         <table className="w-full">
-                            <thead className="bg-[#F1F5F9] dark:bg-[#1A222C] text-left text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            <thead className="bg-page text-left text-xs font-bold text-muted uppercase tracking-wider">
                                 <tr>
                                     <th className="px-6 py-4">Time</th>
                                     <th className="px-6 py-4">User / Session</th>
@@ -1261,37 +1263,37 @@ export default function ChatbotAnalyticsPage() {
                                     <th className="px-6 py-4 w-1/3">Report Text</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-200 dark:divide-[#2E3A47]">
+                            <tbody className="divide-y divide-border">
                                 {feedbackReports?.length > 0 ? feedbackReports.map((q, i) => (
-                                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-[#1A222C] transition-colors">
+                                    <tr key={i} className="hover:bg-page transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                                            <div className="flex items-center gap-2 text-xs font-medium text-muted">
                                                 <Clock className="w-3 h-3" />
                                                 {new Date(q.created_at).toLocaleTimeString()}
                                             </div>
-                                            <div className="text-[10px] text-slate-400 mt-1">{new Date(q.created_at).toLocaleDateString()}</div>
+                                            <div className="text-[10px] text-muted mt-1">{new Date(q.created_at).toLocaleDateString()}</div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <Users className="w-3 h-3 text-slate-400" />
-                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                                <Users className="w-3 h-3 text-muted" />
+                                                <span className="text-xs font-bold text-main">
                                                     {q.user_id.startsWith('guest_') ? `Guest (${q.user_id.split('_')[1]})` : q.user_id}
                                                 </span>
                                             </div>
-                                            <div className="text-[10px] text-slate-400 font-mono">Session: {q.session_id.substring(0, 12)}...</div>
+                                            <div className="text-[10px] text-muted font-mono">Session: {q.session_id.substring(0, 12)}...</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <p className="text-sm font-medium text-slate-900 dark:text-white line-clamp-2">"{q.raw_query || 'Unknown Query'}"</p>
+                                            <p className="text-sm font-medium text-main line-clamp-2">"{q.raw_query || 'Unknown Query'}"</p>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-1.5">
                                                 {q.feedback_type === 'like' ? (
-                                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+                                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
                                                         <ThumbsUp className="w-3.5 h-3.5" />
                                                         <span className="text-xs font-bold uppercase">Like</span>
                                                     </div>
                                                 ) : (
-                                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-500/20">
+                                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">
                                                         <ThumbsDown className="w-3.5 h-3.5" />
                                                         <span className="text-xs font-bold uppercase">Dislike</span>
                                                     </div>
@@ -1300,19 +1302,19 @@ export default function ChatbotAnalyticsPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             {q.report_text ? (
-                                                <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-[#0B1121] p-3 rounded-xl border border-slate-100 dark:border-white/5">
+                                                <p className="text-sm text-main bg-page p-3 rounded-xl border border-border">
                                                     {q.report_text}
                                                 </p>
                                             ) : (
-                                                <span className="text-xs text-slate-400 italic">No text provided</span>
+                                                <span className="text-xs text-muted italic">No text provided</span>
                                             )}
                                         </td>
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan={5} className="p-8 text-center text-slate-400">
+                                        <td colSpan={5} className="p-8 text-center text-muted">
                                             <div className="flex flex-col items-center">
-                                                <CheckCircle className="w-8 h-8 text-slate-300 dark:text-slate-600 mb-2" />
+                                                <CheckCircle className="w-8 h-8 text-muted mb-2" />
                                                 <span>No feedback reports recorded yet.</span>
                                             </div>
                                         </td>
@@ -1330,20 +1332,20 @@ export default function ChatbotAnalyticsPage() {
                             type="button"
                             aria-label="Close preview"
                             onClick={closeNewsletterPreview}
-                            className="absolute inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity"
+                            className="absolute inset-0 bg-black/50 backdrop-blur-md transition-opacity"
                         />
 
                         {/* Panel — full viewport height, split layout */}
                         <div className="relative z-10 flex w-full h-full">
 
                             {/* LEFT SIDEBAR — scrollable meta panel */}
-                            <div className="relative w-full max-w-[420px] flex-shrink-0 h-full flex flex-col bg-white dark:bg-[#0B1121] border-r border-slate-200/80 dark:border-[#1E293B] overflow-hidden">
+                            <div className="relative w-full max-w-[420px] flex-shrink-0 h-full flex flex-col bg-surface border-r border-border/80 overflow-hidden">
 
                                 {/* Header */}
-                                <div className="flex-shrink-0 px-6 pt-6 pb-5 border-b border-slate-100 dark:border-[#1E293B]">
+                                <div className="flex-shrink-0 px-6 pt-6 pb-5 border-b border-border">
                                     <div className="flex items-start justify-between">
                                         <div>
-                                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'} bg-current/10 border border-current/20`}
+                                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] ${selectedNewsletterMeta?.accent ?? 'text-starta-teal'} bg-current/10 border border-current/20`}
                                                 style={{
                                                     backgroundColor: selectedNewsletterType === 'weekly_pulse' ? 'rgba(60,80,224,0.08)' :
                                                         selectedNewsletterType === 'monthly_dive' ? 'rgba(14,165,233,0.08)' :
@@ -1356,14 +1358,14 @@ export default function ChatbotAnalyticsPage() {
                                                 <Zap className="w-3 h-3" />
                                                 Real Email Archive
                                             </div>
-                                            <h3 className="mt-3 text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                                            <h3 className="mt-3 text-xl font-black text-main tracking-tight">
                                                 {newsletterPreview?.label ?? newsletterEmailTypes.find(item => item.key === selectedNewsletterType)?.label ?? "Newsletter Preview"}
                                             </h3>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={closeNewsletterPreview}
-                                            className="rounded-xl p-2 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#1E293B] dark:hover:text-white"
+                                            className="rounded-xl p-2 text-muted transition-all hover:bg-panel hover:text-main"
                                         >
                                             <X className="h-5 w-5" />
                                         </button>
@@ -1371,19 +1373,19 @@ export default function ChatbotAnalyticsPage() {
                                 </div>
 
                                 {/* Stats row */}
-                                <div className="flex-shrink-0 px-6 py-4 border-b border-slate-100 dark:border-[#1E293B]">
+                                <div className="flex-shrink-0 px-6 py-4 border-b border-border">
                                     <div className="grid grid-cols-3 gap-3">
-                                        <div className="rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-[#111827] dark:to-[#0F172A] p-3.5 border border-slate-200/50 dark:border-[#1E293B]">
-                                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Sent</p>
-                                            <p className="mt-1.5 text-2xl font-black text-slate-900 dark:text-white tabular-nums">{newsletterPreview?.total_sent ?? 0}</p>
+                                        <div className="rounded-2xl bg-page p-3.5 border border-border/50">
+                                            <p className="text-[10px] font-black uppercase tracking-wider text-muted">Total Sent</p>
+                                            <p className="mt-1.5 text-2xl font-black text-main tabular-nums">{newsletterPreview?.total_sent ?? 0}</p>
                                         </div>
-                                        <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-500/5 dark:to-emerald-500/10 p-3.5 border border-emerald-200/50 dark:border-emerald-500/10">
-                                            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-700/70 dark:text-emerald-400/70">Delivered</p>
-                                            <p className="mt-1.5 text-2xl font-black text-emerald-700 dark:text-emerald-400 tabular-nums">{newsletterPreview?.last_dispatch_sent_count ?? 0}</p>
+                                        <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-green-50 p-3.5 border border-emerald-200/50">
+                                            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-700/70">Delivered</p>
+                                            <p className="mt-1.5 text-2xl font-black text-emerald-700 tabular-nums">{newsletterPreview?.last_dispatch_sent_count ?? 0}</p>
                                         </div>
-                                        <div className="rounded-2xl bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-500/5 dark:to-rose-500/10 p-3.5 border border-rose-200/50 dark:border-rose-500/10">
-                                            <p className="text-[10px] font-black uppercase tracking-wider text-rose-600/70 dark:text-rose-400/70">Failed</p>
-                                            <p className="mt-1.5 text-2xl font-black text-rose-600 dark:text-rose-400 tabular-nums">{newsletterPreview?.last_dispatch_error_count ?? 0}</p>
+                                        <div className="rounded-2xl bg-gradient-to-br from-rose-50 to-red-50 p-3.5 border border-rose-200/50">
+                                            <p className="text-[10px] font-black uppercase tracking-wider text-rose-600/70">Failed</p>
+                                            <p className="mt-1.5 text-2xl font-black text-rose-600 tabular-nums">{newsletterPreview?.last_dispatch_error_count ?? 0}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -1393,9 +1395,9 @@ export default function ChatbotAnalyticsPage() {
 
                                     {/* Subject */}
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-2">Subject Line</p>
-                                        <div className="rounded-xl bg-slate-50 dark:bg-[#111827] border border-slate-200/50 dark:border-[#1E293B] px-4 py-3">
-                                            <p className="text-sm font-semibold text-slate-900 dark:text-white leading-relaxed">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-muted mb-2">Subject Line</p>
+                                        <div className="rounded-xl bg-page border border-border/50 px-4 py-3">
+                                            <p className="text-sm font-semibold text-main leading-relaxed">
                                                 {newsletterPreview?.subject ?? "No archived subject available"}
                                             </p>
                                         </div>
@@ -1404,25 +1406,25 @@ export default function ChatbotAnalyticsPage() {
                                     {/* Last Sent */}
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1.5">Last Dispatch</p>
-                                            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-muted mb-1.5">Last Dispatch</p>
+                                            <p className="text-sm font-semibold text-main">
                                                 {newsletterPreview?.last_dispatch_at
                                                     ? new Date(newsletterPreview.last_dispatch_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                                                     : "Never"}
                                             </p>
                                             {newsletterPreview?.last_dispatch_at && (
-                                                <p className="text-[11px] text-slate-400 mt-0.5">
+                                                <p className="text-[11px] text-muted mt-0.5">
                                                     {new Date(newsletterPreview.last_dispatch_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                                                 </p>
                                             )}
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-1.5">Template</p>
-                                            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-muted mb-1.5">Template</p>
+                                            <p className="text-sm font-semibold text-main">
                                                 {newsletterPreview?.template_variant || selectedNewsletterType?.replace('_', ' ') || "—"}
                                             </p>
                                             {newsletterPreview?.lesson_number && (
-                                                <p className="text-[11px] text-slate-400 mt-0.5">Lesson {newsletterPreview.lesson_number}</p>
+                                                <p className="text-[11px] text-muted mt-0.5">Lesson {newsletterPreview.lesson_number}</p>
                                             )}
                                         </div>
                                     </div>
@@ -1430,15 +1432,15 @@ export default function ChatbotAnalyticsPage() {
                                     {/* Last Successful Recipient */}
                                     {newsletterPreview?.recipient_email && (
                                         <div>
-                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-2">Last Successful Recipient</p>
-                                            <div className="flex items-center gap-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-500/5 border border-emerald-200/50 dark:border-emerald-500/10 px-4 py-3">
-                                                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                                                    <CheckCircle className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-muted mb-2">Last Successful Recipient</p>
+                                            <div className="flex items-center gap-3 rounded-xl bg-emerald-50/50 border border-emerald-200/50 px-4 py-3">
+                                                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                                                    <CheckCircle className="w-4 h-4 text-emerald-700" />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{newsletterPreview.recipient_email}</p>
+                                                    <p className="text-sm font-semibold text-main truncate">{newsletterPreview.recipient_email}</p>
                                                     {newsletterPreview.recipient_name && (
-                                                        <p className="text-[11px] text-slate-500 dark:text-slate-400">{newsletterPreview.recipient_name}</p>
+                                                        <p className="text-[11px] text-muted">{newsletterPreview.recipient_name}</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -1448,25 +1450,25 @@ export default function ChatbotAnalyticsPage() {
                                     {/* Recipients List */}
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.15em] text-muted">
                                                 Latest Dispatch Recipients
                                             </p>
-                                            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-[#1E293B] px-2 py-0.5 rounded-full">
+                                            <span className="text-[10px] font-bold text-muted bg-panel px-2 py-0.5 rounded-full">
                                                 {(newsletterPreview?.recipients ?? []).length}
                                             </span>
                                         </div>
                                         <div className="space-y-1.5 max-h-[200px] overflow-y-auto custom-scrollbar">
                                             {(newsletterPreview?.recipients ?? []).length > 0 ? (
                                                 newsletterPreview?.recipients.map((recipient) => (
-                                                    <div key={`${recipient.email}-${recipient.sent_at}`} className="flex items-center gap-2.5 rounded-xl bg-slate-50 dark:bg-[#111827] border border-slate-200/50 dark:border-[#1E293B] px-3 py-2.5 transition-colors hover:bg-slate-100 dark:hover:bg-[#1A222C]">
-                                                        <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-[#1E293B] flex items-center justify-center flex-shrink-0">
-                                                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                                                    <div key={`${recipient.email}-${recipient.sent_at}`} className="flex items-center gap-2.5 rounded-xl bg-page border border-border/50 px-3 py-2.5 transition-colors hover:bg-panel">
+                                                        <div className="w-6 h-6 rounded-full bg-panel flex items-center justify-center flex-shrink-0">
+                                                            <span className="text-[10px] font-bold text-muted">
                                                                 {(recipient.full_name || recipient.email).charAt(0).toUpperCase()}
                                                             </span>
                                                         </div>
                                                         <div className="min-w-0 flex-1">
-                                                            <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{recipient.email}</p>
-                                                            <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
+                                                            <p className="text-xs font-semibold text-main truncate">{recipient.email}</p>
+                                                            <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted">
                                                                 {recipient.full_name && <span>{recipient.full_name}</span>}
                                                                 {recipient.lesson_number != null && <span>L{recipient.lesson_number}</span>}
                                                             </div>
@@ -1474,8 +1476,8 @@ export default function ChatbotAnalyticsPage() {
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="rounded-xl border border-dashed border-slate-200 dark:border-[#1E293B] p-4 text-center">
-                                                    <p className="text-xs text-slate-400">No archived recipients for this dispatch yet.</p>
+                                                <div className="rounded-xl border border-dashed border-border p-4 text-center">
+                                                    <p className="text-xs text-muted">No archived recipients for this dispatch yet.</p>
                                                 </div>
                                             )}
                                         </div>
@@ -1484,15 +1486,15 @@ export default function ChatbotAnalyticsPage() {
                             </div>
 
                             {/* RIGHT PANEL — full-height email preview */}
-                            <div className="flex-1 h-full flex flex-col bg-slate-100 dark:bg-[#050816]">
+                            <div className="flex-1 h-full flex flex-col bg-panel">
                                 {/* Preview header bar */}
-                                <div className="flex-shrink-0 px-6 py-3 border-b border-slate-200/50 dark:border-[#1E293B] bg-white/60 dark:bg-[#0B1121]/60 backdrop-blur-sm flex items-center justify-between">
+                                <div className="flex-shrink-0 px-6 py-3 border-b border-border/50 bg-surface backdrop-blur-sm flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <Eye className={`w-4 h-4 ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'}`} />
-                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email Preview</span>
+                                        <Eye className={`w-4 h-4 ${selectedNewsletterMeta?.accent ?? 'text-starta-teal'}`} />
+                                        <span className="text-xs font-bold text-muted uppercase tracking-wider">Email Preview</span>
                                     </div>
                                     {newsletterPreview?.preview_available && (
-                                        <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                                        <span className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700">
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                             Live Archive
                                         </span>
@@ -1504,25 +1506,25 @@ export default function ChatbotAnalyticsPage() {
                                     {newsletterPreviewLoading ? (
                                         <div className="flex h-full items-center justify-center">
                                             <div className="text-center">
-                                                <RefreshCw className={`h-10 w-10 animate-spin mx-auto ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'}`} />
-                                                <p className="mt-4 text-sm font-medium text-slate-500 dark:text-slate-400">Loading email archive…</p>
+                                                <RefreshCw className={`h-10 w-10 animate-spin mx-auto ${selectedNewsletterMeta?.accent ?? 'text-starta-teal'}`} />
+                                                <p className="mt-4 text-sm font-medium text-muted">Loading email archive…</p>
                                             </div>
                                         </div>
                                     ) : newsletterPreviewError ? (
                                         <div className="flex h-full items-center justify-center p-8 text-center">
                                             <div>
-                                                <div className="w-16 h-16 rounded-2xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center mx-auto mb-4">
+                                                <div className="w-16 h-16 rounded-2xl bg-rose-50 flex items-center justify-center mx-auto mb-4">
                                                     <XCircle className="h-8 w-8 text-rose-500" />
                                                 </div>
-                                                <p className="text-sm font-semibold text-slate-900 dark:text-white">{newsletterPreviewError}</p>
-                                                <p className="mt-2 text-xs text-slate-400">Try refreshing the page or check server logs.</p>
+                                                <p className="text-sm font-semibold text-main">{newsletterPreviewError}</p>
+                                                <p className="mt-2 text-xs text-muted">Try refreshing the page or check server logs.</p>
                                             </div>
                                         </div>
                                     ) : newsletterPreview?.preview_available && newsletterPreview.html ? (
                                         <iframe
                                             title={`${newsletterPreview.label} preview`}
                                             srcDoc={newsletterPreview.html}
-                                            className="w-full h-full bg-white border-0"
+                                            className="w-full h-full bg-surface border-0"
                                             sandbox=""
                                         />
                                     ) : (
@@ -1535,12 +1537,12 @@ export default function ChatbotAnalyticsPage() {
                                                                 selectedNewsletterType === 'academy' ? 'rgba(20,184,166,0.08)' : 'rgba(249,115,22,0.08)',
                                                     }}
                                                 >
-                                                    <Eye className={`h-8 w-8 ${selectedNewsletterMeta?.accent ?? 'text-[#14B8A6]'}`} />
+                                                    <Eye className={`h-8 w-8 ${selectedNewsletterMeta?.accent ?? 'text-starta-teal'}`} />
                                                 </div>
-                                                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                                                <p className="text-sm font-semibold text-main">
                                                     No archived HTML preview available
                                                 </p>
-                                                <p className="mt-2 text-xs text-slate-400 leading-relaxed">
+                                                <p className="mt-2 text-xs text-muted leading-relaxed">
                                                     This template hasn&apos;t been dispatched yet with the new archiving system. Future sends will automatically save the rendered HTML here for instant preview.
                                                 </p>
                                             </div>
@@ -1570,38 +1572,46 @@ function OverviewCard({ icon: Icon, label, value, trend, tooltip, color, inverse
     color: string;
     inverseTrend?: boolean;
 }) {
+    // Seven pastel hues used to sit here — blue, indigo, purple, green, red,
+    // orange, teal — one per card, which is an evenly distributed palette with
+    // no dominant ground: the exact opposite of the landing page, which commits
+    // to ONE accent on a near-white field. Colour now MEANS something. Most
+    // metrics are quiet; only the two that carry a judgement are coloured.
     const colorClasses: Record<string, string> = {
-        blue: 'text-blue-600 dark:text-[#3B82F6] bg-blue-100 dark:bg-[#3B82F6]/10 border border-blue-200 dark:border-[#3B82F6]/20',
-        indigo: 'text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20',
-        purple: 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/20',
-        green: 'text-green-600 dark:text-[#10B981] bg-green-100 dark:bg-[#10B981]/10 border border-green-200 dark:border-[#10B981]/20',
-        red: 'text-red-600 dark:text-[#EF4444] bg-red-100 dark:bg-[#EF4444]/10 border border-red-200 dark:border-[#EF4444]/20',
-        orange: 'text-orange-600 dark:text-[#F59E0B] bg-orange-100 dark:bg-[#F59E0B]/10 border border-orange-200 dark:border-[#F59E0B]/20',
-        teal: 'text-teal-600 dark:text-[#14B8A6] bg-teal-100 dark:bg-[#14B8A6]/10 border border-teal-200 dark:border-[#14B8A6]/20',
+        neutral: 'text-muted bg-page border border-border',
+        brand: 'text-starta-teal bg-starta-teal/10 border border-starta-teal/20',
+        success: 'text-emerald-600 bg-emerald-500/10 border border-emerald-500/20',
+        danger: 'text-red-600 bg-red-500/10 border border-red-500/20',
+    };
+    // Legacy names still passed by the cards above.
+    const colorAlias: Record<string, string> = {
+        blue: 'brand', indigo: 'brand', teal: 'brand',
+        purple: 'neutral', orange: 'neutral',
+        green: 'success', red: 'danger',
     };
 
     const isPositive = trend && trend > 0;
     const isNeutral = trend === 0;
 
     // Determine trend color
-    let trendColor = 'text-slate-500';
+    let trendColor = 'text-muted';
     let TrendIcon = isPositive ? ArrowUpRight : ArrowDownRight;
-    let trendBg = 'bg-slate-100 dark:bg-slate-800';
+    let trendBg = 'bg-panel';
 
     if (trend !== null && trend !== undefined && !isNeutral) {
         if (inverseTrend) {
             trendColor = isPositive ? 'text-red-500' : 'text-emerald-500';
-            trendBg = isPositive ? 'bg-red-50 dark:bg-red-500/10' : 'bg-emerald-50 dark:bg-emerald-500/10';
+            trendBg = isPositive ? 'bg-red-50' : 'bg-emerald-50';
         } else {
             trendColor = isPositive ? 'text-emerald-500' : 'text-red-500';
-            trendBg = isPositive ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-red-50 dark:bg-red-500/10';
+            trendBg = isPositive ? 'bg-emerald-50' : 'bg-red-50';
         }
     }
 
     return (
-        <div className="bg-white dark:bg-[#24303F] rounded-md p-5 border border-slate-200 dark:border-[#2E3A47] shadow-sm transition-all relative group flex flex-col justify-between h-full overflow-hidden">
+        <div className="bg-surface rounded-md p-5 border border-border shadow-sm transition-all relative group flex flex-col justify-between h-full overflow-hidden">
             <div className="flex items-start justify-between mb-4 relative z-10">
-                <div className={`p-3 rounded-md border ${colorClasses[color]}`}>
+                <div className={`p-3 rounded-xl ${colorClasses[colorAlias[color] ?? color] ?? colorClasses.neutral}`}>
                     <Icon className="w-5 h-5 flex-shrink-0" />
                 </div>
                 {trend !== null && trend !== undefined && (
@@ -1613,15 +1623,15 @@ function OverviewCard({ icon: Icon, label, value, trend, tooltip, color, inverse
             </div>
 
             <div className="relative z-10">
-                <p className="text-xs font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider mb-1">{label}</p>
+                <p className="text-xs font-bold text-muted uppercase tracking-wider mb-1">{label}</p>
                 <div className="flex items-baseline gap-2">
-                    <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{value}</h3>
+                    <h3 className="text-2xl font-black text-main tracking-tight">{value}</h3>
                 </div>
             </div>
 
             <Tooltip content={tooltip}>
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Info className="w-4 h-4 text-slate-300 dark:text-slate-600" />
+                    <Info className="w-4 h-4 text-muted" />
                 </div>
             </Tooltip>
         </div>

@@ -65,7 +65,7 @@ function loginHref(pathname: string): string {
 
 function GateShell({ children }: { children: React.ReactNode }) {
     return (
-        <div className="min-h-screen bg-page flex items-center justify-center p-6">
+        <div className="admin-light min-h-screen bg-page flex items-center justify-center p-6">
             {children}
         </div>
     );

@@ -21,6 +21,7 @@
   --color-starta-darkTeal: #0F766E;
   --color-starta-accent: #2DD4BF;
 
+
   /* ========================================================================
      CORE BRAND COLORS (Midnight Teal Palette)
      ======================================================================== */
@@ -231,6 +232,37 @@
 /* Fonts moved to top */
 
 @layer utilities {
+  /* --------------------------------------------------------------------
+     THE DISPLAY FACE — Sora, matching the landing page exactly.
+
+     `font-display` was being used across the app as though it existed. It
+     did not: no --font-display token, no .font-display rule, so every
+     heading written with it silently rendered in Manrope at normal
+     tracking while the landing page's headings are Sora at -0.025em. That
+     is the mismatch, and it was invisible because a missing utility class
+     throws nothing.
+
+     --font-sora is the real next/font family (declared on <body> in
+     layout.tsx). The :root alias further down maps it to --font-sans for
+     legacy callers, but body's own declaration wins for its descendants,
+     which is everything. The literal 'Sora' is a second chance for any
+     surface that loads it from the Google stylesheet instead, and the
+     Arabic face precedes the generic fallback per DESIGN_SYSTEM.md §3.
+
+     Tracking is measured from the live landing page: -2.16px at 86.4px.
+     Arabic never receives it — tight tracking breaks letter joining — so
+     the rule is scoped away from [lang="ar"] and .font-arabic.
+     -------------------------------------------------------------------- */
+  .font-display {
+    font-family: var(--font-sora), "Sora", var(--font-arabic), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.025em;
+  }
+  [lang="ar"] .font-display,
+  .font-arabic .font-display,
+  .font-display[lang="ar"] {
+    letter-spacing: normal;
+  }
+
   .font-code {
     font-family: var(--font-sans);
   }
@@ -686,7 +718,16 @@ html.finhub-pro-domain pre {
   font-family: var(--font-arabic) !important;
 }
 
-[dir="ltr"] *:not(.font-mono):not(code):not(pre) {
+/* `.font-display` joins the opt-out list for the SAME reason `.font-mono` is
+   on it: the element has declared its own face. Without it this rule wins with
+   !important over even an inline style, so every heading marked font-display
+   silently rendered in Manrope — the console's headings looked nothing like
+   the landing page's Sora, and no error was ever raised.
+
+   LTR only. The [dir="rtl"] rule above keeps no such exception on purpose:
+   DESIGN_SYSTEM.md §3 — a page may choose a display face for Latin headings,
+   it may NOT choose one for Arabic. */
+[dir="ltr"] *:not(.font-mono):not(.font-display):not(code):not(pre) {
   font-family: var(--font-manrope), var(--font-arabic) !important;
 }
 
@@ -1204,6 +1245,68 @@ a:focus-visible {
   --c-border: rgba(148, 163, 184, 0.2);
   --glass-bg: rgba(255, 255, 255, 0.75);
 }
+/* ============================================================================
+   ADMIN CONSOLE — light only (owner decision, 2026-09-07)
+   ============================================================================
+   The console does not offer a dark theme. Rather than mutate <html
+   data-theme> on entry and restore it on exit — which fights the theme boot
+   script, flashes on navigation, and can strand a visitor's own preference if
+   the restore never runs — the runtime variables are simply REDECLARED on the
+   console's root element. Everything inside inherits them, so bg-page /
+   bg-surface / text-main resolve light no matter what the rest of the site is
+   set to, and the visitor's site-wide choice is never touched.
+
+   Values are copied from the :root light block below, deliberately: this is
+   the same light theme the public site uses, not a second one. If those
+   change, change these in the same commit.
+   ============================================================================ */
+.admin-light {
+  /* These are the --color-* names Tailwind's utilities actually reference, NOT
+     the --c-* runtime pair. @theme declares `--color-page: var(--c-page)` on
+     :root, and a var() inside a custom-property declaration is substituted at
+     the element the declaration applies to — :root. By the time any descendant
+     sees --color-page it is already a concrete colour, so redeclaring --c-page
+     further down the tree changes nothing. Verified: the console rendered dark
+     inside a dark site until this was moved up a layer.
+
+     --c-* is redeclared too, for anything reading the runtime pair directly. */
+  --color-page: #f6f8fb;
+  --color-surface: #FFFFFF;
+  --color-panel: rgba(255, 255, 255, 0.82);
+  --color-main: #111827;
+  --color-muted: #5c6676;
+  --color-border: rgba(148, 163, 184, 0.2);
+
+  --c-page: #f6f8fb;
+  --c-surface: #FFFFFF;
+  --c-panel: rgba(255, 255, 255, 0.82);
+  --c-text-main: #111827;
+  --c-text-muted: #5c6676;
+  --c-border: rgba(148, 163, 184, 0.2);
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  /* Form controls, scrollbars and the like are UA-painted from this. */
+  color-scheme: light;
+}
+
+/* Form controls are styled by an UNLAYERED element rule further down
+   (`input, textarea, select { background-color: var(--card-bg) }`), and in
+   Tailwind v4 unlayered CSS beats the utility layer — so `bg-page` on a
+   <select> silently lost to a --card-bg that follows the SITE theme. Inside a
+   light console on a dark site that rendered near-black dropdowns on white.
+   Same specificity trick, scoped: class + element. */
+.admin-light input:not([type="checkbox"]):not([type="radio"]),
+.admin-light textarea,
+.admin-light select {
+  background-color: var(--color-surface);
+  color: var(--color-main);
+  border-color: var(--color-border);
+}
+
+.admin-light input::placeholder,
+.admin-light textarea::placeholder {
+  color: var(--color-muted);
+}
+
 [data-theme="dark"] {
   --c-page: #010101;
   --c-surface: #0b0c0d;

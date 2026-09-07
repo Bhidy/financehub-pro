@@ -184,6 +184,32 @@ async def get_current_active_user(current_user: Annotated[dict, Depends(get_curr
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+async def touch_last_seen(user_id: int) -> None:
+    """Stamp `last_login` — the column the admin console shows as "Last seen".
+
+    Called wherever a SESSION IS ESTABLISHED, which is what the column is
+    actually reporting. Before this it was written in exactly two places, the
+    OAuth2 form grant and the Google callback, so:
+
+      · every account that registered and never came back read "Never", even
+        though signup issues a token and signs the person straight in — the
+        one moment we are certain they were here;
+      · the JSON login twin (/auth/login) wrote nothing at all;
+      · a returning visitor whose session was silently revived by a refresh
+        never advanced it either.
+
+    NOW() rather than datetime.utcnow(): the column is TIMESTAMPTZ and
+    created_at is already written with NOW(), so a naive Python UTC value in
+    the same table is how you end up rendering "last seen" BEFORE "joined".
+
+    Never raises. This is telemetry — it must not be able to fail a login.
+    """
+    try:
+        await db.execute("UPDATE users SET last_login = NOW() WHERE id = $1", user_id)
+    except Exception as e:  # pragma: no cover - defensive
+        print(f"touch_last_seen failed for user {user_id}: {type(e).__name__}: {e}")
+
+
 async def require_admin(current_user: Annotated[dict, Depends(get_current_active_user)]):
     if current_user['role'] != 'admin':
         raise HTTPException(status_code=403, detail="Admin access required")
@@ -231,7 +257,7 @@ async def login_for_access_token(
         )
     
     # Update last login
-    await db.execute("UPDATE users SET last_login = $1 WHERE id = $2", datetime.utcnow(), user['id'])
+    await touch_last_seen(user['id'])
     
     access_token = create_access_token(
         data={"sub": user['email'], "role": user['role']}
@@ -268,7 +294,9 @@ async def login_json(request: Request, req: LoginRequest, response: Response):
     if not user or not verify_password(req.password, user['hashed_password']):
         _record_login_failure(email)
         raise HTTPException(status_code=401, detail="Incorrect email or password")
-    
+
+    await touch_last_seen(user['id'])
+
     access_token = create_access_token(data={"sub": user['email'], "role": user['role']})
     refresh_token = create_refresh_token(data={"sub": user['email'], "role": user['role']})
     
@@ -329,8 +357,8 @@ async def signup(request: Request, reg: RegisterRequest, response: Response):
 
     hashed_pw = get_password_hash(reg.password)
     query = """
-        INSERT INTO users (email, hashed_password, full_name, phone, role, is_active, created_at)
-        VALUES ($1, $2, $3, $4, 'user', TRUE, NOW())
+        INSERT INTO users (email, hashed_password, full_name, phone, role, is_active, created_at, last_login)
+        VALUES ($1, $2, $3, $4, 'user', TRUE, NOW(), NOW())
         RETURNING id, email, full_name, phone, role, is_active
     """
     try:
@@ -392,7 +420,12 @@ async def refresh_access_token(
         user = await get_user_by_email(email)
         if not user or not user.get('is_active', True):
             raise HTTPException(status_code=401, detail="Invalid user or inactive")
-            
+
+        # A refresh is a returning visitor, not a bookkeeping detail — without
+        # this, someone who uses the site daily on a live session shows the
+        # date they last typed a password.
+        await touch_last_seen(user['id'])
+
         access_token = create_access_token(data={"sub": user['email'], "role": user['role']})
         new_refresh_token = create_refresh_token(data={"sub": user['email'], "role": user['role']})
         _set_refresh_cookie(response, new_refresh_token)
@@ -424,6 +457,8 @@ async def bootstrap_refresh_session(
     This helps migrate older sessions that were created before refresh token
     persistence was added to the frontend local storage.
     """
+    await touch_last_seen(current_user['id'])
+
     access_token = create_access_token(
         data={"sub": current_user['email'], "role": current_user['role']}
     )

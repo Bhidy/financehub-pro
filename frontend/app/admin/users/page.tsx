@@ -1,14 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { useAuth } from "@/contexts/AuthContext";
-import {
-    Users, Search, Download, RefreshCw, Mail, Phone, Calendar,
-    ChevronLeft, ChevronRight, Loader2, AlertCircle
-} from "lucide-react";
+/**
+ * ============================================================================
+ * /admin/users — the registered-account directory, and the controls for it
+ * ============================================================================
+ *
+ * WHAT CHANGED AND WHY
+ * This page was reachable only by typing the URL (no admin nav existed) and
+ * could only LOOK: a list and a CSV button. The one implementation of
+ * "reset a user's password" lived in components/settings/UsersTab.tsx —
+ * a file imported by nothing, i.e. dead code shipping a real capability that
+ * no operator could ever reach. That capability is folded in here, where the
+ * account it acts on is on screen, and those orphaned files are deleted.
+ *
+ * Surfaces use theme tokens (bg-surface / text-main / border-border), not the
+ * bg-slate-50 / literals this page used to carry —
+ * DESIGN_SYSTEM.md §4: page and card surfaces are never hardcoded.
+ */
 
-interface User {
+import { useCallback, useEffect, useState } from "react";
+import {
+    Search, Download, RefreshCw, ChevronLeft, ChevronRight,
+    Loader2, AlertCircle, KeyRound, X, Check,
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface AdminUser {
     id: number;
     email: string;
     full_name: string | null;
@@ -20,291 +37,391 @@ interface User {
 }
 
 interface UsersResponse {
-    users: User[];
+    users: AdminUser[];
     total: number;
     skip: number;
     limit: number;
 }
 
+const LIMIT = 20;
+
+function formatDate(value: string | null): string {
+    if (!value) return "Never";
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("en-GB", {
+        year: "numeric", month: "short", day: "numeric",
+        hour: "2-digit", minute: "2-digit",
+    });
+}
+
 export default function AdminUsersPage() {
-    const { user, isAuthenticated, getToken } = useAuth();
-    const [users, setUsers] = useState<User[]>([]);
+    const { getToken } = useAuth();
+
+    const [users, setUsers] = useState<AdminUser[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(0);
     const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const limit = 20;
+    // Reset-password dialog state
+    const [resetTarget, setResetTarget] = useState<AdminUser | null>(null);
+    const [newPassword, setNewPassword] = useState("");
+    const [resetBusy, setResetBusy] = useState(false);
+    const [resetError, setResetError] = useState<string | null>(null);
+    const [resetDone, setResetDone] = useState<string | null>(null);
 
-    // No admin check here: app/admin/layout.tsx wraps this page in AdminGate.
-    // The copy that lived here read isAuthenticated WITHOUT isLoading, and
-    // isAuthenticated is !!user — null for the first render while AuthProvider
-    // restores the session — so a hard load of this URL redirected to /login
-    // every single time, for real admins too.
+    // Debounced, and it resets to page 0. Typing a name while parked on page 4
+    // otherwise queries `?skip=80` against a 3-row result and renders nothing —
+    // an empty table that looks like "no such user".
+    useEffect(() => {
+        const t = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(0);
+        }, 300);
+        return () => clearTimeout(t);
+    }, [search]);
 
-    // Fetch users
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         setIsLoading(true);
         setError(null);
-
         try {
-            const token = getToken();
             const params = new URLSearchParams({
-                skip: String(page * limit),
-                limit: String(limit),
+                skip: String(page * LIMIT),
+                limit: String(LIMIT),
             });
-            if (search) params.append('search', search);
+            if (debouncedSearch) params.append("search", debouncedSearch);
 
-            const response = await fetch(`/api/v1/auth/users?${params}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            const res = await fetch(`/api/v1/auth/users?${params}`, {
+                headers: { Authorization: `Bearer ${getToken()}` },
+                cache: "no-store",
             });
-
-            if (!response.ok) {
-                if (response.status === 403) {
-                    throw new Error('Admin access required');
-                }
-                throw new Error('Failed to fetch users');
+            if (!res.ok) {
+                throw new Error(
+                    res.status === 403
+                        ? "Admin access required."
+                        : `Failed to load users (${res.status}).`
+                );
             }
-
-            const data: UsersResponse = await response.json();
-            setUsers(data.users);
-            setTotal(data.total);
-        } catch (err: any) {
-            setError(err.message);
+            const data: UsersResponse = await res.json();
+            setUsers(data.users ?? []);
+            setTotal(data.total ?? 0);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to load users.");
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [page, debouncedSearch, getToken]);
 
     useEffect(() => {
-        if (isAuthenticated && user?.role === 'admin') {
-            fetchUsers();
+        void fetchUsers();
+    }, [fetchUsers]);
+
+    const submitReset = async () => {
+        if (!resetTarget) return;
+        if (newPassword.length < 8) {
+            setResetError("Password must be at least 8 characters.");
+            return;
         }
-    }, [isAuthenticated, user, page, search]);
+        setResetBusy(true);
+        setResetError(null);
+        try {
+            const res = await fetch("/api/proxy/auth/admin/reset-user-password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${getToken()}`,
+                },
+                body: JSON.stringify({ user_id: resetTarget.id, new_password: newPassword }),
+            });
+            const payload = await res.json().catch(() => null);
+            if (!res.ok) {
+                const detail = payload && typeof payload === "object" && "detail" in payload
+                    ? String((payload as { detail: unknown }).detail)
+                    : `Reset failed (${res.status}).`;
+                throw new Error(detail);
+            }
+            setResetDone(resetTarget.email);
+            setResetTarget(null);
+            setNewPassword("");
+        } catch (err) {
+            setResetError(err instanceof Error ? err.message : "Reset failed.");
+        } finally {
+            setResetBusy(false);
+        }
+    };
 
-    // Export to CSV
     const exportCSV = () => {
-        const headers = ['ID', 'Full Name', 'Email', 'Phone', 'Role', 'Active', 'Created At', 'Last Login'];
-        const rows = users.map(u => [
+        const headers = ["ID", "Full Name", "Email", "Phone", "Role", "Active", "Created", "Last Login"];
+        const rows = users.map((u) => [
             u.id,
-            u.full_name || '',
+            // Quoted: a name containing a comma otherwise shifts every later
+            // column by one for that row.
+            `"${(u.full_name ?? "").replace(/"/g, '""')}"`,
             u.email,
-            u.phone || '',
+            u.phone ?? "",
             u.role,
-            u.is_active ? 'Yes' : 'No',
-            new Date(u.created_at).toLocaleDateString(),
-            u.last_login ? new Date(u.last_login).toLocaleDateString() : 'Never'
+            u.is_active ? "Yes" : "No",
+            u.created_at,
+            u.last_login ?? "",
         ]);
-
-        const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+        const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+        const a = document.createElement("a");
         a.href = url;
-        a.download = `users_${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `starta-users_${new Date().toISOString().split("T")[0]}.csv`;
         a.click();
         URL.revokeObjectURL(url);
     };
 
-    const formatDate = (dateStr: string | null) => {
-        if (!dateStr) return 'Never';
-        return new Date(dateStr).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    };
-
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-[#0B1121] transition-colors duration-300 relative">
-            {/* Background Ambient Glow */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-                <div className="absolute top-[-20%] left-[-15%] w-[60%] h-[60%] bg-[#14B8A6]/5 rounded-full blur-[100px]" />
-                <div className="absolute bottom-[-20%] right-[-15%] w-[60%] h-[60%] bg-[#3B82F6]/5 rounded-full blur-[100px]" />
-            </div>
+        <div>
+            <header className="border-b border-border bg-surface px-5 py-5 sm:px-8">
+                <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 className="font-display text-xl font-bold tracking-tight text-main">Users</h1>
+                        <p className="mt-1 text-sm text-muted">
+                            {isLoading && !users.length
+                                ? "Loading…"
+                                : `${total.toLocaleString()} registered ${total === 1 ? "account" : "accounts"}`}
+                        </p>
+                    </div>
 
-            {/* Header */}
-            <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/80 dark:bg-[#0B1121]/80 border-b border-slate-200 dark:border-white/[0.08]">
-                <div className="max-w-7xl mx-auto px-6 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#0F172A] to-[#1E293B] dark:from-[#1E293B] dark:to-[#0F172A] rounded-xl flex items-center justify-center shadow-lg ring-1 ring-white/10">
-                                <Users className="w-5 h-5 text-[#3B82F6]" />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                    Registered Users
-                                </h1>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{total} users in database</p>
-                            </div>
+                    <div className="flex items-center gap-2">
+                        <div className="relative flex-1 sm:flex-none">
+                            <Search
+                                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+                                aria-hidden="true"
+                            />
+                            <input
+                                type="search"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Search name or email"
+                                aria-label="Search users"
+                                className="h-11 w-full rounded-xl border border-border bg-page pl-9 pr-3 text-sm text-main outline-none placeholder:text-muted focus:border-starta-teal sm:w-64"
+                            />
                         </div>
-
-                        <div className="flex flex-wrap items-center gap-3 relative z-10">
-                            {/* Search */}
-                            <div className="relative group">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#3B82F6] transition-colors" />
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    placeholder="Search users..."
-                                    className="pl-9 pr-4 py-2 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-[#3B82F6]/20 focus:border-[#3B82F6]/50 outline-none w-64 shadow-sm"
-                                />
-                            </div>
-
-                            {/* Refresh */}
-                            <button
-                                onClick={fetchUsers}
-                                disabled={isLoading}
-                                className="p-2.5 bg-white dark:bg-[#111827] hover:bg-slate-50 dark:hover:bg-white/[0.02] rounded-xl transition-colors border border-slate-200 dark:border-white/[0.08] text-slate-500 dark:text-slate-400 shadow-sm disabled:opacity-50"
-                            >
-                                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#3B82F6]' : ''}`} />
-                            </button>
-
-                            {/* Export */}
-                            <button
-                                onClick={exportCSV}
-                                disabled={users.length === 0}
-                                className="px-4 py-2.5 bg-white dark:bg-[#111827] hover:bg-slate-50 dark:hover:bg-white/[0.02] text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/[0.08] rounded-xl text-sm font-bold flex items-center gap-2 hover:text-[#3B82F6] dark:hover:text-[#3B82F6] transition-all disabled:opacity-50 shadow-sm"
-                            >
-                                <Download className="w-4 h-4" />
-                                Export CSV
-                            </button>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() => void fetchUsers()}
+                            aria-label="Refresh"
+                            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border text-muted transition-colors hover:text-main"
+                        >
+                            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} aria-hidden="true" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={exportCSV}
+                            disabled={!users.length}
+                            className="flex h-11 items-center gap-2 rounded-xl bg-starta-teal px-4 text-sm font-semibold text-white transition-colors hover:bg-starta-darkTeal disabled:opacity-40"
+                        >
+                            <Download className="h-4 w-4" aria-hidden="true" />
+                            <span className="hidden sm:inline">Export</span>
+                        </button>
                     </div>
                 </div>
             </header>
 
-            {/* Content */}
-            <main className="max-w-7xl mx-auto px-6 py-8 relative z-10">
-                {isLoading ? (
-                    <div className="flex items-center justify-center h-64">
-                        <Loader2 className="w-8 h-8 animate-spin text-[#3B82F6]" />
-                    </div>
-                ) : error ? (
-                    <div className="flex items-center justify-center h-64">
-                        <div className="text-center">
-                            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                            <p className="text-red-500">{error}</p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-black/40 overflow-hidden relative group transition-all duration-500 hover:shadow-2xl hover:-translate-y-1">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#3B82F6]/5 via-transparent to-[#14B8A6]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0" />
-                        <div className="overflow-x-auto relative z-10 w-full">
-                            <table className="w-full">
-                                <thead className="bg-slate-50/50 dark:bg-[#0B1121]/50 border-b border-slate-100 dark:border-white/[0.08]">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">User</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Contact</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Role</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Registered</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Last Login</th>
-                                        <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-white/[0.05]">
-                                    {users.map((u) => (
-                                        <motion.tr
-                                            key={u.id}
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
-                                        >
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-slate-100 dark:bg-[#0B1121] rounded-full flex items-center justify-center text-[#3B82F6] font-bold border border-slate-200 dark:border-white/[0.08] shadow-sm">
-                                                        {(u.full_name || u.email).charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-semibold text-slate-900 dark:text-white">{u.full_name || 'No name'}</div>
-                                                        <div className="text-xs text-slate-500 dark:text-slate-400 font-mono">ID: #{u.id}</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 border-l border-transparent">
-                                                <div className="flex flex-col gap-1">
-                                                    <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                                                        <Mail className="w-3.5 h-3.5 text-slate-400" />
-                                                        {u.email}
-                                                    </div>
-                                                    {u.phone && (
-                                                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                                                            <Phone className="w-3 h-3 text-slate-400" />
-                                                            {u.phone}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 rounded-md text-[10px] uppercase font-bold tracking-widest ${u.role === 'admin'
-                                                    ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30'
-                                                    : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10'
-                                                    }`}>
-                                                    {u.role}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400">
-                                                    <Calendar className="w-3.5 h-3.5" />
-                                                    {formatDate(u.created_at)}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4 text-xs font-medium text-slate-600 dark:text-slate-400">
-                                                {formatDate(u.last_login)}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${u.is_active
-                                                    ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20'
-                                                    : 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border-red-200 dark:border-red-500/20'
-                                                    }`}>
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${u.is_active ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                                                    <span className="text-xs font-bold">{u.is_active ? 'Active' : 'Inactive'}</span>
-                                                </div>
-                                            </td>
-                                        </motion.tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Pagination */}
-                        {totalPages > 1 && (
-                            <div className="px-6 py-4 bg-slate-50/50 dark:bg-[#0B1121]/50 border-t border-slate-100 dark:border-white/[0.08] flex items-center justify-between relative z-10 w-full">
-                                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                                    Showing {page * limit + 1} - {Math.min((page + 1) * limit, total)} of <span className="font-bold text-slate-900 dark:text-white">{total}</span>
-                                </p>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => setPage(p => Math.max(0, p - 1))}
-                                        disabled={page === 0}
-                                        className="p-1.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.1] rounded-lg disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors text-slate-600 dark:text-slate-400"
-                                    >
-                                        <ChevronLeft className="w-4 h-4" />
-                                    </button>
-                                    <span className="px-3 py-1 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.1] rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300">
-                                        {page + 1} / {totalPages}
-                                    </span>
-                                    <button
-                                        onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                                        disabled={page >= totalPages - 1}
-                                        className="p-1.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.1] rounded-lg disabled:opacity-50 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors text-slate-600 dark:text-slate-400"
-                                    >
-                                        <ChevronRight className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+            <div className="mx-auto max-w-7xl px-5 py-6 sm:px-8">
+                {resetDone && (
+                    <div className="mb-5 flex items-start gap-3 rounded-xl border border-starta-teal/30 bg-starta-teal/[0.07] px-4 py-3">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-starta-teal" aria-hidden="true" />
+                        <p className="text-sm text-main">
+                            Password reset for <strong className="font-semibold">{resetDone}</strong>. Give it to
+                            them over a channel they already trust, and have them change it after signing in.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => setResetDone(null)}
+                            aria-label="Dismiss"
+                            className="ml-auto text-muted hover:text-main"
+                        >
+                            <X className="h-4 w-4" aria-hidden="true" />
+                        </button>
                     </div>
                 )}
-            </main>
+
+                {error && (
+                    <div className="mb-5 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/[0.07] px-4 py-3">
+                        <AlertCircle className="h-4 w-4 shrink-0 text-red-500" aria-hidden="true" />
+                        <p className="text-sm text-main">{error}</p>
+                    </div>
+                )}
+
+                <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+                    {/* Wide table scrolls inside its own box; the page never
+                        scrolls horizontally. */}
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-[46rem] text-left text-sm">
+                            <thead>
+                                <tr className="border-b border-border text-xs uppercase tracking-wider text-muted">
+                                    <th scope="col" className="px-5 py-3.5 font-semibold">Account</th>
+                                    <th scope="col" className="px-5 py-3.5 font-semibold">Role</th>
+                                    <th scope="col" className="px-5 py-3.5 font-semibold">Joined</th>
+                                    <th scope="col" className="px-5 py-3.5 font-semibold">Last seen</th>
+                                    <th scope="col" className="px-5 py-3.5 text-right font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {isLoading && !users.length && (
+                                    <tr>
+                                        <td colSpan={5} className="px-5 py-16 text-center">
+                                            <Loader2 className="mx-auto h-6 w-6 animate-spin text-starta-teal" aria-label="Loading" />
+                                        </td>
+                                    </tr>
+                                )}
+
+                                {!isLoading && !users.length && !error && (
+                                    <tr>
+                                        <td colSpan={5} className="px-5 py-16 text-center text-sm text-muted">
+                                            {debouncedSearch
+                                                ? `No account matches “${debouncedSearch}”.`
+                                                : "No registered accounts yet."}
+                                        </td>
+                                    </tr>
+                                )}
+
+                                {users.map((u) => (
+                                    <tr key={u.id} className="border-b border-border last:border-0">
+                                        <td className="px-5 py-4">
+                                            <p className="font-medium text-main">{u.full_name || "—"}</p>
+                                            <p className="mt-0.5 break-all text-xs text-muted">{u.email}</p>
+                                            {u.phone && <p className="mt-0.5 font-mono text-xs text-muted">{u.phone}</p>}
+                                        </td>
+                                        <td className="px-5 py-4">
+                                            <span
+                                                className={`inline-flex rounded-md px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest ${
+                                                    u.role === "admin"
+                                                        ? "bg-starta-teal/15 text-starta-darkTeal"
+                                                        : "bg-border/60 text-muted"
+                                                }`}
+                                            >
+                                                {u.role}
+                                            </span>
+                                            {!u.is_active && (
+                                                <span className="ml-2 inline-flex rounded-md bg-red-500/15 px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-red-600">
+                                                    inactive
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-5 py-4 text-xs text-muted">{formatDate(u.created_at)}</td>
+                                        <td className="px-5 py-4 text-xs text-muted">{formatDate(u.last_login)}</td>
+                                        <td className="px-5 py-4 text-right">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setResetTarget(u);
+                                                    setNewPassword("");
+                                                    setResetError(null);
+                                                }}
+                                                className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-main transition-colors hover:border-starta-teal hover:text-starta-darkTeal"
+                                            >
+                                                <KeyRound className="h-3.5 w-3.5" aria-hidden="true" />
+                                                Reset password
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {total > LIMIT && (
+                        <div className="flex items-center justify-between gap-3 border-t border-border px-5 py-3">
+                            <p className="text-xs text-muted">
+                                Page {page + 1} of {totalPages}
+                            </p>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setPage((p) => Math.max(0, p - 1))}
+                                    disabled={page === 0}
+                                    aria-label="Previous page"
+                                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted disabled:opacity-40"
+                                >
+                                    <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPage((p) => (p + 1 < totalPages ? p + 1 : p))}
+                                    disabled={page + 1 >= totalPages}
+                                    aria-label="Next page"
+                                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted disabled:opacity-40"
+                                >
+                                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {resetTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
+                    <div
+                        className="absolute inset-0 bg-black/50"
+                        onClick={() => setResetTarget(null)}
+                    />
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="reset-title"
+                        className="relative w-full max-w-md rounded-2xl border border-border bg-surface p-6"
+                    >
+                        <h2 id="reset-title" className="font-display text-lg font-bold text-main">
+                            Reset password
+                        </h2>
+                        <p className="mt-2 break-all text-sm text-muted">
+                            Sets a new password for <strong className="font-semibold text-main">{resetTarget.email}</strong>.
+                            They are not notified — you have to tell them.
+                        </p>
+
+                        <label htmlFor="new-password" className="mt-5 block text-xs font-semibold text-muted">
+                            New password
+                        </label>
+                        <input
+                            id="new-password"
+                            type="text"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            autoComplete="off"
+                            placeholder="At least 8 characters"
+                            className="mt-1.5 h-11 w-full rounded-xl border border-border bg-page px-3 font-mono text-sm text-main outline-none focus:border-starta-teal"
+                        />
+                        {/* Deliberately type="text": the operator has to read this
+                            value back to the account holder, and a masked field
+                            they cannot see is how a typo becomes a lockout. */}
+
+                        {resetError && (
+                            <p className="mt-3 text-sm text-red-600">{resetError}</p>
+                        )}
+
+                        <div className="mt-6 flex justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setResetTarget(null)}
+                                className="h-11 rounded-xl border border-border px-4 text-sm font-semibold text-muted transition-colors hover:text-main"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => void submitReset()}
+                                disabled={resetBusy}
+                                className="flex h-11 items-center gap-2 rounded-xl bg-starta-teal px-4 text-sm font-semibold text-white transition-colors hover:bg-starta-darkTeal disabled:opacity-50"
+                            >
+                                {resetBusy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+                                Set password
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

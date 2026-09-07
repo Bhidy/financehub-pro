@@ -230,11 +230,15 @@ async def learn_aliases(conn, article_ids, *, cache_dir, out_path, min_dates=3,
         stmts[aid] = (d.isoformat(), rows)
     print(f"learning from {len(stmts)} readable statements")
 
+    # asyncpg binds a date[] from real date objects, not ISO strings — passing
+    # strings raises DataError deep inside the driver, which reads like a query
+    # problem rather than a type problem.
     dates = sorted({d for d, _ in stmts.values()})
+    date_params = [date.fromisoformat(d) for d in dates]
     pool = defaultdict(list)
     for rec in await conn.fetch(
             "SELECT fund_id, date::text AS date, nav::float8 AS nav "
-            "FROM nav_history WHERE date = ANY($1::date[])", dates):
+            "FROM nav_history WHERE date = ANY($1::date[])", date_params):
         pool[rec["date"]].append((rec["fund_id"], float(rec["nav"])))
 
     cands, seen_dates, printed = defaultdict(list), defaultdict(set), {}
@@ -570,6 +574,10 @@ def _self_test() -> int:
         {"Horus MM USD": {"2026-01-01": 0.836, "2026-01-02": 0.837}}, al2, heldb)
     check("a name match with no value agreement is refused", not ok)
     check("the refusal says why", bad and "match" in bad[0][1])
+
+    src_learn2 = _inspect.getsource(learn_aliases)
+    check("date[] is bound from date objects, not ISO strings",
+          "date.fromisoformat(d) for d in dates" in src_learn2)
 
     src_bridge = _inspect.getsource(corroborate_bridges)
     check("bridging compares against held NAVs", "held.get(fund_id" in src_bridge)

@@ -150,3 +150,13 @@ def test_a_refusal_reds_the_run():
     assert "::error::" in SRC
     assert "raise SystemExit(1)" in SRC
     assert re.search(r"if refused:\s*\n\s*print\(f?\"::error::", SRC)
+
+
+def test_the_gap_threshold_is_adjustable():
+    """The funds that need this most have SMALL gaps. The newest funds have no
+    per-fund CSV at all, so they live on a daily one-price trickle and a failed
+    run costs them those days permanently — seventeen lost 15-20 August 2026
+    that way, well under any threshold aimed at the 412-day hole."""
+    assert "--min-gap-days" in SRC
+    assert re.search(r"async def gapped_fund_ids\(conn, min_gap_days", SRC)
+    assert "gapped_fund_ids(conn, min_gap_days)" in SRC

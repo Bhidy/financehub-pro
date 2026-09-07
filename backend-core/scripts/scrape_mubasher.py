@@ -360,6 +360,13 @@ async def save_fund_data(conn, fund, history, profile_data, history_only=False):
 # is monthly; three months of silence is missing data.
 GAP_DAYS = 90
 
+# The 90-day default targets the big structural holes. It is deliberately
+# adjustable, because the funds that need this most have SMALL gaps: the newest
+# funds have no per-fund CSV at all, so they live on a daily one-price trickle
+# and a failed run costs them those days permanently. Seventeen of them lost
+# 15-20 August 2026 that way — well under any threshold aimed at the 412-day
+# hole. --min-gap-days lets a run go after them.
+
 SQL_GAPPED_FUNDS = """
     WITH d AS (
         SELECT fund_id, date,
@@ -380,8 +387,8 @@ SQL_GAPPED_FUNDS = """
 """
 
 
-async def gapped_fund_ids(conn) -> set:
-    rows = await conn.fetch(SQL_GAPPED_FUNDS, GAP_DAYS)
+async def gapped_fund_ids(conn, min_gap_days: int = GAP_DAYS) -> set:
+    rows = await conn.fetch(SQL_GAPPED_FUNDS, min_gap_days)
     return {r["fund_id"] for r in rows}
 
 
@@ -426,7 +433,8 @@ async def purge_scraped(conn) -> int:
     return len(rows)
 
 
-async def main(test_mode=False, gaps_only=False, purge=False):
+async def main(test_mode=False, gaps_only=False, purge=False,
+               min_gap_days: int = GAP_DAYS):
     print("🚀 Mubasher Scraper Started (Authenticated Mode)")
     conn = await get_db_connection()
 
@@ -492,9 +500,10 @@ async def main(test_mode=False, gaps_only=False, purge=False):
         # incomplete, so "we already have history" is not a reason to skip it.
         gapped = set()
         if gaps_only:
-            gapped = await gapped_fund_ids(conn)
+            gapped = await gapped_fund_ids(conn, min_gap_days)
             all_funds = [f for f in all_funds if f["fund_id"] in gapped]
-            print(f"🎯 GAP MODE: {len(all_funds)} fund(s) carry a {GAP_DAYS}+ day hole.")
+            print(f"🎯 GAP MODE: {len(all_funds)} fund(s) carry a "
+                  f"{min_gap_days}+ day hole.")
             if not all_funds:
                 print("   Nothing to repair.")
 
@@ -520,7 +529,8 @@ async def main(test_mode=False, gaps_only=False, purge=False):
                      is_fresh = meta_row['updated_at'].date() >= datetime.now().date()
 
                 if gaps_only:
-                    print(f"   🎯 Re-reading full history (carries a {GAP_DAYS}+ day gap).")
+                    print(f"   🎯 Re-reading full history (carries a "
+                          f"{min_gap_days}+ day gap).")
                 elif history_count > 10 and is_fresh:
                     print(f"   ⏭️ Skipping (Found {history_count} points & updated today).")
                     continue
@@ -570,4 +580,8 @@ if __name__ == "__main__":
     test = '--test' in sys.argv
     gaps = '--gaps-only' in sys.argv
     purge = '--purge-scraped' in sys.argv
-    asyncio.run(main(test, gaps, purge))
+    gap_days = GAP_DAYS
+    for i, a in enumerate(sys.argv):
+        if a == '--min-gap-days' and i + 1 < len(sys.argv):
+            gap_days = int(sys.argv[i + 1])
+    asyncio.run(main(test, gaps, purge, gap_days))

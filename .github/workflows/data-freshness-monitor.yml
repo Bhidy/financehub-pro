@@ -51,6 +51,12 @@ jobs:
 
       - name: Probe price freshness
         id: check
+        env:
+          # /admin/data/freshness and /admin/refresh/status were gated on
+          # 2026-09-07 (they had been readable by anyone). This monitor is the
+          # only caller, so it carries the same machine credential the other
+          # /admin crons use.
+          ADMIN_API_TOKEN: ${{ secrets.ADMIN_API_TOKEN }}
         run: |
           # WINDOW AT RUN TIME (2026-09-05). The cron restricts this to 07-14 UTC,
           # but the single self-hosted runner queues serially and GitHub starts
@@ -64,10 +70,30 @@ jobs:
             { echo "age_min=n/a"; echo "last_status=skipped"; echo "reason=outside window"; echo "stale=0"; } >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          if [ -z "$ADMIN_API_TOKEN" ]; then
+            echo "::error::ADMIN_API_TOKEN is not set — this monitor cannot read the freshness endpoints."
+            exit 1
+          fi
+
           # --retry kills the blip-page class: a transient network/TLS hiccup must
           # not page; a backend that stays unreachable across retries must.
-          FR=$(curl -s --max-time 20 --retry 2 --retry-delay 5 --retry-all-errors "$API/api/v1/admin/data/freshness" || echo '{}')
-          ST=$(curl -s --max-time 20 --retry 2 --retry-delay 5 --retry-all-errors "$API/api/v1/admin/refresh/status" || echo '{}')
+          FR_CODE=$(curl -s -o /tmp/freshness.json -w '%{http_code}' --max-time 20 --retry 2 --retry-delay 5 --retry-all-errors \
+            -H "X-Admin-Token: $ADMIN_API_TOKEN" "$API/api/v1/admin/data/freshness" || echo 000)
+          curl -s -o /tmp/refresh.json --max-time 20 --retry 2 --retry-delay 5 --retry-all-errors \
+            -H "X-Admin-Token: $ADMIN_API_TOKEN" "$API/api/v1/admin/refresh/status" || echo '{}' > /tmp/refresh.json
+
+          # A rejected credential must NOT page as "DATA STALE". That would be a
+          # false alarm about the pipeline when the real fault is this monitor's
+          # own access — the most expensive kind of wrong alert.
+          if [ "$FR_CODE" = "401" ] || [ "$FR_CODE" = "403" ] || [ "$FR_CODE" = "503" ]; then
+            echo "::error::freshness endpoint returned $FR_CODE — the monitor's ADMIN_API_TOKEN is rejected or the server has none configured. This is an ACCESS fault, not a data fault."
+            exit 1
+          fi
+
+          FR=$(cat /tmp/freshness.json 2>/dev/null || echo '{}')
+          ST=$(cat /tmp/refresh.json 2>/dev/null || echo '{}')
+          [ -n "$FR" ] || FR='{}'
+          [ -n "$ST" ] || ST='{}'
           echo "Freshness: $FR"
           echo "Status:    $ST"
 

@@ -26,10 +26,20 @@ name: Funds Gap Repair (Mubasher pages)
 #
 # SAFETY
 #   · ON CONFLICT DO NOTHING — it fills holes, it never overwrites a held value.
-#   · Rows are stamped `mubasher_page`, so its output stays distinguishable.
+#   · Rows are stamped `mubasher_page`, so its output stays distinguishable —
+#     which is what made the timezone incident below fully reversible.
 #   · The 2011 EGX closure (2011-01-27 → 2011-03-23) is excluded in SQL. That is
 #     real market history; chasing it would be chasing a hole that belongs there.
 #   · Only the ingested numeric-id universe is considered.
+#   · Gap mode writes history ONLY. Its fund list carries placeholder metadata,
+#     and writing that would zero live NAVs and stamp today onto stale funds.
+#
+# PURGE MODE EXISTS BECAUSE IT WAS NEEDED ON DAY ONE. Highcharts sends epoch
+# milliseconds at UTC midnight and the reader used local time, so the first live
+# run wrote 13,313 rows dated one day early, each carrying the following day's
+# value. Purge removes rows by source, restricted to this scraper's own tag, and
+# it opens no browser and does not log in — a repair for a bad write must not
+# depend on the site being reachable.
 #
 # NO SUDO ON THIS RUNNER, AND CHROMIUM NEEDS SYSTEM LIBRARIES ANYWAY.
 # `playwright install --with-deps` apt-installs them as root and fails here; the
@@ -54,11 +64,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'gaps repairs only the funds carrying a 90+ day hole (also the scheduled mode); test reads three funds and stops'
+        description: 'gaps repairs only the funds carrying a 90+ day hole (also the scheduled mode); test reads three funds and stops; purge removes every row this scraper wrote'
         required: true
         default: 'gaps'
         type: choice
-        options: [gaps, test]
+        options: [gaps, test, purge]
 
 concurrency:
   group: funds-gap-repair
@@ -95,7 +105,7 @@ jobs:
           fi
 
       - name: Install Playwright and the browser
-        if: steps.creds.outputs.have == 'yes'
+        if: steps.creds.outputs.have == 'yes' && github.event.inputs.mode != 'purge'
         run: |
           set -euo pipefail
           # Every third-party import scrape_mubasher makes. aiohttp and
@@ -105,7 +115,7 @@ jobs:
           python -m playwright install chromium
 
       - name: Chromium's system libraries, without root
-        if: steps.creds.outputs.have == 'yes'
+        if: steps.creds.outputs.have == 'yes' && github.event.inputs.mode != 'purge'
         run: |
           set -euo pipefail
           LIBDIR="$CHROME_DEPS/usr/lib/x86_64-linux-gnu"
@@ -142,7 +152,7 @@ jobs:
           echo "LD_LIBRARY_PATH=$LIBDIR:$CHROME_DEPS/usr/lib:${LD_LIBRARY_PATH:-}" >> "$GITHUB_ENV"
 
       - name: Can the browser actually start?
-        if: steps.creds.outputs.have == 'yes'
+        if: steps.creds.outputs.have == 'yes' && github.event.inputs.mode != 'purge'
         run: |
           set -euo pipefail
           # A missing shared library only shows at LAUNCH, and it would otherwise
@@ -163,8 +173,12 @@ jobs:
           asyncio.run(main())
           PY
 
+      - name: Purge needs only the database
+        if: github.event.inputs.mode == 'purge'
+        run: pip install --quiet asyncpg
+
       - name: Repair the gaps
-        if: steps.creds.outputs.have == 'yes'
+        if: steps.creds.outputs.have == 'yes' || github.event.inputs.mode == 'purge'
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           MUBASHER_USER: ${{ secrets.MUBASHER_USER }}
@@ -172,6 +186,7 @@ jobs:
         run: |
           set -euo pipefail
           case "${{ github.event.inputs.mode }}" in
-            test) python backend-core/scripts/scrape_mubasher.py --test ;;
-            *)    python backend-core/scripts/scrape_mubasher.py --gaps-only ;;
+            purge) python backend-core/scripts/scrape_mubasher.py --purge-scraped ;;
+            test)  python backend-core/scripts/scrape_mubasher.py --test ;;
+            *)     python backend-core/scripts/scrape_mubasher.py --gaps-only ;;
           esac

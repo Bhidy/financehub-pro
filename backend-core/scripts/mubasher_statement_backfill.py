@@ -177,6 +177,89 @@ def load_manifest(path: str) -> list:
     return ids
 
 
+async def learn_aliases(conn, article_ids, *, cache_dir, out_path, min_dates=3,
+                        tol_pct=0.002):
+    """
+    Regenerate the printed-name -> fund_id table from the statements themselves.
+
+    The alias table is the ceiling on how much of the hole can be filled: the
+    first full pass mapped 4,214 of 8,709 rows and left 655 distinct names
+    unmapped, some appearing ~100 times. Those are real funds we simply had no
+    evidence for, because the table was learned from only 21 statements.
+
+    So this is derived, never authored. A name is accepted only when the
+    printed price equals our stored NAV — within `tol_pct`, because our archive
+    keeps 4 decimals and the statement prints 5 — on at least `min_dates`
+    DISTINCT dates, and the set of funds that could explain it intersects to
+    exactly one. Coincidences do not survive that intersection; a money-market
+    fund can collide with a sibling on one date, not on three.
+    """
+    from mubasher_statement import normalise_name  # local import: same package
+    stmts = {}
+    for aid in article_ids:
+        try:
+            page = fetch_article(aid, cache_dir=cache_dir)
+            d, rows = read_statement(page, cache_key=str(aid), cache_dir=cache_dir)
+        except Exception:
+            continue
+        stmts[aid] = (d.isoformat(), rows)
+    print(f"learning from {len(stmts)} readable statements")
+
+    dates = sorted({d for d, _ in stmts.values()})
+    pool = defaultdict(list)
+    for rec in await conn.fetch(
+            "SELECT fund_id, date::text AS date, nav::float8 AS nav "
+            "FROM nav_history WHERE date = ANY($1::date[])", dates):
+        pool[rec["date"]].append((rec["fund_id"], float(rec["nav"])))
+
+    cands, seen_dates, printed = defaultdict(list), defaultdict(set), {}
+    for _aid, (d, rows) in stmts.items():
+        day = pool.get(d, [])
+        if not day:
+            continue
+        for row in rows:
+            key = normalise_name(row.name)
+            if not key:
+                continue
+            printed.setdefault(key, row.name)
+            match = {fid for fid, v in day
+                     if v and abs(v - row.value) / v * 100 < tol_pct}
+            if match:
+                cands[key].append(match)
+                seen_dates[key].add(d)
+
+    aliases, quarantine = {}, {}
+    for key, sets in cands.items():
+        inter = set.intersection(*sets)
+        n = len(seen_dates[key])
+        if len(inter) == 1 and n >= min_dates:
+            aliases[key] = {"fund_id": sorted(inter)[0], "printed": printed[key],
+                            "dates": n, "disagreements": 0}
+        elif len(inter) > 1:
+            quarantine[key] = {"fund_id": None, "dates": n,
+                               "why": f"ambiguous: {sorted(inter)}"}
+        else:
+            quarantine[key] = {"fund_id": (sorted(inter)[0] if inter else None),
+                               "dates": n, "why": "below evidence floor"}
+
+    doc = {"_comment": ("printed statement name (normalised) -> our fund_id, learned "
+                        "ONLY by VALUE FINGERPRINT: the printed price equalled our "
+                        "stored NAV (within 20 ppm; our archive keeps 4dp, the "
+                        "statement prints 5) on >= 3 DISTINCT dates AND the candidate "
+                        "set intersected to exactly one fund. Never hand-written, "
+                        "never inferred from name similarity. Regenerate with "
+                        "mubasher_statement_backfill.py --learn-aliases."),
+           "_built": date.today().isoformat(), "_min_dates": min_dates,
+           "_tolerance_pct": tol_pct, "_statements_used": len(stmts),
+           "aliases": dict(sorted(aliases.items(), key=lambda kv: kv[1]["fund_id"])),
+           "quarantine": quarantine}
+    with open(out_path, "w", encoding="utf-8") as fh:
+        json.dump(doc, fh, ensure_ascii=False, indent=1)
+    print(f"aliases: {len(aliases)}   quarantined: {len(quarantine)}   -> {out_path}")
+    print(f"distinct funds covered: {len({a['fund_id'] for a in aliases.values()})}")
+    return doc
+
+
 def report_plan(candidate, held, *, show=12):
     """The dry-run report: what reconciliation would accept, and what it refuses."""
     accepted, refused, rejected_pts = {}, [], 0
@@ -330,6 +413,14 @@ def _self_test() -> int:
             check(f"manifest shape: {label}", load_manifest(path) == want)
         finally:
             os.unlink(path)
+    src_learn = _inspect.getsource(learn_aliases)
+    check("alias learning writes no NAV rows",
+          "INSERT" not in src_learn and "SQL_WRITE" not in src_learn)
+    check("alias learning requires >=3 dates", "min_dates=3" in src_learn)
+    check("alias learning intersects candidates across dates",
+          "set.intersection" in src_learn)
+    check("alias learning quarantines ambiguity", "ambiguous" in src_learn)
+
     check("metadata keys never become article ids",
           "_comment" not in load_manifest(_mf(
               {"_comment": "x", "articles": {"4477495": "a"}})))
@@ -354,6 +445,9 @@ def main() -> int:
     ap.add_argument("--articles", nargs="*", default=None, help="explicit article ids")
     ap.add_argument("--cache-dir", default=None)
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--learn-aliases", metavar="OUT",
+                    help="regenerate the alias table from the statements and write "
+                         "it to OUT (reads the database, writes no NAV rows)")
     ap.add_argument("--held-archive",
                     help="rehearse offline against a nav-archive .csv.gz "
                          "snapshot instead of the database (implies dry run)")
@@ -372,6 +466,20 @@ def main() -> int:
         ap.error("--manifest or --articles required")
     if args.limit:
         ids = ids[:args.limit]
+    if args.learn_aliases:
+        async def _learn():
+            if not DATABASE_URL:
+                raise SystemExit("DATABASE_URL is required to learn aliases.")
+            import asyncpg
+            conn = await asyncpg.connect(DATABASE_URL, statement_cache_size=0)
+            try:
+                await learn_aliases(conn, ids, cache_dir=args.cache_dir,
+                                    out_path=args.learn_aliases)
+            finally:
+                await conn.close()
+            return 0
+        return asyncio.run(_learn())
+
     return asyncio.run(run(ids, cache_dir=args.cache_dir, commit=args.commit,
                        held_archive=args.held_archive))
 

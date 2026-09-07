@@ -1,8 +1,9 @@
 name: Admin - Grant Role
 
 # ============================================================
-# Grants (or revokes, or just reports) the `admin` role on an account that
-# already exists. Runs backend-core/scripts/promote_admin.py.
+# Manages ADMIN access for the account named by the ADMIN_EMAIL secret:
+# report / promote / revoke the role (promote_admin.py), or set a new
+# password (create_admin.py).
 #
 # Why a workflow: laptop -> Hetzner SSH is blocked at the network edge and the
 # production DATABASE_URL is a repo secret, so the self-hosted runner is the
@@ -15,11 +16,20 @@ name: Admin - Grant Role
 #
 #     gh secret set ADMIN_EMAIL
 #
-# This workflow NEVER touches a password. Granting a role and setting a
-# password are separate jobs on purpose — see the header of promote_admin.py.
+# PASSWORDS. `set-password` reads the ADMIN_PASSWORD secret, which the account
+# owner sets themselves. Nobody else — no agent, no chat transcript, no email —
+# ever holds the value, and GitHub masks it in the logs. The recommended cycle:
+#
+#     gh secret set ADMIN_PASSWORD                 # you type it, nobody sees it
+#     gh workflow run admin-grant.yml -f action=set-password
+#     gh secret delete ADMIN_PASSWORD              # do not leave it lying around
+#
+# Role changes and password changes are separate actions on purpose: granting
+# someone the admin role should never require touching their credentials.
 # Default action is `report`, so a mis-click changes nothing.
 #
-# Requires repo secrets: DATABASE_URL, ADMIN_EMAIL.
+# Requires repo secrets: DATABASE_URL, ADMIN_EMAIL (+ ADMIN_PASSWORD for
+# set-password only).
 # ============================================================
 
 on:
@@ -34,6 +44,7 @@ on:
           - report
           - promote
           - revoke
+          - set-password
 
 concurrency:
   group: admin-grant
@@ -52,7 +63,10 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - run: pip install --quiet asyncpg
+      # bcrypt is pinned: passlib 1.7.4 reads bcrypt.__about__ during backend
+      # detection, which bcrypt 4.1 removed. Hash output is identical either
+      # way, so pinning costs nothing and avoids a confusing import-time failure.
+      - run: pip install --quiet asyncpg "passlib[bcrypt]" "bcrypt==4.0.1"
 
       - name: Fail early if the target address is not configured
         env:
@@ -67,8 +81,20 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           MODE: ${{ inputs.action }}
         run: |
+          if [ "$MODE" = "set-password" ]; then
+            if [ -z "$ADMIN_PASSWORD" ]; then
+              echo "::error::Repo secret ADMIN_PASSWORD is not set. Set it yourself (gh secret set ADMIN_PASSWORD), dispatch this again, then delete it (gh secret delete ADMIN_PASSWORD)."
+              exit 1
+            fi
+            python backend-core/scripts/create_admin.py
+            echo "## Password set" >> "$GITHUB_STEP_SUMMARY"
+            echo "Now delete the secret: \`gh secret delete ADMIN_PASSWORD\`" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
           case "$MODE" in
             promote) FLAG="--promote" ;;
             revoke)  FLAG="--revoke" ;;

@@ -1,435 +1,900 @@
 {
- "_comment": "printed statement name (normalised) -> our fund_id. Learned ONLY by VALUE FINGERPRINT: the printed price equalled our stored NAV (within 20 ppm; our archive stores 4dp, the statement 5dp) on >=3 DISTINCT dates AND the candidate set intersected to exactly one fund. Never hand-written, never inferred from name similarity. \"disagreements\" counts dates where this alias resolved but the printed value differed >0.05% from ours — those are VENDOR errors, not mapping errors (verified for Zaldi/6392, which ran 1.457%% high for five days in Aug 2026 then snapped back).",
+ "_comment": "printed statement name (normalised) -> our fund_id, learned ONLY by VALUE FINGERPRINT: the printed price equalled our stored NAV (within 20 ppm; our archive keeps 4dp, the statement prints 5) on >= 3 DISTINCT dates AND the candidate set intersected to exactly one fund. Never hand-written, never inferred from name similarity. Regenerate with mubasher_statement_backfill.py --learn-aliases.",
  "_built": "2026-09-07",
  "_min_dates": 3,
  "_tolerance_pct": 0.002,
- "_source": "mubasher.info daily NAV statements, 21 statements 2025-08..2026-09",
+ "_statements_used": 446,
  "aliases": {
+  "cash mubasher": {
+   "fund_id": "2665",
+   "printed": "Cash Mubasher Fund",
+   "dates": 22,
+   "disagreements": 0
+  },
+  "egymubmca": {
+   "fund_id": "2665",
+   "printed": "EGYMUBMCA",
+   "dates": 12,
+   "disagreements": 0
+  },
+  "nbk al hayah": {
+   "fund_id": "2722",
+   "printed": "NBK Al-Hayah",
+   "dates": 46,
+   "disagreements": 0
+  },
   "nbk money market": {
    "fund_id": "2723",
    "printed": "NBK Money Market",
-   "dates": 8,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار بنك الكويت الوطني مصر النقدي - إشراق"
+   "dates": 91,
+   "disagreements": 0
+  },
+  "gle": {
+   "fund_id": "2723",
+   "printed": "gle!",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "gla": {
+   "fund_id": "2723",
+   "printed": "gla!",
+   "dates": 5,
+   "disagreements": 0
+  },
+  "gli": {
+   "fund_id": "2723",
+   "printed": "gli!",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "clei": {
+   "fund_id": "2724",
+   "printed": "clei",
+   "dates": 5,
+   "disagreements": 0
+  },
+  "nbk namaa": {
+   "fund_id": "2724",
+   "printed": "NBK Namaa",
+   "dates": 46,
+   "disagreements": 0
+  },
+  "clai": {
+   "fund_id": "2724",
+   "printed": "clai",
+   "dates": 11,
+   "disagreements": 0
+  },
+  "rloi": {
+   "fund_id": "2724",
+   "printed": "rloi",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "azfi": {
+   "fund_id": "5729",
+   "printed": "AZFI-",
+   "dates": 16,
+   "disagreements": 0
   },
   "az idkhar": {
    "fund_id": "5729",
    "printed": "AZ - IDKHAR",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق أزيموت لأدوات الدخل الثابت - ادخار AZ"
+   "dates": 94,
+   "disagreements": 0
+  },
+  "jbsi azfi": {
+   "fund_id": "5729",
+   "printed": "jbsI-AZFI",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "i azfi": {
+   "fund_id": "5729",
+   "printed": "I-AZFI",
+   "dates": 11,
+   "disagreements": 0
+  },
+  "l azfi": {
+   "fund_id": "5729",
+   "printed": "l-AZFI",
+   "dates": 8,
+   "disagreements": 0
+  },
+  "lgw": {
+   "fund_id": "5737",
+   "printed": "lgw",
+   "dates": 11,
+   "disagreements": 0
   },
   "al siola ni capital": {
    "fund_id": "5737",
    "printed": "Al-Siola Fund-NI Capital",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار إن أي كابيتال النقدي - السيولة"
+   "dates": 95,
+   "disagreements": 0
+  },
+  "gw": {
+   "fund_id": "5737",
+   "printed": "gw",
+   "dates": 11,
+   "disagreements": 0
+  },
+  "ni mmfund siulafund": {
+   "fund_id": "5737",
+   "printed": "NI MMFUND-SIULAfund",
+   "dates": 14,
+   "disagreements": 0
+  },
+  "ataa charity": {
+   "fund_id": "5750",
+   "printed": "Ataa Charity Fund",
+   "dates": 8,
+   "disagreements": 0
+  },
+  "glai": {
+   "fund_id": "5751",
+   "printed": "gLai",
+   "dates": 41,
+   "disagreements": 0
   },
   "aafaq": {
    "fund_id": "5751",
    "printed": "Aafaq Investment Fund",
-   "dates": 8,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار آفاق للأوراق المالية"
+   "dates": 95,
+   "disagreements": 0
+  },
+  "glat": {
+   "fund_id": "5751",
+   "printed": "gLaT",
+   "dates": 4,
+   "disagreements": 0
+  },
+  "afaaq": {
+   "fund_id": "5751",
+   "printed": "Afaaq Fund",
+   "dates": 26,
+   "disagreements": 0
+  },
+  "az uoj": {
+   "fund_id": "5753",
+   "printed": "az-uoj",
+   "dates": 7,
+   "disagreements": 0
   },
   "az foras": {
    "fund_id": "5753",
    "printed": "AZ - FORAS",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق أزيموت لفرص الأسهم - فرص AZ"
+   "dates": 22,
+   "disagreements": 0
+  },
+  "az uoji": {
+   "fund_id": "5753",
+   "printed": "az-uoji",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "glig": {
+   "fund_id": "5784",
+   "printed": "gLig",
+   "dates": 13,
+   "disagreements": 0
   },
   "wethaq": {
    "fund_id": "5784",
    "printed": "Wethaq Investment",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار شركة وثاق للتأمين التكافلي النقدى ذو العائد اليومى الترا"
+   "dates": 26,
+   "disagreements": 0
   },
   "delta life assurance": {
    "fund_id": "5808",
    "printed": "Delta Life Assurance",
+   "dates": 95,
+   "disagreements": 0
+  },
+  "lllll": {
+   "fund_id": "5808",
+   "printed": "lllll",
    "dates": 3,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار شركة الدلتا لتأمينات الحياة"
+   "disagreements": 0
+  },
+  "soilllllli": {
+   "fund_id": "5808",
+   "printed": "soilllllli",
+   "dates": 5,
+   "disagreements": 0
+  },
+  "delta life assurancemm": {
+   "fund_id": "5808",
+   "printed": "Delta life assuranceMM",
+   "dates": 9,
+   "disagreements": 0
+  },
+  "delta life assurance mm": {
+   "fund_id": "5808",
+   "printed": "Delta life assurance MM",
+   "dates": 12,
+   "disagreements": 0
   },
   "az estehkak t27 usd": {
    "fund_id": "5809",
    "printed": "AZ - Estehkak T27 USD",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق أزيموت استحقاق 2027 - الإصدار الأول بالدولا الأمريكي"
+   "dates": 31,
+   "disagreements": 0
+  },
+  "t27gliwl az": {
+   "fund_id": "5809",
+   "printed": "T27gliwl-Az",
+   "dates": 5,
+   "disagreements": 0
   },
   "gig money market": {
    "fund_id": "5822",
    "printed": "GIG Money Market",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار شركة جي آي جي للتأمين النقدي للسيولة"
+   "dates": 92,
+   "disagreements": 0
   },
   "misr tkaful money market": {
    "fund_id": "5823",
    "printed": "Misr Tkaful Money Market",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار شركة مصر للتأمين التكافلي النقدى الإسلامي"
+   "dates": 95,
+   "disagreements": 0
+  },
+  "likilllo": {
+   "fund_id": "5823",
+   "printed": "Likilllo",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "misr takaful": {
+   "fund_id": "5823",
+   "printed": "Misr Takaful Fund",
+   "dates": 17,
+   "disagreements": 0
+  },
+  "misrtakaful": {
+   "fund_id": "5823",
+   "printed": "MisrTakaful Fund",
+   "dates": 3,
+   "disagreements": 0
   },
   "istsmar w aman": {
    "fund_id": "5901",
    "printed": "Istsmar w Aman",
+   "dates": 95,
+   "disagreements": 0
+  },
+  "jrolillraa gloig jlatwl": {
+   "fund_id": "5901",
+   "printed": "jrolillraa gloig jlatwl",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "jolill yaa jloig jlaiiwl": {
+   "fund_id": "5901",
+   "printed": "Jolill yaa jloig jlaiiwl",
    "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق مصر للتأمين حماية رأس المال - استثمار وأمان"
+   "disagreements": 0
+  },
+  "jolill yaal gloig jlaiwl": {
+   "fund_id": "5901",
+   "printed": "Jolill yaal gloig jlaiwl",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "jrolillraajloig jlawl": {
+   "fund_id": "5901",
+   "printed": "Jrolillraajloig jlawl",
+   "dates": 7,
+   "disagreements": 0
+  },
+  "olilaagloiglawl": {
+   "fund_id": "5901",
+   "printed": "olilaagloiglawl",
+   "dates": 10,
+   "disagreements": 0
   },
   "horus afim": {
    "fund_id": "5906",
    "printed": "HORUS - AFIM",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار حورس النقدي - حورس"
+   "dates": 24,
+   "disagreements": 0
   },
   "tamayoz afim": {
    "fund_id": "5988",
    "printed": "Tamayoz - AFIM",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق إستثمار شركة الأهلي لإدارة الاستثمارات المالية و صندوق التأمين ا"
+   "dates": 94,
+   "disagreements": 0
   },
-  "az gold": {
-   "fund_id": "5989",
-   "printed": "AZ-GOLD",
+  "juai": {
+   "fund_id": "5988",
+   "printed": "juai",
    "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق أزيموت للمعادن النفيسة الإسلامي - الإصدار الأول - جولد - AZ"
+   "disagreements": 0
+  },
+  "jai": {
+   "fund_id": "5988",
+   "printed": "jai",
+   "dates": 15,
+   "disagreements": 0
+  },
+  "az g": {
+   "fund_id": "5989",
+   "printed": "Az-g?",
+   "dates": 3,
+   "disagreements": 0
   },
   "beltone fixed income egp": {
    "fund_id": "6035",
    "printed": "Beltone Fixed Income EGP",
-   "dates": 3,
-   "disagreements": 0,
-   "fund_name": "صندوق بلتون للأوراق المالية ذات العائد الثابت - بي سيكيور"
+   "dates": 62,
+   "disagreements": 0
   },
   "iskan kol youm": {
    "fund_id": "6037",
    "printed": "Iskan - Kol Youm",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار شركة إسكان للتأمين النقدي - كل يوم"
+   "dates": 95,
+   "disagreements": 0
+  },
+  "iskanmm": {
+   "fund_id": "6037",
+   "printed": "ISKANMM",
+   "dates": 14,
+   "disagreements": 0
   },
   "weladna charity": {
    "fund_id": "6038",
    "printed": "Weladna Charity fund",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق الاستثمار الخيري - ولادنا"
+   "dates": 95,
+   "disagreements": 0
+  },
+  "shillislg": {
+   "fund_id": "6038",
+   "printed": "SHillisLg",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "shilllislg": {
+   "fund_id": "6038",
+   "printed": "SHillLislg",
+   "dates": 7,
+   "disagreements": 0
+  },
+  "sillislg": {
+   "fund_id": "6038",
+   "printed": "SilLislg",
+   "dates": 5,
+   "disagreements": 0
+  },
+  "sill lig": {
+   "fund_id": "6038",
+   "printed": "Sill Lig",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "silllisg": {
+   "fund_id": "6038",
+   "printed": "SillLisg",
+   "dates": 11,
+   "disagreements": 0
+  },
+  "jliall": {
+   "fund_id": "6047",
+   "printed": "jLiall",
+   "dates": 21,
+   "disagreements": 0
   },
   "el fanar cash": {
    "fund_id": "6047",
    "printed": "El Fanar Cash Fund",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "الفنار النقدي"
+   "dates": 26,
+   "disagreements": 0
+  },
+  "sabayek belton": {
+   "fund_id": "6061",
+   "printed": "Sabayek - Belton",
+   "dates": 11,
+   "disagreements": 0
   },
   "bareeq": {
    "fund_id": "6062",
    "printed": "Bareeq fund",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار بريق للدخل ثابت"
+   "dates": 26,
+   "disagreements": 0
   },
   "dahab afim": {
    "fund_id": "6120",
    "printed": "Dahab - AFIM",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار شركة الأهلي لإدارة الإستثمارات المالية وايفولف للاستثمار"
+   "dates": 22,
+   "disagreements": 0
+  },
+  "b": {
+   "fund_id": "6120",
+   "printed": "b",
+   "dates": 6,
+   "disagreements": 0
+  },
+  "maksab oz usd": {
+   "fund_id": "6121",
+   "printed": "Maksab OZ USD",
+   "dates": 11,
+   "disagreements": 0
   },
   "ciam shariah equity": {
    "fund_id": "6144",
    "printed": "CIAM - Shariah Equity",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاسثتمار في مؤشر الشريعة EGX33 - مصر"
+   "dates": 22,
+   "disagreements": 0
   },
   "mubasher equity": {
    "fund_id": "6145",
-   "printed": "Mubasher Equity Fund Price",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق مباشر للاستثمار في الأسهم المصرية - أسهم مباشر"
+   "printed": "Mubasher Equity Fund",
+   "dates": 14,
+   "disagreements": 0
   },
   "beltone egx100": {
    "fund_id": "6148",
    "printed": "Beltone EGX100 Fund",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أسهم مؤشر EGX100 - الإصدار ال"
+   "dates": 18,
+   "disagreements": 0
+  },
+  "100 00jgi": {
+   "fund_id": "6148",
+   "printed": "100/00Jgi山",
+   "dates": 3,
+   "disagreements": 0
   },
   "beltone egx33 shariah": {
    "fund_id": "6149",
    "printed": "Beltone EGX33 Shariah",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أسهم مؤشر الشريعة EGX33 - الإ"
+   "dates": 18,
+   "disagreements": 0
   },
-  "ci ctor building": {
-   "fund_id": "6197",
-   "printed": "CI-ctor Building",
+  "citechnology": {
+   "fund_id": "6198",
+   "printed": "Citechnology",
    "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
+   "disagreements": 0
   },
   "ci ctor technology": {
    "fund_id": "6198",
    "printed": "CI-ctor Technology",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
+   "dates": 22,
+   "disagreements": 0
+  },
+  "ci technology": {
+   "fund_id": "6198",
+   "printed": "Ci technology",
+   "dates": 7,
+   "disagreements": 0
   },
   "ci ctor exporting": {
    "fund_id": "6199",
    "printed": "CI-ctor Exporting",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
+   "dates": 22,
+   "disagreements": 0
   },
   "ci ctor consuming": {
    "fund_id": "6200",
    "printed": "CI-ctor Consuming",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
+   "dates": 23,
+   "disagreements": 0
+  },
+  "ci consuming": {
+   "fund_id": "6200",
+   "printed": "CI Consuming",
+   "dates": 8,
+   "disagreements": 0
+  },
+  "ci digital pay": {
+   "fund_id": "6201",
+   "printed": "Ci digital pay",
+   "dates": 11,
+   "disagreements": 0
   },
   "ci ctor digital pay": {
    "fund_id": "6201",
    "printed": "CI-ctor Digital Pay",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
+   "dates": 22,
+   "disagreements": 0
+  },
+  "beltone financial": {
+   "fund_id": "6202",
+   "printed": "Beltone Financial Fund",
+   "dates": 14,
+   "disagreements": 0
   },
   "beltone real estate": {
    "fund_id": "6203",
    "printed": "Beltone Real Estate Fund",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أسهم القطاعات العقارية - الإص"
+   "dates": 18,
+   "disagreements": 0
   },
   "beltone industrial": {
    "fund_id": "6204",
    "printed": "Beltone Industrial Fund",
+   "dates": 18,
+   "disagreements": 0
+  },
+  "beltoneconsumer": {
+   "fund_id": "6205",
+   "printed": "BeltoneConsumer",
    "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أسهم القطاعات الصناعية - الإص"
+   "disagreements": 0
   },
   "beltone consumer": {
    "fund_id": "6205",
    "printed": "Beltone Consumer",
-   "dates": 3,
-   "disagreements": 0,
-   "fund_name": "صندوق بلتون متعدد الإصدارات للاستثمار في أسهم القطاعات الاستهلاكية - ا"
+   "dates": 17,
+   "disagreements": 0
+  },
+  "beltone fixed income usd": {
+   "fund_id": "6212",
+   "printed": "Beltone Fixed Income USD",
+   "dates": 8,
+   "disagreements": 0
   },
   "kenz shariah": {
    "fund_id": "6250",
    "printed": "Kenz Shariah",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار شركة العربي الأفريقى للاستثمارات القابضة AAIH للاسثمار ف"
+   "dates": 26,
+   "disagreements": 0
   },
   "kenz foras aaih": {
    "fund_id": "6251",
    "printed": "Kenz Foras AAIH",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار شركة العربي الأفريقى للاستثمارات القابضة AAIH للاسثمار ف"
+   "dates": 26,
+   "disagreements": 0
+  },
+  "odin mmf": {
+   "fund_id": "6375",
+   "printed": "ODIN MMF",
+   "dates": 6,
+   "disagreements": 0
+  },
+  "odin equity": {
+   "fund_id": "6376",
+   "printed": "Odin Equity Fund",
+   "dates": 28,
+   "disagreements": 0
   },
   "target fixed income": {
    "fund_id": "6391",
    "printed": "Target Fixed Income Fund",
-   "dates": 8,
-   "disagreements": 0,
-   "fund_name": "صندوق تارجت الأول للدخل الثابت"
+   "dates": 92,
+   "disagreements": 0
+  },
+  "illljgillligio": {
+   "fund_id": "6391",
+   "printed": "illlJgillligio",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "illjgllligio": {
+   "fund_id": "6391",
+   "printed": "illJgllligio",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "lli": {
+   "fund_id": "6391",
+   "printed": "LlI",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "ulill jiljgill targetggi": {
+   "fund_id": "6391",
+   "printed": "ulill JilJgill Targetggi",
+   "dates": 12,
+   "disagreements": 0
+  },
+  "jliwsllj": {
+   "fund_id": "6392",
+   "printed": "jliwsllj",
+   "dates": 16,
+   "disagreements": 0
   },
   "zaldi money market": {
    "fund_id": "6392",
    "printed": "Zaldi Money Market",
-   "dates": 3,
-   "disagreements": 5,
-   "fund_name": "صندوق استثمار زالدي النقدي - زالدي استار"
+   "dates": 54,
+   "disagreements": 0
+  },
+  "jliwsallj": {
+   "fund_id": "6392",
+   "printed": "jliwsallj",
+   "dates": 6,
+   "disagreements": 0
+  },
+  "jlwsllj": {
+   "fund_id": "6392",
+   "printed": "jLwsllj",
+   "dates": 4,
+   "disagreements": 0
+  },
+  "mid": {
+   "fund_id": "6401",
+   "printed": "mid",
+   "dates": 10,
+   "disagreements": 0
+  },
+  "mie": {
+   "fund_id": "6401",
+   "printed": "mie",
+   "dates": 13,
+   "disagreements": 0
   },
   "cairo capital cumulative": {
    "fund_id": "6410",
    "printed": "Cairo Capital Cumulative",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار كايرو كابيتال التراكمي - مومنتم"
+   "dates": 22,
+   "disagreements": 0
   },
   "pfi cashi": {
    "fund_id": "6412",
    "printed": "PFI Cashi fund",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار بي إف أي للسيولة النقدية - الإصدار الأول - كاشي PFI"
+   "dates": 55,
+   "disagreements": 0
   },
   "gosour equity cumulativ": {
    "fund_id": "6442",
    "printed": "Gosour Equity Cumulativ",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "جسور للاستثمار في الأسهم"
+   "dates": 21,
+   "disagreements": 0
+  },
+  "cithequant6": {
+   "fund_id": "6451",
+   "printed": "CITHEQUANT6",
+   "dates": 10,
+   "disagreements": 0
   },
   "ci thequant 6": {
    "fund_id": "6451",
    "printed": "CI THEQUANT 6",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
+   "dates": 22,
+   "disagreements": 0
+  },
+  "ciam8issue ipo": {
+   "fund_id": "6453",
+   "printed": "CIAM8Issue-IPO",
+   "dates": 8,
+   "disagreements": 0
   },
   "ci sec 8": {
    "fund_id": "6453",
    "printed": "CI SEC 8",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
+   "dates": 22,
+   "disagreements": 0
   },
   "ci 20hd 7": {
    "fund_id": "6454",
    "printed": "CI 20HD 7",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار سي آي استس مانجمنت للاستثمار في أسهم القطاعات والصناديق "
+   "dates": 22,
+   "disagreements": 0
+  },
+  "shaallsllj": {
+   "fund_id": "6456",
+   "printed": "Shaallsllj",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "zaldi el masry": {
+   "fund_id": "6456",
+   "printed": "Zaldi El Masry Fund",
+   "dates": 6,
+   "disagreements": 0
+  },
+  "shoallsllj": {
+   "fund_id": "6456",
+   "printed": "SHOallsllj",
+   "dates": 3,
+   "disagreements": 0
+  },
+  "dollar mubasher fi": {
+   "fund_id": "6459",
+   "printed": "Dollar Mubasher FI Fund",
+   "dates": 9,
+   "disagreements": 0
   },
   "mubasher silver": {
    "fund_id": "6472",
    "printed": "Mubasher Silver Fund",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار مباشر وإمبراطورية الذهب للاستثمار في الفضة - فضة مباشر"
+   "dates": 63,
+   "disagreements": 0
+  },
+  "kenzegx70": {
+   "fund_id": "6479",
+   "printed": "KenzEGX70",
+   "dates": 13,
+   "disagreements": 0
   },
   "kenz egx70": {
    "fund_id": "6479",
    "printed": "Kenz EGX70",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار شركة العربي الأفريقي للاستثمارات القابضة AAIH للاسثمار ف"
+   "dates": 17,
+   "disagreements": 0
+  },
+  "kenzegx35lv": {
+   "fund_id": "6480",
+   "printed": "KenzEGX35LV",
+   "dates": 21,
+   "disagreements": 0
   },
   "kenz egx 35 lv": {
    "fund_id": "6480",
    "printed": "Kenz EGX 35 LV",
-   "dates": 4,
-   "disagreements": 0,
-   "fund_name": "صندوق استثمار شركة العربي الأفريقي للاستثمارات القابضة AAIH للاسثمار ف"
+   "dates": 22,
+   "disagreements": 0
   }
  },
  "quarantine": {
-  "afaaq": {
-   "fund_id": "5751",
-   "dates": 1,
-   "why": "below evidence floor"
-  },
-  "cash mubasher": {
-   "fund_id": "2665",
-   "dates": 2,
-   "why": "below evidence floor"
-  },
-  "azimut target maturity usd 2025": {
-   "fund_id": "2678",
-   "dates": 1,
-   "why": "below evidence floor"
-  },
-  "ishraq": {
-   "fund_id": "2723",
-   "dates": 1,
-   "why": "below evidence floor"
-  },
-  "rwlopgwi": {
+  "lopgwi": {
    "fund_id": "6145",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "az uoj": {
-   "fund_id": "5753",
-   "dates": 1,
-   "why": "below evidence floor"
-  },
-  "citechnology": {
-   "fund_id": "6198",
+  "cdbe": {
+   "fund_id": "6251",
    "dates": 2,
    "why": "below evidence floor"
   },
   "ciam exporting": {
-   "fund_id": "6199",
-   "dates": 2,
+   "fund_id": null,
+   "dates": 11,
    "why": "below evidence floor"
   },
-  "ci digital pay": {
-   "fund_id": "6201",
-   "dates": 2,
-   "why": "below evidence floor"
-  },
-  "ci consuming": {
+  "ciconsuming": {
    "fund_id": "6200",
-   "dates": 2,
-   "why": "below evidence floor"
-  },
-  "100 00jgi": {
-   "fund_id": "6148",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "pgiogejlilgu": {
+  "100 00jgil": {
+   "fund_id": "6148",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "pgiioge": {
    "fund_id": "6410",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "kenzegx70": {
-   "fund_id": "6479",
-   "dates": 2,
-   "why": "below evidence floor"
-  },
-  "kenzegx35lv": {
-   "fund_id": "6480",
-   "dates": 2,
-   "why": "below evidence floor"
-  },
   "ci20hd7": {
-   "fund_id": "6454",
-   "dates": 2,
+   "fund_id": null,
+   "dates": 13,
    "why": "below evidence floor"
   },
-  "ciam8issue ipo": {
-   "fund_id": "6453",
-   "dates": 2,
-   "why": "below evidence floor"
-  },
-  "cithequant6": {
-   "fund_id": "6451",
-   "dates": 2,
-   "why": "below evidence floor"
-  },
-  "egymubmca": {
-   "fund_id": "2665",
+  "likill rsiilyao": {
+   "fund_id": "5823",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "beltone financial": {
-   "fund_id": "6202",
+  "yag ugil": {
+   "fund_id": "6149",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "srilllilg": {
+   "fund_id": "6038",
    "dates": 2,
    "why": "below evidence floor"
   },
-  "granite": {
-   "fund_id": "6411",
+  "olill paa gloig latwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "l w": {
+   "fund_id": "6037",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "lllli": {
+   "fund_id": "5808",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "iljllio": {
+   "fund_id": "6391",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "gly": {
+   "fund_id": "2723",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ci ctor building": {
+   "fund_id": null,
+   "dates": 23,
+   "why": "below evidence floor"
+  },
+  "az gold": {
+   "fund_id": null,
+   "dates": 23,
+   "why": "below evidence floor"
+  },
+  "srilllislg": {
+   "fund_id": "6038",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "azfi j": {
+   "fund_id": "5729",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "mi6re": {
+   "fund_id": "5737",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "oilpaa gloiglaiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jei": {
+   "fund_id": "5988",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "illjgilligio": {
+   "fund_id": "6391",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "glya": {
+   "fund_id": "2723",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "elio powi": {
+   "fund_id": "6145",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "az d": {
+   "fund_id": "5753",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "pgioge": {
+   "fund_id": "6410",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "cb": {
+   "fund_id": "6120",
    "dates": 2,
    "why": "below evidence floor"
   },
-  "beltone fixed income usd": {
+  "sllgi gil": {
    "fund_id": "6212",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "t27glwl az": {
+   "fund_id": "5809",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "qiivollcel": {
+   "fund_id": "6488",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "likillilla": {
+   "fund_id": "5823",
    "dates": 2,
    "why": "below evidence floor"
   },
-  "target second issuance": {
-   "fund_id": "6488",
+  "ojag ugil": {
+   "fund_id": null,
    "dates": 2,
+   "why": "below evidence floor"
+  },
+  "g az": {
+   "fund_id": null,
+   "dates": 7,
    "why": "below evidence floor"
   },
   "lo pgwi": {
@@ -437,12 +902,7 @@
    "dates": 1,
    "why": "below evidence floor"
   },
-  "az uoji": {
-   "fund_id": "5753",
-   "dates": 1,
-   "why": "below evidence floor"
-  },
-  "gligslpe": {
+  "gigslpe": {
    "fund_id": "5903",
    "dates": 1,
    "why": "below evidence floor"
@@ -457,73 +917,778 @@
    "dates": 1,
    "why": "below evidence floor"
   },
-  "likillilla": {
+  "joillraa gloig jlaiwl": {
+   "fund_id": "5901",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "juoi": {
+   "fund_id": "5988",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "illllliii": {
+   "fund_id": "5808",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ciam misr equity": {
+   "fund_id": null,
+   "dates": 20,
+   "why": "below evidence floor"
+  },
+  "ciam misr al youmy": {
+   "fund_id": null,
+   "dates": 20,
+   "why": "below evidence floor"
+  },
+  "granite": {
+   "fund_id": "6411",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "target second issuance": {
+   "fund_id": "6488",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "rwlopgwi": {
+   "fund_id": "6145",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "pgiiogejlilgu": {
+   "fund_id": "6410",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "liklljllo": {
    "fund_id": "5823",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "ojag ugil": {
+  "jag ugil": {
+   "fund_id": "6149",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "illli": {
+   "fund_id": null,
+   "dates": 9,
+   "why": "below evidence floor"
+  },
+  "2lllgi": {
+   "fund_id": "6375",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "illljgllligio": {
+   "fund_id": "6391",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "odin money market": {
+   "fund_id": null,
+   "dates": 46,
+   "why": "below evidence floor"
+  },
+  "liilil": {
+   "fund_id": "5823",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jolillraa gloig jlaiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "illlliii": {
+   "fund_id": "5808",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jliw sallj": {
+   "fund_id": "6392",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ilio pgwi": {
+   "fund_id": "6145",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "100 100 jgil": {
+   "fund_id": "6148",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "pgiogojlig": {
+   "fund_id": "6410",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "liillil": {
+   "fund_id": "5823",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ojig ugil": {
    "fund_id": "6149",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "g az": {
-   "fund_id": "5989",
+  "shillilg": {
+   "fund_id": "6038",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "clp": {
+   "fund_id": "5976",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "sllgi gil": {
-   "fund_id": "6212",
+  "illlii": {
+   "fund_id": "5808",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "t27glwl az": {
+  "bokra gold": {
+   "fund_id": null,
+   "dates": 10,
+   "why": "below evidence floor"
+  },
+  "t27 gliwl az": {
    "fund_id": "5809",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "qiillvollceli": {
-   "fund_id": "6488",
+  "likllla": {
+   "fund_id": "5823",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "odin money market": {
+  "ji azfi": {
+   "fund_id": "5729",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jroillraa gloig jlatwl": {
+   "fund_id": "5901",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "illjglligio": {
+   "fund_id": "6391",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "pgiogejliulg": {
+   "fund_id": "6410",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "iggvio": {
+   "fund_id": "6376",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "liojilg": {
+   "fund_id": "6459",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "jolillraa gloig jlatwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "cuilya": {
+   "fund_id": "6411",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "lopowi": {
+   "fund_id": "6145",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "shilllisg": {
+   "fund_id": "6038",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "lai": {
+   "fund_id": "5751",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "joillraa gloig jlatwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jrolillraagloig jlatwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jrai": {
+   "fund_id": "5988",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jolillraagloig jlatwl": {
+   "fund_id": "5901",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "silllislg": {
+   "fund_id": "6038",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "algw": {
+   "fund_id": "5737",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "likllllo": {
+   "fund_id": "5823",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "roillraagloig jlatwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "liklllo": {
+   "fund_id": "5823",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "illlli": {
+   "fund_id": "5808",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "ijjgligi": {
+   "fund_id": "6391",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "likilljllo": {
+   "fund_id": "5823",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "bi azfi": {
+   "fund_id": "5729",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jolill yaa jloig jlatiwl": {
+   "fund_id": "5901",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "illlllil": {
+   "fund_id": "5808",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "likillllo": {
+   "fund_id": "5823",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "likillsla": {
+   "fund_id": "5823",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jolill yaa jloig laiiwl": {
+   "fund_id": "5901",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "silllllil": {
+   "fund_id": "5808",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "2lllusgi": {
+   "fund_id": "6401",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "kenzecx70": {
+   "fund_id": "6479",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "soilllllil": {
+   "fund_id": "5808",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "2lllagi": {
    "fund_id": "6375",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "ataa charity": {
-   "fund_id": "5750",
-   "dates": 2,
-   "why": "below evidence floor"
-  },
-  "sabayek belton": {
-   "fund_id": "6061",
+  "liklllla": {
+   "fund_id": "5823",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "odin equity": {
-   "fund_id": "6376",
-   "dates": 2,
-   "why": "below evidence floor"
-  },
-  "bokra gold": {
-   "fund_id": "6467",
-   "dates": 1,
-   "why": "below evidence floor"
-  },
-  "maksab oz usd": {
+  "jgilloillozw": {
    "fund_id": "6121",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "zaldi el masry": {
+  "jag ugi": {
+   "fund_id": "6149",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "pgiogejliug": {
+   "fund_id": "6410",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jolill yaa gloig laiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "cogllp": {
+   "fund_id": "5976",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "illjglllio": {
+   "fund_id": "6391",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "jgilloilozus": {
+   "fund_id": "6121",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "oilpaa gloig jlaiiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "sailllalllilil": {
+   "fund_id": "5808",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "likillillo": {
+   "fund_id": "5823",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jolill yaa jloig latiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "az uoja": {
+   "fund_id": "5753",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jolill aa jloig laiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "silllllli": {
+   "fund_id": "5808",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "jolill yaa gloig laiiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "liall": {
+   "fund_id": "6047",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "illjgllli": {
    "fund_id": "6456",
    "dates": 1,
    "why": "below evidence floor"
   },
-  "dollar mubasher fi": {
-   "fund_id": "6459",
+  "izio": {
+   "fund_id": "6376",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "soilllllioill": {
+   "fund_id": "5808",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "sill islg": {
+   "fund_id": "6038",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jolill yaa jloig jlaitwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "soillllliill": {
+   "fund_id": "5808",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "soillllliil": {
+   "fund_id": "5808",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "l": {
+   "fund_id": null,
+   "dates": 17,
+   "why": "below evidence floor"
+  },
+  "li": {
+   "fund_id": null,
+   "dates": 7,
+   "why": "below evidence floor"
+  },
+  "oillaa loig laiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "oillaa loig jlaiwl": {
+   "fund_id": "5901",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "sillllllioi": {
+   "fund_id": "5808",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "jolill aal gloig jlaiwl": {
+   "fund_id": "5901",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "j uwl": {
+   "fund_id": "6037",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "silllllalioi": {
+   "fund_id": "5808",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "gl": {
+   "fund_id": "2723",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "os": {
+   "fund_id": "6251",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "iiggzio": {
+   "fund_id": "6376",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jolillaa gloig laiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "clep": {
+   "fund_id": "5976",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "silllll lioi": {
+   "fund_id": "5808",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "seillgsi": {
+   "fund_id": "5822",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "joill aa loig jlaiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "silllll alioi": {
+   "fund_id": "5808",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "eillsi": {
+   "fund_id": "5822",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "glli": {
+   "fund_id": "6391",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "silllll alioii": {
+   "fund_id": "5808",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "kenzforas": {
+   "fund_id": "6251",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ciamexporting": {
+   "fund_id": "6199",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ci consumer": {
+   "fund_id": "6200",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "beltoneegx100": {
+   "fund_id": "6148",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "sill isg": {
+   "fund_id": "6038",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "glll sgi": {
+   "fund_id": "6375",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "cls": {
+   "fund_id": "6412",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "oillaa jloig laiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ilo pewi": {
+   "fund_id": "6145",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "wl": {
+   "fund_id": "6037",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "gllgi": {
+   "fund_id": "6375",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "igllii": {
+   "fund_id": "6391",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "oillaa jloig jlaiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jolillaa loig jlaiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "silllall alioii": {
+   "fund_id": "5808",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "joillaa jloig jlaiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "shilllilg": {
+   "fund_id": "6038",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jolill aal gloig laiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ja": {
+   "fund_id": "5988",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "2gj uwl": {
+   "fund_id": "6037",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "illllllioi": {
+   "fund_id": "5808",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jrolillraajloig jlaiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jrolill gaa gloigjlaiiwl": {
+   "fund_id": "5901",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "illllli": {
+   "fund_id": "5808",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "sillsi": {
+   "fund_id": "5822",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "silllilg": {
+   "fund_id": "6038",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "jrolillaajloiglaiwl": {
+   "fund_id": "5901",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "w": {
+   "fund_id": "6037",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "jlii": {
+   "fund_id": "6391",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "glre": {
+   "fund_id": "2723",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "dahab mubasher": {
+   "fund_id": "6400",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "2llll gi": {
+   "fund_id": "6375",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "illjlljgill targetgi": {
+   "fund_id": "6391",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ligi": {
+   "fund_id": "6376",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "alhayah hayat": {
+   "fund_id": "2722",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ishraq": {
+   "fund_id": "2723",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "namaa": {
+   "fund_id": "2724",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "target mm target first": {
+   "fund_id": "6391",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "azimut target maturity usd": {
+   "fund_id": "5809",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "jliw sllj": {
+   "fund_id": "6392",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "iiggi": {
+   "fund_id": "6376",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "rlai": {
+   "fund_id": "2724",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "olllillllliall": {
+   "fund_id": "2730",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "ulilljilljgill targetggi": {
+   "fund_id": "6391",
+   "dates": 2,
+   "why": "below evidence floor"
+  },
+  "oiaaloiglaiwl": {
+   "fund_id": "5901",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "nloi": {
+   "fund_id": "2724",
+   "dates": 1,
+   "why": "below evidence floor"
+  },
+  "illjiljgill targetgi": {
+   "fund_id": "6391",
    "dates": 1,
    "why": "below evidence floor"
   }

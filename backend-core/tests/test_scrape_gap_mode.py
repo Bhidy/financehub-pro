@@ -86,3 +86,26 @@ def test_every_upsert_parameter_is_cast():
     assert "$1::text, $2::text, $2::text" in SRC
     assert "$6::numeric, $7::date" in SRC
     assert "$1::text, $2::date, $3::numeric" in SRC, "the nav_history insert too"
+
+
+def test_chart_timestamps_are_read_as_utc():
+    """Highcharts sends epoch ms at UTC midnight. datetime.fromtimestamp reads
+    them in the RUNNER's timezone, which dated every point one day early: the
+    first live run wrote 13,313 rows and 100% of them were one-day-shifted
+    duplicates carrying the NEXT day's value."""
+    assert "datetime.fromtimestamp(ts / 1000.0, timezone.utc)" in SRC
+    assert "from datetime import datetime, timezone" in SRC
+    assert "datetime.fromtimestamp(ts / 1000.0).date()" not in SRC
+
+
+def test_the_purge_touches_only_this_script_s_rows():
+    assert 'SOURCE_TAG = "mubasher_page"' in SRC
+    assert re.search(r"DELETE FROM nav_history WHERE source = \$1 RETURNING fund_id", SRC)
+
+
+def test_the_purge_needs_no_browser():
+    """It exists to undo a bad write, so it must not depend on the site being
+    reachable, or on logging in."""
+    m = re.search(r"if purge:\s*\n\s*try:\s*\n\s*await purge_scraped\(conn\)[\s\S]{0,120}?return", SRC)
+    assert m, "purge must run and return before async_playwright is entered"
+    assert SRC.index("if purge:") < SRC.index("async with async_playwright")

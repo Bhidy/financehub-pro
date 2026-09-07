@@ -4,7 +4,7 @@ import os
 import csv
 import aiohttp
 import asyncpg
-from datetime import datetime
+from datetime import datetime, timezone
 from playwright.async_api import async_playwright
 from dotenv import load_dotenv
 import io
@@ -216,7 +216,17 @@ async def extract_highcharts_history(page):
                 
                 if ts and val is not None:
                      try:
-                        dt = datetime.fromtimestamp(ts / 1000.0).date()
+                        # UTC, NOT LOCAL TIME. Highcharts sends epoch
+                        # milliseconds at UTC midnight; datetime.fromtimestamp
+                        # reads them in the RUNNER's timezone, which put every
+                        # single point on the previous day. Measured on the
+                        # first live run: 13,313 rows written, and 100% of them
+                        # (1573/1573, 1047/1047, 273/273 on the funds checked)
+                        # were one-day-shifted duplicates carrying the NEXT
+                        # day's value. That is worse than a missing point — it
+                        # makes a weekly fund look like it publishes twice a
+                        # week and corrupts cadence, gaps and every return.
+                        dt = datetime.fromtimestamp(ts / 1000.0, timezone.utc).date()
                         history.append({'date': dt, 'nav': float(val)})
                      except Exception: pass
         return history
@@ -344,10 +354,40 @@ async def gapped_fund_ids(conn) -> set:
     return {r["fund_id"] for r in rows}
 
 
-async def main(test_mode=False, gaps_only=False):
+SOURCE_TAG = "mubasher_page"
+
+
+async def purge_scraped(conn) -> int:
+    """Remove rows THIS script wrote, and only those.
+
+    Needed the day gap mode shipped: a timezone bug dated every scraped point
+    one day early, so 13,313 rows landed carrying the following day's value.
+    Every one is re-derivable, so the safe repair is to drop the source and
+    re-run the fixed reader rather than hand-pick duplicates.
+
+    The source filter is what makes this impossible to turn into an accident:
+    no vendor observation, and no other pipeline's row, can be reached from here.
+    """
+    rows = await conn.fetch(
+        "DELETE FROM nav_history WHERE source = $1 RETURNING fund_id", SOURCE_TAG)
+    funds = sorted({r["fund_id"] for r in rows})
+    print(f"🧹 PURGED {len(rows)} '{SOURCE_TAG}' row(s) across {len(funds)} fund(s).")
+    return len(rows)
+
+
+async def main(test_mode=False, gaps_only=False, purge=False):
     print("🚀 Mubasher Scraper Started (Authenticated Mode)")
     conn = await get_db_connection()
-    
+
+    # Purge before anything else, and never open a browser for it: this exists
+    # to undo a bad write, so it must not depend on the site being reachable.
+    if purge:
+        try:
+            await purge_scraped(conn)
+        finally:
+            await conn.close()
+        return
+
     async with async_playwright() as p:
         browser = await p.chromium.launch(
             headless=True,
@@ -459,4 +499,5 @@ if __name__ == "__main__":
     import sys
     test = '--test' in sys.argv
     gaps = '--gaps-only' in sys.argv
-    asyncio.run(main(test, gaps))
+    purge = '--purge-scraped' in sys.argv
+    asyncio.run(main(test, gaps, purge))

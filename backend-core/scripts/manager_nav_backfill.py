@@ -91,12 +91,37 @@ DEFAULT_DELAY = 1.5
 
 SOURCE_AZIMUT = "azimut_site"
 SOURCE_CICAP = "cicapital_site"
+SOURCE_MUBNEWS = "mubasher_news_archive"
 
 # ── mapping thresholds (published source; see the module docstring) ──────────
 MIN_OVERLAP_POINTS = 3      # fewer than this and the mapping is unproven
 MAX_MEDIAN_ERR_PCT = 0.75   # typical agreement must be tight
 TAIL_ERR_PCT = 3.0          # a point above this counts toward the tail
 MAX_TAIL_FRACTION = 0.01    # at most 1% of overlapping points may be in it
+
+# ── THE EXACT ANCHOR ────────────────────────────────────────────────────────
+# A dense series overlapping ours for years is one kind of proof. A table that
+# overlaps on ONE date is another, and refusing it would be a mistake:
+#
+#   2025-04-06, Mubasher's own price table vs NAV we already hold —
+#     CI Sectors Issuance 1 (Building)    10.87693  ours 10.8769   0.000%
+#     CI Sectors Issuance 2 (Technology)  10.06175  ours 10.0617   0.000%
+#     CI Sectors Issuance 3 (Export)      10.18701  ours 10.1870   0.000%
+#     CI Sectors Issuance 4 (Consumption) 11.65593  ours 11.6559   0.000%
+#     CI Sectors Issuance 5 (E-payment)   10.77616  ours 10.7762   0.000%
+#     Weladna Charitable                  12.68316  ours 12.6832   0.000%
+#     Horus (AFIM / EgyptAir)             15.78626  ours 15.7863   0.000%
+#
+# Six significant figures agreeing is not a coincidence, and the five CI
+# siblings carry DIFFERENT values, so a swap between them would show. This is
+# stronger evidence than a hundred loose matches — the reason the ordinary floor
+# is three is that a loose match needs repetition to mean anything, and an exact
+# one does not.
+#
+# The safeguard is that it must be exact and UNCONTRADICTED: every overlapping
+# observation must agree this closely, not merely one of them.
+EXACT_ANCHOR_PCT = 0.05     # six-figure agreement, i.e. the same published number
+MIN_EXACT_ANCHORS = 1
 
 SQL_INSERT = """INSERT INTO nav_history (fund_id, date, nav, source, source_url, ingested_at)
    SELECT fid, d, nav, src, url, NOW()
@@ -263,7 +288,107 @@ def fetch_cicapital(sess, delay: float) -> dict[str, dict]:
     return out
 
 
-SOURCES = {"azimut": fetch_azimut, "cicapital": fetch_cicapital}
+# ── source: Mubasher's own published price table, from the public archive ────
+#
+# THE VENDOR HAD THE DATA THE WHOLE TIME.
+# Mubasher's per-fund price FILE froze on 2025-05-14 and that is what opened the
+# hole. Their news desk went on publishing "Prices of investment funds including
+# certificates in EGP, USD" throughout — a full table of every fund with its unit
+# price and an explicit as-of date. Different system, same publisher. The live
+# article is behind a sign-in wall; the Internet Archive holds 114 of them, 112
+# with capture dates inside the hole.
+#
+# Two of those articles predate the freeze, which is what makes the mapping
+# provable rather than assumed: on 2025-04-06 the table's numbers match NAV we
+# already hold to six significant figures, for every fund that later went dark.
+
+MUBASHER_CDX = ("http://web.archive.org/cdx/search/cdx?url=english.mubasher.info%2Fnews%2F*"
+                "&output=json&filter=statuscode:200"
+                "&filter=original:.*Prices-of-investment-funds.*"
+                "&collapse=urlkey&limit=2000")
+WAYBACK = "http://web.archive.org/web/{ts}/{url}"
+
+# "Fund Name: X (y) Price per Certificate (EGP): 12.68316"
+_ROW = re.compile(r"Fund Name:\s*(.+?)\s*Price per Certificate \((EGP|USD|EUR)\):"
+                  r"\s*([0-9][0-9,]*\.?[0-9]*)")
+# "...as of 14 October, compared to the previous prices" — no year, ever.
+_ASOF = re.compile(r"as of (\d{1,2}) ([A-Z][a-z]+)")
+
+
+def _article_date(text: str, capture_ts: str) -> str | None:
+    """The as-of date, with the year the article never states.
+
+    The only sound way to supply it is the capture: an article is archived after
+    it is published, so the as-of date is the most recent calendar date matching
+    that day and month which is not in the capture's future and not absurdly far
+    behind it. Twenty days of slack covers a late crawl; anything wider would let
+    a January article claim the previous year.
+    """
+    m = _ASOF.search(text)
+    if not m:
+        return None
+    cap = date(int(capture_ts[:4]), int(capture_ts[4:6]), int(capture_ts[6:8]))
+    day, mon = int(m.group(1)), _MONTHS.get(m.group(2))
+    if not mon:
+        return None
+    for year in (cap.year, cap.year - 1):
+        try:
+            cand = date(year, mon, day)
+        except ValueError:
+            continue
+        if 0 <= (cap - cand).days <= 20:
+            return cand.isoformat()
+    return None
+
+
+def fetch_mubasher_news(sess, delay: float) -> dict[str, dict]:
+    out: dict[str, dict] = {}
+    try:
+        rows = sess.get(MUBASHER_CDX, headers={"user-agent": UA}, timeout=120).json()
+    except Exception as e:  # noqa: BLE001
+        print(f"[manager] mubasher_news: CDX unavailable ({type(e).__name__})", flush=True)
+        return out
+    arts = [(r[1], r[2]) for r in rows[1:]] if rows else []
+    print(f"[manager] mubasher_news: {len(arts)} archived price articles", flush=True)
+
+    seen_dates: set[str] = set()
+    parsed = 0
+    for ts, url in sorted(arts):
+        time.sleep(delay)
+        snap = WAYBACK.format(ts=ts, url=url)
+        try:
+            raw = sess.get(snap, headers={"user-agent": UA}, timeout=120).text
+        except Exception:  # noqa: BLE001 — one capture must not stop the sweep
+            continue
+        body = re.sub(r"<script.*?</script>", "", raw, flags=re.S)
+        text = html.unescape(re.sub(r"<[^>]+>", " ", body))
+        text = re.sub(r"\s+", " ", text)
+        when = _article_date(text, ts)
+        if not when or when in seen_dates:
+            continue
+        rowsx = _ROW.findall(text)
+        if not rowsx:
+            continue
+        seen_dates.add(when)
+        parsed += 1
+        for name, cur, val in rowsx:
+            try:
+                v = float(val.replace(",", ""))
+            except ValueError:
+                continue
+            if not (1e-6 < v < 1e9):
+                continue
+            label = f"{name.strip()} [{cur}]"
+            rec = out.setdefault(label, {"pts": {}, "url": snap,
+                                         "source": SOURCE_MUBNEWS})
+            rec["pts"].setdefault(when, v)
+    print(f"[manager] mubasher_news: {len(out)} fund names across {parsed} "
+          f"publication dates", flush=True)
+    return out
+
+
+SOURCES = {"azimut": fetch_azimut, "cicapital": fetch_cicapital,
+           "mubasher_news": fetch_mubasher_news}
 
 
 # ── mapping, decided by data ─────────────────────────────────────────────────
@@ -277,9 +402,15 @@ def reconcile(pts: dict[str, float], held: dict[str, float]) -> dict:
     errs = [abs(v - held[d]) / held[d] * 100.0
             for d, v in pts.items() if d in held and held[d]]
     n = len(errs)
+    if n and max(errs) <= EXACT_ANCHOR_PCT and n >= MIN_EXACT_ANCHORS:
+        # Every overlapping observation is the SAME published number. See
+        # EXACT_ANCHOR_PCT above for why this outranks the ordinary floor.
+        return {"ok": True, "overlap": n, "median": median(errs), "tail": 0.0,
+                "why": "", "exact": True}
     if n < MIN_OVERLAP_POINTS:
         return {"ok": False, "overlap": n, "median": None, "tail": None,
-                "why": f"only {n} overlapping observation(s), need {MIN_OVERLAP_POINTS}"}
+                "why": f"only {n} overlapping observation(s), need "
+                       f"{MIN_OVERLAP_POINTS} (or one exact match)"}
     med = median(errs)
     tail = sum(1 for e in errs if e > TAIL_ERR_PCT) / n
     ok = med <= MAX_MEDIAN_ERR_PCT and tail <= MAX_TAIL_FRACTION
@@ -288,7 +419,8 @@ def reconcile(pts: dict[str, float], held: dict[str, float]) -> dict:
         why = (f"median {med:.3f}% (max {MAX_MEDIAN_ERR_PCT}%)"
                if med > MAX_MEDIAN_ERR_PCT
                else f"{tail*100:.1f}% of points off by >{TAIL_ERR_PCT}%")
-    return {"ok": ok, "overlap": n, "median": med, "tail": tail, "why": why}
+    return {"ok": ok, "overlap": n, "median": med, "tail": tail, "why": why,
+            "exact": False}
 
 
 def norm(s: str) -> str:
@@ -343,7 +475,7 @@ async def run(dry_run: bool, only: str | None, only_ids: list[str] | None,
                     "SELECT date, nav, source FROM nav_history WHERE fund_id = $1", fid)
                 all_cache[fid] = {r["date"].isoformat(): float(r["nav"]) for r in rows}
                 held_cache[fid] = {r["date"].isoformat(): float(r["nav"]) for r in rows
-                                   if (r["source"] or "") not in (SOURCE_AZIMUT, SOURCE_CICAP)}
+                                   if (r["source"] or "") not in (SOURCE_AZIMUT, SOURCE_CICAP, SOURCE_MUBNEWS)}
             return held_cache[fid]
 
         # Score every (series, fund) pair the name makes plausible, then assign

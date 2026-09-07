@@ -58,9 +58,13 @@ def test_a_tail_of_genuinely_wrong_points_does_break_it():
     assert not reconcile(pts, held)["ok"]
 
 
-def test_too_little_overlap_is_never_written_hopefully():
+def test_too_little_overlap_and_only_approximate_is_refused():
+    """Two loose matches prove nothing. Repetition is what makes a loose match
+    mean something, which is why the ordinary floor is three."""
     held = {"2025-01-01": 10.0, "2025-01-02": 10.1}
-    assert not reconcile({d: v for d, v in held.items()}, held)["ok"]
+    pts = {"2025-01-01": 10.02, "2025-01-02": 10.12}      # ~0.2% out
+    v = reconcile(pts, held)
+    assert not v["ok"] and v["overlap"] == 2
 
 
 def test_no_overlap_at_all_is_refused():
@@ -137,3 +141,68 @@ def test_whitespace_between_cells_does_not_hide_a_row():
             "  <tr>\n    <td>Next Fund</td>\n    <td>13.18</td>\n  </tr>\n</table>")
     _, prices = parse(page)
     assert prices["Spaced Fund"] == 12.51 and prices["Next Fund"] == 13.18
+
+
+# ── the exact anchor ─────────────────────────────────────────────────────────
+
+def test_one_six_figure_match_is_enough():
+    """Mubasher's own table on 2025-04-06 vs NAV we hold, for the funds that
+    later went dark. Six significant figures agreeing is not a coincidence."""
+    held = {"2025-04-06": 10.8769}
+    assert reconcile({"2025-04-06": 10.87693}, held)["ok"]
+
+
+def test_the_five_ci_siblings_are_told_apart_by_value():
+    """A swap inside the family must fail. Their published values differ."""
+    family = {"6197": 10.8769, "6198": 10.0617, "6199": 10.1870,
+              "6200": 11.6559, "6201": 10.7762}
+    theirs = {"6197": 10.87693, "6198": 10.06175, "6199": 10.18701,
+              "6200": 11.65593, "6201": 10.77616}
+    for fid, v in theirs.items():
+        assert reconcile({"2025-04-06": v}, {"2025-04-06": family[fid]})["ok"]
+        for other, held in family.items():
+            if other != fid:
+                assert not reconcile({"2025-04-06": v}, {"2025-04-06": held})["ok"], \
+                    f"{fid} must not validate against {other}"
+
+
+def test_an_exact_match_contradicted_elsewhere_is_refused():
+    """One agreeing date does not license a series that disagrees on another."""
+    held = {"2025-04-06": 10.8769, "2025-04-07": 10.90}
+    pts = {"2025-04-06": 10.87693, "2025-04-07": 12.50}
+    assert not reconcile(pts, held)["ok"]
+
+
+def test_a_near_miss_is_not_an_exact_anchor():
+    """0.004% is the same number; 4% is a different fund. Maksab USD matched our
+    6121 at 0.004% and our 6193 at 4.567% — only one of those is the fund."""
+    assert reconcile({"2025-04-06": 1.05644}, {"2025-04-06": 1.0564})["ok"]
+    assert not reconcile({"2025-04-06": 1.05644}, {"2025-04-06": 1.0103})["ok"]
+
+
+# ── the year the article never states ────────────────────────────────────────
+
+article_date = mnb._article_date
+
+
+def test_the_as_of_year_comes_from_the_capture():
+    text = "prices as of 14 October, compared to the previous prices"
+    assert article_date(text, "20251029115735") == "2025-10-14"
+
+
+def test_a_january_article_archived_in_january_does_not_slip_a_year():
+    assert article_date("as of 3 January, compared", "20260108000000") == "2026-01-03"
+
+
+def test_a_december_article_archived_in_january_takes_the_previous_year():
+    assert article_date("as of 28 December, compared", "20260105000000") == "2025-12-28"
+
+
+def test_an_as_of_date_too_far_from_the_capture_is_refused():
+    """Twenty days of slack covers a late crawl. Wider would let an article
+    claim a date it cannot support."""
+    assert article_date("as of 1 March, compared", "20251029115735") is None
+
+
+def test_no_as_of_line_means_no_date():
+    assert article_date("Prices of investment funds", "20251029115735") is None

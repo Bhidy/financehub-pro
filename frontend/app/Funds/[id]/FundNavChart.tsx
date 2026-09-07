@@ -62,8 +62,8 @@ const EN = {
     emptySub: 'This chart appears automatically once enough NAV history is saved.',
     gapNotice: (n: number, longest: number) =>
         n === 1
-            ? `The line breaks where no NAV was published — a gap of ${longest} days. Nothing has been estimated across it.`
-            : `The line breaks in ${n} places where no NAV was published, the longest ${longest} days. Nothing has been estimated across them.`,
+            ? `A dashed segment spans ${longest} days where no NAV was published. It joins two real prices; nothing in between has been estimated.`
+            : `Dashed segments span ${n} periods where no NAV was published, the longest ${longest} days. Each joins two real prices; nothing in between has been estimated.`,
 };
 
 // Typed against EN so a key added to one language and forgotten in the other is a
@@ -79,8 +79,8 @@ const AR: typeof EN = {
     emptySub: 'يظهر هذا الرسم تلقائيًا بمجرد حفظ سجل كافٍ لصافي قيمة الأصول.',
     gapNotice: (n: number, longest: number) =>
         n === 1
-            ? `ينقطع الخط حيث لم يُعلن عن صافي قيمة الأصول — فجوة مدتها ${longest} يومًا. لم يُقدَّر أي رقم عبرها.`
-            : `ينقطع الخط في ${n} مواضع لم يُعلن فيها عن صافي قيمة الأصول، أطولها ${longest} يومًا. لم يُقدَّر أي رقم عبرها.`,
+            ? `يمتد خط متقطع عبر ${longest} يومًا لم يُعلن فيها عن صافي قيمة الأصول. يصل بين سعرين حقيقيين، ولم يُقدَّر أي رقم بينهما.`
+            : `تمتد خطوط متقطعة عبر ${n} فترات لم يُعلن فيها عن صافي قيمة الأصول، أطولها ${longest} يومًا. كل منها يصل بين سعرين حقيقيين، ولم يُقدَّر أي رقم بينهما.`,
 };
 
 function rangeCutoff(range: Range): number | null {
@@ -127,6 +127,8 @@ export default function FundNavChart({
     const extraSeriesRef = useRef<any[]>([]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const makeSeriesRef = useRef<(() => any) | null>(null);
+    const makeBridgeRef = useRef<(() => any) | null>(null);
+    const bridgeSeriesRef = useRef<any[]>([]);
     // The currently-drawn (range-filtered) series — read by the hover overlay so
     // cursor→index resolution always matches what's on screen.
     const viewRef = useRef<Point[]>([]);
@@ -265,6 +267,10 @@ export default function FundNavChart({
                 try { chart.removeSeries(s); } catch { /* already gone */ }
             }
             extraSeriesRef.current = [];
+            for (const s of bridgeSeriesRef.current) {
+                try { chart.removeSeries(s); } catch { /* already gone */ }
+            }
+            bridgeSeriesRef.current = [];
 
             // One series per contiguous run: across a real hole there is simply no
             // series to draw, so nothing can be interpolated. Whitespace still goes
@@ -315,6 +321,21 @@ export default function FundNavChart({
                     if (!extra) break;
                     extra.setData(run);
                     extraSeriesRef.current.push(extra);
+                }
+                // Join each run to the next, so the eye follows one line end to
+                // end instead of reading a hole as a broken chart. Two points,
+                // both real; the dash says the span between them is unobserved.
+                for (let i = 0; i < runs.length - 1; i++) {
+                    const left = runs[i][runs[i].length - 1];
+                    const right = runs[i + 1][0];
+                    if (!left || !right) continue;
+                    const bridge = makeBridgeRef.current?.();
+                    if (!bridge) break;
+                    bridge.setData([
+                        { time: left.time, value: left.value },
+                        { time: right.time, value: right.value },
+                    ]);
+                    bridgeSeriesRef.current.push(bridge);
                 }
             }
 
@@ -408,6 +429,23 @@ export default function FundNavChart({
                     ...seriesOptions,
                     priceLineVisible: false,
                     lastValueVisible: false,
+                });
+            // The BRIDGE. A hole used to leave the line severed, which reads as a
+            // broken chart even though it was the honest rendering. So the runs
+            // are now joined — but a bridge is drawn as a thin DASHED line with no
+            // area fill, between two REAL observations and nothing in between. No
+            // value is invented: the segment has exactly two points, both measured.
+            // Solid-filling it would assert a path through the hole that nobody
+            // published, on a chart people price decisions against.
+            makeBridgeRef.current = () =>
+                chart.addSeries(LWC.LineSeries, {
+                    color: 'rgba(20, 184, 166, 0.45)',
+                    lineWidth: 1,
+                    lineStyle: 2,                 // dashed
+                    priceLineVisible: false,
+                    lastValueVisible: false,
+                    crosshairMarkerVisible: false,
+                    pointMarkersVisible: false,
                 });
 
             chartRef.current = chart;
@@ -598,7 +636,9 @@ export default function FundNavChart({
             chartRef.current = null;
             // chart.remove() above disposes every series with it; just drop the refs.
             extraSeriesRef.current = [];
+            bridgeSeriesRef.current = [];
             makeSeriesRef.current = null;
+            makeBridgeRef.current = null;
             seriesRef.current = null;
         };
         // Rebuild only when the dataset identity changes, not on range flips.

@@ -21,7 +21,8 @@ name: Funds NAV Statement Backfill
 #
 # POLITENESS: mubasher.info robots.txt allows /news/ for every agent and asks
 # for Crawl-delay: 5. The fetcher honours it, which is why each run takes a
-# bounded slice rather than the whole manifest.
+# bounded slice — and why the article cache below is PERSISTENT: re-fetching
+# statements we have already read is pure waste on their side and ours.
 # ============================================================
 
 on:
@@ -49,11 +50,18 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # Persists across runs, unlike RUNNER_TEMP. Statements are immutable once
+  # published, so a cached article never needs re-reading.
+  STATEMENT_CACHE: /home/github-runner/.cache/mubasher-statements
+
 jobs:
   backfill:
     name: Backfill NAV from newsroom statements
     runs-on: [self-hosted, linux, x64, hetzner]
-    timeout-minutes: 330
+    # The runner is single and shared; a job that can hold it for hours blocks
+    # deploys and monitors behind it. Bounded slices converge just as well.
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v5
 
@@ -82,6 +90,8 @@ jobs:
           # rapidocr-onnxruntime is pip-only (no system packages), which is why
           # it was chosen: this runner has no sudo.
           pip install --quiet asyncpg rapidocr-onnxruntime
+          mkdir -p "$STATEMENT_CACHE"
+          echo "cached statements: $(ls -1 "$STATEMENT_CACHE" | wc -l)"
 
       - name: Self-test the gates before touching anything
         if: steps.guard.outputs.run == 'yes'
@@ -97,7 +107,7 @@ jobs:
           LIMIT="${{ github.event.inputs.limit || '150' }}"
           python backend-core/scripts/mubasher_statement_backfill.py \
             --manifest backend-core/data/mubasher_statement_manifest.json \
-            --cache-dir "$RUNNER_TEMP/statement-cache" \
+            --cache-dir "$STATEMENT_CACHE" \
             --limit "$LIMIT"
 
       - name: Commit the backfill
@@ -108,5 +118,5 @@ jobs:
           LIMIT="${{ github.event.inputs.limit || '150' }}"
           python backend-core/scripts/mubasher_statement_backfill.py \
             --manifest backend-core/data/mubasher_statement_manifest.json \
-            --cache-dir "$RUNNER_TEMP/statement-cache" \
+            --cache-dir "$STATEMENT_CACHE" \
             --limit "$LIMIT" --commit

@@ -4,9 +4,19 @@ The incident is the specification: a money-market series shifted one day still
 AGREES with held data to 0.01%, so no tolerance on values could catch it. Only
 asking "which alignment best explains this" does.
 """
+import importlib.util
+import pathlib
 from datetime import date, timedelta
 
-from data_pipeline.nav_alignment import check_alignment, MIN_OVERLAP
+# Loaded by path, like the other suites here: `from data_pipeline...` only
+# resolves when pytest is invoked from backend-core/, and CI runs from the
+# repository root.
+_spec = importlib.util.spec_from_file_location(
+    "nav_alignment",
+    pathlib.Path(__file__).parent.parent / "data_pipeline" / "nav_alignment.py")
+_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_mod)
+check_alignment, MIN_OVERLAP = _mod.check_alignment, _mod.MIN_OVERLAP
 
 
 def series(start: date, n: int, first: float, daily: float) -> dict:

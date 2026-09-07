@@ -284,9 +284,13 @@ async def save_fund_data(conn, fund, history, profile_data):
     # 3. Batch Insert History
     if history:
         records = [(fund['fund_id'], h['date'], h['nav']) for h in history]
+        # EXPLICIT CASTS. Adding the source column left asyncpg unable to
+        # deduce a type for $2 across the statement — "inconsistent types
+        # deduced for parameter $2" — and it failed after reading 1,108 points
+        # off the chart, which is the worst possible moment to fall over.
         await conn.executemany('''
             INSERT INTO nav_history (fund_id, date, nav, source, ingested_at)
-            VALUES ($1, $2, $3, 'mubasher_page', NOW())
+            VALUES ($1::text, $2::date, $3::numeric, 'mubasher_page', NOW())
             ON CONFLICT (fund_id, date) DO NOTHING
         ''', records)
         print(f"   Saved {len(records)} history points.")

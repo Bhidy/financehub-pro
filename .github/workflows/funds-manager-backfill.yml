@@ -1,7 +1,8 @@
 name: Funds Manager Backfill
 
 # ============================================================
-# Recovers NAV history from the fund MANAGERS, for the funds EIMA does not cover.
+# Recovers NAV history for the funds EIMA does not cover, from the people who
+# published it: the managers, and the vendor's own newsroom.
 #
 # WHY THIS EXISTS
 # After the EIMA recovery, fourteen funds still carried the full 412-day hole
@@ -11,31 +12,37 @@ name: Funds Manager Backfill
 # was tested, not assumed — re-running the EIMA matcher at a third of its name
 # floor returned the same fourteen.
 #
-# The managers publish their own NAV. The vendor was only ever a courier for it.
-#
 # SOURCES
-#   azimut     app.azimut.eg/api/fund/{id} → `graph`, the full [epoch_ms, nav]
-#              series behind the "Growth of Investment" chart on azimut.eg.
-#   cicapital  cicapital.com/fundprice/ publishes one table of unit prices and
-#              overwrites it daily; the Internet Archive holds captures, so each
-#              capture is the manager's own published price on a known date.
+#   azimut         app.azimut.eg/api/fund/{id} → `graph`, the full
+#                  [epoch_ms, nav] series behind the "Growth of Investment"
+#                  chart on azimut.eg. Recovered 4,672 observations across 13
+#                  funds on its first run.
+#
+#   mubasher_news  THE VENDOR HAD THE DATA THE WHOLE TIME. Mubasher's per-fund
+#                  price FILE froze on 2025-05-14; their news desk went on
+#                  publishing "Prices of investment funds including certificates
+#                  in EGP, USD" throughout — every fund, its unit price, and an
+#                  explicit as-of date. Different system, same publisher. The
+#                  live article is behind a sign-in wall; the Internet Archive
+#                  holds 114 of them, 112 captured inside the hole.
+#
+#   cicapital      cicapital.com/fundprice/ publishes one table of unit prices
+#                  and overwrites it daily; the archive holds captures of it.
+#                  Kept because it costs little and becomes useful the moment
+#                  the archive gains a capture outside the hole.
 #
 # MAPPING IS DECIDED BY DATA, NEVER BY A NAME. A series is attached to a fund
-# only when it agrees with NAV we already hold at dates where both exist — tight
-# median, bounded tail. The same test rejected Azimut's "Menthum" against our
-# fund 6157 at 41% median error, because Azimut's Menthum is the EGP fund and
-# ours is the CI-managed USD one.
+# only when it agrees with NAV we already hold. Two forms of proof are accepted:
+# a dense overlap with a tight median, or ONE uncontradicted six-figure match —
+# on 2025-04-06 Mubasher's table agrees with our stored NAV to 0.000% for every
+# fund that later went dark, and the five CI siblings carry different values, so
+# a swap between them shows immediately. The same rule rejected Azimut's
+# "Menthum" against our fund 6157 at 41% error, and separates Maksab USD (our
+# 6121, 0.004%) from our 6193 (4.567%).
 #
-# WHAT IT WILL NOT DO. The CI sector family (6197-6201) has ZERO overlap between
-# the archive captures and NAV we hold, and all five funds' value corridors
-# overlap each other — so a swap between them would be undetectable and the
-# mapping would rest on the name alone. The gate therefore writes nothing for
-# them, and that is correct. If the archive gains a capture outside the hole, or
-# CI publishes history, they become writable with no code change.
-#
-# BE KIND: self-identifying UA, a delay between requests, no more requests than
-# the job needs. Azimut's API is the one their own public site calls; the
-# Internet Archive is a public service.
+# BE KIND: self-identifying UA, a delay between requests, one pass over each
+# archived article. The Internet Archive is a public service; Azimut's API is
+# the one their own public site calls.
 #
 # Requires repo secret DATABASE_URL.
 # ============================================================
@@ -58,7 +65,7 @@ on:
         required: false
         default: ''
         type: choice
-        options: ['', azimut, cicapital]
+        options: ['', azimut, mubasher_news, cicapital]
 
 concurrency:
   group: funds-manager-backfill
@@ -71,7 +78,7 @@ jobs:
   backfill:
     name: Backfill NAV history from fund managers
     runs-on: [self-hosted, linux, x64, hetzner]
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6

@@ -1,0 +1,71 @@
+name: QA Gated Surfaces
+
+# ============================================================
+# THE BLIND SPOT THIS CLOSES.
+# The NAV chart on /Funds/[id] sits behind the registration gate. Everything
+# that has ever checked production from a logged-out session therefore verified
+# the GATE, not the chart — the very thing the NAV backfill exists to fill. A
+# fund could have a 412-day hole, or no series at all, and the check would
+# still be green.
+#
+# This signs in as a dedicated QA account over the JSON API (it does not drive
+# a login form) and asserts what a signed-in visitor actually gets: a series
+# that exists, reaches today, and has no hole wide enough to read as broken.
+#
+# CREDENTIALS. Repo secrets QA_EMAIL / QA_PASSWORD, for a READ-ONLY QA user.
+# They are never echoed. If they are absent the job SKIPS and says so — a
+# silent pass would recreate exactly the blind spot this exists to remove, and
+# a red run nobody can fix trains people to ignore red runs.
+#
+# The remaining NAV holes are REPORTED, not fatal. They are a tracked backlog
+# (backend-core/scripts/mubasher_statement_backfill.py); this measures it on
+# every run so the number is never a guess again.
+# ============================================================
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 09:00 Cairo daily, after the morning NAV jobs have run.
+    - cron: '0 7 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/scripts/qa-gated-surfaces.mjs'
+      - '.github/workflows/qa-gated-surfaces.yml'
+
+concurrency:
+  group: qa-gated-surfaces
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    name: QA gated surfaces
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Announce whether the gated check can run
+        env:
+          QA_EMAIL: ${{ secrets.QA_EMAIL }}
+        run: |
+          if [ -z "$QA_EMAIL" ]; then
+            echo "::warning title=Gated surfaces unverified::QA_EMAIL/QA_PASSWORD are not set, so the signed-in NAV charts were NOT checked."
+          else
+            echo "QA account configured; gated surfaces will be verified."
+          fi
+
+      - name: QA the signed-in NAV charts
+        working-directory: frontend
+        env:
+          QA_EMAIL: ${{ secrets.QA_EMAIL }}
+          QA_PASSWORD: ${{ secrets.QA_PASSWORD }}
+          NEXT_PUBLIC_API_URL: https://startamarkets.com
+        run: node scripts/qa-gated-surfaces.mjs

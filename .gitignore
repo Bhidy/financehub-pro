@@ -50,6 +50,10 @@ debug_*.png
 # Listing authority + fund-universe reconciliation (build inputs — lib/security-master.ts,
 # lib/funds-hub-render.ts and the methodology page import them; docs/DATA_GOVERNANCE.md).
 !frontend/content/egx-security-master.json
+# Mubasher statement fund aliases — printed statement name -> our fund_id,
+# learned by value fingerprint. mubasher_statement.py loads it at import and
+# the NAV backfill cannot identify a single fund without it.
+!backend-core/data/mubasher_fund_aliases.json
 !frontend/content/fund-universe-reconciliation.json
 !frontend/content/fund-taxonomy-overrides.json
 !frontend/scripts/fixtures/egx-official-listed.json

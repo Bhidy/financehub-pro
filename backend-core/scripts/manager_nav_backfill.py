@@ -311,32 +311,55 @@ WAYBACK = "http://web.archive.org/web/{ts}/{url}"
 # "Fund Name: X (y) Price per Certificate (EGP): 12.68316"
 _ROW = re.compile(r"Fund Name:\s*(.+?)\s*Price per Certificate \((EGP|USD|EUR)\):"
                   r"\s*([0-9][0-9,]*\.?[0-9]*)")
-# "...as of 14 October, compared to the previous prices" — no year, ever.
-_ASOF = re.compile(r"as of (\d{1,2}) ([A-Z][a-z]+)")
+# The as-of line comes in several shapes, and the year is present in some of
+# them and absent in others:
+#     "as of 5 April 2025 compared with the previous prices"
+#     "as of 14 October, compared to the previous prices"
+# "compared" is the reliable neighbour — an article also mentions other dates
+# further down, in its related-articles rail, and taking the first bare "as of"
+# in the whole document once picked one of those.
+_ASOF = re.compile(r"as of\s+(\d{1,2})\s+([A-Z][a-z]+)(?:,)?\s*(\d{4})?")
 
 
 def _article_date(text: str, capture_ts: str) -> str | None:
-    """The as-of date, with the year the article never states.
+    """The date the article says its prices are as of.
 
-    The only sound way to supply it is the capture: an article is archived after
-    it is published, so the as-of date is the most recent calendar date matching
-    that day and month which is not in the capture's future and not absurdly far
-    behind it. Twenty days of slack covers a late crawl; anything wider would let
-    a January article claim the previous year.
+    TAKE THE YEAR WHEN THE ARTICLE GIVES ONE. The first version of this ignored
+    it and inferred every year from the capture inside a twenty-day window,
+    which threw away 89 of 114 articles: the Internet Archive often crawls
+    months after publication, and "as of 5 January 2026" captured on 2026-03-08
+    is sixty-two days behind. The year was written on the page the whole time.
+
+    When it is genuinely absent, infer the most recent calendar year that puts
+    the date at or before the capture. An article is archived after it is
+    published, so a date in the capture's future is wrong by construction, and
+    among the remaining candidates the most recent is the only sensible reading.
+    A wrong year would place a NAV on a day it does not belong to — which the
+    reconciliation gate then catches as disagreement on the overlap dates.
     """
-    m = _ASOF.search(text)
-    if not m:
-        return None
     cap = date(int(capture_ts[:4]), int(capture_ts[4:6]), int(capture_ts[6:8]))
-    day, mon = int(m.group(1)), _MONTHS.get(m.group(2))
+    matches = list(_ASOF.finditer(text))
+    if not matches:
+        return None
+    # Prefer the one the lede uses: "as of <date> compared with the previous…".
+    m = next((x for x in matches
+              if "compar" in text[x.end():x.end() + 40].lower()), matches[0])
+
+    day, mon, year = int(m.group(1)), _MONTHS.get(m.group(2)), m.group(3)
     if not mon:
         return None
-    for year in (cap.year, cap.year - 1):
+    if year:
         try:
-            cand = date(year, mon, day)
+            cand = date(int(year), mon, day)
+        except ValueError:
+            return None
+        return cand.isoformat() if cand <= cap else None
+    for back in (0, 1, 2):
+        try:
+            cand = date(cap.year - back, mon, day)
         except ValueError:
             continue
-        if 0 <= (cap - cand).days <= 20:
+        if cand <= cap:
             return cand.isoformat()
     return None
 

@@ -198,10 +198,32 @@ def test_a_december_article_archived_in_january_takes_the_previous_year():
     assert article_date("as of 28 December, compared", "20260105000000") == "2025-12-28"
 
 
-def test_an_as_of_date_too_far_from_the_capture_is_refused():
-    """Twenty days of slack covers a late crawl. Wider would let an article
-    claim a date it cannot support."""
-    assert article_date("as of 1 March, compared", "20251029115735") is None
+def test_an_explicit_year_is_used_verbatim():
+    """89 of 114 articles were thrown away because this inferred the year inside
+    a twenty-day window while the page said it outright. The archive often
+    crawls months late."""
+    assert article_date("as of 5 January 2026 compared with the previous prices",
+                        "20260308140519") == "2026-01-05"
+    assert article_date("as of 5 April 2025 compared with the previous prices",
+                        "20250409024458") == "2025-04-05"
+
+
+def test_a_late_crawl_no_longer_loses_the_article():
+    assert article_date("as of 24 September, compared", "20251112093019") == "2025-09-24"
+
+
+def test_a_date_in_the_capture_s_future_is_refused():
+    """An article is archived after it is published, so this is wrong by
+    construction — a mis-scraped year rather than a real one."""
+    assert article_date("as of 5 January 2027 compared", "20260308140519") is None
+
+
+def test_the_lede_wins_over_the_related_articles_rail():
+    """Taking the first bare 'as of' in the document once picked a date out of
+    the sidebar instead of the price table's own."""
+    text = ("Prices of investment funds as of 14 October, compared to the previous "
+            "prices . Fund Name: X . Related: something as of 3 March happened")
+    assert article_date(text, "20251021063010") == "2025-10-14"
 
 
 def test_no_as_of_line_means_no_date():

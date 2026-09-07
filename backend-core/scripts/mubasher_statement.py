@@ -114,6 +114,15 @@ CHECKSUM_MIN_DECIMALS = 4
 # compounding drift is refused at its 1-day junction by the band itself), and
 # the ceiling stops mattering as statement coverage shortens the junctions.
 MAX_STEP_TOTAL_PCT = 60.0
+# Fund identity is established by value fingerprint, so a disagreement on a
+# date we already hold no longer implies we matched the wrong fund. What it
+# usually means, measured 2026-09-07, is that Mubasher republished a stale
+# sheet: on 2026-07-06 the statement gave fund 6120 exactly our 2026-07-05
+# value. Refusing the whole fund for that cost 32 of 45 funds. So the RATE
+# decides — a few disputed dates in a long overlap is a vendor blip, a high
+# rate is still a mismatched fund.
+MAX_CONFLICT_RATE = 0.05
+MIN_OVERLAP_FOR_RATE = 20
 
 # ---- Arabic month names, for the "6 أغسطس 2025" form ----------------------
 AR_MONTHS = {
@@ -717,7 +726,8 @@ class SeriesCheck:
     fund_id: str
     accepted: dict = field(default_factory=dict)   # iso date -> nav
     rejected: list = field(default_factory=list)   # (date, value, why)
-    conflicts: list = field(default_factory=list)  # (date, ours, theirs, pct)
+    conflicts: list = field(default_factory=list)  # fatal: wrong fund / bad close
+    disputed: list = field(default_factory=list)  # tolerated vendor blips, skipped
     band_pct: float = 0.0
 
     @property
@@ -734,23 +744,54 @@ def reconcile_series(fund_id: str, held: dict, candidate: dict) -> SeriesCheck:
     statement lists (asset-manager funds) barely intersect — 1 row of 36 on the
     2025-08-06 statement. So the gate has to work at series level instead:
 
-      * every date we ALREADY hold must agree — a disagreement means we have
-        the wrong fund or a misread value, and nothing for that fund is written;
+      * dates we ALREADY hold are the identity check. WIDESPREAD disagreement
+        means we have the wrong fund and nothing is written. ISOLATED
+        disagreement does not — see below.
       * every new point must sit within the fund's own plausible daily move of
         its nearest accepted neighbour, so a stray digit cannot slip in between
-        two real observations.
+        two real observations;
+      * and the filled run must CLOSE onto real held data, which is the one
+        check a compounding drift cannot survive.
+
+    WHY ISOLATED CONFLICTS NO LONGER CONDEMN A FUND
+    -----------------------------------------------
+    Refusing wholesale was right while fund identity was uncertain. It is now
+    established by value fingerprint, and measured 2026-09-07 the blunt rule
+    cost 32 of 45 funds over one or two dates each. Those dates turned out to
+    be Mubasher republishing STALE values: on 2026-07-06 the statement gives
+    fund 6120 169.82015, which is exactly our 2026-07-05 figure, and fund 5784
+    22.84777, exactly our 2026-07-05. A vendor repeating yesterday's sheet on a
+    handful of days is not evidence that we mismatched the fund.
+
+    So the conflict RATE decides. A few disputed dates out of a long overlap is
+    a vendor blip: those dates are skipped and the rest of the series is kept —
+    and skipping costs nothing, because a conflicting date is by definition one
+    we already hold. A high rate still means the wrong fund, and still refuses
+    everything. Below MIN_OVERLAP_FOR_RATE there is not enough overlap to tell
+    the two apart, so any conflict refuses.
     """
     check = SeriesCheck(fund_id=fund_id)
     check.band_pct = daily_move_band(held)
 
-    for d, v in sorted(candidate.items()):
-        if d in held:
-            base = held[d]
-            err = abs(v - base) / base * 100 if base else 100.0
-            if err > CHECKSUM_TOL_PCT:
-                check.conflicts.append((d, base, v, round(err, 4)))
-    if check.conflicts:
-        return check                      # fund is refused wholesale
+    overlap = [d for d in candidate if d in held]
+    disputed = []
+    for d in sorted(overlap):
+        base, v = held[d], candidate[d]
+        err = abs(v - base) / base * 100 if base else 100.0
+        if err > CHECKSUM_TOL_PCT:
+            disputed.append((d, base, v, round(err, 4)))
+
+    if disputed:
+        rate = len(disputed) / len(overlap)
+        too_thin = len(overlap) < MIN_OVERLAP_FOR_RATE
+        if too_thin or rate > MAX_CONFLICT_RATE:
+            check.conflicts = disputed
+            return check                  # wrong fund: refuse everything
+        # Isolated vendor blips. Record them so they are visible, and drop
+        # those dates from consideration — we already hold them anyway.
+        check.disputed = disputed
+        for d, _b, _v, _e in disputed:
+            candidate = {k: x for k, x in candidate.items() if k != d}
 
     timeline = dict(held)
     for d, v in sorted(candidate.items()):
@@ -1141,10 +1182,33 @@ def _self_test() -> int:
           r.ok and "2026-02-07" not in r.accepted and len(r.accepted) == len(fill) - 1)
     check("rejection is explained", any("exceeds band" in why for _, _, why in r.rejected))
 
-    # a value that contradicts one we already hold sinks the whole fund
+    # Thin overlap: one contradiction is still fatal, because with too few
+    # shared dates a vendor blip and a mismatched fund look identical.
     r = reconcile_series("mm", mm, {"2026-02-07": mm["2026-02-07"] * 1.05})
-    check("overlap conflict refuses the fund", (not r.ok) and not r.accepted)
+    check("thin-overlap conflict refuses the fund", (not r.ok) and not r.accepted)
     check("conflict is reported", len(r.conflicts) == 1)
+
+    # -- conflict RATE, not conflict COUNT ------------------------------
+    # A long overlap with one stale vendor date must NOT lose the fund. This
+    # is the 2026-07-06 shape: Mubasher republished the previous day's sheet.
+    wide = dict(mm)                                   # 60 held observations
+    cand = {d: v for d, v in list(mm.items())[:40]}   # 40 overlapping, all agree
+    blip = sorted(cand)[10]
+    cand[blip] = cand[blip] * 1.01                    # 1 of 40 = 2.5% <= 5%
+    fresh = {"2026-04-01": mm[max(mm)] * 1.0004}      # plus one genuinely new
+    r = reconcile_series("mm", wide, {**cand, **fresh})
+    check("isolated vendor blip does not lose the fund", r.ok)
+    check("the disputed date is recorded", len(r.disputed) == 1
+          and r.disputed[0][0] == blip)
+    check("the disputed date is not written", blip not in r.accepted)
+    check("the rest of the fund still lands", "2026-04-01" in r.accepted)
+
+    # Widespread disagreement is a MISMATCHED FUND and must still refuse all.
+    wrong = {d: v * 1.4 for d, v in list(mm.items())[:40]}
+    r = reconcile_series("mm", wide, wrong)
+    check("widespread disagreement still refuses everything",
+          (not r.ok) and not r.accepted)
+    check("refusal lists the conflicts", len(r.conflicts) > 2)
 
     # -- CLOSURE: the regression that made this gate worth having ------
     # A per-day bias small enough to pass every individual step still compounds

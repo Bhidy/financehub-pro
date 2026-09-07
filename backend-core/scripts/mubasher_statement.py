@@ -368,7 +368,16 @@ def extract_images(page_html: str) -> list[bytes]:
                     out.append(resp.read())
                 last = None
                 break
-            except urllib.error.URLError as exc:      # HTTPError is a subclass
+            except urllib.error.HTTPError as exc:
+                last = exc
+                # 4xx is a verdict, not a hiccup. Google-Docs export URLs
+                # expire, so older statements 404 permanently — retrying one
+                # three times with backoff burns 6 seconds to learn nothing,
+                # and the manifest is 390 image statements deep.
+                if 400 <= exc.code < 500:
+                    break
+                time.sleep(2 * (attempt + 1))
+            except urllib.error.URLError as exc:      # network / DNS / timeout
                 last = exc
                 time.sleep(2 * (attempt + 1))
         if last is not None:
@@ -1183,6 +1192,44 @@ def _self_test() -> int:
         except StatementError:
             pass
     check("comma is never a decimal separator", True)
+
+    # -- expired statement images ---------------------------------------
+    # A 404 is a verdict (the Google-Docs export expired), not a hiccup.
+    # Retrying it three times with backoff costs 6s per statement to learn
+    # nothing, across a manifest that is 390 image statements deep.
+    import urllib.error as _ue
+    calls = {"n": 0}
+
+    def _fake_open(req, timeout=None):
+        calls["n"] += 1
+        raise _ue.HTTPError(req.full_url, 404, "Not Found", None, None)
+
+    _real = urllib.request.urlopen
+    urllib.request.urlopen = _fake_open
+    try:
+        page = ('<div itemprop="articleBody">'
+                '<img src="https://lh7-rt.googleusercontent.com/docsz/GONE"></div>')
+        try:
+            extract_images(page)
+            check("expired image must refuse the statement", False)
+        except StatementError:
+            pass
+        check("404 is not retried", calls["n"] == 1)
+
+        calls["n"] = 0
+
+        def _fake_500(req, timeout=None):
+            calls["n"] += 1
+            raise _ue.HTTPError(req.full_url, 503, "Service Unavailable", None, None)
+
+        urllib.request.urlopen = _fake_500
+        try:
+            extract_images(page)
+        except StatementError:
+            pass
+        check("5xx IS retried", calls["n"] == 3)
+    finally:
+        urllib.request.urlopen = _real
 
     # a volatile equity fund must not be judged by a money-market band
     eq = {}

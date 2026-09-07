@@ -15,8 +15,11 @@ def test_gap_mode_turns_the_resume_guard_off():
     """A fund is in this list precisely because its history is incomplete, so
     'we already have history' is not a reason to skip it."""
     assert "if gaps_only:" in SRC
-    m = re.search(r"if gaps_only:\s*\n\s*print\([^\n]*\)\s*\n\s*elif history_count > 10 and is_fresh:", SRC)
+    # Matched across line breaks: the message wraps, and a regex anchored to a
+    # single physical line broke the moment the wording grew.
+    m = re.search(r"if gaps_only:.*?elif history_count > 10 and is_fresh:", SRC, re.S)
     assert m, "gap mode must short-circuit the resume guard, not sit after it"
+    assert len(m.group(0)) < 400, "the two branches must be adjacent, not separated by other logic"
 
 
 def test_the_2011_market_closure_is_never_chased():

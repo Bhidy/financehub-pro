@@ -1,0 +1,102 @@
+name: Funds Gap Repair (Mubasher pages)
+
+# ============================================================
+# Repairs NAV history by re-reading each holed fund's own chart on Mubasher.
+#
+# WHY THIS EXISTS
+# The platform has exactly one way to obtain HISTORY — a per-fund CSV — and
+# everything else is a "today's price" trickle. So a missed day can never be
+# recovered by any normal operation of the system. Measured across all 207
+# published funds on 2026-09-07: 143 carry a genuine hole, 31,682 fund-days
+# missing in total.
+#
+# scrape_mubasher reads a fund's FULL chart series off its page, so it is the
+# one source that can go back for a specific date. It has been running daily
+# and re-reading nothing: its resume guard skips any fund with more than ten
+# points that was touched today, and the list-API sync touches every fund every
+# morning. --gaps-only drives it from the gap ledger instead, where the guard is
+# off by construction — a fund is on that list precisely because its history is
+# incomplete.
+#
+# WHERE IT MATTERS MOST
+# The newer funds have no per-fund CSV at all (the file is empty for every one
+# checked). They live entirely on the daily one-price trickle, so when
+# funds-nav-update failed six runs in a row from 15 to 20 August 2026, 17 funds
+# lost those days permanently. This is the route back.
+#
+# SAFETY
+#   · ON CONFLICT DO NOTHING — it fills holes, it never overwrites a held value.
+#   · Rows are stamped `mubasher_page`, so its output stays distinguishable.
+#   · The 2011 EGX closure (2011-01-27 → 2011-03-23) is excluded in SQL. That is
+#     real market history; chasing it would be chasing a hole that belongs there.
+#   · Only the ingested numeric-id universe is considered.
+#
+# CREDENTIALS
+# Needs MUBASHER_USER and MUBASHER_PASS as repository secrets. They exist today
+# only inside the backend service's environment, which is why this path has been
+# unavailable to every scheduled job. Until they are set this workflow says so
+# and exits 0, rather than reporting a red run every week for a known reason.
+# ============================================================
+
+on:
+  schedule:
+    # Saturdays 05:00 UTC — outside the Sun-Thu ingestion windows, and after the
+    # Friday recovery jobs, so it only chases what they could not reach.
+    - cron: '0 5 * * 6'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'gaps repairs only the funds carrying a 90+ day hole (also the scheduled mode); test reads three funds and stops'
+        required: true
+        default: 'gaps'
+        type: choice
+        options: [gaps, test]
+
+concurrency:
+  group: funds-gap-repair
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  repair:
+    name: Re-read holed funds from their own Mubasher pages
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Are the credentials available?
+        id: creds
+        env:
+          MUBASHER_USER: ${{ secrets.MUBASHER_USER }}
+        run: |
+          if [ -z "${MUBASHER_USER}" ]; then
+            echo "have=no" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Dormant::MUBASHER_USER / MUBASHER_PASS are not set as repository secrets, so the gap repair cannot run. This is the single change that unlocks the only source able to reach every fund and every date."
+          else
+            echo "have=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Playwright
+        if: steps.creds.outputs.have == 'yes'
+        run: |
+          pip install --quiet playwright asyncpg
+          python -m playwright install --with-deps chromium
+
+      - name: Repair the gaps
+        if: steps.creds.outputs.have == 'yes'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          MUBASHER_USER: ${{ secrets.MUBASHER_USER }}
+          MUBASHER_PASS: ${{ secrets.MUBASHER_PASS }}
+        run: |
+          set -euo pipefail
+          case "${{ github.event.inputs.mode }}" in
+            test) python backend-core/scripts/scrape_mubasher.py --test ;;
+            *)    python backend-core/scripts/scrape_mubasher.py --gaps-only ;;
+          esac

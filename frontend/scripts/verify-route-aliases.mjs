@@ -1968,6 +1968,70 @@ async function run() {
     // Expected missing file
   }
 
+  // ══ THE ARABIC POLICY MUST OUTRANK THE LTR POLICY ═══════════════════════
+  // Two !important font-family rules both match Arabic text on an inner-RTL
+  // page (login, register, forgot-password, settings — RTL islands inside an
+  // <html dir="ltr"> document):
+  //
+  //   app/globals.css                     [dir="ltr"] *:not(...)      Latin-first
+  //   public/assets/starta-typography.css html *:dir(rtl):not(...)    Arabic-first
+  //
+  // The descendant combinator does not care that a NEARER ancestor is rtl, so
+  // the LTR rule matches too and the winner is decided purely on specificity.
+  // CSS compares CLASS-level tokens (classes, attributes, pseudo-classes)
+  // before element-level ones, so the Arabic rule only wins while it carries
+  // strictly more of them.
+  //
+  // This is not hypothetical: adding a single `:not(.font-display)` to the LTR
+  // selector took it from 2 class tokens to 3, beat the Arabic rule's 2, and
+  // silently rendered every Arabic string on all four auth surfaces in a
+  // Latin-first stack. Nothing failed; it only looked slightly wrong, because
+  // per-glyph fallback still reached IBM Plex for the Arabic characters.
+  //
+  // Counting tokens rather than pinning the exact selector text so the rules
+  // stay editable — what may not change is which one wins.
+  {
+    const countClassTokens = (selector) =>
+      // .class | [attr] | :pseudo-class  — but NOT ::pseudo-element, and the
+      // contents of :not(...) count too, which is exactly what bit us.
+      (selector.match(/\.[A-Za-z_-][\w-]*|\[[^\]]+\]|(?<!:):[A-Za-z-]+/g) || []).length;
+
+    const globalsCss = await readFile(path.join(root, "app/globals.css"), "utf8");
+    const typographyCss = await readFile(
+      path.join(root, "public/assets/starta-typography.css"), "utf8");
+
+    // Anchored on `*:not(` — globals.css also contains a bare `[dir="ltr"] {`
+    // and a `[dir="ltr"] .font-mono, ...` rule, and a looser pattern matched
+    // the bare one and passed vacuously with a single token. Verified against
+    // deliberate breakage (see below).
+    const ltrMatch = /^\s*(\[dir="ltr"\]\s*\*:not\([^{]*?)\{/m.exec(globalsCss);
+    const arMatch = /^\s*(html \*:dir\(rtl\)[^{]*?)\{/m.exec(typographyCss);
+
+    if (!ltrMatch) {
+      console.error('FAIL: could not find the [dir="ltr"] font policy in app/globals.css — this gate is not reading what it thinks it is.');
+      process.exit(1);
+    }
+    if (!arMatch) {
+      console.error("FAIL: could not find the html *:dir(rtl) Arabic policy in starta-typography.css — this gate is not reading what it thinks it is.");
+      process.exit(1);
+    }
+
+    const ltrTokens = countClassTokens(ltrMatch[1]);
+    const arTokens = countClassTokens(arMatch[1]);
+    if (!(arTokens > ltrTokens)) {
+      console.error(
+        `FAIL: the Arabic font policy no longer outranks the LTR one ` +
+        `(Arabic ${arTokens} class-level tokens vs LTR ${ltrTokens}). ` +
+        `Arabic on /login, /register, /forgot-password and /settings will fall ` +
+        `back to a Latin-first stack. Do NOT add classes to the [dir="ltr"] ` +
+        `selector — give the element's own rule more specificity instead ` +
+        `(see html *:dir(ltr).font-display in app/globals.css).`
+      );
+      process.exit(1);
+    }
+    console.log(`  ok   Arabic font policy outranks the LTR policy (${arTokens} > ${ltrTokens})`);
+  }
+
   // The legacy "Pro Terminal" AppSidebar shell is permanently removed
   // (2026-08-06, owner decision). Production never rendered it; on localhost
   // it leaked onto any route missing from ShellWrapper's old isolation lists.

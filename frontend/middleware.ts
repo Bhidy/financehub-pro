@@ -80,7 +80,11 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(url, 308);
     }
 
-    // 2b) The admin area has no index dashboard; its console is /admin/analytics.
+    // 2b) The admin area has no index dashboard, so bare /admin lands on the
+    // first console the rail actually offers — /admin/users. It used to land on
+    // /admin/analytics, which stopped being offered the day Analytics and Guest
+    // sessions were marked `hidden: true` in lib/admin-nav.ts: signing in at
+    // /admin dropped people on a page with no rail entry to return to.
     // This redirect lives HERE rather than in app/admin/page.tsx because that
     // page's redirect() stopped producing an HTTP redirect the moment the admin
     // layout began rendering a client component (AdminGate): the response
@@ -91,7 +95,7 @@ export function middleware(request: NextRequest) {
     // may earn a real index one day and a permanent redirect is uncacheable
     // back out of a browser that already stored it.
     if (url.pathname === '/admin' || url.pathname === '/admin/') {
-        url.pathname = '/admin/analytics';
+        url.pathname = '/admin/users';
         return NextResponse.redirect(url, 307);
     }
 

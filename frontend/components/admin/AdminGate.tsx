@@ -58,9 +58,16 @@ import { Loader2, ShieldAlert } from "lucide-react";
 import { StartaLogo } from "@/components/brand/StartaLogo";
 import { useAuth } from "@/contexts/AuthContext";
 
-/** Where to send someone after they sign in from here. */
+/**
+ * Where to send someone after they sign in from here.
+ *
+ * The fallback is /admin/users, the first console the rail offers — the same
+ * destination bare /admin resolves to in middleware. It must not be a page
+ * marked `hidden` in lib/admin-nav.ts: signing in only to land somewhere the
+ * navigation no longer lists is how this went wrong before.
+ */
 function loginHref(pathname: string): string {
-    return `/login?redirect=${encodeURIComponent(pathname || "/admin/analytics")}`;
+    return `/login?redirect=${encodeURIComponent(pathname || "/admin/users")}`;
 }
 
 function GateShell({ children }: { children: React.ReactNode }) {

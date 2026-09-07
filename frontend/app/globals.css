@@ -253,8 +253,9 @@
      Arabic never receives it — tight tracking breaks letter joining — so
      the rule is scoped away from [lang="ar"] and .font-arabic.
      -------------------------------------------------------------------- */
+  /* Geometry only. The FACE is set by the unlayered rule below, which needs
+     more specificity than the LTR policy's !important. */
   .font-display {
-    font-family: var(--font-sora), "Sora", var(--font-arabic), ui-sans-serif, system-ui, sans-serif;
     letter-spacing: -0.025em;
   }
   [lang="ar"] .font-display,
@@ -718,16 +719,36 @@ html.finhub-pro-domain pre {
   font-family: var(--font-arabic) !important;
 }
 
-/* `.font-display` joins the opt-out list for the SAME reason `.font-mono` is
-   on it: the element has declared its own face. Without it this rule wins with
-   !important over even an inline style, so every heading marked font-display
-   silently rendered in Manrope — the console's headings looked nothing like
-   the landing page's Sora, and no error was ever raised.
+/* DO NOT add classes to this selector. Its class count is load-bearing: the
+   Arabic policy in public/assets/starta-typography.css carries 2 classes and
+   must outrank this rule, and CSS compares class counts before element counts.
+   A third :not(.something) here silently sends every Arabic string on an
+   inner-RTL page into the Latin-first stack. Build-gated — see
+   scripts/verify-route-aliases.mjs, "ARABIC POLICY MUST OUTRANK THE LTR
+   POLICY". To let an element pick its own Latin face, follow .font-display
+   below instead. */
+/* THE LATIN DISPLAY FACE — Sora, matching the landing page.
 
-   LTR only. The [dir="rtl"] rule above keeps no such exception on purpose:
-   DESIGN_SYSTEM.md §3 — a page may choose a display face for Latin headings,
-   it may NOT choose one for Arabic. */
-[dir="ltr"] *:not(.font-mono):not(.font-display):not(code):not(pre) {
+   Scoped to :dir(ltr) so it can never touch Arabic: DESIGN_SYSTEM.md §3 says a
+   page may choose a display face for LATIN headings and may NOT choose one for
+   Arabic. Arabic marked font-display keeps IBM Plex Sans Arabic and only loses
+   the negative tracking (which breaks letter joining).
+
+   Specificity is deliberate: :dir + .font-display + :not(.font-mono) = three
+   class-level tokens, which outranks the LTR policy's two WITHOUT adding a
+   class to that policy's own selector — the mistake that briefly sent every
+   Arabic auth-page string into the Latin-first stack. */
+html *:dir(ltr).font-display:not(.font-mono) {
+    font-family:
+        var(--font-sora, 'Sora'),
+        'Sora',
+        var(--font-manrope, Manrope),
+        ui-sans-serif,
+        system-ui,
+        sans-serif !important;
+}
+
+[dir="ltr"] *:not(.font-mono):not(code):not(pre) {
   font-family: var(--font-manrope), var(--font-arabic) !important;
 }
 

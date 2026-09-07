@@ -245,8 +245,22 @@ def parse_statement_date(page_html: str) -> date:
         raise StatementError(f"conflicting dates in body: {sorted(set(body_dates))}")
     body_date = body_dates[0]
     if title_date is not None and title_date != body_date:
-        raise StatementError(
-            f"title date {title_date} disagrees with body date {body_date}")
+        # The headline is hand-typed and does get typed wrong: article 4618875
+        # is titled "24-5-2025" while its body says 24-5-2026 and it was
+        # published 25-5-2026. Refusing outright loses a real day across ~60
+        # funds, so consult the one field nobody types — the publication stamp.
+        # If it corroborates the body within the normal reporting lag, the body
+        # wins and the headline is simply wrong; if it does not, we genuinely
+        # do not know the date and must refuse.
+        pub = publication_date(page_html)
+        corroborated = (
+            pub is not None
+            and -1 <= (pub - body_date).days <= MAX_PUBLICATION_LAG_DAYS
+        )
+        if not corroborated:
+            raise StatementError(
+                f"title date {title_date} disagrees with body date {body_date} "
+                f"and publication ({pub}) does not corroborate either")
     _assert_near_publication(page_html, body_date)
     return body_date
 
@@ -876,6 +890,25 @@ def _self_test() -> int:
     try:
         parse_statement_date(bad)
         check("title/body disagreement must raise", False)
+    except StatementError:
+        pass
+
+    # A hand-typed headline typo, corroborated against the publication stamp.
+    # This is article 4618875's real shape: titled 2025, body and publication
+    # both 2026. Refusing it would throw away a real day across ~60 funds.
+    typo = ('<title>أسعار وثائق صناديق الاستثمار في الذهب 24-5-2025</title>'
+            '<meta itemprop="datePublished" datetime="Mon May 25 06:10:00 UTC 2026">'
+            '<div itemprop="articleBody">الأسعار بتاريخ 24-5-2026 كالتالي</div>')
+    check("headline typo yields to a corroborated body date",
+          parse_statement_date(typo) == date(2026, 5, 24))
+
+    # ...but only when publication actually corroborates it.
+    uncorroborated = ('<title>أسعار وثائق صناديق الاستثمار 28-12-2025</title>'
+                      '<meta itemprop="datePublished" datetime="Mon Mar 03 06:10:00 UTC 2026">'
+                      '<div itemprop="articleBody">الأسعار بتاريخ 27-12-2025</div>')
+    try:
+        parse_statement_date(uncorroborated)
+        check("uncorroborated disagreement must still raise", False)
     except StatementError:
         pass
 

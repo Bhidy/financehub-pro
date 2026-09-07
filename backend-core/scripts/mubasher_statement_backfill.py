@@ -362,7 +362,14 @@ def report_plan(candidate, held, *, show=12, inferred=frozenset(), quiet=False):
         check = reconcile_series(fund_id, own, series)
         rejected_pts += len(check.rejected)
         if not check.ok:
-            refused.append((fund_id, check.conflicts[:2]))
+            # Report the SHAPE of the refusal, not just two examples. Without
+            # the overlap size and the conflict count a refusal cannot be told
+            # apart from a mismatched fund, a stale vendor date, or simply too
+            # little overlap for the rate rule to apply — which cost a whole
+            # diagnostic round trip.
+            overlap = sum(1 for d in series if d in own)
+            refused.append((fund_id, len(check.conflicts), overlap,
+                            check.conflicts[:2]))
             continue
         if check.accepted:
             accepted[fund_id] = check.accepted
@@ -374,8 +381,12 @@ def report_plan(candidate, held, *, show=12, inferred=frozenset(), quiet=False):
     if unanchored:
         emit(f"inferred funds skipped for want of a two-sided anchor: "
               f"{len(unanchored)} {unanchored[:8]}")
-    for fund_id, conflicts in refused[:show]:
-        emit(f"   refused {fund_id}: {conflicts}")
+    for fund_id, n_conf, overlap, sample in refused[:show]:
+        rate = (n_conf / overlap * 100) if overlap else 0.0
+        why = ("overlap too thin for the rate rule"
+               if overlap < 20 else f"conflict rate {rate:.1f}%")
+        emit(f"   refused {fund_id}: {n_conf} conflict(s) in {overlap} overlapping "
+             f"dates — {why}; e.g. {sample}")
     rank = sorted(accepted.items(), key=lambda kv: -len(kv[1]))
     for fund_id, rows in rank[:show]:
         ds = sorted(rows)

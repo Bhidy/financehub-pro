@@ -1,7 +1,7 @@
 {
-"_comment": "Mubasher newsroom NAV-statement articles, discovered by walking /news/eg/now/latest/{page} at the robots.txt Crawl-delay of 5s. Key = article id, value = the URL slug it was found under. mubasher_statement_backfill.py reads the keys; the slug is kept only so a human can see which category and date each id is.",
+"_comment": "Mubasher newsroom NAV-statement articles, discovered by walking /news/eg/now/latest/{page} at the robots.txt Crawl-delay of 5s. Key = article id, value = the URL slug it was found under.",
 "_built": "2026-09-07",
-"_count": 489,
+"_count": 493,
 "articles": {
 "4669045": "أسعار-وثائق-صناديق-الاستثمار-الدولارية-6-9-2026",
 "4669042": "أسعار-وثائق-صناديق-الاستثمار-في-الأسهم-6-9-2026",
@@ -491,6 +491,10 @@
 "4588753": "أسعار-وثائق-صناديق-الاستثمار-المصرية-1-4-2026",
 "4588208": "أسعار-وثائق-صناديق-الاستثمار-المتوافقة-م�%B",
 "4588170": "أسعار-وثائق-صناديق-الاستثمار-النقدية-وال�%A",
-"4588129": "أسعار-وثائق-صناديق-الاستثمار-في-الأسهم-31-3-2026"
+"4588129": "أسعار-وثائق-صناديق-الاستثمار-في-الأسهم-31-3-2026",
+"4588059": "أسعار-وثائق-صناديق-الاستثمار-في-الذهب-31-3-2026",
+"4587886": "أسعار-وثائق-صناديق-الاستثمار-المصرية-31-3-2026",
+"4587148": "أسعار-وثائق-صناديق-الاستثمار-المتوافقة-م�%B",
+"4587143": "أسعار-وثائق-صناديق-الاستثمار-في-الأسهم-30-3-2026"
 }
 }

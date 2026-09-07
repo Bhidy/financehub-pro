@@ -85,7 +85,8 @@ def collect(article_ids, *, cache_dir=None, verbose=True):
     for aid in article_ids:
         try:
             page = fetch_article(aid, cache_dir=cache_dir)
-            stmt_date, rows = read_statement(page)
+            stmt_date, rows = read_statement(page, cache_key=str(aid),
+                                             cache_dir=cache_dir)
         except StatementError as exc:
             report["refused"] += 1
             report["errors"].append((aid, str(exc)))

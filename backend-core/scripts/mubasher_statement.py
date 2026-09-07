@@ -569,13 +569,44 @@ def rows_from_html_table(page_html: str) -> list[StatementRow]:
     return out
 
 
-def read_statement(page_html: str) -> tuple[date, list[StatementRow]]:
+def read_statement(page_html: str, *, cache_key: str | None = None,
+                   cache_dir: str | None = None) -> tuple[date, list[StatementRow]]:
     """
     Date plus every row we could read.
 
     Prefers the HTML table (exact, no OCR); falls back to OCR of the statement
     screenshots for the categories that still publish as images.
+
+    When a cache is supplied the EXTRACTION is cached, not just the article
+    HTML. Caching only the HTML still re-runs OCR on every pass — and the
+    backfill reads each statement twice (rehearse, then commit), across a
+    manifest 390 image statements deep. A published statement never changes,
+    so its extraction is safe to keep.
     """
+    cache_path = None
+    if cache_key and cache_dir:
+        cache_path = os.path.join(cache_dir, f"{cache_key}.rows.json")
+        if os.path.exists(cache_path):
+            try:
+                doc = json.load(open(cache_path, encoding="utf-8"))
+                return (date.fromisoformat(doc["date"]),
+                        [StatementRow(**r) for r in doc["rows"]])
+            except Exception:
+                pass                       # unreadable cache: just re-extract
+
+    stmt_date, rows = _read_statement_uncached(page_html)
+    if cache_path:
+        try:
+            os.makedirs(cache_dir, exist_ok=True)
+            json.dump({"date": stmt_date.isoformat(),
+                       "rows": [r.__dict__ for r in rows]},
+                      open(cache_path, "w", encoding="utf-8"), ensure_ascii=False)
+        except OSError:
+            pass                           # a cache we cannot write is not fatal
+    return stmt_date, rows
+
+
+def _read_statement_uncached(page_html: str) -> tuple[date, list[StatementRow]]:
     stmt_date = parse_statement_date(page_html)
     table_rows = rows_from_html_table(page_html)
     if table_rows:
@@ -1192,6 +1223,29 @@ def _self_test() -> int:
         except StatementError:
             pass
     check("comma is never a decimal separator", True)
+
+    # -- extraction cache ----------------------------------------------
+    # OCR is the expensive half and the backfill reads each statement twice
+    # (rehearse, then commit). A published statement never changes, so the
+    # extraction is cached, not just the article HTML.
+    import tempfile as _tf
+    cdir = _tf.mkdtemp()
+    tbl = ('<div itemprop="articleBody">بتاريخ 6-9-2026'
+           '<table><tr><td>21.22137</td><td>AZ - IDKHAR</td></tr></table></div>')
+    d1, r1 = read_statement(tbl, cache_key="99", cache_dir=cdir)
+    check("cache writes on first read",
+          os.path.exists(os.path.join(cdir, "99.rows.json")))
+    d2, r2 = read_statement("<garbage/>", cache_key="99", cache_dir=cdir)
+    check("cache is used on the second read (garbage input ignored)",
+          d2 == d1 and len(r2) == len(r1) and r2[0].value == 21.22137)
+    check("cached rows round-trip intact",
+          r2[0].name == r1[0].name and r2[0].decimals == r1[0].decimals)
+    with open(os.path.join(cdir, "98.rows.json"), "w") as fh:
+        fh.write("{ not json")
+    d3, r3 = read_statement(tbl, cache_key="98", cache_dir=cdir)
+    check("a corrupt cache entry falls back to re-extraction", r3[0].value == 21.22137)
+    check("no cache key means no caching",
+          read_statement(tbl)[1][0].value == 21.22137)
 
     # -- expired statement images ---------------------------------------
     # A 404 is a verdict (the Google-Docs export expired), not a hiccup.

@@ -1,0 +1,103 @@
+name: Funds Statement Aliases
+
+# ============================================================
+# Regenerates backend-core/data/mubasher_fund_aliases.json — the printed
+# statement name -> our fund_id table — from the statements themselves.
+#
+# WHY THIS IS A SEPARATE JOB. That table is the ceiling on how much of the
+# 2025-05..2026-06 NAV hole can be filled. Learned from 21 statements it mapped
+# 4,214 of 8,709 rows and left 655 distinct names unmapped, several appearing
+# ~100 times — real funds with real history, missed only for want of evidence.
+# The runner now has hundreds of statements cached, so relearning is cheap.
+#
+# It is DERIVED, never authored: a name is accepted only when the printed price
+# equals our stored NAV (within 20 ppm — our archive keeps 4dp, the statement
+# prints 5) on >= 3 DISTINCT dates AND the candidate funds intersect to exactly
+# one. A sibling fund can collide on one date, not on three.
+#
+# It reads nav_history and writes NO rows. The result is uploaded as an
+# artifact so it can be reviewed and committed deliberately, rather than a job
+# silently rewriting the file that decides which fund every backfilled NAV is
+# attributed to.
+# ============================================================
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly, Sunday 02:00 Cairo. New statements bring new evidence.
+    - cron: '0 0 * * 0'
+
+concurrency:
+  group: funds-statement-aliases
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  STATEMENT_CACHE: /home/github-runner/.cache/mubasher-statements
+
+jobs:
+  learn:
+    name: Relearn statement fund aliases
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Dormancy guard
+        id: guard
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL is not configured; skipping."
+            echo "run=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-python@v6
+        if: steps.guard.outputs.run == 'yes'
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        if: steps.guard.outputs.run == 'yes'
+        run: |
+          pip install --quiet asyncpg rapidocr-onnxruntime
+          mkdir -p "$STATEMENT_CACHE"
+          echo "cached statements: $(ls -1 "$STATEMENT_CACHE"/*.html 2>/dev/null | wc -l)"
+
+      - name: Self-test
+        if: steps.guard.outputs.run == 'yes'
+        run: |
+          python backend-core/scripts/mubasher_statement.py --self-test
+          python backend-core/scripts/mubasher_statement_backfill.py --self-test
+
+      - name: Relearn aliases
+        if: steps.guard.outputs.run == 'yes'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python backend-core/scripts/mubasher_statement_backfill.py \
+            --manifest backend-core/data/mubasher_statement_manifest.json \
+            --cache-dir "$STATEMENT_CACHE" \
+            --learn-aliases "$RUNNER_TEMP/mubasher_fund_aliases.json"
+          echo "--- summary ---"
+          python - "$RUNNER_TEMP/mubasher_fund_aliases.json" <<'PY'
+          import json, sys, collections
+          d = json.load(open(sys.argv[1], encoding="utf-8"))
+          a = d["aliases"]
+          print(f"aliases {len(a)}  quarantined {len(d['quarantine'])}  "
+                f"statements used {d.get('_statements_used')}")
+          print(f"distinct funds covered: {len({v['fund_id'] for v in a.values()})}")
+          PY
+
+      - name: Upload for review
+        if: steps.guard.outputs.run == 'yes'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mubasher-fund-aliases
+          path: ${{ runner.temp }}/mubasher_fund_aliases.json
+          retention-days: 14

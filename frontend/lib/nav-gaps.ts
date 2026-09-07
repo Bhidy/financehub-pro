@@ -61,6 +61,54 @@ export function medianIntervalDays(points: readonly NavPoint[]): number {
 }
 
 /**
+ * ============================================================================
+ * BAD TICKS — a price that leaps and comes straight back was never a price
+ * ============================================================================
+ *
+ * Measured across the whole book on 2026-09-07: 14 occurrences across 13 funds,
+ * and two of them last week.
+ *
+ *   fund 6211  2024-12-24     1.3191 ->    10.2086 ->     1.3205   (674% and back)
+ *   fund 2733  2025-06-15    58.3612 ->   269.6300 ->    58.3926   (362% and back)
+ *   fund 2707  2026-03-18  2210.1400 ->   221.7830 ->  2200.0700   ( 90% and back)
+ *
+ * These are vendor transcription errors, and drawing them is not honesty — it
+ * is publishing a 674% one-day move that did not happen, which also poisons the
+ * 52-week high, the drawdown and every windowed return. Azimut's own published
+ * series gives 1.32055 for that 6211 date, so the true value is known and the
+ * stored one is simply wrong.
+ *
+ * THE RULE IS DELIBERATELY NARROW, because the risk is suppressing something
+ * real. A point qualifies only if it moves more than 25% away from BOTH
+ * neighbours AND those neighbours agree with each other to within 5%. A
+ * redenomination, a distribution, a genuine crash — none of them come back.
+ * That is the whole discrimination: a real move changes the level, an error
+ * does not.
+ *
+ * Nothing is deleted. The row stays in nav_history, exactly as the vendor sent
+ * it, and the full published history page still lists it. This only stops the
+ * chart from drawing a line to a number nobody ever traded at.
+ */
+const TICK_AWAY = 0.25;      // how far the suspect point must jump
+const TICK_REJOIN = 0.05;    // how closely its neighbours must agree
+
+export function dropBadTicks<T extends NavPoint>(points: readonly T[]): T[] {
+    if (points.length < 3) return [...points];
+    const out: T[] = [points[0]];
+    for (let i = 1; i < points.length - 1; i++) {
+        const a = points[i - 1].value, b = points[i].value, c = points[i + 1].value;
+        if (a > 0 && b > 0 && c > 0) {
+            const away = Math.abs(b - a) / a > TICK_AWAY && Math.abs(c - b) / b > TICK_AWAY;
+            const rejoin = Math.abs(c - a) / a < TICK_REJOIN;
+            if (away && rejoin) continue;   // a spike that returns: not a price
+        }
+        out.push(points[i]);
+    }
+    out.push(points[points.length - 1]);
+    return out;
+}
+
+/**
  * Gap tolerance for this fund: 3x its own cadence, floored at 10 days so a
  * daily fund is not tripped by a public holiday plus a weekend.
  */

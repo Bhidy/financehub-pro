@@ -267,15 +267,24 @@ def test_nonsense_is_refused():
 
 
 def test_purge_cannot_reach_another_pipeline_s_rows():
-    """The source filter is what stops this becoming an accident."""
-    import asyncio
+    """The source filter is what stops this becoming an accident.
+
+    Driven by advancing the coroutine to its first await rather than through
+    asyncio.run, which CLOSES the default event loop and left eight tests in
+    test_nav_ingest_gates.py failing with "no current event loop" whenever the
+    two files ran in the same session. The guard raises before any await, so
+    one send() is enough and no loop is touched.
+    """
     for forbidden in (["mubasher_csv"], ["eima_derived"], ["unrecorded"],
                       ["mubasher_news_archive", "mubasher_csv"]):
+        coro = mnb.purge(forbidden)
         try:
-            asyncio.run(mnb.purge(forbidden))
+            coro.send(None)
             assert False, f"{forbidden} must be refused"
         except SystemExit as e:
             assert "refusing to purge" in str(e)
+        finally:
+            coro.close()
 
 
 # ── ranking: agreement beats quantity of agreement ──────────────────────────

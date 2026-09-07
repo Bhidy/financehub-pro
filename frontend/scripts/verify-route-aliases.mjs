@@ -601,6 +601,34 @@ const checks = [
       !/\[\.\.\.RANGES\]\.reverse\(\)\.find\(\(r\) => supported\.has\(r\)\)/.test(text),
   },
   {
+    // ══ A SPIKE THAT RETURNS IS NOT A PRICE ═════════════════════════════════
+    // Measured across the whole book on 2026-09-07: 14 single-point spikes
+    // across 13 funds, two of them within the last week. Fund 6211 stores
+    // 10.2086 between two observations of 1.32 — Azimut's own published series
+    // gives 1.32055 for that date — and fund 2707 stores 221.78 between two of
+    // 2,210. Drawing those publishes one-day moves of 674% and 90% that never
+    // happened, and they poison the 52-week high, the drawdown and every
+    // windowed return.
+    //
+    // The discrimination is narrow on purpose: the point must jump away from
+    // BOTH neighbours and those neighbours must agree with each other. A
+    // redenomination, a distribution or a genuine crash changes the level and
+    // never comes back, so none of them qualify. Nothing is deleted; the row
+    // stays in nav_history and on the published-history page.
+    name: "the NAV chart does not draw vendor spikes that revert",
+    file: "app/Funds/[id]/FundNavChart.tsx",
+    assert: (text) => /setAll\(dropBadTicks\(pts\)\)/.test(text),
+  },
+  {
+    name: "the bad-tick rule stays narrow enough to spare a redenomination",
+    file: "lib/nav-gaps.ts",
+    assert: (text) =>
+      /export function dropBadTicks/.test(text) &&
+      // Both conditions, or the rule starts eating real moves.
+      /const away = /.test(text) && /const rejoin = /.test(text) &&
+      /TICK_AWAY = 0\.25/.test(text) && /TICK_REJOIN = 0\.05/.test(text),
+  },
+  {
     // Both React navs must render from the canonical list, never a local copy.
     // The Market-Pulse pattern below is a LOCAL-LIST canary, not a ban on the
     // page: `href: "/Market-Pulse"` in object-literal form can only come from a

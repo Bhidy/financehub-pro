@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { breakToleranceDays, findGaps, medianIntervalDays, splitAtGaps, withGapBreaks, type NavPoint } from '@/lib/nav-gaps';
+import { breakToleranceDays, dropBadTicks, findGaps, medianIntervalDays, splitAtGaps, withGapBreaks, type NavPoint } from '@/lib/nav-gaps';
 
 /**
  * Interactive NAV history chart — the premium fund page's centrepiece, rebuilt
@@ -224,7 +224,11 @@ export default function FundNavChart({
                     .map((x) => ({ time: String(x.date ?? '').slice(0, 10), value: Number(x.nav) }))
                     .filter((p) => /^\d{4}-\d{2}-\d{2}$/.test(p.time) && Number.isFinite(p.value))
                     .sort((a, b) => (a.time < b.time ? -1 : a.time > b.time ? 1 : 0));
-                setAll(pts);
+                // A point that leaps away from both neighbours and lands back
+                // between them was never a price. Fund 6211 carries a stored
+                // 10.2086 between two observations of 1.32; drawing it publishes
+                // a 674% one-day move that did not happen. See lib/nav-gaps.ts.
+                setAll(dropBadTicks(pts));
                 setStatus(pts.length >= 2 ? 'ready' : 'empty');
             })
             .catch(() => {

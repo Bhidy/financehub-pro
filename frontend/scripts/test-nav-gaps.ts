@@ -5,7 +5,7 @@
 import { readFileSync } from 'fs';
 import {
     medianIntervalDays, gapToleranceDays, breakToleranceDays, findGaps, withGapBreaks,
-    splitAtGaps, anchorWithinTolerance, type NavPoint,
+    splitAtGaps, anchorWithinTolerance, dropBadTicks, type NavPoint,
 } from '../lib/nav-gaps';
 
 let failures = 0;
@@ -107,6 +107,46 @@ console.log('\n[8] Degenerate inputs must not throw');
 check('empty', findGaps([]).length, 0);
 check('single point', findGaps([{ time: '2026-01-01', value: 1 }]).length, 0);
 check('single point passthrough', withGapBreaks([{ time: '2026-01-01', value: 1 }]).length, 1);
+
+
+// ── [6] BAD TICKS — a price that leaps and comes straight back ──────────────
+// Every spike below is a real row measured in production on 2026-09-07.
+console.log('\n[6] BAD TICKS — vendor errors that must not be drawn as price moves');
+{
+    const t = (time: string, value: number) => ({ time, value });
+    const vals = (ps: NavPoint[]) => ps.map((p) => p.value);
+
+    // fund 6211: 1.3191 -> 10.2086 -> 1.3205. Azimut publishes 1.32055 for it.
+    check('674% spike that returns is dropped',
+        vals(dropBadTicks([t('2024-12-23', 1.3191), t('2024-12-24', 10.2086), t('2024-12-25', 1.3205)])),
+        [1.3191, 1.3205]);
+
+    // fund 2707: a downward tick is the same error wearing the other sign.
+    check('downward spike that returns is dropped',
+        vals(dropBadTicks([t('2026-03-17', 2210.14), t('2026-03-18', 221.783), t('2026-03-19', 2200.07)])),
+        [2210.14, 2200.07]);
+
+    // fund 6061 redenominated 104.24 -> 1.59 and STAYED there. The level
+    // changed, which is exactly what an error never does.
+    check('a redenomination is not a bad tick',
+        vals(dropBadTicks([t('2025-12-30', 104.2434), t('2025-12-31', 1.59), t('2026-01-02', 1.6021)])),
+        [104.2434, 1.59, 1.6021]);
+
+    check('a real crash that persists is kept',
+        vals(dropBadTicks([t('2026-01-01', 100), t('2026-01-02', 60), t('2026-01-03', 61)])),
+        [100, 60, 61]);
+
+    check('ordinary movement is untouched',
+        vals(dropBadTicks([t('2026-01-01', 100), t('2026-01-02', 103), t('2026-01-03', 101)])),
+        [100, 103, 101]);
+
+    check('an endpoint is never judged — it has only one neighbour',
+        vals(dropBadTicks([t('2026-01-01', 900), t('2026-01-02', 100), t('2026-01-03', 101)])),
+        [900, 100, 101]);
+
+    check('a single point survives', vals(dropBadTicks([t('2026-01-01', 1)])), [1]);
+    check('an empty series survives', vals(dropBadTicks([])), []);
+}
 
 console.log(failures ? `\n❌ ${failures} assertion(s) failed\n` : '\n✅ all nav-gap assertions passed\n');
 process.exit(failures ? 1 : 0);

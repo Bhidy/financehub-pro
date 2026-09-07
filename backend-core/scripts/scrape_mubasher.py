@@ -337,9 +337,27 @@ async def main(test_mode=False, gaps_only=False):
         
         await login(page)
 
-        all_funds = await scrape_census(page)
-        if not all_funds:
+        # ── WHERE THE FUND LIST COMES FROM ──────────────────────────────────
+        # Gap mode does not need the census, and should not depend on it. The
+        # census walks Mubasher's paginated list page and clicks through it, so
+        # it breaks whenever they touch that UI — which is exactly what happened
+        # on the first live run: login succeeded, then ElementHandle.click timed
+        # out after 30s and took the whole job down with it.
+        #
+        # The database already knows every fund id, and a fund page URL is
+        # `/countries/EG/funds/{id}`. For repairing history that is strictly
+        # better: it is the authoritative list, it costs no page loads, and it
+        # cannot be broken by a layout change.
+        if gaps_only:
             all_funds = await get_existing_funds_from_db(conn)
+        else:
+            try:
+                all_funds = await scrape_census(page)
+            except Exception as e:  # noqa: BLE001 — a UI change must not end the run
+                print(f"   ⚠️ Census failed ({type(e).__name__}); falling back to the DB list.")
+                all_funds = []
+            if not all_funds:
+                all_funds = await get_existing_funds_from_db(conn)
 
         # ── GAP-DRIVEN MODE ─────────────────────────────────────────────────
         # THE RESUME GUARD IS WHY THIS JOB NEVER REPAIRED ANYTHING. It skips a

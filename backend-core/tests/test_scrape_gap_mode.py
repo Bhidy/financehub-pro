@@ -50,3 +50,19 @@ def test_credentials_are_required_and_never_defaulted():
     assert 'os.environ.get("MUBASHER_USER", "")' in SRC
     assert 'os.environ.get("MUBASHER_PASS", "")' in SRC
     assert "FATAL" in SRC, "it must fail closed when they are absent"
+
+
+def test_gap_mode_does_not_depend_on_the_census():
+    """The census walks Mubasher's paginated list page and clicks through it, so
+    it breaks whenever they touch that UI. On the first live run login succeeded
+    and then ElementHandle.click timed out after 30s, taking the whole job down.
+    The database already knows every fund id and the page URL is derivable."""
+    assert re.search(r"if gaps_only:\s*\n\s*all_funds = await get_existing_funds_from_db\(conn\)", SRC)
+
+
+def test_a_census_failure_never_ends_the_run():
+    assert re.search(r"try:\s*\n\s*all_funds = await scrape_census\(page\)\s*\n\s*except Exception", SRC)
+
+
+def test_the_fund_page_url_is_derived_from_the_id():
+    assert 'countries/EG/funds/{r[\'fund_id\']}' in SRC or "countries/EG/funds/" in SRC

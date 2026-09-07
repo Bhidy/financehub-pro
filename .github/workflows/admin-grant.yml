@@ -1,0 +1,77 @@
+name: Admin - Grant Role
+
+# ============================================================
+# Grants (or revokes, or just reports) the `admin` role on an account that
+# already exists. Runs backend-core/scripts/promote_admin.py.
+#
+# Why a workflow: laptop -> Hetzner SSH is blocked at the network edge and the
+# production DATABASE_URL is a repo secret, so the self-hosted runner is the
+# only place a maintainer can touch the users table. Same rationale as
+# ops-inspect.yml.
+#
+# Why the email is a SECRET and not a dispatch input: this repository is
+# PUBLIC. A workflow_dispatch input is rendered in plain text on the run page
+# and in the logs; a secret is masked everywhere. Set it once:
+#
+#     gh secret set ADMIN_EMAIL
+#
+# This workflow NEVER touches a password. Granting a role and setting a
+# password are separate jobs on purpose — see the header of promote_admin.py.
+# Default action is `report`, so a mis-click changes nothing.
+#
+# Requires repo secrets: DATABASE_URL, ADMIN_EMAIL.
+# ============================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to do with the ADMIN_EMAIL account"
+        required: true
+        default: report
+        type: choice
+        options:
+          - report
+          - promote
+          - revoke
+
+concurrency:
+  group: admin-grant
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  grant:
+    name: ${{ inputs.action }} admin role
+    runs-on: [self-hosted, linux, x64, hetzner]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: pip install --quiet asyncpg
+
+      - name: Fail early if the target address is not configured
+        env:
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+        run: |
+          if [ -z "$ADMIN_EMAIL" ]; then
+            echo "::error::Repo secret ADMIN_EMAIL is not set. Run: gh secret set ADMIN_EMAIL"
+            exit 1
+          fi
+
+      - name: Apply
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          MODE: ${{ inputs.action }}
+        run: |
+          case "$MODE" in
+            promote) FLAG="--promote" ;;
+            revoke)  FLAG="--revoke" ;;
+            *)       FLAG="" ;;
+          esac
+          python backend-core/scripts/promote_admin.py $FLAG

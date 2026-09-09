@@ -33,12 +33,6 @@
                     "ar": "الصناديق الاستثمارية"
             },
             {
-                    "key": "nav_pulse",
-                    "href": "/Market-Pulse",
-                    "en": "MARKET PULSE",
-                    "ar": "نبض السوق"
-            },
-            {
                     "key": "nav_news",
                     "href": "/News",
                     "en": "MARKET NEWS",

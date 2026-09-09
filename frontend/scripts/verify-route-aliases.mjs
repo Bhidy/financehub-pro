@@ -485,17 +485,33 @@ const checks = [
     },
   },
   {
-    // MARKET PULSE IS A NAV ITEM (restored 2026-09-06, owner request). The page
-    // shipped in both languages the whole time (app/Market-Pulse +
-    // app/ar/Market-Pulse); only the menu entry was missing, so it was reachable
-    // by URL alone. Pin it here so a future nav edit cannot drop it silently, and
-    // pin the Arabic label too — an item added English-only would render an
-    // English word in the Arabic bar (see the bilingual-parity rule).
-    name: "Market Pulse is in the canonical nav, in both languages",
+    // MARKET PULSE IS NOT A NAV ITEM (removed 2026-09-09, owner request).
+    //
+    // It was RESTORED to the bar on 2026-09-06 by the same owner, and this gate
+    // asserted the opposite until today. That history is the point: the entry
+    // has now moved in both directions, so whichever state is current has to be
+    // pinned, or the next unrelated nav edit silently picks a side.
+    //
+    // Removing the MENU ENTRY is not removing the PAGE. app/Market-Pulse and
+    // app/ar/Market-Pulse still ship, stay in ar-twin-routes.json and the
+    // sitemap, and answer on their own URLs — so nothing 404s, no Arabic twin
+    // is orphaned, and restoring the item is a one-line change to lib/nav.json
+    // plus flipping this assertion back.
+    name: "Market Pulse is NOT in the canonical nav (owner decision 2026-09-09)",
     file: "lib/nav.json",
+    assert: (text) => !JSON.parse(text).items.some((i) => i.key === "nav_pulse"),
+  },
+  {
+    // ...but the PAGE must still exist in both languages. Without this, the nav
+    // removal above would look identical to someone having deleted the route.
+    name: "Market Pulse still ships in both languages, nav entry or not",
+    file: "lib/ar-twin-routes.json",
     assert: (text) => {
-      const item = JSON.parse(text).items.find((i) => i.key === "nav_pulse");
-      return Boolean(item) && item.href === "/Market-Pulse" && item.en === "MARKET PULSE" && item.ar === "\u0646\u0628\u0636 \u0627\u0644\u0633\u0648\u0642";
+      const doc = JSON.parse(text);
+      const flat = JSON.stringify(doc);
+      return flat.includes("/Market-Pulse")
+        && existsSync(path.join(root, "app/Market-Pulse"))
+        && existsSync(path.join(root, "app/ar/Market-Pulse"));
     },
   },
   {

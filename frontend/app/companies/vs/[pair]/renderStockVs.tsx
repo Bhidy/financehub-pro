@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getTicker, getStats, getAllTickers, type Ticker } from '@/lib/public-data';
-import { SITE_URL, absUrl, symbolPath, symbolPathAr, OG_DEFAULTS } from '@/lib/seo';
+import { SITE_URL, absUrl, symbolPath, symbolPathAr, OG_DEFAULTS, clampTitle } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { ltrNum } from '@/lib/bidi';
@@ -208,7 +208,13 @@ export async function stockVsMetadata(pairParam: string, lang: Lang): Promise<Me
     const pathAr = vsPath(A.symbol, B.symbol, 'ar');
     const canonical = lang === 'ar' ? pathAr : pathEn;
 
-    const title = t(STOCKVS.title(A.name, B.name, A.symbol, B.symbol), lang);
+    // Longest form that fits the SERP budget, then names without the ticker
+    // parenthetical, then tickers alone. The H1 always carries both full names.
+    const title = clampTitle([
+        t(STOCKVS.title(A.name, B.name, A.symbol, B.symbol), lang),
+        t(STOCKVS.titleNames(A.name, B.name), lang),
+        t(STOCKVS.titleShort(A.symbol, B.symbol), lang),
+    ]);
     let description = t(STOCKVS.description(A.name, B.name, A.symbol, B.symbol), lang);
     if (description.length > 160) description = `${description.slice(0, 157).trimEnd()}…`;
 

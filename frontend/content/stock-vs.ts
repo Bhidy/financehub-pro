@@ -139,6 +139,27 @@ export const STOCKVS = {
             `${a} vs ${b} (${sa} vs ${sb}) — Compare EGX Stocks`,
             `${a} مقابل ${b} (${sa} و${sb}) — مقارنة أسهم البورصة المصرية`
         ),
+    /**
+     * Fallback <title> for pairs whose registered names are simply too long —
+     * "Ibnsina Pharma vs MM Group for Industry & International Trade (ISPH vs
+     * MTIE) — Compare EGX Stocks" is 118 characters and was cut mid-name in
+     * results. Tickers are what a comparison searcher types anyway, and the H1
+     * still carries both full names. clampTitle() picks this only when the full
+     * form does not fit.
+     */
+    titleShort: (sa: string, sb: string): S =>
+        s(`${sa} vs ${sb} — Compare EGX Stocks`, `${sa} و${sb} — مقارنة أسهم البورصة المصرية`),
+    /**
+     * Middle candidate: both names, no ticker parenthetical. A short pair
+     * ("Juhayna vs Edita") keeps the names a searcher actually types; only a
+     * pair whose names cannot fit at all drops to titleShort.
+     */
+    titleNames: (a: string, b: string): S =>
+        // The Arabic qualifier is deliberately shorter than the full form's
+        // «مقارنة أسهم البورصة المصرية» (29 chars): with the long one there is
+        // almost no budget left for the two company names, and a title that
+        // names neither company is worse than a terser qualifier.
+        s(`${a} vs ${b} — Compare EGX Stocks`, `${a} مقابل ${b} — مقارنة أسهم`),
     description: (a: string, b: string, sa: string, sb: string): S =>
         s(
             `Compare ${a} (${sa}) and ${b} (${sb}) on the Egyptian Exchange: market cap, valuation, revenue, profit, margins, returns and growth, side by side.`,

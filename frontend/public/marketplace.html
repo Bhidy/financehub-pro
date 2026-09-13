@@ -39,6 +39,10 @@
             --c-hero: linear-gradient(135deg, rgba(20, 184, 166, 0.16), rgba(45, 212, 191, 0.03) 40%, rgba(255, 255, 255, 0) 70%);
             --c-grid: linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 184, 166, 0.04) 1px, transparent 1px);
             --shadow-premium: 0 24px 60px rgba(148, 163, 184, 0.18);
+            /* --shadow-premium is tuned for a 400px card; on a 60px toolbar a
+               60px blur reads as fog. Same slate family, bar-scale geometry:
+               a contact hairline plus a short lifted spread. */
+            --shadow-bar: 0 1px 2px rgba(148, 163, 184, 0.14), 0 14px 30px -14px rgba(100, 116, 139, 0.45);
             --shadow-halo: 0 16px 34px rgba(20, 184, 166, 0.12);
             --glass-bg: rgba(255, 255, 255, 0.76);
             --glass-border: rgba(148, 163, 184, 0.2);
@@ -61,6 +65,7 @@
             --c-hero: radial-gradient(circle at 10% 5%, rgba(20, 184, 166, 0.14), transparent 45%), radial-gradient(circle at 90% 10%, rgba(45, 212, 191, 0.12), transparent 44%);
             --c-grid: linear-gradient(rgba(45, 212, 191, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 184, 166, 0.03) 1px, transparent 1px);
             --shadow-premium: 0 24px 70px rgba(0, 0, 0, 0.5);
+            --shadow-bar: 0 1px 2px rgba(0, 0, 0, 0.55), 0 16px 34px -16px rgba(0, 0, 0, 0.9);
             --shadow-halo: 0 16px 34px rgba(20, 184, 166, 0.2);
             --glass-bg: rgba(18, 19, 20, 0.62);
             --glass-border: rgba(255, 255, 255, 0.08);
@@ -196,7 +201,6 @@
             display: flex; gap: 0.25rem; padding: 0.28rem;
             background: var(--c-panel); border: 1px solid var(--c-border); border-radius: 0.95rem;
         }
-        .fsb-seg.fsb-seg-wrap { flex-wrap: wrap; }
         .fsb-seg button {
             flex: 1 1 auto; min-width: 2.6rem; padding: 0.5rem 0.4rem;
             border-radius: 0.7rem; font-size: 0.78rem; font-weight: 600;
@@ -204,8 +208,10 @@
         }
         .fsb-seg button:hover { color: var(--c-text-main); }
         .fsb-seg button.active {
-            background: linear-gradient(135deg, #14B8A6 10%, #0f766e 100%);
-            color: #fff; box-shadow: 0 6px 16px rgba(20,184,166,0.25);
+            /* Matches .rtb-thumb, and for the same reason: white on the old
+               gradient's light end measured 2.46:1 against a 4.5:1 requirement. */
+            background: var(--teal-dark);
+            color: #fff; box-shadow: 0 6px 16px rgba(20,184,166,0.3);
         }
         /* toggles */
         .fsb-toggle-group { display: flex; flex-direction: column; gap: 0.6rem; }
@@ -222,9 +228,215 @@
         }
         .fsb-toggle.active { border-color: rgba(15,118,110,0.35); background: rgba(20,184,166,0.08); color: var(--teal-dark); }
         .fsb-toggle.active .fsb-toggle-dot { background: #14B8A6; border-color: #14B8A6; box-shadow: 0 0 0 3px rgba(20,184,166,0.18); }
-        /* results header */
-        .fsb-results-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
-        .fsb-view-switch { display: flex; align-items: center; gap: 0.4rem; }
+        /* ── RESULTS TOOLBAR — the lens that travels with the data ───────────
+           Return period and Sort used to be the last two groups of the filter
+           rail. Measured on production at 1440: the period control sat at
+           y=1361 while the first card it re-renders sat at y=403 — 958px below
+           the thing it changes, at the bottom of a 1176px column. A reader
+           could not see the effect of their own click.
+           Neither control is a filter: they do not remove funds, they change
+           what every card SHOWS (the headline figure, its label, the sparkline
+           window) and the order they show it in. So they belong with the
+           results, in one instrument that stays with the list while it scrolls.
+           Surface, radius, border and shadow are the .fsb-card treatment, so
+           the bar reads as a sibling of the filter rail rather than a new
+           species. */
+        .fsb-results-head {
+            position: sticky;
+            /* Same header clearance the filter rail uses (RAIL_TOP_GAP = 6.5rem). */
+            top: 6.5rem;
+            z-index: 20;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 0.85rem 1.25rem; flex-wrap: wrap;
+            margin-bottom: 1.1rem;
+            padding-block: 0.7rem;
+            padding-inline: 1.25rem 0.9rem;
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: 1.6rem;
+            box-shadow: var(--shadow-bar);
+            /* ONE height for every control in the bar. Three instruments that
+               differ by 2px read as assembled; identical heights read as
+               machined. */
+            --rtb-h: 2.3rem;
+        }
+        /* Between the stacked breakpoint and ~1200px the sidebar is still
+           alongside, so the results column is ~750px — too narrow for the count
+           and all three instruments on one line. Give the count its own row and
+           keep the instruments together on the next (measured at 1120: three
+           ragged rows became two), and stop pinning: a ~95px bar is rent a
+           narrow viewport cannot pay, and it is exactly where the reader has
+           least room to spare. */
+        @media (max-width: 1200px) {
+            .fsb-results-head { position: static; top: auto; align-items: stretch; }
+            .fsb-results-count,
+            .rtb-controls { width: 100%; }
+        }
+
+        .fsb-results-count { display: flex; align-items: baseline; gap: 0.45rem; min-width: 0; }
+
+        /* The control cluster: three instruments articulated by hairlines into
+           one panel, rather than three widgets parked next to each other. */
+        .rtb-controls {
+            display: flex; align-items: center; gap: 0.8rem;
+            flex-wrap: wrap; min-width: 0;
+        }
+        .rtb-group { display: flex; align-items: center; gap: 0.55rem; min-width: 0; }
+        .rtb-group + .rtb-group {
+            padding-inline-start: 0.8rem;
+            border-inline-start: 1px solid var(--c-border);
+        }
+        .rtb-cap {
+            font-size: 0.64rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.15em; color: var(--c-text-muted); white-space: nowrap;
+        }
+        @media (max-width: 1330px) {
+            /* The captions are the first thing to go when the bar tightens: the
+               rails keep their accessible names, and "3M YTD 1Y 3Y 5Y" sitting
+               directly above cards that print the period over every figure is
+               not ambiguous. */
+            .rtb-cap { display: none; }
+            .rtb-group + .rtb-group { padding-inline-start: 0.7rem; }
+        }
+
+        /* Segmented rail with a travelling thumb. The thumb is a real element
+           that MOVES between segments rather than a background that blinks on
+           and off — the difference between a control and an instrument.
+           Positioned from offsetLeft/offsetWidth (layout px) rather than
+           getBoundingClientRect (visual px): starta-theme.js applies
+           body{zoom:0.9}, and a CSS translateX is layout px, so only the
+           offset* pair agrees with it. */
+        .rtb-rail {
+            position: relative;
+            /* Grid, not flex, and every segment the SAME width:
+               minmax(max-content, 1fr) sizes all columns to the widest label.
+               That is what lets the thumb animate with transform ALONE — see
+               .rtb-thumb. (The thumb is absolutely positioned, so it is not a
+               grid item and takes no column.) */
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(max-content, 1fr);
+            align-items: stretch;
+            gap: 0.1rem;
+            height: var(--rtb-h);
+            padding: 0.22rem;
+            background: var(--c-panel);
+            border: 1px solid var(--c-border);
+            border-radius: 999px;
+        }
+        .rtb-thumb {
+            position: absolute;
+            top: 0.22rem; bottom: 0.22rem; left: 0;
+            /* width and transform are written INLINE from the active segment —
+               deliberately not through custom properties. A transition on
+               `transform` whose value arrives via an unregistered var() does not
+               reliably re-run when only that var changes: measured in RTL, the
+               var resolved to 4px on the thumb while the computed transform was
+               still matrix(1,0,0,1,212,0) — the thumb never left the first
+               segment. Inline values on the element always restart it. */
+            width: 0;
+            border-radius: 999px;
+            /* Solid --teal-dark, not the teal→teal-dark gradient the segmented
+               controls used: measured, white on the gradient's LIGHT end is
+               2.46:1, and these labels are 12.5px bold — normal text under
+               WCAG, which wants 4.5:1. Flat #0F766E measures 5.54:1. A gradient
+               across a 45x25px pill was mush at this size anyway; the richness
+               is in the halo and the travel. */
+            background: var(--teal-dark);
+            box-shadow: 0 6px 16px rgba(20, 184, 166, 0.3);
+            pointer-events: none;
+        }
+        /* .is-ready arms the TRANSITION only — never the visibility. The thumb
+           is the background of the active segment, whose label is #fff: if
+           being visible depended on a class that a hidden tab (where rAF never
+           fires) might not get, the selected period would render as white text
+           on nothing. Width starts at 0, so there is nothing to see before the
+           first measurement anyway, and if the arming never happens the thumb
+           simply does not animate. */
+        /* TRANSFORM ONLY — deliberately not width.
+           Clicking a period re-renders 207 funds and re-initialises ten
+           lightweight-charts instances, which blocks the main thread for
+           several hundred ms. A width transition needs layout on every frame,
+           so it cannot advance while that runs: measured, the thumb sat a whole
+           segment behind the label the reader had just pressed. A transform
+           runs on the compositor and is immune to it — the control answers
+           instantly even while the list is still rebuilding. Equal-width
+           segments are what make transform sufficient. */
+        .rtb-rail.is-ready .rtb-thumb {
+            transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .rtb-rail.is-ready .rtb-thumb { transition: none; }
+        }
+
+        .period-btn,
+        .view-btn {
+            position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: center;
+            padding-inline: 0.8rem;
+            border-radius: 999px;
+            font-size: 0.78rem; font-weight: 700; letter-spacing: 0.02em;
+            color: var(--c-text-muted);
+            white-space: nowrap;
+            transition: color 180ms ease;
+        }
+        .period-btn:hover,
+        .view-btn:hover { color: var(--c-text-main); }
+        .period-btn.active,
+        .view-btn.active { color: #fff; }
+        .rtb-rail:focus-within { border-color: rgba(15, 118, 110, 0.35); }
+        .period-btn:focus-visible,
+        .view-btn:focus-visible {
+            outline: 2px solid rgba(20, 184, 166, 0.55);
+            outline-offset: 2px;
+        }
+
+        /* Sort: a native <select> wearing the same pill. Native because it
+           carries keyboard, screen-reader and the phone's own picker for free,
+           which no hand-rolled menu on this page would. */
+        .rtb-sort {
+            display: flex; align-items: center;
+            height: var(--rtb-h);
+            padding-inline: 0.9rem 0.2rem;
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: 999px;
+            transition: border-color 180ms ease, box-shadow 180ms ease;
+        }
+        .rtb-sort:hover { border-color: rgba(20, 184, 166, 0.35); }
+        .rtb-sort:focus-within {
+            border-color: rgba(15, 118, 110, 0.35);
+            box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.08);
+        }
+        .rtb-sort select {
+            appearance: none; -webkit-appearance: none;
+            background-color: transparent; border: 0; outline: none;
+            height: 100%;
+            padding-inline: 0 2rem;
+            font-size: 0.78rem; font-weight: 700; color: var(--c-text-main);
+            cursor: pointer;
+            /* Same chevron data-URI and RTL flip as .control-select. */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%235b6677'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.8' d='m6 9 6 6 6-6' /%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.6rem center;
+            background-size: 0.9rem;
+        }
+        html[dir="rtl"] .rtb-sort select { background-position: left 0.6rem center; }
+
+        @media (max-width: 560px) {
+            /* Phone: the count owns its row, the instruments own theirs and the
+               period rail scrolls instead of wrapping into a second line. */
+            .fsb-results-head { padding: 0.85rem 0.9rem; border-radius: 1.35rem; }
+            html[dir="rtl"] .fsb-results-head { padding: 0.85rem 0.9rem; }
+            .rtb-controls { width: 100%; gap: 0.45rem; }
+            .rtb-controls .rtb-rail--period {
+                order: -1; width: 100%;
+                overflow-x: auto; scrollbar-width: none;
+            }
+            .rtb-controls .rtb-rail--period::-webkit-scrollbar { display: none; }
+            .rtb-sort { flex: 1 1 auto; min-width: 0; }
+            .rtb-sort select { min-width: 0; width: 100%; }
+        }
 
         .funds-hero::before,
         .funds-hero::after {
@@ -320,22 +532,6 @@
             color: var(--c-text-main);
             font-size: 0.7rem;
             line-height: 1;
-        }
-
-        .period-btn,
-        .view-btn {
-            border: 1px solid var(--c-border);
-            background: var(--c-surface);
-            color: var(--c-text-muted);
-            transition: all 180ms ease;
-        }
-
-        .period-btn.active,
-        .view-btn.active {
-            background: linear-gradient(135deg, rgba(20, 184, 166, 0.14), rgba(45, 212, 191, 0.08));
-            color: var(--teal-dark);
-            border-color: rgba(15, 118, 110, 0.2);
-            box-shadow: 0 12px 24px rgba(20, 184, 166, 0.1);
         }
 
         .control-input,
@@ -696,8 +892,23 @@
         .ftable { display: flex; flex-direction: column; gap: 0.85rem; }
         .ftable-cols {
             display: grid;
-            grid-template-columns: minmax(15rem, 2.2fr) 1fr 0.8fr 0.9fr 0.65fr 0.65fr 0.65fr 6rem;
-            gap: 0.9rem; align-items: center;
+            /* Fund · Type · Risk · NAV · 3M · YTD · 1Y · 3Y · compare.
+               3M earns its column: it is the BEST-covered period in the feed
+               (188 of 207 funds carry it, against 177 YTD, 133 3Y, 121 1Y), so
+               it fills a table that was largely em-dashes.
+               Every data column then carries min-content as its FLOOR, so a risk
+               chip, a NAV or a return can never be clipped by the fr split — the
+               shortfall comes out of the fund column instead, which has somewhere
+               to give (it clamps, and keeps the full name in its title).
+               Measured against production at 1280: the 8-column table there left
+               +1.8px of slack on the risk chip, and a naive ninth column took
+               that to -12.3px, overlapping NAV. */
+            grid-template-columns:
+                minmax(13rem, 2.5fr) minmax(min-content, 0.85fr)
+                minmax(min-content, 0.72fr) minmax(min-content, 0.92fr)
+                minmax(min-content, 0.68fr) minmax(min-content, 0.68fr)
+                minmax(min-content, 0.68fr) minmax(min-content, 0.68fr) 5.4rem;
+            gap: 0.75rem; align-items: center;
         }
         .ftable-head {
             padding: 0.35rem 1.4rem;
@@ -705,7 +916,8 @@
             letter-spacing: 0.16em; color: var(--c-text-muted);
         }
         .ftable-row {
-            padding: 1rem 1.4rem;
+            padding: 1.15rem 1.35rem;
+            min-height: 5.75rem;
             background: var(--c-surface);
             border: 1px solid var(--c-border);
             border-radius: 1.4rem;
@@ -720,14 +932,31 @@
             box-shadow: 0 18px 42px rgba(20, 184, 166, 0.1);
         }
         .ftable-cell { min-width: 0; }
-        .ftable-num { font-weight: 700; white-space: nowrap; direction: ltr; }
+        /* 0.875rem, not the inherited 1rem: with a fourth return column a value
+           like "+19.19%" measured 62px inside a 54px cell at a 1280 viewport, so
+           neighbouring figures ran into each other's gutter and read as one
+           string of digits. direction:ltr keeps the leading +/- on the left in
+           Arabic (lib/bidi.ts documents that defect). */
+        .ftable-num { font-weight: 700; font-size: 0.875rem; white-space: nowrap; direction: ltr; }
         .ftable-logo {
             width: 3.1rem; height: 3.1rem; flex-shrink: 0; padding: 0.3rem;
             border: 1px solid var(--c-border); border-radius: 0.9rem;
             background: var(--c-surface); overflow: hidden;
         }
         .ftable-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 0.55rem; }
-        .ftable-name { font-weight: 700; color: var(--c-text-main); letter-spacing: -0.01em; line-height: 1.3; }
+        .ftable-name {
+            font-weight: 700; color: var(--c-text-main);
+            letter-spacing: -0.01em; line-height: 1.35;
+            /* Measured over the live universe (207 funds, this column width):
+               20 names take 1 line, 133 take 2, 37 take 3, and 17 take 4-6.
+               One `truncate` line cut three quarters of them mid-word. Three
+               lines show the WHOLE name for 92% and cap the row at ~110px;
+               unclamped, the longest name (160 chars) built a 167px row beside
+               an 83px one, which destroys the scan rhythm. The remaining 8%
+               keep the full string in the link's title. */
+            display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+            overflow: hidden;
+        }
         .ftable-name:hover { color: var(--teal-dark); }
         @media (max-width: 960px) {
             .ftable-head { display: none; }
@@ -941,7 +1170,7 @@
                             </div>
                         </div>
 
-                        <div class="fsb-group fsb-toggle-group">
+                        <div class="fsb-group fsb-group-last fsb-toggle-group">
                             <button id="shariahToggle" type="button" class="fsb-toggle">
                                 <span class="fsb-toggle-dot"></span><span data-key="shariah_only">Shariah-compliant only</span>
                             </button>
@@ -950,33 +1179,49 @@
                             </button>
                         </div>
 
-                        <div class="fsb-group">
-                            <label class="fsb-label" data-key="period_label">Return period</label>
-                            <div class="fsb-seg fsb-seg-wrap" id="periodSelector">
-                                <button class="period-btn" type="button" data-period="3m">3M</button>
-                                <button class="period-btn active" type="button" data-period="ytd">YTD</button>
-                                <button class="period-btn" type="button" data-period="1y">1Y</button>
-                                <button class="period-btn" type="button" data-period="3y">3Y</button>
-                                <button class="period-btn" type="button" data-period="5y">5Y</button>
-                            </div>
-                        </div>
-                        <div class="fsb-group fsb-group-last">
-                            <label class="fsb-label" for="sortSelect" data-key="sort_label">Sort by</label>
-                            <select id="sortSelect" class="control-select px-4 text-sm"></select>
-                        </div>
                     </div>
                 </aside>
 
                 <!-- ── Results column ────────────────────────────────────────── -->
                 <div class="funds-results">
                     <div class="fsb-results-head">
-                        <div class="text-sm font-medium text-muted">
+                        <div class="fsb-results-count text-sm font-medium text-muted">
                             <span id="resultsCount" class="font-display text-3xl font-bold tracking-[-0.04em] text-main">0</span>
                             <span data-key="results_label">funds matching your filters</span>
                         </div>
-                        <div class="fsb-view-switch">
-                            <button id="gridViewBtn" class="view-btn active rounded-full px-4 py-2 text-sm font-semibold" data-view="grid" data-key="grid_view">Grid</button>
-                            <button id="tableViewBtn" class="view-btn rounded-full px-4 py-2 text-sm font-semibold" data-view="table" data-key="table_view">Table</button>
+
+                        <div class="rtb-controls">
+                            <!-- Period first, and it reads first: it is not a filter — it
+                                 re-labels and re-values the headline figure on every card
+                                 and re-windows every sparkline. Sort second (it reorders
+                                 what the period revealed), layout last. -->
+                            <div class="rtb-group">
+                                <span class="rtb-cap" data-key="period_label">Return period</span>
+                                <div class="rtb-rail rtb-rail--period" id="periodSelector" role="group" aria-label="Return period" data-key-aria="period_label">
+                                    <span class="rtb-thumb" aria-hidden="true"></span>
+                                    <button class="period-btn" type="button" data-period="3m">3M</button>
+                                    <button class="period-btn active" type="button" data-period="ytd">YTD</button>
+                                    <button class="period-btn" type="button" data-period="1y">1Y</button>
+                                    <button class="period-btn" type="button" data-period="3y">3Y</button>
+                                    <button class="period-btn" type="button" data-period="5y">5Y</button>
+                                </div>
+                            </div>
+
+                            <div class="rtb-group">
+                                <label class="rtb-cap" for="sortSelect" data-key="sort_label">Sort by</label>
+                                <div class="rtb-sort">
+                                    <select id="sortSelect"></select>
+                                </div>
+                            </div>
+
+                            <!-- No caption: "Grid" and "Table" are their own labels. -->
+                            <div class="rtb-group">
+                                <div class="rtb-rail rtb-rail--view" id="viewSwitch" role="group" aria-label="Result layout" data-key-aria="view_label">
+                                    <span class="rtb-thumb" aria-hidden="true"></span>
+                                    <button id="gridViewBtn" class="view-btn active" type="button" data-view="grid" data-key="grid_view">Grid</button>
+                                    <button id="tableViewBtn" class="view-btn" type="button" data-view="table" data-key="table_view">Table</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -990,6 +1235,7 @@
                             <div data-key="th_type">Type</div>
                             <div data-key="th_risk">Risk</div>
                             <div data-key="th_nav">NAV</div>
+                            <div data-key="th_3m">3M</div>
                             <div data-key="th_ytd">YTD</div>
                             <div data-key="th_1y">1Y</div>
                             <div data-key="th_3y">3Y</div>
@@ -1077,6 +1323,7 @@
                 marketplace_subline: "Accurate, up-to-date data to help you compare funds and make better decisions.",
                 grid_view: "Grid",
                 table_view: "Table",
+                view_label: "Result layout",
                 search_label: "Search fund",
                 search_placeholder: "Search by fund or manager",
                 type_label: "Fund type",
@@ -1114,6 +1361,7 @@
                 th_type: "Type",
                 th_risk: "Risk",
                 th_nav: "NAV",
+                th_3m: "3M",
                 th_ytd: "YTD",
                 th_1y: "1Y",
                 th_3y: "3Y",
@@ -1182,6 +1430,7 @@
                 marketplace_subline: "بيانات دقيقة ومحدثة تساعدك على مقارنة الصناديق واتخاذ قرارات أفضل.",
                 grid_view: "بطاقات",
                 table_view: "جدول",
+                view_label: "طريقة العرض",
                 search_label: "ابحث عن صندوق",
                 search_placeholder: "ابحث باسم الصندوق أو المدير",
                 type_label: "نوع الصندوق",
@@ -1219,6 +1468,7 @@
                 th_type: "النوع",
                 th_risk: "المخاطر",
                 th_nav: "NAV",
+                th_3m: "3 أشهر",
                 th_ytd: "هذا العام",
                 th_1y: "سنة",
                 th_3y: "3 سنوات",
@@ -1568,8 +1818,16 @@
             fundSearch.placeholder = getLabels().search_placeholder;
             navMinInput.placeholder = getLabels().nav_min;
             navMaxInput.placeholder = getLabels().nav_max;
+            // The rails show bare tokens (3M / YTD) or swap width with the
+            // language, so their accessible NAME is the only caption a screen
+            // reader gets — translate it with everything else.
+            document.querySelectorAll('[data-key-aria]').forEach((el) => {
+                const label = translations[state.lang][el.getAttribute('data-key-aria')];
+                if (label) el.setAttribute('aria-label', label);
+            });
             populateFilterOptions();
             renderFunds();
+            syncRailThumbs();
         }
 
         function populateSelect(select, items, defaultLabel, currentValue) {
@@ -2263,13 +2521,14 @@
                                 <img src="${escapeHtml(fund.logo_url || DEFAULT_LOGO)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${DEFAULT_LOGO}';">
                             </a>
                             <div class="min-w-0">
-                                <a class="ftable-name block truncate" href="${fundHref(fund.fund_id)}">${escapeHtml(getFundName(fund))}</a>
+                                <a class="ftable-name" href="${fundHref(fund.fund_id)}" title="${escapeHtml(getFundName(fund))}">${escapeHtml(getFundName(fund))}</a>
                                 <div class="mt-0.5 truncate text-xs text-muted">${escapeHtml(getManagerName(fund))}</div>
                             </div>
                         </div>
                         <div class="ftable-cell text-sm text-muted" data-mob-label="${escapeHtml(L.th_type)}">${escapeHtml(getFundTypeName(fund))}</div>
                         <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_risk)}">${riskCell}</div>
                         <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_nav)}"><span class="ftable-num text-main">${escapeHtml(fund.currency)} ${escapeHtml(formatNumber(fund.latestNav))}</span></div>
+                        <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_3m)}">${retVal('3m')}</div>
                         <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_ytd)}">${retVal('ytd')}</div>
                         <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_1y)}">${retVal('1y')}</div>
                         <div class="ftable-cell" data-mob-label="${escapeHtml(L.th_3y)}">${retVal('3y')}</div>
@@ -2404,7 +2663,80 @@
             document.querySelectorAll('.view-btn').forEach((button) => {
                 button.classList.toggle('active', button.dataset.view === state.view);
             });
-            renderFunds();
+            syncRailThumbs();
+            afterPaint(renderFunds);
+        }
+
+        // Paint the control's new state BEFORE the heavy re-render.
+        // Choosing a period rebuilds every visible card and re-initialises its
+        // lightweight-charts instance — several hundred ms of blocked main
+        // thread. A style change made in the SAME task is not composited until
+        // that finishes, so the thumb sat still while the list churned and only
+        // then slid: measured, a whole segment behind the label the reader had
+        // just pressed. One yielded frame lets the thumb start travelling on the
+        // compositor first, after which it animates independently of the work.
+        // rAF is the frame guarantee; the timeout is the floor, because rAF is
+        // paused in a background tab and the render must not depend on it.
+        function afterPaint(fn) {
+            let ran = false;
+            const once = () => { if (ran) return; ran = true; fn(); };
+            requestAnimationFrame(once);
+            setTimeout(once, 60);
+        }
+
+        // ── Segmented-rail thumb ─────────────────────────────────────────────
+        // The active segment is drawn by ONE element that travels, not by a
+        // background that blinks on and off — the whole difference between a
+        // set of buttons and an instrument. Kept in CSS (transform + width);
+        // this only measures.
+        //
+        // offsetLeft/offsetWidth, never getBoundingClientRect: starta-theme.js
+        // applies body{zoom:0.9}, so rects come back in VISUAL px while a CSS
+        // translateX is LAYOUT px. Only the offset* pair shares the transform's
+        // scale — a rect-based version lands 10% short of the segment, and the
+        // error grows with distance along the rail.
+        function syncRailThumb(rail) {
+            if (!rail) return;
+            const active = rail.querySelector('.active');
+            const thumb = rail.querySelector('.rtb-thumb');
+            if (!active || !thumb) return;
+            thumb.style.width = `${active.offsetWidth}px`;
+            thumb.style.transform = `translateX(${active.offsetLeft}px)`;
+            // Arm the transition only AFTER the first measurement, or the thumb
+            // slides in from x=0 on every page load. rAF is the right moment,
+            // but it is paused in a background tab — the timeout is the floor so
+            // a tab restored from the background still animates.
+            if (!rail.classList.contains('is-ready') && !rail.dataset.arming) {
+                rail.dataset.arming = '1';
+                const arm = () => rail.classList.add('is-ready');
+                requestAnimationFrame(arm);
+                setTimeout(arm, 150);
+            }
+        }
+
+        function syncRailThumbs() {
+            document.querySelectorAll('.rtb-rail').forEach(syncRailThumb);
+        }
+
+        function watchRailThumbs() {
+            const rails = [...document.querySelectorAll('.rtb-rail')];
+            if (!rails.length) return;
+            syncRailThumbs();
+            // Widths move under this control for three reasons the click
+            // handlers cannot see: the display faces finish loading, the
+            // viewport changes, and the language toggle swaps "Grid" for
+            // "بطاقات". Observe the rails AND their segments so all three land.
+            if (typeof ResizeObserver !== 'undefined') {
+                const observer = new ResizeObserver(() => syncRailThumbs());
+                rails.forEach((rail) => {
+                    observer.observe(rail);
+                    rail.querySelectorAll('button').forEach((b) => observer.observe(b));
+                });
+            }
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(syncRailThumbs).catch(() => {});
+            }
+            window.addEventListener('resize', syncRailThumbs);
         }
 
         function setPeriod(period) {
@@ -2414,8 +2746,11 @@
             });
             const pl = document.getElementById('perfPeriodLabel');
             if (pl) pl.textContent = state.period === 'ytd' ? 'YTD' : state.period.toUpperCase();
-            navHistoryCache.clear();
-            renderFunds();
+            syncRailThumbs();
+            afterPaint(() => {
+                navHistoryCache.clear();
+                renderFunds();
+            });
         }
 
         function bindEvents() {
@@ -2611,6 +2946,7 @@
         loadFundsData();
         revealSections();
         watchRailHeight();
+        watchRailThumbs();
     </script>
 </body>
 

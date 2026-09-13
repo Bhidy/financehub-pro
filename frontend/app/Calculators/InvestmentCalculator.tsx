@@ -3,23 +3,30 @@
 /**
  * Investment Growth calculator — React reimplementation of the home-page
  * portfolio simulator's math (public/home.html): deterministic compound
- * growth (pv = pv·(1+r/100) + monthly·12 per year) plus a 400-iteration
- * Monte Carlo with uniform draws r = (rand−0.5)·2·vol + avgRet giving the
- * p10/p50/p90 worst/expected/best band. Amounts are in EGP. SVG chart only —
- * no chart library.
+ * growth, pv = pv·(1 + r/100) + monthly·12 per year. Amounts are in EGP.
+ * SVG chart only — no chart library.
+ *
+ * VOLATILITY IS DELIBERATELY ABSENT (owner call, and the only coherent way to
+ * honour it). This used to carry a volatility slider feeding a 400-iteration
+ * Monte Carlo that printed a p10/p50/p90 worst/expected/best band. Dropping the
+ * input while keeping the simulation would have drawn three identical figures
+ * under the words "worst", "expected" and "best" — a financial display that
+ * misstates its own certainty. The band went out with the input it measured;
+ * what is left is one deterministic projection that says exactly what it is.
  */
 
 import { useMemo, useState } from 'react';
 import type { CalcLabels, Lang } from './calculators-i18n';
 import { tpl } from './calculators-i18n';
 import { formatInt, formatShort, formatYears } from './calc-shared';
+import { ltrNum } from '@/lib/bidi';
 
 type RiskProfile = 'conservative' | 'moderate' | 'aggressive';
 
-const PRESETS: Record<RiskProfile, { ret: number; vol: number }> = {
-    conservative: { ret: 8, vol: 10 },
-    moderate: { ret: 12, vol: 15 },
-    aggressive: { ret: 16, vol: 25 },
+const PRESETS: Record<RiskProfile, { ret: number }> = {
+    conservative: { ret: 8 },
+    moderate: { ret: 12 },
+    aggressive: { ret: 16 },
 };
 
 type YearPoint = { year: number; pv: number; invested: number; gains: number };
@@ -37,44 +44,6 @@ function calcGrowth(initial: number, monthly: number, years: number, annRet: num
         data.push({ year: y, pv, invested, gains: pv - invested });
     }
     return data;
-}
-
-/** Deterministic uniform PRNG (mulberry32). Seeded from the inputs so the
- *  server render and client hydration produce IDENTICAL results (Math.random
- *  here would break hydration), and results are stable per input set. */
-function mulberry32(seed: number): () => number {
-    let a = seed >>> 0;
-    return () => {
-        a |= 0;
-        a = (a + 0x6d2b79f5) | 0;
-        let t = Math.imul(a ^ (a >>> 15), 1 | a);
-        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-}
-
-/** EXACT port of home.html monteCarlo() (400 iterations, uniform draw),
- *  with the seeded PRNG replacing Math.random for SSR-safe determinism. */
-function monteCarlo(initial: number, monthly: number, years: number, avgRet: number, vol: number, iter: number) {
-    const rand = mulberry32(
-        Math.imul(initial, 2654435761) ^ Math.imul(monthly + 1, 40503) ^ Math.imul(years, 65599) ^
-            Math.imul(Math.round(avgRet * 10), 97) ^ Math.imul(vol, 31)
-    );
-    const results: number[] = [];
-    for (let i = 0; i < iter; i++) {
-        let p = initial;
-        for (let y = 1; y <= years; y++) {
-            const r = (rand() - 0.5) * 2 * vol + avgRet;
-            p = p * (1 + r / 100) + monthly * 12;
-        }
-        results.push(p);
-    }
-    results.sort((a, b) => a - b);
-    return {
-        worst: results[Math.floor(iter * 0.1)],
-        average: results[Math.floor(iter * 0.5)],
-        best: results[Math.floor(iter * 0.9)],
-    };
 }
 
 /* ────────────────────────────── chart ─────────────────────────────── */
@@ -197,23 +166,15 @@ export default function InvestmentCalculator({ L, lang }: { L: CalcLabels; lang:
     const [monthly, setMonthly] = useState(5_000);
     const [years, setYears] = useState(10);
     const [ret, setRet] = useState(12);
-    const [vol, setVol] = useState(15);
 
     const activeProfile: RiskProfile | null =
-        (Object.keys(PRESETS) as RiskProfile[]).find((p) => PRESETS[p].ret === ret && PRESETS[p].vol === vol) ?? null;
+        (Object.keys(PRESETS) as RiskProfile[]).find((p) => PRESETS[p].ret === ret) ?? null;
 
-    const applyPreset = (p: RiskProfile) => {
-        setRet(PRESETS[p].ret);
-        setVol(PRESETS[p].vol);
-    };
+    const applyPreset = (p: RiskProfile) => setRet(PRESETS[p].ret);
 
     const data = useMemo(() => calcGrowth(initial, monthly, years, ret), [initial, monthly, years, ret]);
     const last = data[data.length - 1];
     const retPct = last.invested > 0 ? (((last.pv - last.invested) / last.invested) * 100).toFixed(1) : '0.0';
-
-    const mc = useMemo(() => monteCarlo(initial, monthly, years, ret, vol, 400), [initial, monthly, years, ret, vol]);
-    const bandSpan = mc.best - mc.worst;
-    const expectedPos = bandSpan > 0 ? Math.min(100, Math.max(0, ((mc.average - mc.worst) / bandSpan) * 100)) : 50;
 
     return (
         <div className="calc-fade">
@@ -240,8 +201,12 @@ export default function InvestmentCalculator({ L, lang }: { L: CalcLabels; lang:
                                 }`}
                             >
                                 <span className="block text-xs font-bold">{I.presets[p]}</span>
-                                <span dir="ltr" className="mt-0.5 block text-[10px] tabular-nums opacity-80">
-                                    {tpl(I.presetMeta, { r: PRESETS[p].ret, v: PRESETS[p].vol })}
+                                {/* The SENTENCE is Arabic on /ar, so it must not be
+                                    forced dir="ltr" — that pushed the digits to the
+                                    wrong end of it. The FIGURE is isolated instead
+                                    (lib/bidi.ts), which is inert in English. */}
+                                <span className="mt-0.5 block text-[10px] tabular-nums opacity-80">
+                                    {tpl(I.presetMeta, { r: ltrNum(`${PRESETS[p].ret}%`) })}
                                 </span>
                             </button>
                         ))}
@@ -256,8 +221,6 @@ export default function InvestmentCalculator({ L, lang }: { L: CalcLabels; lang:
                             min={1} max={30} step={1} onChange={setYears} rtl={rtl} />
                         <Slider id="inv-return" label={I.inputs.expReturn} value={ret} display={`${ret}%`}
                             min={3} max={25} step={0.5} onChange={setRet} rtl={rtl} />
-                        <Slider id="inv-vol" label={I.inputs.volatility} value={vol} display={`${vol}%`}
-                            min={5} max={40} step={1} onChange={setVol} rtl={rtl} />
                     </div>
                 </section>
 
@@ -302,40 +265,15 @@ export default function InvestmentCalculator({ L, lang }: { L: CalcLabels; lang:
                                 {I.chart.legendInvested}
                             </span>
                         </div>
+                        {/* Re-homed from the Monte Carlo panel that used to close this
+                            column. It is the line that stops a projection being read as
+                            a promise, so it follows the chart rather than leaving with
+                            the band. */}
+                        <p className="mt-4 border-t border-border/60 pt-3 text-[11px] leading-relaxed text-muted">
+                            {I.disclaimer}
+                        </p>
                     </section>
 
-                    <section className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
-                        <h3 className="text-sm font-extrabold tracking-tight text-main">{I.mc.title}</h3>
-                        <p className="mt-0.5 text-[11px] text-muted">{I.mc.sub}</p>
-                        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                            {[
-                                { label: I.mc.worst, value: mc.worst, color: '#F87171' },
-                                { label: I.mc.expected, value: mc.average, color: '#14B8A6' },
-                                { label: I.mc.best, value: mc.best, color: '#60A5FA' },
-                            ].map((b) => (
-                                <div key={b.label} className="rounded-xl border border-border bg-panel/30 p-3.5">
-                                    <div className="text-[10px] font-semibold text-muted">{b.label}</div>
-                                    <div dir="ltr" className="mt-1 text-base font-extrabold tabular-nums ltr:text-left rtl:text-right" style={{ color: b.color }}>
-                                        {money(b.value)}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <div dir="ltr" className="mt-4">
-                            <div className="relative h-2 rounded-full bg-gradient-to-r from-[#F87171] via-[#14B8A6] to-[#60A5FA] opacity-90">
-                                <span
-                                    aria-hidden
-                                    className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface bg-white shadow"
-                                    style={{ left: `${expectedPos}%` }}
-                                />
-                            </div>
-                            <div className="mt-1.5 flex justify-between text-[10px] font-semibold tabular-nums text-muted">
-                                <span>{formatShort(mc.worst)}</span>
-                                <span>{formatShort(mc.best)}</span>
-                            </div>
-                        </div>
-                        <p className="mt-4 text-[11px] leading-relaxed text-muted">{I.disclaimer}</p>
-                    </section>
                 </div>
             </div>
         </div>

@@ -15,7 +15,6 @@ export type CurrencyCode = 'EGP' | 'USD' | 'SAR' | 'AED';
 export type CalcLabels = {
     breadcrumbs: { home: string; calculators: string };
     hero: {
-        kicker: string;
         title: string;
         subtitle: string;
     };
@@ -146,14 +145,15 @@ export type CalcLabels = {
         subtitle: string;
         riskTitle: string;
         presets: { conservative: string; moderate: string; aggressive: string };
-        /** "{r}% return · {v}% volatility" */
+        /** "{r} expected annual return" — {r} arrives as a bidi-isolated "8%"
+         *  (lib/bidi.ts) so the figure and its sign stay one LTR unit inside an
+         *  Arabic sentence. */
         presetMeta: string;
         inputs: {
             initial: string;
             monthly: string;
             years: string;
             expReturn: string;
-            volatility: string;
         };
         stats: {
             finalValue: string;
@@ -170,13 +170,6 @@ export type CalcLabels = {
             legendPortfolio: string;
             legendInvested: string;
         };
-        mc: {
-            title: string;
-            sub: string;
-            worst: string;
-            expected: string;
-            best: string;
-        };
         disclaimer: string;
     };
 };
@@ -189,7 +182,6 @@ export function tpl(template: string, vars: Record<string, string | number>): st
 const EN: CalcLabels = {
     breadcrumbs: { home: 'Home', calculators: 'Wealth Calculators' },
     hero: {
-        kicker: 'STARTA TOOLS',
         title: 'Wealth Calculators',
         subtitle:
             'Plan your retirement and project your investment growth — free, private, and built for the Egyptian investor.',
@@ -365,16 +357,15 @@ const EN: CalcLabels = {
     inv: {
         title: 'Investment Growth',
         subtitle:
-            'Project the compound growth of a monthly investment plan, with a Monte Carlo best/expected/worst range.',
+            'Project the compound growth of a monthly investment plan at a return you choose.',
         riskTitle: 'Risk Profile',
         presets: { conservative: 'Conservative', moderate: 'Moderate', aggressive: 'Aggressive' },
-        presetMeta: '{r}% return · {v}% volatility',
+        presetMeta: '{r} expected annual return',
         inputs: {
             initial: 'Initial Investment',
             monthly: 'Monthly Contribution',
             years: 'Investment Horizon',
             expReturn: 'Expected Annual Return',
-            volatility: 'Volatility',
         },
         stats: {
             finalValue: 'Final Value',
@@ -389,13 +380,6 @@ const EN: CalcLabels = {
             legendPortfolio: 'Portfolio Value',
             legendInvested: 'Amount Invested',
         },
-        mc: {
-            title: 'Range of Outcomes',
-            sub: '400 Monte Carlo simulations at your chosen volatility',
-            worst: 'Worst Case (10th percentile)',
-            expected: 'Expected (median)',
-            best: 'Best Case (90th percentile)',
-        },
         disclaimer:
             'Projections assume a constant expected annual return and are for illustration only — not investment advice. Actual market returns vary from year to year. Monthly contributions are credited at each year-end without intra-year compounding.',
     },
@@ -404,7 +388,6 @@ const EN: CalcLabels = {
 const AR: CalcLabels = {
     breadcrumbs: { home: 'الرئيسية', calculators: 'حاسبات الثروة' },
     hero: {
-        kicker: 'أدوات ستارتا',
         title: 'حاسبات الثروة',
         subtitle: 'خطّط لتقاعدك وتوقّع نمو استثماراتك — أدوات مجانية وخاصة صُممت للمستثمر المصري.',
     },
@@ -578,16 +561,15 @@ const AR: CalcLabels = {
     },
     inv: {
         title: 'نمو الاستثمار',
-        subtitle: 'توقّع النمو التراكمي لخطة استثمار شهرية، مع نطاق أفضل/متوقع/أسوأ عبر محاكاة مونت كارلو.',
+        subtitle: 'توقّع النمو التراكمي لخطة استثمار شهرية بالعائد الذي تختاره.',
         riskTitle: 'ملف المخاطر',
         presets: { conservative: 'متحفظ', moderate: 'متوازن', aggressive: 'جريء' },
-        presetMeta: 'عائد {r}% · تقلب {v}%',
+        presetMeta: 'عائد سنوي متوقع {r}',
         inputs: {
             initial: 'مبلغ الاستثمار المبدئي',
             monthly: 'المساهمة الشهرية',
             years: 'مدة الاستثمار',
             expReturn: 'العائد السنوي المتوقع',
-            volatility: 'التقلب السنوي',
         },
         stats: {
             finalValue: 'القيمة النهائية',
@@ -601,13 +583,6 @@ const AR: CalcLabels = {
             title: 'النمو مقابل المبلغ المستثمر',
             legendPortfolio: 'قيمة المحفظة',
             legendInvested: 'المبلغ المستثمر',
-        },
-        mc: {
-            title: 'نطاق النتائج المحتملة',
-            sub: '400 محاكاة مونت كارلو عند مستوى التقلب المختار',
-            worst: 'أسوأ الحالات (المئين 10)',
-            expected: 'المتوقع (الوسيط)',
-            best: 'أفضل الحالات (المئين 90)',
         },
         disclaimer:
             'التوقعات تفترض عائدًا سنويًا متوقعًا ثابتًا وهي للتوضيح فقط — وليست نصيحة استثمارية. عوائد الأسواق الفعلية تتغير من عام لآخر. تُضاف المساهمات الشهرية في نهاية كل سنة دون تركيب خلال السنة.',

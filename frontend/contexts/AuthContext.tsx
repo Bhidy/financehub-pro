@@ -11,7 +11,7 @@
  * every nav on the page — including the vanilla one on the static HTML pages —
  * without a reload.
  *
- * Two defects this replaced:
+ * Three defects this replaced:
  *  1. The session was read straight out of localStorage with no expiry check, so
  *     a long-dead JWT still rendered as "signed in" until some API call
  *     happened to 401.
@@ -20,6 +20,16 @@
  *     with "Objects are not valid as a React child" — reachable in production by
  *     typing an address like `ahmed@gmail`, which the browser's own type="email"
  *     check accepts. Everything now goes through readApiError().
+ *  3. This context READ the session once on mount and never again, so it was the
+ *     only reader on the site that could not see a sign-in it had not performed
+ *     itself. components/seo/NavAuth.tsx subscribes; this did not. The visible
+ *     result: sign in with Google (app/login/page.tsx writes the session
+ *     directly, then router.replace()s — a client-side navigation, so this
+ *     provider is never remounted), and the nav showed the account while every
+ *     RegisterGate / BlurGate on the destination page still asked the reader to
+ *     create one. Only F5 cleared it. Sign-OUT was the same defect inverted:
+ *     NavAuth calls clearSession() itself, so the gates stayed OPEN for a
+ *     visitor who had just left. Fixed by subscribing — see SESSION OBSERVER.
  */
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
@@ -27,6 +37,7 @@ import {
     readSession,
     writeSession,
     clearSession,
+    subscribeSession,
     SESSION_KEYS,
     type SessionUser,
 } from "@/lib/auth-session";
@@ -115,6 +126,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // let the next authenticated call decide.
             });
     }, []);
+
+    /**
+     * ── SESSION OBSERVER ────────────────────────────────────────────────────
+     * The session is NOT owned by this provider. It is owned by
+     * lib/auth-session.ts, and four other places write to it: the Google
+     * hand-off in app/login/page.tsx, app/register/page.tsx, NavAuth's sign-out
+     * button, and the vanilla renderer on the static HTML pages — none of which
+     * go through login()/logout() here. Before this effect, every one of those
+     * writes left React's copy of `user` stale until a full page load, which is
+     * what made a signed-in reader keep seeing "create a free account" on the
+     * gated blocks (defect 3 above).
+     *
+     * subscribeSession covers BOTH directions: the `starta:session` event for
+     * this tab and `storage` for the others. It is the same subscription
+     * components/seo/NavAuth.tsx uses, so the nav and the gates can no longer
+     * disagree about who is signed in.
+     *
+     * `isLoading` is deliberately untouched here. RegisterGate's SSR contract
+     * depends on it starting true and clearing exactly once, in the mount
+     * effect above, so the server and the hydrating client render the children
+     * unwrapped. A session change is not a loading state.
+     *
+     * A separate effect rather than merging into the restore above: that one
+     * early-returns in three places, and a subscription whose teardown hung off
+     * those returns would leak the listener. useSyncExternalStore is not usable
+     * either — readSession() builds a fresh object on every call, so it has no
+     * referentially stable snapshot.
+     */
+    useEffect(() => subscribeSession(() => setUser(readSession().user)), []);
 
     const getToken = useCallback((): string | null => readSession().token, []);
 

@@ -25,8 +25,8 @@ export function calculatorsMetadata(lang: Lang): Metadata {
             : 'Wealth Calculators — Retirement & Investment Planning | Starta';
     const description =
         lang === 'ar'
-            ? 'حاسبات ثروة مجانية: مخطط تقاعد من 5 خطوات مع مقارنة السيناريوهات، ومحاكي نمو الاستثمار بنطاقات مونت كارلو — للمستثمر المصري وبالجنيه.'
-            : 'Free wealth calculators: a 5-step retirement planner with scenario comparison and an investment growth simulator with Monte Carlo ranges — in EGP.';
+            ? 'حاسبات ثروة مجانية: محاكي نمو الاستثمار التراكمي، ومخطط تقاعد من 5 خطوات مع مقارنة السيناريوهات — للمستثمر المصري وبالجنيه.'
+            : 'Free wealth calculators: a compound investment growth simulator and a 5-step retirement planner with scenario comparison — in EGP.';
     const canonical = lang === 'ar' ? PATH_AR : PATH_EN;
     return {
         // The root layout template appends "| Starta Markets"; these titles carry
@@ -69,8 +69,8 @@ export function renderCalculatorsPage(lang: Lang) {
         name: lang === 'ar' ? 'حاسبات الثروة من ستارتا' : 'Starta Wealth Calculators',
         description:
             lang === 'ar'
-                ? 'مخطط تقاعد من 5 خطوات ومحاكي نمو استثماري بمحاكاة مونت كارلو.'
-                : 'A 5-step retirement planner and an investment growth simulator with Monte Carlo ranges.',
+                ? 'محاكي نمو استثماري تراكمي ومخطط تقاعد من 5 خطوات.'
+                : 'A compound investment growth simulator and a 5-step retirement planner.',
         url: absUrl(canonical),
         applicationCategory: 'FinanceApplication',
         operatingSystem: 'Any',

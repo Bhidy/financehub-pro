@@ -21,6 +21,7 @@ import {
     growingAnnuityFV,
     moneyFormatters,
 } from './calc-shared';
+import { ltrNum } from '@/lib/bidi';
 
 /* ────────────────────────────── types ─────────────────────────────── */
 
@@ -368,7 +369,21 @@ function NumField(props: {
                 </span>
                 {tip && <Tip text={tip} />}
             </label>
-            <div className="relative">
+            {/* ── THE UNIT IS A FLEX SIBLING, NOT AN OVERLAY ──────────────────
+                It used to be `absolute end-3.5` inside this wrapper. `end` on an
+                RTL page resolves to the LEFT, while the input carries dir="ltr"
+                so its `pe-14` reserved room on the RIGHT: on /ar/Calculators the
+                unit was painted straight over the first characters of the value.
+                "12" read as "%2"; the placeholder "مثال: 200,000" read as
+                "مثال: 2ج.م0,000". Laying the two out in a flex row — the pattern
+                app/Funds/[id]/fund-premium.css already uses for .calc-input —
+                makes the overlap unrepresentable rather than merely corrected,
+                and mirrors cleanly: value at the reading edge, unit past it. */}
+            <div
+                className={`starta-numfield flex items-center overflow-hidden rounded-xl border bg-panel/40 transition-colors focus-within:ring-2 focus-within:ring-starta-teal/30 ${
+                    invalid ? 'border-red-500/70' : 'border-border focus-within:border-starta-teal/60'
+                }`}
+            >
                 <input
                     id={id}
                     type="number"
@@ -382,12 +397,13 @@ function NumField(props: {
                     onChange={(e) => onChange(e.target.value)}
                     aria-invalid={invalid ? true : undefined}
                     aria-describedby={invalid ? `${id}-err` : undefined}
-                    className={`w-full rounded-xl border bg-panel/40 px-3.5 py-2.5 text-sm text-main tabular-nums transition-colors placeholder:text-muted/50 focus:outline-none focus:ring-2 focus:ring-starta-teal/30 ${
-                        invalid ? 'border-red-500/70' : 'border-border focus:border-starta-teal/60'
-                    } ${sym ? 'pe-14' : ''}`}
+                    /* dir="ltr" keeps the digits, minus and decimal point in a fixed
+                       order; rtl:text-right puts the value where an Arabic reader
+                       looks first. Same pair as ReadonlyField below. */
+                    className="min-w-0 flex-1 border-0 bg-transparent px-3.5 py-2.5 text-sm text-main tabular-nums outline-none placeholder:text-muted/50 rtl:text-right"
                 />
                 {sym && (
-                    <span aria-hidden className="pointer-events-none absolute end-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted">
+                    <span aria-hidden className="shrink-0 pe-3.5 ps-1 text-xs font-semibold text-muted">
                         {sym}
                     </span>
                 )}
@@ -628,7 +644,11 @@ export default function RetirementPlanner({ L }: { L: CalcLabels }) {
     const cfg = CURRENCY_CONFIG[currency];
     const sym = L.currency.symbols[currency];
     const fm = moneyFormatters(sym);
-    const eg = (v: string) => tpl(L.common.eg, { v });
+    // "مثال: {v}" is Arabic text followed by Western digits. Inside the LTR
+    // input the bidi algorithm re-types those digits as AN at the Arabic run's
+    // level, which lands them to the LEFT of the label — the example read
+    // backwards. Isolating the value fixes the order and is inert in English.
+    const eg = (v: string) => tpl(L.common.eg, { v: ltrNum(v) });
 
     const setField = (field: FieldId) => (v: string) => {
         let next = v;

@@ -433,6 +433,25 @@ const checks = [
     file: "public/marketplace.html",
     assert: (text) => /assets\/starta-nav\.js/.test(text),
   },
+  // ───────────────────────────────────────────────────────────────────────
+  // ONE SESSION, ONE TRUTH. lib/auth-session.ts owns the signed-in state and
+  // broadcasts every change; components/seo/NavAuth.tsx subscribes. AuthContext
+  // did NOT — it read once on mount — so after a Google sign-in (which writes
+  // the session directly and then router.replace()s, never remounting the
+  // provider) the nav showed the account while every RegisterGate / BlurGate on
+  // the page still asked the reader to create one. Only F5 cleared it; sign-out
+  // failed the same way inverted, leaving the gates open. The event plumbing is
+  // tested behaviourally in scripts/test-auth-session.ts; this pins the wiring.
+  {
+    name: "AuthContext subscribes to the canonical session (gates cannot go stale)",
+    file: "contexts/AuthContext.tsx",
+    assert: (text) => /subscribeSession\(/.test(text),
+  },
+  {
+    name: "NavAuth subscribes to the canonical session",
+    file: "components/seo/NavAuth.tsx",
+    assert: (text) => /subscribeSession\(/.test(text),
+  },
   {
     name: "fund-details.html loads the canonical nav renderer",
     file: "public/fund-details.html",

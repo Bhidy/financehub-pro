@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function CorrectionsArPage() {
     return (
-        <PublicPageShell lang="ar" altHref="/corrections">
+        <PublicPageShell layout="doc" lang="ar" altHref="/corrections">
             <JsonLd data={{ '@context': 'https://schema.org', '@type': 'AboutPage', name: 'سياسة التصحيحات — ستارتا ماركتس', url: `${SITE_URL}/ar/corrections`, inLanguage: 'ar', mainEntity: { '@id': `${SITE_URL}/#organization` } }} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'التصحيحات' }], SITE_URL)} />
             <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'التصحيحات' }]} />

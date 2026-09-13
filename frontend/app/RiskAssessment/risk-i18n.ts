@@ -27,7 +27,6 @@ export type ProfileCopy = {
 
 export type RiskLabels = {
     landing: {
-        tagline: string;
         h1: string;
         subtitle: string;
         metaMinutes: string;
@@ -78,13 +77,13 @@ export function fmt(template: string, vars: Record<string, string | number>): st
 
 const EN: RiskLabels = {
     landing: {
-        tagline: 'RISK PROFILER',
-        h1: 'Investment Risk Assessment',
-        subtitle: 'Find out your investor profile and get a personalized asset allocation recommendation',
+        h1: 'Get Your Free Portfolio',
+        subtitle:
+            'Answer seven questions about how you handle risk. You get your investor profile and a model portfolio — how much cash, fixed income and equities suit you — plus the Egyptian fund categories that fit it. Free, and nothing to sign up for.',
         metaMinutes: 'Takes about 2 minutes',
         metaQuestions: '7 quick questions',
         metaMpt: 'Based on Modern Portfolio Theory',
-        start: 'Start the assessment',
+        start: 'Build my portfolio',
         lastResult: 'You last scored: {profile}',
         lastResultRetake: 'Retake',
     },
@@ -211,13 +210,13 @@ const EN: RiskLabels = {
 
 const AR: RiskLabels = {
     landing: {
-        tagline: 'ملف المخاطر',
-        h1: 'تقييم ملف المخاطر الاستثماري',
-        subtitle: 'اكتشف ملفك الاستثماري واحصل على توصية مخصصة لتوزيع أصول محفظتك',
+        h1: 'احصل على محفظتك المجانية',
+        subtitle:
+            'أجب عن سبعة أسئلة عن طريقة تعاملك مع المخاطر، لتحصل على ملفك الاستثماري ومحفظة نموذجية توضح نسب النقد والدخل الثابت والأسهم المناسبة لك، مع فئات صناديق الاستثمار المصرية الملائمة. مجاناً وبدون تسجيل.',
         metaMinutes: 'يستغرق نحو دقيقتين',
         metaQuestions: '7 أسئلة سريعة',
         metaMpt: 'مبني على نظرية المحفظة الحديثة',
-        start: 'ابدأ التقييم',
+        start: 'ابنِ محفظتي',
         lastResult: 'نتيجتك السابقة: {profile}',
         lastResultRetake: 'أعد التقييم',
     },

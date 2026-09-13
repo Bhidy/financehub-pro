@@ -447,6 +447,29 @@ const checks = [
     file: "contexts/AuthContext.tsx",
     assert: (text) => /subscribeSession\(/.test(text),
   },
+  // ───────────────────────────────────────────────────────────────────────
+  // THE EDITORIAL COLUMN. Measured on production at 1900px: every long-form
+  // page put its body in a `max-w-3xl` block with no `mx-auto`, so 691px of
+  // content sat pinned to the start edge of an 1152px column with 439px of
+  // dead space beside it — the same arithmetic on /about, /contact,
+  // /methodology, /Funds/risk and /RiskAssessment. The measure now belongs to
+  // the whole column (heading and body together) via .starta-doc, so the two
+  // cannot drift apart again into a narrow block beside an empty one.
+  {
+    name: "the .starta-doc editorial column exists",
+    file: "app/globals.css",
+    assert: (text) => /\.starta-doc\s*\{/.test(text) && /margin-inline:\s*auto/.test(text),
+  },
+  {
+    name: "PublicPageShell still offers the doc layout",
+    file: "components/seo/PublicPageShell.tsx",
+    assert: (text) => /layout\?:\s*'default'\s*\|\s*'doc'/.test(text) && /starta-doc/.test(text),
+  },
+  {
+    name: "long-form pages use the doc layout, not a hand-pinned max-w cap",
+    file: "app/about/page.tsx",
+    assert: (text) => /layout="doc"/.test(text),
+  },
   {
     name: "NavAuth subscribes to the canonical session",
     file: "components/seo/NavAuth.tsx",

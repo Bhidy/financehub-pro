@@ -28,7 +28,7 @@ const SECTIONS: Array<{ h: string; p: string }> = [
 
 export default function EditorialPolicyArPage() {
     return (
-        <PublicPageShell lang="ar" altHref="/editorial-policy">
+        <PublicPageShell layout="doc" lang="ar" altHref="/editorial-policy">
             <JsonLd data={{ '@context': 'https://schema.org', '@type': 'AboutPage', name: 'سياسة التحرير — ستارتا ماركتس', url: `${SITE_URL}/ar/editorial-policy`, inLanguage: 'ar', mainEntity: { '@id': `${SITE_URL}/#organization` } }} />
             <JsonLd data={breadcrumbJsonLd([{ url: '/', label: 'الرئيسية' }, { label: 'سياسة التحرير' }], SITE_URL)} />
             <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'سياسة التحرير' }]} />

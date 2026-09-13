@@ -32,7 +32,7 @@ const SOURCES: Array<[string, string]> = [
 
 export default function AboutPage() {
     return (
-        <PublicPageShell altHref="/ar/about">
+        <PublicPageShell layout="doc" altHref="/ar/about">
             <JsonLd
                 data={{
                     '@context': 'https://schema.org',

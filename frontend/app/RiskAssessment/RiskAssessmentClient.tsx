@@ -342,9 +342,11 @@ export default function RiskAssessmentClient({ lang }: { lang: Lang }) {
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-starta-teal/30 bg-starta-teal/10 text-starta-teal shadow-[0_0_44px_rgba(20,184,166,0.18)]">
                 <GaugeIcon />
             </div>
-            <p className="mt-5 text-[11px] font-mono uppercase tracking-[0.3em] text-starta-teal">{t.landing.tagline}</p>
-            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-main sm:text-4xl">{t.landing.h1}</h1>
-            <p className="mx-auto mt-3 max-w-xl leading-relaxed text-muted">{t.landing.subtitle}</p>
+            {/* One title per section — DESIGN_SYSTEM.md bans the small accent
+                eyebrow above a heading site-wide. "RISK PROFILER" used to sit
+                here in teal; the page keeps a single dark title. */}
+            <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-main sm:text-4xl">{t.landing.h1}</h1>
+            <p className="mx-auto mt-3 max-w-2xl leading-relaxed text-muted">{t.landing.subtitle}</p>
 
             <div className="mx-auto mt-8 max-w-md rounded-2xl border border-border bg-surface p-6 text-start">
                 <ul className="space-y-4">

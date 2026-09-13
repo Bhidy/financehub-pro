@@ -1348,3 +1348,57 @@ body:has(.admin-light) iframe[title*="Hotjar" i] {
   --c-border: rgba(255, 255, 255, 0.08);
   --glass-bg: rgba(14, 16, 16, 0.56);
 }
+
+/* ============================================================================
+   EDITORIAL LAYOUT PRIMITIVES
+   ============================================================================
+   Measured on production at a 1900px viewport: every long-form page put its
+   body in a `max-w-3xl` block with no `mx-auto`, so 691px of content sat
+   pinned to the start edge of an 1152px column with 439px of dead space beside
+   it — identical arithmetic on /about, /contact, /methodology, /Funds/risk and
+   /RiskAssessment. The page read as unfinished.
+
+   Centring the body blocks ALONE would have been worse: the headings on those
+   pages carry no width cap, so they sit at the column's edge, and centring only
+   the prose breaks the shared left edge that makes a document look set rather
+   than scattered. So the measure belongs to the WHOLE column — heading and body
+   together — which is what .starta-doc is.
+
+   Why not two columns of prose: max-w-3xl is 768px, roughly 95 characters at
+   this body size, already ABOVE the 65-75 optimum. Splitting that into columns
+   sends the reader back up the page at every break. Two columns are for
+   REPEATING ITEMS, which is what .starta-cols-2 is for. */
+.starta-doc {
+  /* Wider than the old 48rem cap, so the column fills more of the page while
+     staying inside a comfortable measure. */
+  max-width: 58rem;
+  margin-inline: auto;
+}
+
+/* A capped child inside the doc column would re-create the same void one level
+   down, so neutralise the caps the pages used to set by hand. */
+.starta-doc > .max-w-2xl,
+.starta-doc > .max-w-3xl,
+.starta-doc > .max-w-4xl,
+.starta-doc > .max-w-prose,
+.starta-doc > * > .max-w-2xl,
+.starta-doc > * > .max-w-3xl,
+.starta-doc > * > .max-w-4xl,
+.starta-doc > * > .max-w-prose {
+  max-width: none;
+}
+
+/* Repeating items — profile cards, FAQ entries, definition lists — genuinely
+   use the width that prose should not. Two columns only once each column can
+   still hold a sensible measure; one column below that. */
+.starta-cols-2 {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 1100px) {
+  .starta-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.15rem;
+  }
+}

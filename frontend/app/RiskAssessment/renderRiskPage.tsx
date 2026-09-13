@@ -20,15 +20,19 @@ const PATH_EN = '/RiskAssessment';
 const PATH_AR = '/ar/RiskAssessment';
 
 const META = {
+    // The visible H1 now leads with the promise ("Get Your Free Portfolio"),
+    // but the SERP line is what has to MATCH a query, so it keeps the terms the
+    // page has always ranked on — risk profile, allocation, fund categories.
+    // Benefit first, vocabulary intact.
     en: {
-        title: 'Investment Risk Profile Assessment',
+        title: 'Get Your Free Portfolio — Investment Risk Profile',
         description:
-            'Answer 7 questions to find your investor risk profile — Very Conservative to Aggressive — with a suggested allocation and matching Egyptian fund categories.',
+            'Answer 7 questions to find your investor risk profile — Very Conservative to Aggressive — and get a free model portfolio with a suggested allocation and matching Egyptian fund categories.',
     },
     ar: {
-        title: 'تقييم ملف المخاطر الاستثماري',
+        title: 'احصل على محفظتك المجانية — تقييم ملف المخاطر',
         description:
-            'أجب عن 7 أسئلة لتحديد ملف المخاطر الخاص بك — من متحفظ جداً إلى جريء — مع توزيع أصول مقترح وفئات صناديق الاستثمار المناسبة لك.',
+            'أجب عن 7 أسئلة لتحديد ملف المخاطر الخاص بك — من متحفظ جداً إلى جريء — واحصل على محفظة نموذجية مجانية بتوزيع أصول مقترح وفئات صناديق الاستثمار المناسبة لك.',
     },
 } as const satisfies Record<Lang, { title: string; description: string }>;
 
@@ -63,11 +67,11 @@ export function renderRiskPage(lang: Lang) {
     const crumbs = isAr
         ? [
               { url: HOME_PATH, href: HOME_PATH, label: 'الرئيسية' },
-              { label: 'تقييم المخاطر' },
+              { label: 'محفظتك المجانية' },
           ]
         : [
               { url: '/', href: '/', label: 'Home' },
-              { label: 'Risk Assessment' },
+              { label: 'Your Free Portfolio' },
           ];
 
     const webAppJsonLd = {

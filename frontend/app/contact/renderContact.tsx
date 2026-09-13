@@ -153,7 +153,7 @@ export function renderContact(lang: Lang) {
     );
 
     return (
-        <PublicPageShell lang={lang} altHref={alt} persistLang>
+        <PublicPageShell layout="doc" lang={lang} altHref={alt} persistLang>
             <JsonLd
                 data={{
                     '@context': 'https://schema.org',

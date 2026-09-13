@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default function CorrectionsPage() {
     return (
-        <PublicPageShell altHref="/ar/corrections">
+        <PublicPageShell layout="doc" altHref="/ar/corrections">
             <JsonLd
                 data={{
                     '@context': 'https://schema.org',

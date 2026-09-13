@@ -43,7 +43,7 @@ export default function AboutArPage() {
     const crumbs = [{ href: HOME_PATH, url: HOME_PATH, label: 'الرئيسية' }, { label: 'من نحن' }];
 
     return (
-        <PublicPageShell lang="ar" altHref="/about" persistLang>
+        <PublicPageShell layout="doc" lang="ar" altHref="/about" persistLang>
             <JsonLd
                 data={{
                     '@context': 'https://schema.org',

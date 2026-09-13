@@ -416,7 +416,7 @@ export function renderMethodology(lang: 'en' | 'ar') {
         { label: t.h1 },
     ];
     return (
-        <PublicPageShell lang={lang} altHref={isAr ? PATH_EN : PATH_AR}>
+        <PublicPageShell layout="doc" lang={lang} altHref={isAr ? PATH_EN : PATH_AR}>
             <JsonLd
                 data={{
                     '@context': 'https://schema.org',

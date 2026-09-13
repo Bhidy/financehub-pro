@@ -141,7 +141,12 @@ export default function RiskMethodology({ lang }: { lang: Lang }) {
     return (
         <>
             <JsonLd data={faq} />
-            <section className="mt-14 max-w-3xl" dir={isAr ? 'rtl' : 'ltr'}>
+            {/* Was `max-w-3xl` with no mx-auto — 691px pinned to the start edge of
+                an 1152px column, leaving 439px of dead space. The prose now takes
+                the page's editorial measure (.starta-doc on long-form routes, the
+                full column elsewhere) and the five profile cards, which are
+                repeating items rather than prose, go two-up where there is room. */}
+            <section className="starta-doc mt-14" dir={isAr ? 'rtl' : 'ltr'}>
                 <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
                     <span aria-hidden className="inline-block h-4 w-1 rounded-full bg-starta-teal" />
                     {t.h2}
@@ -160,7 +165,7 @@ export default function RiskMethodology({ lang }: { lang: Lang }) {
                 </h3>
                 <p className="mt-2.5 leading-relaxed text-muted">{t.profilesIntro}</p>
 
-                <div className="mt-5 space-y-4">
+                <div className="starta-cols-2 mt-5">
                     {PROFILES.map((p) => {
                         const c = labels.profiles[p.id];
                         const cats = fundCategoriesFor(p.id).map(hubFor).filter(Boolean) as Array<{ href: string; label: string }>;

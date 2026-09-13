@@ -117,6 +117,7 @@ export default function PublicPageShell({
     lang = 'en',
     altHref,
     dir,
+    layout = 'default',
     wide = false,
     persistLang,
 }: {
@@ -126,6 +127,16 @@ export default function PublicPageShell({
     altHref?: string;
     /** @deprecated derived from lang; kept for call-site compatibility. */
     dir?: 'ltr' | 'rtl';
+    /**
+     * Content column shape.
+     *   'default' — the full column; for tables, grids and dashboards.
+     *   'doc'     — a single centred editorial measure for long-form pages.
+     *               Heading and body share it, so the column reads as one set
+     *               document rather than a narrow block pinned to the left of a
+     *               wide empty one (measured: 439px of dead space on every
+     *               long-form page before this existed). See .starta-doc.
+     */
+    layout?: 'default' | 'doc';
     /** Widen the content to match the header (max-w-screen-2xl vs the default max-w-7xl). */
     wide?: boolean;
     /**
@@ -285,7 +296,9 @@ export default function PublicPageShell({
                 </div>
             </nav>
 
-            <main className={`mx-auto ${wide ? 'max-w-screen-2xl' : 'max-w-7xl'} px-6 pt-28 pb-16`}>{children}</main>
+            <main className={`mx-auto ${wide ? 'max-w-screen-2xl' : 'max-w-7xl'} px-6 pt-28 pb-16`}>
+                {layout === 'doc' ? <div className="starta-doc">{children}</div> : children}
+            </main>
 
             {/* ── Footer: verbatim structure from the designed pages ─────────── */}
             <footer className="relative bg-surface border-t border-border overflow-hidden pt-24 pb-12">

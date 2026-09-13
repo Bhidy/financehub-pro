@@ -53,8 +53,8 @@
             {
                     "key": "nav_risk",
                     "href": "/RiskAssessment",
-                    "en": "ASSESS YOUR INVESTMENT",
-                    "ar": "قيم استثمارك"
+                    "en": "GET YOUR FREE PORTFOLIO",
+                    "ar": "احصل على محفظتك المجانية"
             }
     ];
     var CTA = null;

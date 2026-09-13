@@ -49,8 +49,6 @@ export type FundClientData = {
     riskStats: NullableStat[];
     platforms: Array<{ name: string; logo: string | null }>;
     prospectusUrl: string | null;
-    /** The fund's page at the primary data source (Mubasher) — provenance the reader can follow. */
-    sourceUrl: string | null;
     /** Newest-first latest published NAVs, server-rendered so the history is crawlable without the chart. */
     recentNav: Array<{ date: string; dateHuman: string; nav: string; changePct: string | null; negative: boolean }>;
     recentNavIngested: string | null;
@@ -135,7 +133,6 @@ export default function FundPageClient(props: FundClientData) {
         riskStats,
         platforms,
         prospectusUrl,
-        sourceUrl,
         recentNav,
         recentNavIngested,
         tradingRows,
@@ -511,25 +508,7 @@ export default function FundPageClient(props: FundClientData) {
                                         </span>
                                     </a>
                                 ) : null}
-                                {sourceUrl && (
-                                    <a
-                                        href={sourceUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer nofollow"
-                                        className="doc-link mt-3 flex items-center gap-3 rounded-[1.1rem] p-4"
-                                    >
-                                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-starta-teal/10 text-starta-teal">
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                            </svg>
-                                        </span>
-                                        <span>
-                                            <span className="block text-sm font-semibold text-main">{t.sourcePage}</span>
-                                            <span className="block text-xs text-muted">{t.sourcePageMeta}</span>
-                                        </span>
-                                    </a>
-                                )}
-                                {!prospectusUrl && !sourceUrl && <p className="ax-pending mt-3">{t.dataPending}</p>}
+                                {!prospectusUrl && <p className="ax-pending mt-3">{t.dataPending}</p>}
                             </div>
                         </div>
 

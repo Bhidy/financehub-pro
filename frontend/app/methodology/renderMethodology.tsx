@@ -4,6 +4,7 @@ import { FUND_TAXONOMY_OVERRIDES } from '@/content/fund-categories';
 const CLASS_AR: Record<string, string> = { money_market: 'أسواق نقد', fixed_income: 'دخل ثابت', equity: 'أسهم', balanced: 'متوازن', gold: 'ذهب' };
 import reconciliation from '@/content/fund-universe-reconciliation.json';
 import { SECURITY_MASTER_SOURCES } from '@/lib/security-master';
+import { publicUrls } from '@/lib/vendor-privacy';
 import { DORMANT_DAYS, MIN_NAV_POINTS, QUOTE_STALE_DAYS } from '@/lib/fund-stats';
 import Link from 'next/link';
 import { SITE_URL } from '@/lib/seo';
@@ -26,6 +27,16 @@ import { HOME_PATH } from '@/lib/lang';
  * threshold below changes in the pipeline, this page must change with it —
  * the thresholds are named in the text on purpose so a diff is obvious.
  */
+
+/**
+ * The citation hostnames this page may print. Evidence lists can cite a
+ * commercial data supplier whose identity is not published (lib/vendor-privacy.ts);
+ * those citations are dropped here rather than at each call site.
+ */
+const evidenceHosts = (urls: readonly string[], join: string, fallback: string): string => {
+    const hosts = publicUrls(urls).map((u) => { try { return new URL(u).hostname; } catch { return u; } });
+    return hosts.length ? hosts.join(join) : fallback;
+};
 
 const PATH_EN = '/methodology';
 const PATH_AR = '/ar/methodology';
@@ -56,7 +67,7 @@ const EN: { title: string; description: string; h1: string; lede: string; sectio
                     ['Financial statements and fundamentals', 'Company disclosures aggregated via TradingView — up to 20 years of annual statements', 'Weekly (Friday)'],
                     ['Dividends and analyst estimates', 'TradingView', 'Daily, after the close'],
                     ['Company and market news', 'Licensed Egyptian financial press, Arabic and English', 'Every 30 minutes during market hours'],
-                    ['Mutual-fund NAVs', 'The net asset value each fund manager publishes, collected from Mubasher’s per-fund price files; a browser-based collector covers funds that have no file', 'Twice daily — 08:00 and 19:00 Cairo, Sunday–Thursday'],
+                    ['Mutual-fund NAVs', 'The net asset value each fund manager publishes, collected from the per-fund price files the managers disclose; a browser-based collector covers funds that have no file', 'Twice daily — 08:00 and 19:00 Cairo, Sunday–Thursday'],
                     ['Fund NAV history for the 2025 gap', 'EIMA’s weekly fund performance reports, inverted to reconstruct NAV points for the months in which the primary file was frozen; every reconstructed point is reconciled against NAV we already hold before it is written', 'Weekly (Friday)'],
                     ['Fund profiles, fees, minimums', 'Fund managers’ prospectuses and disclosures', 'On change'],
                 ],
@@ -182,7 +193,7 @@ const EN: { title: string; description: string; h1: string; lede: string; sectio
                     o.fund_name_en,
                     o.vendor_type ?? '—',
                     o.disposition === 'override' ? `${o.primary_asset_class.replace('_', ' ')} (override)` : `${o.primary_asset_class.replace('_', ' ')} (vendor confirmed)`,
-                    o.evidence.length ? o.evidence.map((u) => { try { return new URL(u).hostname; } catch { return u; } }).join(', ') : 'registered name',
+                    evidenceHosts(o.evidence, ', ', 'registered name'),
                 ]),
             },
         },
@@ -235,7 +246,7 @@ const AR: typeof EN = {
                     ['القوائم المالية والبيانات الأساسية', 'إفصاحات الشركات المجمّعة عبر TradingView — حتى 20 سنة من القوائم السنوية', 'أسبوعياً (الجمعة)'],
                     ['التوزيعات وتقديرات المحللين', 'TradingView', 'يومياً بعد الإغلاق'],
                     ['أخبار الشركات والسوق', 'الصحافة المالية المصرية المرخّصة بالعربية والإنجليزية', 'كل 30 دقيقة خلال ساعات السوق'],
-                    ['صافي قيمة أصول صناديق الاستثمار', 'صافي قيمة الأصول الذي ينشره مدير كل صندوق، مجمّعاً من ملفات الأسعار الخاصة بكل صندوق على مباشر؛ ويغطي جامع يعمل عبر المتصفح الصناديق التي لا ملف لها', 'مرتين يومياً — 08:00 و19:00 بتوقيت القاهرة، الأحد–الخميس'],
+                    ['صافي قيمة أصول صناديق الاستثمار', 'صافي قيمة الأصول الذي ينشره مدير كل صندوق، مجمّعاً من ملفات الأسعار المُفصَح عنها لكل صندوق؛ ويغطي جامع يعمل عبر المتصفح الصناديق التي لا ملف لها', 'مرتين يومياً — 08:00 و19:00 بتوقيت القاهرة، الأحد–الخميس'],
                     ['تاريخ صافي قيمة الأصول لفجوة 2025', 'تقارير الأداء الأسبوعية للجمعية المصرية لإدارة الاستثمار (EIMA)، تُعكَس حسابياً لإعادة بناء نقاط صافي قيمة الأصول للأشهر التي تجمّد فيها الملف الأساسي؛ وتُطابَق كل نقطة مُعاد بناؤها مع ما نملكه فعلاً قبل كتابتها', 'أسبوعياً (الجمعة)'],
                     ['ملفات الصناديق والرسوم والحد الأدنى', 'نشرات الاكتتاب وإفصاحات مديري الصناديق', 'عند التغيير'],
                 ],
@@ -361,7 +372,7 @@ const AR: typeof EN = {
                     o.fund_name,
                     o.vendor_type ?? '—',
                     o.disposition === 'override' ? `${CLASS_AR[o.primary_asset_class] ?? o.primary_asset_class} (تصحيح موثّق)` : `${CLASS_AR[o.primary_asset_class] ?? o.primary_asset_class} (تأكيد المزوّد)`,
-                    o.evidence.length ? o.evidence.map((u) => { try { return new URL(u).hostname; } catch { return u; } }).join('، ') : 'الاسم المسجَّل',
+                    evidenceHosts(o.evidence, '، ', 'الاسم المسجَّل'),
                 ]),
             },
         },

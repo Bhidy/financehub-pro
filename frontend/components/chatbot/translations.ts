@@ -209,7 +209,7 @@ export const translations = {
             value: "القيمة",
             topMatches: "أفضل 10 مطابقات بناءً على",
             latestHeadlines: "أحدث العناوين",
-            realTime: "مباشر",
+            realTime: "لحظي",
             marketNews: "أخبار السوق",
             exploreInsights: "استكشف المزيد",
             financials: "القوائم المالية",

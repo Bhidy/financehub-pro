@@ -1,5 +1,22 @@
 import { newsPath, type SiteLang } from "./seo";
 
+/**
+ * NEWS TEXT + PUBLISHING RULES — SERVER ONLY.
+ *
+ * The patterns below name the upstream suppliers whose identity must not leave
+ * the server (lib/vendor-privacy.ts explains why). Importing this module from a
+ * "use client" component inlines those literals into a browser bundle, which is
+ * how the site came to ship the very name it strips from its copy. Client
+ * components use lib/news-display.client.ts instead — by then the text has
+ * already been scrubbed at the API boundary.
+ *
+ * `npm run verify:vendor` fails the build if a client module imports this.
+ *
+ * DO NOT "simplify" stripBlockedSources: canonicalNewsPath() slugifies its
+ * output, so every character it removes is part of ~4,500 live news URLs and of
+ * the sitemap that advertises them.
+ */
+
 const LEADING_CITY_RE = /^\s*(?:cairo|egypt|dubai|riyadh|abu\s+dhabi|kuwait)\s*[-–—:]\s*/i;
 const LEADING_SOURCE_RE = /^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya|enterprise(?:am)?)\s*[-–—:]\s*/i;
 const BLOCKED_SOURCE_RE = /\b(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya|enterprise(?:am)?)\b/gi;
@@ -113,35 +130,6 @@ export function formatNewsRelative(value?: string | null): string {
     if (hours < 24) return `${hours}h ago`;
     const days = Math.floor(hours / 24);
     return `${days}d ago`;
-}
-
-export function buildNewsSnippet(value?: string | null, maxLength = 230): string {
-    const clean = sanitizeNewsText(value).replace(/\s+/g, " ").trim();
-    if (!clean) return "No article body available.";
-    if (clean.length <= maxLength) return clean;
-    return `${clean.slice(0, maxLength)}...`;
-}
-
-export function splitNewsParagraphs(value?: string | null): string[] {
-    const clean = sanitizeNewsText(value);
-    if (!clean) return [];
-    return clean
-        .split(/\n{2,}/)
-        .map((part) => part.trim())
-        .filter((part) => part.length > 0);
-}
-
-export function resolveNewsImageSrc(imageUrl?: string | null): string | null {
-    if (!imageUrl) return null;
-    if (imageUrl.includes("static.mubasher.info/File.Story_Image/")) {
-        return `/api/v1/news-image?url=${encodeURIComponent(imageUrl)}`;
-    }
-    return imageUrl;
-}
-
-export function getNewsBrandedCover(item: any, lang: string = "en", fallbackSymbol?: string): string {
-    const l = lang === "ar" ? "ar" : "en";
-    return `/assets/news-covers/${l}-generic.webp`;
 }
 
 /* ------------------------------------------------------------------------

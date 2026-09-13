@@ -13,8 +13,14 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://starta.46-224-2
 //   • the exact origin that served this callback (always trusted), or
 //   • *.startamarkets.com / startamarkets.com (production), or
 //   • localhost (local dev).
-// Mobile deep-links are restricted to the one known Capacitor app scheme.
-const APP_SCHEME = "com.mubasher.startamarkets://";
+// Mobile deep-links are restricted to a FIXED allow-list of Capacitor app
+// schemes. Two entries, not one: the first is the scheme the app uses now, the
+// second is the legacy scheme still registered by builds already on devices —
+// it named a third party in a string the user can read in their address bar
+// during sign-in (lib/vendor-privacy.ts). Both are literals; one of them is
+// SELECTED by prefix, and neither is ever built from request input.
+const APP_SCHEMES = ["com.startamarkets.app://", "com.mubasher.startamarkets://"] as const;
+const APP_SCHEME = APP_SCHEMES[0];
 
 function isAllowedWebOrigin(candidate: string, requestOrigin: string): boolean {
     try {
@@ -149,14 +155,19 @@ export async function GET(request: NextRequest) {
         // deep-linking there strands the user on a dead page, so fall through to the
         // normal web redirect instead.
         const isNativeAppFlow =
-            isMobile && (!returnOrigin || returnOrigin.startsWith(APP_SCHEME));
+            isMobile && (!returnOrigin || APP_SCHEMES.some((scheme) => returnOrigin.startsWith(scheme)));
         if (isNativeAppFlow) {
             // SECURITY: the deep-link base is a FIXED constant. state.returnTo is
             // attacker-influencable (the OAuth URL is public), and this HTML page
             // carries fresh tokens — interpolating any attacker-controlled string
             // into it (even startsWith-checked) is an XSS/token-theft vector. The
             // native app always uses exactly this scheme+host, so nothing is lost.
-            const schemeBase = "com.mubasher.startamarkets://oauth";
+            // Still a fixed constant: `matched` can only ever BE one of the two
+            // literals in APP_SCHEMES — returnOrigin selects, it never supplies.
+            // An older build that asked for the legacy scheme keeps working; a
+            // current build gets the neutral one.
+            const matched = APP_SCHEMES.find((scheme) => (returnOrigin || "").startsWith(scheme)) ?? APP_SCHEME;
+            const schemeBase = `${matched}oauth`;
             // Deep-link query: the NATIVE contract — `user` single-encoded.
             const deepLink =
                 `${schemeBase}?token=${encodeURIComponent(data.access_token)}` +

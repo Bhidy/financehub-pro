@@ -49,7 +49,7 @@ import { DisclaimerCard } from "./DisclaimerCard";
 import { ScoreBreakdownCard } from "./ScoreBreakdownCard";
 import { CardTooltipShell } from "./CardTooltip";
 import { translations } from "@/components/chatbot/translations";
-import { resolveNewsImageSrc, sanitizeNewsText, splitNewsParagraphs } from "@/lib/news-display";
+import { newsCoverSrc, cleanNewsText, newsParagraphs } from "@/lib/news-display.client";
 import { createPortal } from "react-dom";
 
 // Phase 6: Rich Visualization Chart Components
@@ -2626,11 +2626,11 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
     };
 
     const selectedApiArticle = selectedItem?.id ? articleById[selectedItem.id] : null;
-    const selectedImage = resolveNewsImageSrc(selectedApiArticle?.image_url || selectedItem?.image_url);
+    const selectedImage = newsCoverSrc(selectedApiArticle?.image_url || selectedItem?.image_url);
     const selectedDate = selectedApiArticle?.published_at || selectedApiArticle?.published_date_raw || selectedItem?.date;
     const selectedTitle = selectedApiArticle?.headline || selectedItem?.title || "";
-    const selectedBodyText = sanitizeNewsText(selectedApiArticle?.article_body || selectedItem?.summary || "");
-    const selectedParagraphs = splitNewsParagraphs(selectedBodyText);
+    const selectedBodyText = cleanNewsText(selectedApiArticle?.article_body || selectedItem?.summary || "");
+    const selectedParagraphs = newsParagraphs(selectedBodyText);
     const showLoading = loadingArticleId === selectedItem?.id && !selectedApiArticle;
     const readerModal =
         isClient && selectedItem
@@ -2678,7 +2678,7 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
 
                         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-5 pt-4 md:px-6 md:pb-6 md:pt-5">
                             <h4 className={`mb-4 text-xl font-black leading-tight text-slate-900 dark:text-white md:text-3xl ${isRtl ? "text-right" : "text-left"}`}>
-                                {sanitizeNewsText(selectedTitle)}
+                                {cleanNewsText(selectedTitle)}
                             </h4>
 
                             {selectedImage && (
@@ -2686,7 +2686,7 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src={selectedImage}
-                                        alt={sanitizeNewsText(selectedTitle)}
+                                        alt={cleanNewsText(selectedTitle)}
                                         className="h-auto max-h-[420px] w-full object-cover"
                                     />
                                 </div>
@@ -2704,7 +2704,7 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
                                         {quickBriefLabel}
                                     </div>
                                     <p className={`text-sm leading-6 text-slate-700 dark:text-slate-200 ${isRtl ? "text-right" : "text-left"}`}>
-                                        {sanitizeNewsText(selectedItem.summary)}
+                                        {cleanNewsText(selectedItem.summary)}
                                     </p>
                                 </div>
                             )}
@@ -2765,10 +2765,10 @@ export function NewsListCard({ title, data, language = "en" }: NewsListProps) {
                     >
                         <div className="flex items-start gap-4">
                             <div className="h-20 w-28 shrink-0 overflow-hidden rounded-xl border border-slate-200/70 bg-slate-100 dark:border-white/10 dark:bg-slate-900">
-                                {resolveNewsImageSrc(item.image_url) ? (
+                                {newsCoverSrc(item.image_url) ? (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img
-                                        src={resolveNewsImageSrc(item.image_url) || undefined}
+                                        src={newsCoverSrc(item.image_url) || undefined}
                                         alt={item.title}
                                         className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
                                     />

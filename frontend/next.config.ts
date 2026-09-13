@@ -43,13 +43,13 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
 
-  // Image optimization for external sources
+  // Image optimization for external sources.
+  // News covers are NOT listed here on purpose: a publisher whose identity is
+  // not disclosed would otherwise reappear inside /_next/image?url=… in the
+  // rendered HTML. Those covers are served through /api/v1/news-image, which is
+  // same-origin and needs no remote pattern. See lib/vendor-privacy.ts.
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**.mubasher.info',
-      },
       {
         protocol: 'https',
         hostname: 'flagcdn.com',

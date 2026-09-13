@@ -6,7 +6,6 @@ import { SITE_URL, absUrl, fundPath, idFromParam, canonicalRedirectTarget, OG_DE
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { NAVHIST, t, type Lang } from '@/content/symbol-pages-i18n';
-import { fundSourceLabel } from '@/lib/fund-sources';
 import { HOME_PATH } from '@/lib/lang';
 import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
 
@@ -157,22 +156,19 @@ export async function renderNavHistory(id: string, lang: Lang) {
         [t(NAVHIST.stats.low, lang), `${currency} ${fmtNav(low.nav, lang)} · ${humanDate(low.date, lang)}`],
     ];
 
-    // PROVENANCE (audit 2026-09-05): which source vouched for each point, from
-    // which document, and when it was ingested — read from nav_history itself.
-    // Sources are named as the pipeline tags them; nothing is inferred.
-    // Labels live in lib/fund-sources.ts, shared with the fund profile's
-    // provenance row, so both pages name a source identically.
-    const bySource = new Map<string, number>();
-    for (const p of points) bySource.set(p.source ?? 'unrecorded', (bySource.get(p.source ?? 'unrecorded') ?? 0) + 1);
-    const provenance = [...bySource.entries()].sort((a, b) => b[1] - a[1]);
+    // FRESHNESS, NOT PROVENANCE (2026-09-13).
+    // This page used to print a per-row "Source" column, a breakdown table of
+    // how many points each pipeline source contributed, and links to the
+    // upstream documents — which published our commercial data sourcing on
+    // every one of ~400 fund pages. What a reader actually needs from that
+    // block is WHEN the series was last refreshed, so that is all that is kept.
+    // The `source` / `source_url` columns stay in nav_history for operations;
+    // they are not published. See lib/vendor-privacy.ts.
     const latestIngest = points.reduce<string | null>((mx, p) => (p.ingested_at && (!mx || p.ingested_at > mx) ? p.ingested_at : mx), null);
-    const sourceUrls = [...new Set(points.map((p) => p.source_url).filter((u): u is string => !!u))];
-    const sourceName = (k: string) => fundSourceLabel(k, lang) ?? k;
 
     const dataset = {
         '@context': 'https://schema.org',
         '@type': 'Dataset',
-        ...(sourceUrls.length ? { isBasedOn: sourceUrls.slice(0, 5) } : {}),
         name: t(NAVHIST.h1(name), lang),
         description: t(NAVHIST.description(name, humanDate(first.date, lang), humanDate(last.date, lang), points.length), lang),
         url: absUrl(canonicalPath),
@@ -248,7 +244,6 @@ export async function renderNavHistory(id: string, lang: Lang) {
                             <tr className="border-b border-border bg-panel/40 text-xs font-bold uppercase tracking-wide text-muted">
                                 <th scope="col" className={th}>{t(NAVHIST.cols.date, lang)}</th>
                                 <th scope="col" className={thNum}>{t(NAVHIST.cols.nav, lang)}</th>
-                                <th scope="col" className={th}>{isAr ? 'المصدر' : 'Source'}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -256,7 +251,6 @@ export async function renderNavHistory(id: string, lang: Lang) {
                                 <tr key={p.date} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                     <th scope="row" className={`px-4 py-2.5 font-medium text-main ${isAr ? 'text-right' : 'text-left'}`}>{humanDate(p.date, lang)}</th>
                                     <td className={tdNum}>{fmtNav(p.nav, lang)} <span className="text-xs text-muted">{currency}</span></td>
-                                    <td className={`px-4 py-2.5 text-xs text-muted ${isAr ? 'text-right' : 'text-left'}`}>{sourceName(p.source ?? 'unrecorded')}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -264,50 +258,20 @@ export async function renderNavHistory(id: string, lang: Lang) {
                 </div>
             </section>
 
-            <section className="mt-8 max-w-3xl" aria-labelledby="nav-provenance" data-nav-provenance={provenance.length}>
-                <h2 id="nav-provenance" className="text-lg font-extrabold tracking-tight text-main">{isAr ? 'مصدر كل نقطة في هذا السجل' : 'Where every point in this history comes from'}</h2>
+            <section className="mt-8 max-w-3xl" aria-labelledby="nav-freshness" data-nav-points={points.length}>
+                <h2 id="nav-freshness" className="text-lg font-extrabold tracking-tight text-main">
+                    {isAr ? 'كيف يُحدَّث هذا السجل' : 'How this history is kept current'}
+                </h2>
                 <p className="mt-2 text-sm leading-6 text-muted">
                     {isAr
-                        ? 'يحمل كل صافي قيمة أصول في هذه السلسلة اسم المصدر الذي أفصح عنه، ورابط الملف أو التقرير الذي قُرئ منه، ووقت إدخاله إلى قاعدة بياناتنا. لا تُقدَّر أي قيمة؛ والنقاط المسجَّلة قبل بدء تتبّع المصدر تظهر كذلك.'
-                        : 'Every NAV in this series carries the source that vouched for it, the file or report it was read from, and the time it entered our database. Nothing is estimated; points recorded before source tracking began are shown as such.'}
+                        ? 'كل قيمة في هذه السلسلة هي صافي قيمة الأصول كما أفصح عنه مدير الصندوق، مسجَّلةً بتاريخ إفصاحها. لا تُقدَّر أي قيمة ولا تُستكمل، والكتابة إضافية فقط: تحديث لا يعيد أي بيانات لا يمكنه حذف قيمة مخزَّنة.'
+                        : 'Every value in this series is the net asset value the fund manager disclosed, recorded against the date of that disclosure. Nothing is estimated or interpolated, and writes are add-only: a refresh that returns nothing can never delete a value already stored.'}
                 </p>
-                <table className="mt-3 w-full max-w-xl text-sm">
-                    <thead>
-                        <tr className={`border-b border-border text-xs font-bold uppercase tracking-wide text-muted ${isAr ? 'text-right' : 'text-left'}`}>
-                            <th className="py-2">{isAr ? 'المصدر' : 'Source'}</th>
-                            <th className={`py-2 ${isAr ? 'text-left' : 'text-right'}`}>{isAr ? 'عدد النقاط' : 'Points'}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {provenance.map(([k, n]) => (
-                            <tr key={k} className="border-b border-border/60 last:border-0">
-                                <td className="py-2 text-muted">{sourceName(k)}</td>
-                                <td className={`py-2 tabular-nums font-semibold text-main ${isAr ? 'text-left' : 'text-right'}`} dir="ltr">{n.toLocaleString('en-EG')}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {(latestIngest || sourceUrls.length > 0) && (
+                {latestIngest && (
                     <p className="mt-3 text-xs leading-relaxed text-muted">
-                        {latestIngest && (
-                            <>
-                                {isAr ? 'آخر إدخال: ' : 'Last ingested: '}
-                                <time dateTime={latestIngest}>{new Date(latestIngest).toLocaleString(isAr ? 'ar-EG-u-nu-latn' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Cairo' })}</time>
-                                {isAr ? ' (بتوقيت القاهرة)' : ' (Cairo time)'}
-                            </>
-                        )}
-                        {sourceUrls.length > 0 && (
-                            <>
-                                {latestIngest ? ' · ' : ''}
-                                {isAr ? 'المستندات الأصلية: ' : 'Source documents: '}
-                                {sourceUrls.slice(0, 3).map((u, i) => (
-                                    <span key={u}>
-                                        {i > 0 && ', '}
-                                        <a href={u} rel="nofollow noopener" target="_blank" className="underline">{new URL(u).hostname.replace(/^www\./, '')}</a>
-                                    </span>
-                                ))}
-                            </>
-                        )}
+                        {isAr ? 'آخر تحديث: ' : 'Last updated: '}
+                        <time dateTime={latestIngest}>{new Date(latestIngest).toLocaleString(isAr ? 'ar-EG-u-nu-latn' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Cairo' })}</time>
+                        {isAr ? ' (بتوقيت القاهرة)' : ' (Cairo time)'}
                     </p>
                 )}
             </section>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { db } from '@/lib/db-server';
 import { sanitizeNewsText } from '@/lib/news-display';
+import { scrubVendorNames, publicUrl, publicImageUrl } from '@/lib/vendor-privacy';
 
 export async function GET(request: Request) {
     try {
@@ -79,11 +80,20 @@ export async function GET(request: Request) {
             ${offsetClause}
         `, params);
 
+        // THE EGRESS BOUNDARY for this feed. Text hygiene (datelines, syndication
+        // notices, whitespace) is shared with the React pages via
+        // sanitizeNewsText; supplier identity is removed HERE, server-side, so no
+        // browser ever receives it and no client has to carry the patterns —
+        // lib/vendor-privacy.ts. `url` and `image_url` are upstream addresses and
+        // are the two fields that used to carry the supplier's hostname into the
+        // page as an href and an <img src>.
         const sanitizedRows = result.rows.map((row) => ({
             ...row,
-            headline: sanitizeNewsText(row.headline) || "Egypt Market Update",
-            article_body: sanitizeNewsText(row.article_body) || null,
+            headline: scrubVendorNames(sanitizeNewsText(row.headline)) || "Egypt Market Update",
+            article_body: scrubVendorNames(sanitizeNewsText(row.article_body)) || null,
             source: null,
+            url: publicUrl(row.url),
+            image_url: publicImageUrl(row.image_url, row.id),
         }));
 
         return NextResponse.json(sanitizedRows, {

@@ -88,9 +88,6 @@ export type FundLabels = {
     exploreMore: string;
     similarFunds: string;
     similarFundsUniverse: string;
-    source: string;
-    sourcePage: string;
-    sourcePageMeta: string;
     recentNavTitle: string;
     recentNavDate: string;
     recentNavValue: string;
@@ -191,9 +188,6 @@ const EN: FundLabels = {
     // used only when the fund's own asset class is unknown.
     similarFunds: 'Similar funds in the same asset class',
     similarFundsUniverse: 'Other funds in the same universe',
-    source: 'Source (latest NAV)',
-    sourcePage: 'Fund page at the data source',
-    sourcePageMeta: 'Mubasher · opens in a new tab',
     recentNavTitle: 'Latest published NAVs',
     recentNavDate: 'Date',
     recentNavValue: 'NAV',
@@ -392,9 +386,6 @@ const AR: FundLabels = {
     exploreMore: 'استكشف المزيد',
     similarFunds: 'صناديق مشابهة من نفس فئة الأصول',
     similarFundsUniverse: 'صناديق أخرى من نفس السوق',
-    source: 'المصدر (آخر قيمة)',
-    sourcePage: 'صفحة الصندوق لدى مصدر البيانات',
-    sourcePageMeta: 'مباشر · تفتح في نافذة جديدة',
     recentNavTitle: 'آخر القيم المنشورة لصافي قيمة الأصول',
     recentNavDate: 'التاريخ',
     recentNavValue: 'صافي قيمة الأصول',

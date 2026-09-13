@@ -12,7 +12,6 @@ import { investmentFundNode } from '@/lib/funds-hub-render';
 import { DORMANT_DAYS } from '@/lib/fund-stats';
 import { buildFundAnalytics, type AnalyticsInput } from '@/lib/fund-analytics';
 import { primaryAssetClassOf, shariaCompliantOf } from '@/content/fund-categories';
-import { fundSourceLabel } from '@/lib/fund-sources';
 import { HOME_PATH } from '@/lib/lang';
 
 /**
@@ -166,18 +165,6 @@ export async function fundMetadata(idParam: string, lang: Lang): Promise<Metadat
     };
 }
 
-/** The fund's page at the primary data source, only when it is a real Mubasher URL. */
-function sourcePageUrl(fund: Fund): string | null {
-    const raw = str(fund, 'profile_url');
-    if (!raw) return null;
-    try {
-        const u = new URL(raw);
-        return u.protocol === 'https:' && /(^|\.)mubasher\.info$/.test(u.hostname) ? u.toString() : null;
-    } catch {
-        return null;
-    }
-}
-
 /** Newest-first NAV rows for the collapsed history table: date, NAV, change vs the previous observation. */
 function recentNavRows(points: NavPoint[], lang: Lang): FundClientData['recentNav'] {
     return points.map((p, i) => {
@@ -268,10 +255,6 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang,
             [t.dividendPolicy, str(fund, 'dividend_policy'), false],
             [t.navObservations, navPoints !== null ? fmtInt(navPoints) : null, false],
             [t.historyQuality, qualityText, false],
-            // PROVENANCE: which pipeline source vouched for the latest NAV, named
-            // as the pipeline tags it (lib/fund-sources.ts — the same labels the
-            // NAV-history page prints per row). Hidden when unrecorded.
-            [t.source, fundSourceLabel((fund as Fields)['source'], lang), false],
             [
                 t.minSubscription,
                 minSubscription !== null
@@ -524,7 +507,6 @@ function buildClientData(fund: Fund, peers: FundClientData['peers'], lang: Lang,
         riskStats,
         platforms,
         prospectusUrl,
-        sourceUrl: sourcePageUrl(fund),
         recentNav: recentNavRows(recent, lang),
         recentNavIngested: (() => {
             const ing = recent.find((p) => p.ingested_at)?.ingested_at ?? null;
@@ -562,8 +544,8 @@ const MAX_PEERS = 6;
  * Now every candidate must share the fund's primary asset class (override →
  * disclosure → registered name, content/fund-categories.ts) and be a CURRENT
  * fund (getAllFundsRanked applies the universe rule). Within the class the
- * order is deterministic: the vendor's peers first (they encode Mubasher's
- * own similarity), then same currency + same Shariah status with one fund per
+ * order is deterministic: the vendor's peers first (they encode the upstream
+ * feed's own similarity), then same currency + same Shariah status with one fund per
  * manager, then the rest of the class in ranking order. A fund whose class is
  * unknown falls back to the ranked universe under a heading that says so.
  */

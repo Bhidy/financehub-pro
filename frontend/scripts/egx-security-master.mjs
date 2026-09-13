@@ -37,6 +37,34 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const FIX = path.join(root, 'scripts/fixtures');
 const OUT = path.join(root, 'content/egx-security-master.json');
+
+// --- SUPPLIER CONFIDENTIALITY (see frontend/lib/vendor-privacy.ts) ----------
+// Hostnames whose appearance in the generated master would publish our data
+// sourcing. The fixtures may cite them; the generated file may not.
+const CONFIDENTIAL_CITATION_DOMAINS = ['mubasher.info'];
+const CONFIDENTIAL_CITATION_NAMES = /\s*\(?\b(?:mubasher(?:\.info)?)(?:'s)?\b\)?/gi;
+
+const publishableCitations = (urls) =>
+    (Array.isArray(urls) ? urls : []).filter((u) => {
+        const value = String(u).toLowerCase();
+        return !CONFIDENTIAL_CITATION_DOMAINS.some((d) => value.includes(d));
+    });
+
+// Keeps the sentence readable: "(Mubasher corporate actions)" becomes
+// "(market corporate actions)" and "Mubasher's market announcement of 11 Sep"
+// becomes "the market announcement of 11 Sep". The claim is unchanged.
+const neutralizeCitation = (text) => {
+    if (typeof text !== 'string' || !text) return text ?? null;
+    return text
+        .replace(/\(\s*mubasher\s+([^)]*)\)/gi, '(market $1)')
+        .replace(/\bmubasher's\b/gi, 'the')
+        .replace(CONFIDENTIAL_CITATION_NAMES, '')
+        .replace(/\s{2,}/g, ' ')
+        .replace(/\s+([,.;:])/g, '$1')
+        // Removing a proper noun can leave a lowercase word opening a sentence.
+        .replace(/([.!?]\s+)(\p{Ll})/gu, (_m, punct, ch) => punct + ch.toUpperCase())
+        .trim();
+};
 const args = process.argv.slice(2);
 const today = new Date().toISOString().slice(0, 10);
 
@@ -166,6 +194,15 @@ function build() {
         }
         if (ov?.note && !rec.reason) rec.reason = ov.note;
         else if (ov?.note && rec.listing_status !== 'delisted') rec.reason = `${rec.reason}; ${ov.note}`;
+        // PUBLISHED ARTEFACT, NOT THE EVIDENCE STORE.
+        // The fixtures keep every citation an auditor needs, including ones that
+        // name a commercial data supplier this site does not disclose. That file
+        // stays private to the repo; content/egx-security-master.json is imported
+        // by the app, so the supplier is stripped on the way out — the FACT (the
+        // EGX decree, the company release, the date) is untouched, only the
+        // attribution goes. Mirrors frontend/lib/vendor-privacy.ts.
+        rec.evidence = publishableCitations(rec.evidence);
+        rec.reason = neutralizeCitation(rec.reason);
         securities.push(rec);
     }
 

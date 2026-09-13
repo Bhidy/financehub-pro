@@ -1,5 +1,6 @@
 import type { Security } from '@/lib/security-master';
 import { SECURITY_MASTER_SOURCES } from '@/lib/security-master';
+import { publicUrls } from '@/lib/vendor-privacy';
 
 /**
  * LISTING-STATUS NOTICE — shown on a company page whose symbol the security
@@ -55,6 +56,12 @@ export default function ListingStatusNotice({ symbol, security, lang }: { symbol
                 ? `لم نجد هذا الرمز في سجل الأوراق المقيدة بالبورصة المصرية (السوق الرئيسي وسوق الشركات الصغيرة والمتوسطة) بتاريخ ${fmt(registerDate)}. الأسعار المعروضة أدناه من مزوّد البيانات ولا تُعامَل كسعر سهم مقيد حتى يتأكد القيد؛ ولذلك لا يُدرَج في دليل الشركات ولا في الترتيبات.`
                 : `This symbol was not found on the Egyptian Exchange’s register of listed securities (main and SME markets) as of ${fmt(registerDate)}. Prices below come from the data vendor and are not treated as a listed quote until the listing is confirmed; the symbol is excluded from the company directory and every ranking.`;
     }
+    // Citations a reader may follow. A delisting can be evidenced by a commercial
+    // data supplier whose identity is not published (lib/vendor-privacy.ts); the
+    // FACT stays — the EGX decree, the company release — only the link is
+    // withheld, and the notice reads the same without it.
+    const citations = publicUrls(security?.evidence);
+
     return (
         <aside
             role="note"
@@ -66,10 +73,10 @@ export default function ListingStatusNotice({ symbol, security, lang }: { symbol
             <div className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-amber-950 dark:border-amber-500/40 dark:bg-amber-950/30 dark:text-amber-100">
                 <p className="text-base font-extrabold tracking-tight">{title}</p>
                 <p className="mt-1.5 text-sm leading-6">{body}</p>
-                {security?.evidence?.length ? (
+                {citations.length ? (
                     <p className="mt-2 text-xs">
                         {isAr ? 'المصادر: ' : 'Sources: '}
-                        {security.evidence.map((u, i) => (
+                        {citations.map((u, i) => (
                             <span key={u}>
                                 {i > 0 && ' · '}
                                 <a href={u} rel="nofollow noopener" target="_blank" className="underline">

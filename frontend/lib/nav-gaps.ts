@@ -3,7 +3,7 @@
  *
  * WHY THIS EXISTS (2026-08-15 audit)
  * ----------------------------------
- * Mubasher's per-fund CSV stopped publishing around 2025-05 for a large cohort.
+ * The upstream per-fund CSV stopped publishing around 2025-05 for a large cohort.
  * A daily list-API sync resumed writing in 2026-06. The result is two islands of
  * data with a ~13-month hole between them — 61 funds carry exactly that shape.
  *

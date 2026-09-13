@@ -79,7 +79,7 @@ export const FUND_LOGOS: Record<string, string> = {
     '6121': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777590817172-qx1p50wc109.png', // Maksab OZ USD - Fixed Income Fund [NAV]
     '6122': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777723771842-f8cmp9yhoqr.png', // Azimut Opportunities Shariah AZ [NAV]
     '6144': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777723206634-mot47dnay6c.png', // Misr Shariah Equity Fund – CIAM Islami [NAV]
-    '6145': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777723378171-hdeoff1tpp7.png', // Mubasher Equity Fund [NAME=1.0/unique]
+    '6145': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777723378171-hdeoff1tpp7.png', // Mubasher Misr Equity Fund Mubasher Equity [NAME=1.0/unique]
     '6146': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777722497802-aoaaubhg3yp.png', // Azimut Istihqaq 2030 USD – Az-30 Fund [NAV]
     '6148': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777719777573-ik5ft4zg42p.png', // Beltone Meya Meya (100/100) EGX100 Ind [NAV]
     '6149': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777547111377-na98mh042g.png', // Beltone Wafra EGX33 Shariah fund [NAV]
@@ -95,7 +95,7 @@ export const FUND_LOGOS: Record<string, string> = {
     '6387': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777722072878-tvmk5uo2e6.png', // Sahmy 70 Fund - NI Capital [NAV]
     '6391': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1781538536024-q3jonvq8qq.png', // Target First Fixed Income Fund [NAV]
     '6392': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777802765157-qo0vcm96aeh.png', // Zaldi Star Money Market Fund [NAV]
-    '6400': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777723418155-3qed9046aki.png', // Dahab Mubasher  - Mubasher Evolve Gold [NAV]
+    '6400': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1777723418155-3qed9046aki.png', // Mubasher Evolve Gold Fund Dahab Mubasher [NAV]
     '6401': 'https://kshqrzzohabbsjipkunh.supabase.co/storage/v1/object/public/funds/1780312020858-z7zktudkza.jpg', // Stream Fixed Income Fund - Cairo Capit [NAV]
 };
 

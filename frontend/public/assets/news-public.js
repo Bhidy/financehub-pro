@@ -165,15 +165,16 @@
             .replaceAll("'", "&#39;");
     }
 
+    // Display hygiene only. Publisher identity is removed server-side by
+    // /api/v1/news before this file ever sees the text — writing the publisher
+    // names here would ship them to every visitor inside this very script,
+    // which is the leak this indirection exists to close.
+    // See frontend/lib/vendor-privacy.ts.
     function sanitize(value) {
         if (!value) return "";
         return String(value)
             .replace(/^\s*(?:cairo|egypt|dubai|riyadh|abu\s+dhabi|kuwait)\s*[-–—:]\s*/i, "")
-            .replace(/^\s*(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\s*[-–—:]\s*/i, "")
             .replace(/^\s*(?:القاهرة|مصر)\s*[-–—:]\s*/, "")
-            .replace(/^\s*(?:مباشر|[عآ]راب\s*فاينانس|زاوية)\s*[-–—:]\s*/, "")
-            .replace(/\b(?:mubasher(?:\.info)?|arab\s*finance|arabfinance|zawya)\b/gi, "")
-            .replace(/(مباشر|[عآ]راب\s*فاينانس|زاوية)/g, "")
             .replace(/^[-–—:\s]+/, "")
             .replace(/[ \t]+([,.;:!?])/g, "$1")
             .replace(/\r\n/g, "\n")
@@ -181,12 +182,12 @@
             .trim();
     }
 
+    // Covers arrive already addressed by the API: same-origin only, so a URL
+    // that still points elsewhere skipped the boundary and is not rendered.
     function imageSource(url) {
         if (!url) return "";
-        if (url.includes("static.mubasher.info/File.Story_Image/")) {
-            return `/api/v1/news-image?url=${encodeURIComponent(url)}`;
-        }
-        return url;
+        const value = String(url).trim();
+        return value.startsWith("/") && !value.startsWith("//") ? value : "";
     }
 
     function formattedDate(value) {

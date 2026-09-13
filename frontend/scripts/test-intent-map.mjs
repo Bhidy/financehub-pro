@@ -2,7 +2,7 @@
 /**
  * SEARCH-INTENT MAP GATE.
  *
- * content/search-intent-map.json is the one place that says which URL answers
+ * scripts/fixtures/search-intent-map.json is the one place that says which URL answers
  * which query cluster, in each language. Two things go wrong with such a map
  * when nothing checks it: a target points at a route that no longer exists
  * (the tracker then measures a 404), or two clusters quietly share one URL
@@ -15,7 +15,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const MAP = path.join(root, "content/search-intent-map.json");
+const MAP = path.join(root, "scripts/fixtures/search-intent-map.json");
 
 /** Routes that exist outside app/ (next.config rewrites) or are not language twins. */
 const EXTRA_EN = ["/", "/privacy", "/terms", "/Portfolio"];
@@ -79,7 +79,7 @@ for (const c of clusters) {
 
 // serp.mjs must read THIS map, not carry its own list.
 const serp = readFileSync(path.join(root, "scripts/seo/serp.mjs"), "utf8");
-if (!serp.includes("search-intent-map.json")) fail("scripts/seo/serp.mjs does not read content/search-intent-map.json — the tracked queries would drift from the map");
+if (!serp.includes("search-intent-map.json")) fail("scripts/seo/serp.mjs does not read scripts/fixtures/search-intent-map.json — the tracked queries would drift from the map");
 
 if (failed) {
   console.error(`\nFAIL: search-intent map — ${failed} problem(s).`);

@@ -37,7 +37,7 @@ export async function GET() {
     const asOf = funds.reduce<string>((mx, f) => (iso(f.last_nav_date) > mx ? iso(f.last_nav_date) : mx), '');
     const header = [
         `# Starta Markets — Egyptian mutual fund prices (${funds.length} publicly offered funds with a current NAV)`,
-        `# as_of=${asOf} generated=${new Date().toISOString()} source=fund-manager disclosures via Mubasher price files and EIMA reports; returns computed by Starta (fund_metrics.py) — see ${SITE_URL}/methodology`,
+        `# as_of=${asOf} generated=${new Date().toISOString()} source=fund-manager disclosures and EIMA reports; returns computed by Starta (fund_metrics.py) — see ${SITE_URL}/methodology`,
         `# universe: NAV within 180 days and >=2 NAV points; returns_source=computed means the audited engine produced the figure, legacy means a disclosed figure the engine could not recompute; blank = not available (never 0)`,
         `# licence: free to cite with attribution to Starta Markets and the fund manager; not investment advice`,
         ['fund_id', 'name_en', 'name_ar', 'category', 'currency', 'latest_nav', 'nav_as_of', 'return_ytd_pct', 'return_1y_pct', 'return_3y_pct', 'returns_source', 'ranking_eligible', 'management_fee_pct', 'manager', 'url'].join(','),

@@ -408,7 +408,7 @@ async function _getFundUncached(fundId: number): Promise<Fund | null> {
     // TRUST HIERARCHY CUTOVER (2026-08-15 audit).
     //
     // The old order ran the legacy coalesce FIRST and let fund_risk_metrics
-    // "fill only gaps". The legacy figures are decypha/Mubasher-era columns
+    // "fill only gaps". The legacy figures are legacy-vendor-era columns
     // that NOTHING refreshes from source anymore — reconciling them against
     // our own nav_history reproduced the displayed YTD on 5 of 158 funds.
     // Meanwhile fund_risk_metrics is recomputed daily from nav_history with

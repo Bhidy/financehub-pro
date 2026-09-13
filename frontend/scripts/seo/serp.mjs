@@ -62,12 +62,12 @@ const TRACKED = [
 ];
 
 /**
- * The query set IS the search-intent map (content/search-intent-map.json):
+ * The query set IS the search-intent map (scripts/fixtures/search-intent-map.json):
  * one cluster, one canonical URL per language. This file no longer carries a
  * list of its own, so the tracked queries cannot drift from the pages built
  * to answer them; scripts/test-intent-map.mjs gates the map on every build.
  */
-const INTENT_MAP = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'content', 'search-intent-map.json');
+const INTENT_MAP = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'fixtures', 'search-intent-map.json');
 function defaultQueries() {
     const map = JSON.parse(readFileSync(INTENT_MAP, 'utf8'));
     return map.clusters.flatMap((c) => [

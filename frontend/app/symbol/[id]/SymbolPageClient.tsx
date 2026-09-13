@@ -13,11 +13,9 @@ import {
     fetchEgxTechnicals, fetchEgxEstimates, fetchEgxFinancialsTV, fetchEgxDividendsTV, fetchEgxNewsTV
 } from "@/lib/api";
 import {
-    sanitizeNewsText,
-    resolveNewsImageSrc,
-    buildNewsSnippet,
-    getNewsBrandedCover
-} from "@/lib/news-display";
+    cleanNewsText,
+    newsBrandedCover
+} from "@/lib/news-display.client";
 
 import {
     TrendingUp, TrendingDown, Building2, Users, BarChart3,
@@ -428,7 +426,7 @@ function dataFreshness(ts: any, lang: string): { text: string; dot: string; cls:
     const isAr = lang === "ar";
     const when = d.toLocaleString(isAr ? "ar-EG" : "en-US", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
     const day = d.toLocaleDateString(isAr ? "ar-EG" : "en-US", { day: "numeric", month: "short", year: "numeric" });
-    if (ageH < 0.5) return { text: isAr ? "مباشر" : "Live", dot: "bg-emerald-500 animate-pulse", cls: "text-emerald-600 dark:text-emerald-400" };
+    if (ageH < 0.5) return { text: isAr ? "لحظي" : "Live", dot: "bg-emerald-500 animate-pulse", cls: "text-emerald-600 dark:text-emerald-400" };
     if (ageH < 72) return { text: (isAr ? "حتى " : "as of ") + when, dot: "bg-slate-400", cls: "text-slate-400" };
     return { text: (isAr ? "بيانات متأخرة · حتى " : "Delayed · as of ") + day, dot: "bg-amber-500", cls: "text-amber-600 dark:text-amber-400" };
 }
@@ -1411,9 +1409,9 @@ export default function SymbolDetailPage() {
                                             const isExpanded = expandedNews.has(i);
                                             
                                             // Sanitize headlines and summaries to prevent external brand exposure
-                                            const cleanHeadline = sanitizeNewsText(article.headline);
-                                            const cleanBody = sanitizeNewsText(article.article_body);
-                                            const resolvedImg = getNewsBrandedCover(article, lang, symbol);
+                                            const cleanHeadline = cleanNewsText(article.headline);
+                                            const cleanBody = cleanNewsText(article.article_body);
+                                            const resolvedImg = newsBrandedCover(article, lang, symbol);
 
                                             return (
                                                 <div key={i} className="news-card p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50">

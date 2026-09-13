@@ -57,6 +57,11 @@
 			<string>com.mubasher.startamarkets.oauth</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<!-- Current scheme. Listed first: it is what the app requests and
+				     what a user sees in the address bar during Google sign-in. -->
+				<string>com.startamarkets.app</string>
+				<!-- Legacy scheme, kept registered so a build already installed on
+				     a device can still receive its OAuth redirect. -->
 				<string>com.mubasher.startamarkets</string>
 			</array>
 		</dict>

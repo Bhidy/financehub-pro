@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { ArrowUpDown, ArrowUp, ArrowDown, Shield } from "lucide-react";
 import clsx from "clsx";
 
-// Mubasher-aligned MutualFund interface
+// Vendor-aligned MutualFund interface
 interface MutualFund {
     fund_id: string;
     fund_name: string;

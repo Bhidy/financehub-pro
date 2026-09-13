@@ -8,6 +8,7 @@ import html
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 import asyncpg
 
@@ -30,6 +31,27 @@ _BLOCKED_SOURCE_RE = re.compile(
     re.IGNORECASE,
 )
 _BLOCKED_SOURCE_AR_RE = re.compile(r"(?:مباشر|عرب\s*فاينانس|زاوية)")
+
+# Cover images hosted by a supplier whose identity must not reach the browser are
+# re-addressed to our own proxy by OUR article id (the web twin of
+# frontend/lib/vendor-privacy.ts::publicImageUrl). Before this, the chat cards
+# rendered <img src="https://static.<supplier>..."> directly, which put the
+# supplier's hostname in the DOM of every card that carried a photo.
+_CONFIDENTIAL_IMAGE_HOSTS = ("mubasher.info",)
+
+
+def _public_image_url(image_url: Optional[str], article_id) -> Optional[str]:
+    if not image_url:
+        return None
+    host = urlparse(image_url).hostname or ""
+    host = host.lower()
+    if not any(host == d or host.endswith("." + d) for d in _CONFIDENTIAL_IMAGE_HOSTS):
+        return image_url
+    try:
+        ident = int(article_id)
+    except (TypeError, ValueError):
+        return None
+    return f"/api/v1/news-image?id={ident}" if ident > 0 else None
 
 
 def _clean_text(value: Optional[str]) -> str:
@@ -269,7 +291,7 @@ async def handle_news(
         date_label = _format_item_date(row.get("published_at"), row.get("published_date_raw"))
         article_id = row.get("id")
         internal_path = f"/news/{article_id}" if article_id else "/news"
-        image_url = _clean_text(row.get("image_url")) or None
+        image_url = _public_image_url(_clean_text(row.get("image_url")) or None, article_id)
 
         if image_url:
             with_image += 1

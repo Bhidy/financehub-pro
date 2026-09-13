@@ -219,7 +219,7 @@ type CompanyProfileBundle = {
   financialsTv: Record<string, unknown>[];
   technicals: Record<string, unknown>[];
   estimates?: Record<string, unknown>;
-  // Per-symbol news (Mubasher/Zawya + TradingView union).
+  // Per-symbol news (licensed Egyptian wires + TradingView union).
   newsTv?: Record<string, unknown>[];
 };
 type SeasonalMonth = {
@@ -355,7 +355,7 @@ const copy = {
     funds: "الصناديق",
     portfolio: "المحفظة",
     more: "المزيد",
-    live: "مباشر",
+    live: "لحظي",
     marketPulse: "نبض السوق",
     marketNews: "أخبار السوق",
     mutualFunds: "الصناديق الاستثمارية",
@@ -723,7 +723,7 @@ async function loadCompanyProfile(symbol: string, lang: Lang): Promise<CompanyPr
   const clean = encodeURIComponent(symbol);
   // TV-ONLY MANDATE (June-2026): the audited-financials, corporate-actions and
   // seasonals fetches were removed — every number on the stock detail comes from
-  // TradingView feeds. (News stays the Mubasher/Zawya + TV union by owner decision.)
+  // TradingView feeds. (News stays the licensed-wire + TV union by owner decision.)
   const [websiteProfile, ratios, egxStats, financialsTv, technicals, estimates, newsTv] = await Promise.all([
     getJson<{ profile?: Record<string, unknown>; market_data?: Record<string, unknown>; statistics?: Record<string, unknown> }>(`/api/v1/company/${clean}/profile`, { ttl: 60_000 }),
     getJson<Record<string, unknown>[]>(`/api/v1/ratios?symbol=${clean}&limit=6`, { ttl: 60_000 }),
@@ -1069,7 +1069,7 @@ async function authResetPassword(resetToken: string, newPassword: string): Promi
 // Google OAuth: ask the backend for the consent URL (reuses the web callback,
 // with state.mobile so the web route bounces tokens back to our app scheme).
 const GOOGLE_WEB_CALLBACK = "https://startamarkets.com/api/auth/google/callback";
-const APP_OAUTH_SCHEME = "com.mubasher.startamarkets://oauth";
+const APP_OAUTH_SCHEME = "com.startamarkets.app://oauth";
 async function authGoogleUrl(): Promise<string | null> {
   try {
     const state = encodeURIComponent(JSON.stringify({ mobile: true, returnTo: APP_OAUTH_SCHEME }));
@@ -1895,7 +1895,7 @@ export default function StartaMobileApp() {
   };
 
   // Google sign-in: open the consent page in the system/in-app browser. The web
-  // callback bounces tokens back to the app via the com.mubasher.startamarkets:// scheme.
+  // callback bounces tokens back to the app via the com.startamarkets.app:// scheme.
   const startGoogle = async (): Promise<boolean> => {
     const url = await authGoogleUrl();
     if (!url) return false;
@@ -2362,7 +2362,7 @@ function IndexHero({ lang, egxIndex, summary }: { lang: Lang; egxIndex: EgxIndex
     <div className={styles.heroCard}>
       <div className={styles.heroTopRow}>
         <div className={styles.lblMono}>{lang === "ar" ? "مؤشر EGX 30" : "EGX 30 Index"}</div>
-        <span className={styles.liveTag}><i />{lang === "ar" ? "مباشر" : "LIVE"}</span>
+        <span className={styles.liveTag}><i />{lang === "ar" ? "لحظي" : "LIVE"}</span>
       </div>
       <div className={styles.bigNum}>{formatNumber(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</div>
       <div className={cx(styles.deltaRow, up ? styles.up : styles.down)}>

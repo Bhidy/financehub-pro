@@ -316,7 +316,7 @@ const NAME_TYPE_PATTERNS: Array<[FundTypeSlug, RegExp]> = [
     ['sector', new RegExp(`\\bsector\\b|\\bthematic\\b|\\bspecialized funds\\b|\\bspeciaized funds\\b|\\bctor specialized\\b|\\bctor speciaized\\b|\\b(?:building|technology|export|consumption|e[- ]?payment|consumer|industrial|financial|real estate) fund\\b|\\bIPO\\b|${arWord('قطاعي', 'قطاعية', 'القطاعية', 'موضوعي', 'موضوعية', 'الموضوعية')}`, 'i')],
     ['gold', new RegExp(`\\b(gold|precious\\s+metals?|silver|commodit\\w*)\\b|${arWord('ذهب', 'دهب', 'معادن\\s*نفيسة', 'فضة', 'سلع')}`, 'i')],
     // "Cash" alone (not only "cash fund") and the transliterated «كاش»: Egyptian
-    // cash funds are named that way ("Cash Mubasher" / «كاش مباشر»).
+    // cash funds are named that way after their manager.
     ['money_market', new RegExp(`\\bmoney\\s*market\\b|\\bliquidity\\b|\\bcash\\b|\\btreasury\\b|\\bt-?bills?\\b|${arWord('أسواق\\s*النقد', 'اسواق\\s*النقد', 'سوق\\s*النقد', 'نقدي', 'نقدية', 'سيولة', 'كاش')}`, 'i')],
     ['fixed_income', new RegExp(`\\bfixed\\s*income\\b|\\bbonds?\\b|\\bdebt\\b|\\bsukuk\\b|${arWord('دخل\\s*ثابت', 'الدخل\\s*الثابت', 'سندات', 'صكوك', 'أدوات\\s*الدين', 'ادوات\\s*الدين')}`, 'i')],
     ['balanced', new RegExp(`\\bbalanced\\b|\\bmixed\\b|\\basset\\s*allocation\\b|${arWord('متوازن', 'متوازنة', 'مختلط', 'مختلطة', 'توزيع\\s*الأصول')}`, 'i')],

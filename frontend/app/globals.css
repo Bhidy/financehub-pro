@@ -1418,3 +1418,25 @@ body:has(.admin-light) iframe[title*="Hotjar" i] {
     gap: 1.15rem;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * THIRD-PARTY FEEDBACK TAB — keep it out of the reading column on phones.
+ *
+ * Hotjar pins its survey toggle as a vertical tab against the right edge,
+ * vertically centred. On a desktop the content column is inset and nothing
+ * collides. At 375px the column is full-bleed, so the tab (34px wide, 124px
+ * tall) sat ON TOP of the lede: measured on /companies and /ar/companies it
+ * overlapped the paragraph box by 12px. In Arabic that edge is where every
+ * line STARTS, so the first characters of several lines were unreadable.
+ *
+ * Moved to the bottom corner below 768px — still one tap away, no longer over
+ * the text. Attribute-prefix selector because Hotjar suffixes the id per
+ * survey (hj-survey-toggle-1, -2, …) and its class names are hashed.
+ * ────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+    [id^="hj-survey-toggle"] {
+        top: auto !important;
+        bottom: 0 !important;
+        transform: none !important;
+    }
+}

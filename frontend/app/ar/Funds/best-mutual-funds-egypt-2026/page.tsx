@@ -241,7 +241,9 @@ export default async function BestFundsArPage() {
 
             <RankingEligibility rows={funds} lang="ar" />
 
-            <section className="mt-10 max-w-3xl">
+            {/* Uncapped, matching the English twin: the bordered FAQ list spans
+                the column there, and the two must not disagree. */}
+            <section className="mt-10">
                 <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight"><span aria-hidden className="inline-block h-4 w-1 rounded-full bg-starta-teal" />الأسئلة الشائعة</h2>
                 <dl className="mt-4 divide-y divide-border rounded-2xl border border-border bg-surface">
                     {faq.map((f) => (

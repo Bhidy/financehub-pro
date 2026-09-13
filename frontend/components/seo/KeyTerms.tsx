@@ -29,9 +29,9 @@ export default function KeyTerms({
         .filter((g): g is (typeof GLOSSARY_TERMS)[number] => !!g);
     if (terms.length === 0) return null;
     return (
-        <section className="mt-8 max-w-3xl" aria-label={heading ?? (isAr ? 'مصطلحات أساسية' : 'Key terms')}>
+        <section className="mt-8" aria-label={heading ?? (isAr ? 'مصطلحات أساسية' : 'Key terms')}>
             <h2 className="text-lg font-bold text-main">{heading ?? (isAr ? 'مصطلحات أساسية في هذه الصفحة' : 'Key terms on this page')}</h2>
-            <dl className="mt-3 space-y-3">
+            <dl className="mt-3 starta-cols-2">
                 {terms.map((g) => {
                     const term = isAr ? g.ar.term : g.en.term;
                     const definition = isAr ? g.ar.definition : g.en.definition;

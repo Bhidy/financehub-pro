@@ -218,12 +218,12 @@ export async function renderProvidersIndex(lang: 'en' | 'ar') {
                 </table>
             </div>
 
-            <section className="mt-10 max-w-3xl">
+            <section className="mt-10">
                 <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
                     <span aria-hidden className="inline-block h-4 w-1 rounded-full bg-starta-teal" />
                     {isAr ? 'كيف تقرأ هذا الجدول' : 'How to read this table'}
                 </h2>
-                <dl className="mt-4 space-y-4">
+                <dl className="mt-4 starta-cols-2">
                     {faq.map((x) => (
                         <div key={x.q} className="rounded-2xl border border-border bg-surface p-4">
                             <dt className="font-bold text-main">{x.q}</dt>

@@ -243,12 +243,16 @@ export async function renderFundRisk(lang: 'en' | 'ar') {
                 </div>
             </section>
 
-            <section className="mt-10 max-w-3xl">
+            <section className="mt-10">
                 <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
                     <span aria-hidden className="inline-block h-4 w-1 rounded-full bg-starta-teal" />
                     {isAr ? 'كيف تُحسب هذه الأرقام' : 'How these figures are computed'}
                 </h2>
-                <ul className="mt-4 list-disc space-y-2 ps-5 leading-relaxed text-muted">
+                {/* Definitions are scanned, not read in sequence, so two columns
+                    read BETTER than one wide one here: ~68 characters a line
+                    instead of 86, and the column fills with content rather than
+                    stretched text. */}
+                <ul className="mt-4 list-disc starta-cols-2 ps-5 leading-relaxed text-muted">
                     <li>
                         {isAr
                             ? 'التقلب السنوي: الانحراف المعياري لعوائد الفترات المتتالية مضروباً في الجذر التربيعي لعدد الفترات في السنة، محسوباً على الوتيرة الفعلية لنشر الصندوق (أسبوعية أو يومية) لا على افتراض ثابت. الفترات التي تمتد لأكثر من ثلاثة أضعاف الفاصل الوسيط للصندوق تُستبعد حتى لا تتحوّل الثغرات في البيانات إلى تقلب.'
@@ -282,12 +286,12 @@ export async function renderFundRisk(lang: 'en' | 'ar') {
                 </p>
             </section>
 
-            <section className="mt-10 max-w-3xl">
+            <section className="mt-10">
                 <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight">
                     <span aria-hidden className="inline-block h-4 w-1 rounded-full bg-starta-teal" />
                     {isAr ? 'أسئلة شائعة' : 'Frequently asked questions'}
                 </h2>
-                <dl className="mt-4 space-y-4">
+                <dl className="mt-4 starta-cols-2">
                     {faq.map((x) => (
                         <div key={x.q} className="rounded-2xl border border-border bg-surface p-4">
                             <dt className="font-bold text-main">{x.q}</dt>

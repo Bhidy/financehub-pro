@@ -2401,6 +2401,59 @@ async function run() {
     console.log(`OK: ${files.length} hub renderers percent-encode exactly once.`);
   }
 
+  // ══ EVERY ARABIC-SERVED SHELL EXPOSES A DICTIONARY THE SERVER CAN READ ═════
+  // localizeShell() finds a shell's own labels by looking for
+  // `const translations = { en: {...}, ar: {...} }`. Two shells named theirs
+  // something else — MP_I18N and NEWS_I18N — so readDictionary() returned null,
+  // only the SHARED nav/footer dictionary applied, and the pages shipped their
+  // own labels in English inside <html lang="ar">: 44 of 48 on
+  // /ar/Market-Pulse, and the four filter chips on /ar/News and its six topic
+  // archives. Nothing failed; the client script relabelled them a moment later,
+  // so it was invisible in a browser and permanent to a crawler.
+  //
+  // The variable name IS the contract. Assert it on every shell any route
+  // renders with lang:'ar', and assert the ar block actually covers the keys.
+  {
+    const shells = ["home.html", "marketplace.html", "news.html", "learn.html", "market-pulse.html", "fund-compare.html"];
+    const problems = [];
+    for (const shell of shells) {
+      const full = path.join(root, "public", shell);
+      if (!existsSync(full)) { problems.push(`${shell}: missing`); continue; }
+      const text = await readFile(full, "utf8");
+      if (!/\b(?:const|var|let)\s+translations\s*=\s*\{/.test(text)) {
+        problems.push(`${shell}: no \`const translations = {…}\` — localizeShell cannot read it, so its Arabic labels stay English server-side`);
+        continue;
+      }
+      // The `ar` block INSIDE `translations`, found by matching braces — not by
+      // regexing the rest of the file, which sweeps up every later object and
+      // reports nonsense.
+      const start = text.search(/\b(?:const|var|let)\s+translations\s*=\s*\{/);
+      const arAt = text.indexOf("ar:", start);
+      if (arAt === -1) { problems.push(`${shell}: translations has no \`ar\` block`); continue; }
+      const open = text.indexOf("{", arAt);
+      let depth = 0, end = -1;
+      for (let i = open; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === "{") depth++;
+        else if (ch === "}") { depth--; if (depth === 0) { end = i; break; } }
+      }
+      if (end === -1) { problems.push(`${shell}: the \`ar\` block is unterminated`); continue; }
+      const arKeys = new Set([...text.slice(open, end).matchAll(/(?:^|[{,\s])([a-z0-9_]+)\s*:/g)].map((m) => m[1]));
+      if (arKeys.size < 5) {
+        problems.push(`${shell}: the ar dictionary holds only ${arKeys.size} key(s) — its labels would serve in English`);
+      }
+    }
+    if (problems.length) {
+      console.error(
+        `FAIL: ${problems.length} designed shell(s) cannot be localized server-side:\n` +
+        problems.map((p) => `       ${p}`).join("\n") +
+        "\n       Name the dictionary `translations` and give it an `ar` block covering the page's data-keys."
+      );
+      process.exit(1);
+    }
+    console.log(`OK: ${shells.length} Arabic-served shells expose a readable translations dictionary.`);
+  }
+
   // ══ NO STATIC PAGE SCRIPT MAY HARD-CODE A TWINNED URL ══════════════════════
   // The static pages are covered at CLICK time by starta-lang-boot's anchor
   // localizer, which is why raw hrefs survived here unnoticed for so long:

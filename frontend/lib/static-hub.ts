@@ -254,7 +254,20 @@ function localizeShell(html: string, file: string, lang: 'en' | 'ar', reserved: 
     // The language toggle shows the OTHER language: `langToggle.textContent =
     // lang === 'ar' ? 'EN' : 'AR'` in every shell.
     out = out.replace(/(<button\b[^>]*\bid="langToggle"[^>]*>)\s*AR\s*(<\/button>)/, '$1EN$2');
-    if (!page && !shared) console.error(`[static-hub] ${file}: no dictionary found — Arabic labels not localized server-side`);
+    // LOUD ON A PARTIAL MISS, not only a total one.
+    // This used to report only when BOTH dictionaries were missing. The shared
+    // chrome dictionary is always found, so a shell whose OWN dictionary could
+    // not be parsed localized its nav and footer and left every page label in
+    // English — silently. market-pulse.html named its dictionary MP_I18N and
+    // news.html named it NEWS_I18N, neither of which readDictionary() matches,
+    // so /ar/Market-Pulse served 44 of its 48 labels in English inside
+    // <html lang="ar"> and nothing said so. Both are named `translations` now,
+    // and verify:routes fails the build if a new shell drifts again.
+    if (!page && /\sdata-key="/.test(html)) {
+        console.error(`[static-hub] ${file}: no page dictionary found (expected \`const translations = {…}\`) — its own Arabic labels are NOT localized server-side`);
+    } else if (!page && !shared) {
+        console.error(`[static-hub] ${file}: no dictionary found — Arabic labels not localized server-side`);
+    }
     return out;
 }
 

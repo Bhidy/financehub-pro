@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { quotedPrice, percentChange } from '@/lib/market-format';
 import Link from 'next/link';
 import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
@@ -126,12 +127,12 @@ export default async function CompaniesPage() {
                                 </td>
                                 <td className="px-4 py-2.5 text-muted" title={t.sector_name ? `TradingView classification: ${t.sector_name}` : undefined}>{t.official_sector_en || t.sector_name || '—'}</td>
                                 <td className="px-4 py-2.5 text-right font-semibold">
-                                    {t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}
+                                    {quotedPrice(t.last_price, t.currency)}
                                 </td>
                                 <td className={`px-4 py-2.5 text-right font-semibold ${
                                     t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'
                                 }`}>
-                                    {t.change_percent !== null ? `${t.change_percent >= 0 ? '+' : ''}${t.change_percent.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—'}
+                                    {percentChange(t.change_percent)}
                                 </td>
                                 <td className="px-4 py-2.5 text-right">{fmtCap(t.market_cap)}</td>
                             </tr>

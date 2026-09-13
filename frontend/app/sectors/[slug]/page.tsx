@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { quotedPrice, percentChange } from '@/lib/market-format';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getAllTickers, getSectors } from '@/lib/public-data';
@@ -203,12 +204,12 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
                                     <Link href={symbolPath(t.symbol)} className="hover:text-starta-darkTeal">{t.symbol}</Link>
                                 </td>
                                 <td className="px-4 py-2.5 text-right font-semibold">
-                                    {t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}
+                                    {quotedPrice(t.last_price, t.currency)}
                                 </td>
                                 <td className={`px-4 py-2.5 text-right font-semibold ${
                                     t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'
                                 }`}>
-                                    {t.change_percent !== null ? `${t.change_percent >= 0 ? '+' : ''}${t.change_percent.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—'}
+                                    {percentChange(t.change_percent)}
                                 </td>
                                 <td className="px-4 py-2.5 text-right">{fmtCap(t.market_cap)}</td>
                             </tr>

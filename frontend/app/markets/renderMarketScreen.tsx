@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { percentChange } from '@/lib/market-format';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getMarketLists, type Ticker } from '@/lib/public-data';
@@ -6,7 +7,7 @@ import { SITE_URL, symbolPath, symbolPathAr, absUrl, OG_DEFAULTS } from '@/lib/s
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { findScreen, screenPath, MARKET_SCREENS, type MarketScreen } from '@/content/market-screens';
-import { ltrNum } from '@/lib/bidi';
+
 import { sectorAr } from '@/content/sector-names-ar';
 import { HOME_PATH } from '@/lib/lang';
 
@@ -36,9 +37,7 @@ const fmtNum = (n: unknown, d = 2, lang: 'en' | 'ar' = 'en'): string =>
         : '—';
 
 const fmtChange = (n: unknown): string =>
-    typeof n === 'number' && Number.isFinite(n)
-        ? ltrNum(`${n >= 0 ? '+' : ''}${n.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%`)
-        : '—';
+    percentChange(typeof n === 'number' ? n : null);
 
 const metricValue = (r: Row, s: MarketScreen, lang: 'en' | 'ar'): string => {
     if (s.metric === 'volume') return fmtNum(r.volume, 0, lang);

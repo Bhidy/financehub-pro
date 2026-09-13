@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getEgx30Index, getEgx30Constituents, type Ticker } from '@/lib/public-data';
-import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS } from '@/lib/seo';
+import { SITE_URL, symbolPath, absUrl, OG_DEFAULTS, symbolPathAr } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { publisherRef, DATA_LICENSE_URL } from '@/lib/structured-data';
@@ -136,7 +136,7 @@ export default async function Egx30ArPage() {
                                     <tr key={c.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                         <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                         <td className="px-4 py-2.5">
-                                            <Link href={`/ar/symbol/${c.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">
+                                            <Link href={encodeURI(symbolPathAr(c.symbol, c.name_ar))} className="font-semibold text-main hover:text-starta-darkTeal">
                                                 {c.name_ar || c.name_en || c.symbol} <span dir="ltr" className="text-muted">({c.symbol})</span>
                                             </Link>
                                         </td>

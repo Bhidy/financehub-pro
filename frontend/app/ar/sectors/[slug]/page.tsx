@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { quotedPrice, percentChange } from '@/lib/market-format';
 import { sectorDescription } from '@/content/sector-descriptions';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getAllTickers, getSectors } from '@/lib/public-data';
-import { SITE_URL, canonicalRedirectTarget, sectorPath, slugify, OG_DEFAULTS, clampTitle } from '@/lib/seo';
+import { SITE_URL, canonicalRedirectTarget, sectorPath, slugify, OG_DEFAULTS, clampTitle, symbolPathAr, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { sectorAr } from '@/content/sector-names-ar';
@@ -86,7 +87,7 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
         name: `قطاع ${ar} — شركات البورصة المصرية حسب القيمة السوقية`,
         numberOfItems: tickers.length,
         itemListOrder: 'https://schema.org/ItemListOrderDescending',
-        itemListElement: tickers.map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: `${t.name_ar || t.name_en || t.symbol} (${t.symbol})`, url: `${SITE_URL}/ar/symbol/${t.symbol}` })),
+        itemListElement: tickers.map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: `${t.name_ar || t.name_en || t.symbol} (${t.symbol})`, url: absUrl(encodeURI(symbolPathAr(t.symbol, t.name_ar))) })),
     };
 
     return (
@@ -126,13 +127,13 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
                             <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_ar || t.name_en || t.symbol}</Link>
+                                    <Link href={encodeURI(symbolPathAr(t.symbol, t.name_ar))} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_ar || t.name_en || t.symbol}</Link>
                                 </td>
                                 <td className="px-4 py-2.5 font-mono font-semibold text-muted" dir="ltr">
-                                    <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-darkTeal">{t.symbol}</Link>
+                                    <Link href={encodeURI(symbolPathAr(t.symbol, t.name_ar))} className="hover:text-starta-darkTeal">{t.symbol}</Link>
                                 </td>
-                                <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
-                                <td className={`px-4 py-2.5 font-semibold tabular-nums ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'}`} dir="ltr">{t.change_percent !== null ? `${t.change_percent >= 0 ? '+' : ''}${t.change_percent.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—'}</td>
+                                <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{quotedPrice(t.last_price, t.currency)}</td>
+                                <td className={`px-4 py-2.5 font-semibold tabular-nums ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'}`} dir="ltr">{percentChange(t.change_percent)}</td>
                                 <td className="px-4 py-2.5 tabular-nums" dir="ltr">{fmtCap(t.market_cap)}</td>
                             </tr>
                         ))}

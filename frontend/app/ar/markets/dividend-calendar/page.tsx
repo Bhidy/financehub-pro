@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getDividendCalendar } from '@/lib/public-data';
-import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
+import { SITE_URL, OG_DEFAULTS, symbolPathAr } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -73,7 +73,7 @@ function CalendarTable({ rows, emptyText }: { rows: CalendarRow[]; emptyText: st
                         <tr key={r.key} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                             <td className="px-4 py-2.5 font-semibold text-main tabular-nums" dir="ltr">{r.exDate ?? '—'}</td>
                             <td className="px-4 py-2.5">
-                                <Link href={`/ar/symbol/${r.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">{r.nameAr || r.nameEn || r.symbol}</Link>
+                                <Link href={encodeURI(symbolPathAr(r.symbol, r.nameAr))} className="font-semibold text-main hover:text-starta-darkTeal">{r.nameAr || r.nameEn || r.symbol}</Link>
                             </td>
                             <td className="px-4 py-2.5 font-semibold tabular-nums text-main" dir="ltr">{fmtAmount(r.amount)}{r.amount !== null && r.currency ? ` ${r.currency}` : ''}</td>
                             <td className="px-4 py-2.5 text-muted tabular-nums" dir="ltr">{r.payDate ?? '—'}</td>

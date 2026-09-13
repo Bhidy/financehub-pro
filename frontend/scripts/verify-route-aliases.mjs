@@ -2318,6 +2318,89 @@ async function run() {
     console.log(`OK: one nav definition — ${navScanned} files carry no hand-written nav list.`);
   }
 
+  // ══ EVERY ARABIC COMPANY LINK CARRIES THE ARABIC SLUG ══════════════════════
+  // The Arabic-first URL contract makes /ar/symbol/{TICKER}-{arabic-slug} the
+  // canonical company URL; /ar/symbol/{TICKER} is a 308 alias kept for old
+  // links. Nine hand-written Arabic pages built the alias form by hand
+  // (`/ar/symbol/${t.symbol}`), so the Arabic directory, all six market screens
+  // and every sector page linked their 208 companies through a redirect — and
+  // two Corporation nodes asserted the entity at a URL the page itself 308s
+  // away from. Internal links are how the Arabic tree earns its equity; a
+  // redirect on every one of them is the slowest possible way to spend it.
+  //
+  // symbolPathAr(symbol, name_ar) is the ONE builder. It already degrades to
+  // the bare ticker when a company has no Arabic name, so there is never a
+  // reason to write the path by hand.
+  {
+    const OK = new Set([
+      "lib/seo.ts",                                  // defines symbolPathAr
+      "components/seo/SymbolSeoSection.tsx",         // language-switch link: no name_ar in scope, carries hrefLang
+    ]);
+    // `href={...}` / `url: ...` emitters only. A path passed to
+    // canonicalRedirectTarget() is the INCOMING request, not a link.
+    const EMIT = /(?:href=\{?`|url:\s*`|absUrl\(`|href:\s*`)[^`]*\/ar\/symbol\/\$\{/;
+    const offenders = [];
+    let scanned = 0;
+    async function scanAr(dir) {
+      let entries = [];
+      try { entries = await readdir(dir, { withFileTypes: true }); } catch { return; }
+      for (const e of entries) {
+        const full = path.join(dir, e.name);
+        if (e.isDirectory()) {
+          if (e.name === "node_modules" || e.name === ".next" || e.name.startsWith(".")) continue;
+          await scanAr(full);
+          continue;
+        }
+        if (!/\.(ts|tsx)$/.test(e.name)) continue;
+        const rel = path.relative(root, full);
+        if (OK.has(rel)) continue;
+        scanned++;
+        const text = await readFile(full, "utf8");
+        if (EMIT.test(text)) offenders.push(rel);
+      }
+    }
+    for (const dir of ["app", "components", "lib"]) await scanAr(path.join(root, dir));
+    if (scanned < 200) {
+      console.error(`FAIL: the Arabic-symbol-link scan examined only ${scanned} files — it is not reaching the source tree.`);
+      process.exit(1);
+    }
+    if (offenders.length) {
+      console.error(
+        `FAIL: ${offenders.length} file(s) build an /ar/symbol href by hand instead of symbolPathAr():\n` +
+        offenders.map((f) => `       ${f}`).join("\n") +
+        "\n       Use encodeURI(symbolPathAr(symbol, name_ar)) — the bare ticker is a 308 alias, not a canonical."
+      );
+      process.exit(1);
+    }
+    console.log(`OK: ${scanned} files build every Arabic company link through symbolPathAr.`);
+  }
+
+  // ══ NO DOUBLE PERCENT-ENCODING ═════════════════════════════════════════════
+  // escUrl() percent-encodes its argument. Two Market Pulse call sites encoded
+  // first and passed the result in, so every Arabic slug shipped as %25D8%25A7…
+  // — a valid URL pointing at a path that does not exist, 308ing to the real
+  // one. It is invisible in review because both functions are individually
+  // correct.
+  {
+    const files = ["app/Market-Pulse/route.ts", "lib/static-hub.ts", "lib/news-hub.ts", "lib/fund-hub.ts", "lib/compare-hub.ts", "lib/funds-hub-render.ts"];
+    const bad = [];
+    for (const rel of files) {
+      const full = path.join(root, rel);
+      if (!existsSync(full)) continue;
+      const text = await readFile(full, "utf8");
+      if (/escUrl\(\s*encodeURI(?:Component)?\(/.test(text)) bad.push(rel);
+    }
+    if (bad.length) {
+      console.error(
+        `FAIL: ${bad.length} file(s) pass an already-encoded path to escUrl(), which encodes again:\n` +
+        bad.map((f) => `       ${f}`).join("\n") +
+        "\n       escUrl() does the encoding — hand it the raw path."
+      );
+      process.exit(1);
+    }
+    console.log(`OK: ${files.length} hub renderers percent-encode exactly once.`);
+  }
+
   // ══ NO STATIC PAGE SCRIPT MAY HARD-CODE A TWINNED URL ══════════════════════
   // The static pages are covered at CLICK time by starta-lang-boot's anchor
   // localizer, which is why raw hrefs survived here unnoticed for so long:

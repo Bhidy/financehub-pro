@@ -120,7 +120,9 @@ export async function renderMarketPulse(lang: 'en' | 'ar') {
             v === null || v === undefined || !Number.isFinite(v) ? '--' : `${v >= 0 ? '+' : ''}${fmt(v)}%`;
         const cls = (v: number | null | undefined) => (typeof v === 'number' && v < 0 ? 'negative' : 'positive');
         const href = (sym: string, nameAr: string | null | undefined) =>
-            escUrl(encodeURI(isAr ? symbolPathAr(sym, nameAr) : symbolPath(sym)));
+            // escUrl() percent-encodes; encoding here too produced %25D8… and a
+            // 308 on every Arabic company link on this page.
+            escUrl(isAr ? symbolPathAr(sym, nameAr) : symbolPath(sym));
         const row = (x: { symbol: string; last_price: number | null; change_percent: number | null; name_ar?: string | null }) =>
             `<a class="mover-row" href="${href(x.symbol, x.name_ar)}">` +
             `<span style="display:flex;align-items:center;gap:.48rem;font-weight:600;color:var(--ink)">${esc(x.symbol)}</span>` +
@@ -193,7 +195,7 @@ export async function renderMarketPulse(lang: 'en' | 'ar') {
                     .map((a) => {
                         const headline = sanitizeNewsText(a.headline);
                         const when = a.published_at ? new Date(a.published_at).toLocaleDateString(t.locale, { day: 'numeric', month: 'short', timeZone: 'Africa/Cairo' }) : '';
-                        return `<a class="news-card" href="${escUrl(encodeURI(canonicalNewsPath(a.id, a.headline, a.source_section)))}"><div class="news-copy"><h3>${esc(headline)}</h3><time>${esc(when)}</time></div></a>`;
+                        return `<a class="news-card" href="${escUrl(canonicalNewsPath(a.id, a.headline, a.source_section))}"><div class="news-copy"><h3>${esc(headline)}</h3><time>${esc(when)}</time></div></a>`;
                     })
                     .join(''),
                 mode: 'insert' as const,

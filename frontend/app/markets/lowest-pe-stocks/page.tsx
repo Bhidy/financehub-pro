@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { quotedPrice } from '@/lib/market-format';
 import Link from 'next/link';
 import { getAllTickers } from '@/lib/public-data';
 import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
@@ -90,7 +91,7 @@ export default async function LowestPeStocksPage() {
                                     <span className="ml-1.5 font-mono text-xs text-muted">{t.symbol}</span>
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
-                                <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
+                                <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{quotedPrice(t.last_price, t.currency)}</td>
                                 <td className="px-4 py-2.5 text-right font-bold tabular-nums text-starta-darkTeal">{fmtPeRatio(t.pe_ratio)}</td>
                             </tr>
                         ))}

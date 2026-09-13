@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
+import { quotedPrice, percentChange } from '@/lib/market-format';
 import Link from 'next/link';
 import { getMovers, type Ticker } from '@/lib/public-data';
-import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
+import { SITE_URL, OG_DEFAULTS, symbolPathAr } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 
@@ -27,8 +28,8 @@ export const metadata: Metadata = {
     },
 };
 
-const fmtPrice = (n: number | null): string => (n !== null && Number.isFinite(n) ? n.toLocaleString('en-EG', { maximumFractionDigits: 2 }) : '—');
-const fmtChange = (n: number | null): string => (n !== null && Number.isFinite(n) ? `${n >= 0 ? '+' : ''}${n.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—');
+const fmtPrice = (n: number | null): string => quotedPrice(n);
+const fmtChange = (n: number | null): string => percentChange(n);
 const fmtVolume = (n: number | null): string => (n !== null && Number.isFinite(n) ? n.toLocaleString('en-EG', { maximumFractionDigits: 0 }) : '—');
 
 function MoversTable({ rows, showVolume = false }: { rows: Ticker[]; showVolume?: boolean }) {
@@ -49,10 +50,10 @@ function MoversTable({ rows, showVolume = false }: { rows: Ticker[]; showVolume?
                     {rows.map((t) => (
                         <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                             <td className="px-4 py-2.5">
-                                <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_ar || t.name_en || t.symbol}</Link>
+                                <Link href={encodeURI(symbolPathAr(t.symbol, t.name_ar))} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_ar || t.name_en || t.symbol}</Link>
                             </td>
                             <td className="px-4 py-2.5 font-mono font-semibold text-muted" dir="ltr">
-                                <Link href={`/ar/symbol/${t.symbol}`} className="hover:text-starta-darkTeal">{t.symbol}</Link>
+                                <Link href={encodeURI(symbolPathAr(t.symbol, t.name_ar))} className="hover:text-starta-darkTeal">{t.symbol}</Link>
                             </td>
                             <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{fmtPrice(t.last_price)}{t.last_price !== null && t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}</td>
                             <td className={`px-4 py-2.5 font-semibold tabular-nums ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'}`} dir="ltr">{fmtChange(t.change_percent)}</td>

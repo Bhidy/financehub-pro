@@ -1,4 +1,12 @@
 import { renderStaticHub, esc, escUrl, jsonLdScript, langSeedScript } from '@/lib/static-hub';
+
+/**
+ * The description news.html ships with. Named once so the three head
+ * replacements below cannot drift apart, and so a shell edit fails loudly
+ * (renderStaticHub logs a missed replacement) instead of silently restoring
+ * one English sentence across all fifteen news URLs.
+ */
+const SHELL_DESCRIPTION = "Read market news and company developments through Starta's premium investor experience.";
 import { rssAutodiscoveryLink } from '@/lib/news-feed';
 import { canonicalNewsPath, sanitizeNewsText } from '@/lib/news-display';
 import { SITE_URL, absUrl } from '@/lib/seo';
@@ -232,6 +240,25 @@ export function renderNewsHub(spec: NewsHubSpec): Promise<Response> {
             {
                 find: '<meta property="og:url" content="https://startamarkets.com/News">',
                 replace: `<meta property="og:url" content="https://startamarkets.com${encodeURI(spec.canonical)}">`,
+            },
+            // DESCRIPTION. spec.description is computed per language and per
+            // topic above and was reaching only the CollectionPage JSON-LD —
+            // the head kept news.html's own line, so all fifteen news URLs
+            // (the hub, seven topic archives, and their Arabic twins) shipped
+            // ONE English sentence: seven Arabic pages described in English,
+            // and fourteen duplicate descriptions for Google to choose between.
+            // fund-hub.ts and compare-hub.ts already do this; news-hub did not.
+            {
+                find: `<meta name="description" content="${SHELL_DESCRIPTION}">`,
+                replace: `<meta name="description" content="${esc(spec.description)}">`,
+            },
+            {
+                find: `<meta property="og:description" content="${SHELL_DESCRIPTION}">`,
+                replace: `<meta property="og:description" content="${esc(spec.description)}">`,
+            },
+            {
+                find: `<meta name="twitter:description" content="${SHELL_DESCRIPTION}">`,
+                replace: `<meta name="twitter:description" content="${esc(spec.description)}">`,
             },
             ...(isAr
                 ? [{ find: '<meta property="og:locale" content="en_US">', replace: '<meta property="og:locale" content="ar_EG">' }]

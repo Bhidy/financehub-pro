@@ -326,7 +326,10 @@ export default async function ArabicSymbolPage({ params }: Props) {
         name: ticker.name_ar || ticker.name_en || symbol,
         ...(ticker.name_ar ? { alternateName: ticker.name_ar } : {}),
         tickerSymbol: symbol,
-        url: absUrl(`/ar/symbol/${symbol}`),
+        // Must be the CANONICAL Arabic path: a Corporation node whose url is the
+        // bare-ticker alias asserts the entity at a URL that 308s away from the
+        // page declaring it.
+        url: absUrl(encodeURI(symbolPathAr(symbol, ticker.name_ar))),
     };
 
     const faqJsonLd = {
@@ -462,7 +465,7 @@ export default async function ArabicSymbolPage({ params }: Props) {
                             {peers.map((p) => (
                                 <li key={p.symbol}>
                                     <Link
-                                        href={`/ar/symbol/${p.symbol.toUpperCase()}`}
+                                        href={encodeURI(symbolPathAr(p.symbol, p.name_ar))}
                                         prefetch={false}
                                         className="inline-block rounded-full border border-border bg-surface px-3.5 py-1.5 text-[13px] font-semibold text-muted transition-colors hover:border-teal-300 hover:text-teal-700"
                                     >

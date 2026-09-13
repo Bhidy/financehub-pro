@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
+import { quotedPrice } from '@/lib/market-format';
 import Link from 'next/link';
 import { getAllTickers } from '@/lib/public-data';
-import { SITE_URL, OG_DEFAULTS } from '@/lib/seo';
+import { SITE_URL, OG_DEFAULTS, symbolPathAr, absUrl } from '@/lib/seo';
 import PublicPageShell, { Breadcrumbs, breadcrumbJsonLd } from '@/components/seo/PublicPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import { rankByDividendYield, rankedAsOf, fmtYield } from '@/lib/market-rankings';
@@ -44,7 +45,7 @@ export default async function TopDividendYieldArPage() {
         name: 'أعلى الأسهم توزيعًا للأرباح في البورصة المصرية',
         numberOfItems: ranked.length,
         itemListOrder: 'https://schema.org/ItemListOrderDescending',
-        itemListElement: ranked.slice(0, 25).map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: `${t.name_ar || t.name_en || t.symbol} (${t.symbol})`, url: `${SITE_URL}/ar/symbol/${t.symbol}` })),
+        itemListElement: ranked.slice(0, 25).map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: `${t.name_ar || t.name_en || t.symbol} (${t.symbol})`, url: absUrl(encodeURI(symbolPathAr(t.symbol, t.name_ar))) })),
     };
 
     return (
@@ -74,11 +75,11 @@ export default async function TopDividendYieldArPage() {
                             <tr key={t.symbol} className="border-b border-border/60 last:border-0 hover:bg-panel/40">
                                 <td className="px-4 py-2.5 text-muted tabular-nums">{i + 1}</td>
                                 <td className="px-4 py-2.5">
-                                    <Link href={`/ar/symbol/${t.symbol}`} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_ar || t.name_en || t.symbol}</Link>
+                                    <Link href={encodeURI(symbolPathAr(t.symbol, t.name_ar))} className="font-semibold text-main hover:text-starta-darkTeal">{t.name_ar || t.name_en || t.symbol}</Link>
                                     <span className="ml-1.5 font-mono text-xs text-muted" dir="ltr">{t.symbol}</span>
                                 </td>
                                 <td className="px-4 py-2.5 text-muted">{t.sector_name || '—'}</td>
-                                <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}</td>
+                                <td className="px-4 py-2.5 font-semibold tabular-nums" dir="ltr">{quotedPrice(t.last_price, t.currency)}</td>
                                 <td className="px-4 py-2.5 font-bold tabular-nums text-emerald-700" dir="ltr">{fmtYield(t.dividend_yield)}</td>
                             </tr>
                         ))}

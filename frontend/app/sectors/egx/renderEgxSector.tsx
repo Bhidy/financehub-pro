@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { quotedPrice, percentChange } from '@/lib/market-format';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getAllTickers, type Ticker } from '@/lib/public-data';
@@ -187,10 +188,10 @@ export async function renderEgxSector(slug: string, lang: Lang) {
                                 </td>
                                 <td className="px-4 py-2.5 font-mono font-semibold text-muted" dir="ltr"><Link href={hrefOf(t)} className="hover:text-starta-darkTeal">{t.symbol}</Link></td>
                                 <td className={`px-4 py-2.5 font-semibold tabular-nums ${isAr ? 'text-left' : 'text-right'}`} dir="ltr">
-                                    {t.last_price !== null ? `${t.last_price.toLocaleString('en-EG', { maximumFractionDigits: 2 })}${t.currency && t.currency !== 'EGP' ? ` ${t.currency}` : ''}` : '—'}
+                                    {quotedPrice(t.last_price, t.currency)}
                                 </td>
                                 <td className={`px-4 py-2.5 font-semibold tabular-nums ${isAr ? 'text-left' : 'text-right'} ${t.change_percent === null ? 'text-muted' : t.change_percent >= 0 ? 'text-emerald-700' : 'text-red-600'}`} dir="ltr">
-                                    {t.change_percent !== null ? `${t.change_percent >= 0 ? '+' : ''}${t.change_percent.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—'}
+                                    {percentChange(t.change_percent)}
                                 </td>
                                 <td className={`px-4 py-2.5 tabular-nums ${isAr ? 'text-left' : 'text-right'}`} dir="ltr">{fmtCap(t.market_cap, lang)}</td>
                             </tr>

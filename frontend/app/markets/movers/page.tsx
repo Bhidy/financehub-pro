@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { quotedPrice, percentChange } from '@/lib/market-format';
 import Link from 'next/link';
 import { getMovers, type Ticker } from '@/lib/public-data';
 import { SITE_URL, symbolPath, OG_DEFAULTS } from '@/lib/seo';
@@ -32,11 +33,9 @@ export const metadata: Metadata = {
     },
 };
 
-const fmtPrice = (n: number | null): string =>
-    n !== null && Number.isFinite(n) ? n.toLocaleString('en-EG', { maximumFractionDigits: 2 }) : '—';
+const fmtPrice = (n: number | null): string => quotedPrice(n);
 
-const fmtChange = (n: number | null): string =>
-    n !== null && Number.isFinite(n) ? `${n >= 0 ? '+' : ''}${n.toLocaleString('en-EG', { maximumFractionDigits: 2 })}%` : '—';
+const fmtChange = (n: number | null): string => percentChange(n);
 
 const fmtVolume = (n: number | null): string =>
     n !== null && Number.isFinite(n) ? n.toLocaleString('en-EG', { maximumFractionDigits: 0 }) : '—';

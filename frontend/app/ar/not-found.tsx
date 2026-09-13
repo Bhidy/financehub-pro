@@ -16,7 +16,7 @@ export default function ArNotFound() {
             <title>الصفحة غير موجودة | ستارتا ماركتس</title>
             <meta name="robots" content="noindex, follow" />
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">الصفحة غير موجودة</h1>
-            <p className="mt-3 max-w-2xl leading-relaxed text-muted">
+            <p className="starta-lede mt-3 leading-relaxed text-muted">
                 لا توجد صفحة على هذا العنوان. قد يكون الرابط قديمًا، أو يشير إلى ورقة مالية غير مقيدة في البورصة المصرية،
                 أو إلى صندوق لم يعد يُنشر له سعر.
             </p>

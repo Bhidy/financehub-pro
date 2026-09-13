@@ -96,7 +96,9 @@ export default async function GlossaryTermPage({ params }: Props) {
             />
             <Breadcrumbs lang="en" items={crumbs} />
 
-            <article className="max-w-3xl">
+            {/* The article IS the page here, so it takes the editorial column and
+                centres, rather than sitting 691px wide against 439px of nothing. */}
+            <article className="starta-doc">
                 <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">
                     {term.en.term}
                 </h1>

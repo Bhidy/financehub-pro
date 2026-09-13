@@ -169,9 +169,9 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
             </p>
             {sectorSummary && <p className="mt-3 starta-lede leading-relaxed text-muted">{sectorSummary}</p>}
             {sectorDescription(match.sector_name, 'en') && (
-                <section className="mt-5 max-w-3xl" aria-label="About this sector">
+                <section className="mt-5" aria-label="About this sector">
                     <h2 className="text-lg font-bold text-main">What the {match.sector_name} sector covers</h2>
-                    <p className="mt-2 leading-relaxed text-muted">{sectorDescription(match.sector_name, 'en')}</p>
+                    <p className="starta-lede mt-2 leading-relaxed text-muted">{sectorDescription(match.sector_name, 'en')}</p>
                 </section>
             )}
 

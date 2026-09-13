@@ -58,7 +58,7 @@ export default async function NotFound() {
             <title>{t.title}</title>
             <meta name="robots" content="noindex, follow" />
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">{t.h1}</h1>
-            <p className="mt-3 max-w-2xl leading-relaxed text-muted">{t.lede}</p>
+            <p className="starta-lede mt-3 leading-relaxed text-muted">{t.lede}</p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {t.hubs.map((h) => (
                     <li key={h.href}>

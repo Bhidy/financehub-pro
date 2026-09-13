@@ -400,13 +400,24 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
 
             <p className="mt-4 text-xs text-muted">{t(STOCKVS.sourceNote, lang)}</p>
 
-            <section className="mt-10 max-w-3xl space-y-4">
-                <h2 className="text-lg font-extrabold tracking-tight text-main">{t(STOCKVS.howToReadH2, lang)}</h2>
-                <p className="text-sm leading-relaxed text-muted">{t(STOCKVS.howToRead, lang)}</p>
-                <h2 className="pt-2 text-lg font-extrabold tracking-tight text-main">{t(STOCKVS.sameSectorH2, lang)}</h2>
-                <p className="text-sm leading-relaxed text-muted">{t(STOCKVS.sameSector, lang)}</p>
-                <h2 className="pt-2 text-lg font-extrabold tracking-tight text-main">{t(STOCKVS.limitsH2, lang)}</h2>
-                <p className="text-sm leading-relaxed text-muted">{t(STOCKVS.limits, lang)}</p>
+            {/* Three independent explainers, so they lay out as three items rather
+                than one 691px block against 439px of nothing. Each heading stays
+                welded to its own paragraph — a bare grid would have split them. */}
+            <section className="mt-10">
+                <div className="starta-cols-2">
+                    {(
+                        [
+                            [STOCKVS.howToReadH2, STOCKVS.howToRead],
+                            [STOCKVS.sameSectorH2, STOCKVS.sameSector],
+                            [STOCKVS.limitsH2, STOCKVS.limits],
+                        ] as const
+                    ).map(([h, body]) => (
+                        <div key={t(h, lang)}>
+                            <h2 className="text-lg font-extrabold tracking-tight text-main">{t(h, lang)}</h2>
+                            <p className="mt-2 text-sm leading-relaxed text-muted">{t(body, lang)}</p>
+                        </div>
+                    ))}
+                </div>
             </section>
 
             <section className="mt-10">

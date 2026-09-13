@@ -103,9 +103,9 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
             </p>
             {sectorSummary && <p className="mt-3 starta-lede leading-relaxed text-muted">{sectorSummary}</p>}
             {sectorDescription(match.sector_name, 'ar') && (
-                <section className="mt-5 max-w-3xl" aria-label="عن هذا القطاع">
+                <section className="mt-5" aria-label="عن هذا القطاع">
                     <h2 className="text-lg font-bold text-main">ماذا يضم قطاع {ar}</h2>
-                    <p className="mt-2 leading-relaxed text-muted">{sectorDescription(match.sector_name, 'ar')}</p>
+                    <p className="starta-lede mt-2 leading-relaxed text-muted">{sectorDescription(match.sector_name, 'ar')}</p>
                 </section>
             )}
 

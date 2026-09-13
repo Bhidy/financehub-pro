@@ -39,8 +39,8 @@ export function marketsHubMetadata(lang: 'en' | 'ar'): Metadata {
         ? 'بيانات البورصة المصرية — المؤشر والأكثر ارتفاعًا والقيمة السوقية والتوزيعات'
         : 'EGX Market Data — Index, Movers, Market Caps, Dividends & Valuation';
     const description = isAr
-        ? 'كل بيانات البورصة المصرية في مكان واحد: مؤشر EGX 30، والأسهم الأكثر ارتفاعًا وانخفاضًا ونشاطًا، وأكبر الشركات بالقيمة السوقية، وأعلى عائد توزيعات، وأقل مكرر ربحية، ومواعيد التوزيعات.'
-        : 'Every Egyptian Exchange market view in one place: the EGX 30 index, today’s gainers, losers and most active, the largest companies by market cap, highest dividend yields, lowest P/E ratios and the dividend calendar.';
+        ? 'كل شاشات البورصة المصرية في مكان واحد: مؤشر EGX 30، والأكثر ارتفاعًا وانخفاضًا ونشاطًا، وأكبر الشركات، وأعلى توزيعات، وأقل مكرر ربحية.'
+        : 'Every EGX market view in one place: the EGX 30, today’s gainers, losers and most active, the largest companies, highest yields and lowest P/E ratios.';
     return {
         title: { absolute: title },
         description,

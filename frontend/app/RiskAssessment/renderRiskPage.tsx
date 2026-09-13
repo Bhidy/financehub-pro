@@ -27,7 +27,7 @@ const META = {
     en: {
         title: 'Get Your Free Portfolio — Investment Risk Profile',
         description:
-            'Answer 7 questions to find your investor risk profile — Very Conservative to Aggressive — and get a free model portfolio with a suggested allocation and matching Egyptian fund categories.',
+            'Answer 7 questions to find your investor risk profile — Very Conservative to Aggressive — and get a free model portfolio with a suggested allocation.',
     },
     ar: {
         title: 'احصل على محفظتك المجانية — تقييم ملف المخاطر',

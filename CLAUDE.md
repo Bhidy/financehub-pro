@@ -47,6 +47,32 @@ These are build-gated in `frontend/scripts/verify-route-aliases.mjs`. Run
 verify the result **in a browser, in both languages** — a passing build and an
 HTTP 200 have both certified broken pages in this repo before.
 
+## ⛔ The site never names its data vendor
+
+No user-facing surface may disclose where the data is bought. One server-only
+policy owns this — [`frontend/lib/vendor-privacy.ts`](frontend/lib/vendor-privacy.ts) —
+and it is applied at the DATA BOUNDARY (the API routes and the security-master
+generator), never at render time, so nothing downstream has to remember.
+
+- A client component must never import `lib/vendor-privacy` or `lib/news-display`:
+  their patterns name the vendor and would be inlined into the browser bundle.
+  Client code uses [`lib/news-display.client.ts`](frontend/lib/news-display.client.ts).
+- A news cover is addressed by OUR article id (`/api/v1/news-image?id=…`), never
+  by the publisher's URL.
+- An upstream URL becomes an href, a citation or a JSON-LD `isBasedOn` only
+  through `publicUrl()` / `publicUrls()`.
+- THE ONE EXCEPTION: six FRA-licensed funds and two licensed managers carry the
+  vendor's name inside their own REGISTERED name. They are public market data
+  and stay published verbatim — renaming a registered fund would falsify it.
+  They are allow-listed BY EXACT STRING in the gate and nowhere else.
+- `مباشر` is also the ordinary Arabic word for "direct"/"live". Do not blanket-
+  remove it; the gate carries a reviewed list of adjectival collocations.
+
+Build-gated by `npm run verify:vendor` (static scan + detector self-test) and
+`npm run verify:vendor-runtime` (boundary tests), both in `verify:all`. Before
+claiming a vendor fix is done, run the live crawl:
+`node scripts/verify-vendor-privacy.mjs --live`.
+
 ## Deploying
 
 `./ship.sh "message" --verify` from the repo root is the deploy path (commits,

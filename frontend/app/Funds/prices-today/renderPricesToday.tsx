@@ -197,7 +197,7 @@ export async function renderPricesToday(lang: 'en' | 'ar') {
             <h1 className="text-2xl font-extrabold tracking-tight text-main sm:text-3xl">
                 {isAr ? 'أسعار وثائق صناديق الاستثمار اليوم' : 'Egyptian mutual fund prices today'}
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {isAr
                     ? `سعر الوثيقة لكل صندوق استثمار مصري مع تاريخ آخر إفصاح لكل صندوق على حدة، مرتبة أبجدياً حتى تجد صندوقك مباشرة. ${priced} من ${rows.length} صندوقاً لديها سعر منشور`
                     : `The published unit price for every Egyptian mutual fund, each with its own as-of date, sorted alphabetically so you can find your fund directly. ${priced} of ${rows.length} funds have a published price`}

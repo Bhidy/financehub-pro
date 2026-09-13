@@ -62,7 +62,7 @@ export default async function SectorsArPage() {
             <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'القطاعات' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">قطاعات البورصة المصرية (EGX)</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {sectors.length} قطاعًا تغطي {totalCompanies} شركة مدرجة في البورصة المصرية، مرتبة حسب القيمة السوقية الإجمالية.
                 اضغط على أي قطاع لعرض قائمته الكاملة من الشركات بأسعارها المباشرة وقيمها السوقية. محدَّث يوميًا.
             </p>
@@ -95,7 +95,7 @@ export default async function SectorsArPage() {
             {official.length > 0 && (
                 <section className="mt-8" aria-labelledby="egx-official-sectors">
                     <h2 id="egx-official-sectors" className="text-lg font-bold text-main">التصنيف القطاعي الرسمي للبورصة المصرية</h2>
-                    <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+                    <p className="mt-2 starta-lede text-sm leading-relaxed text-muted">
                         الجدول أعلاه يجمع الشركات وفق تصنيف مزوّد البيانات العالمي. أما البورصة المصرية فتصنّف كل شركة مقيدة في واحد من 18 قطاعًا في سجل الأوراق المالية المقيدة — وهو التقسيم الذي يستخدمه المستثمر المصري. كل صفحة أدناه تعرض الشركات التي يضعها السجل في ذلك القطاع.
                     </p>
                     <ul className="mt-3 flex flex-wrap gap-2 text-sm">

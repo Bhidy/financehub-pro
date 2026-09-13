@@ -35,7 +35,7 @@ export default function FundsNarrativeSections({ lang, n, asOfIso = null }: { la
     );
     return (
         <>
-            {n.intro && <p className="mt-4 max-w-3xl text-[15px] leading-relaxed text-main">{n.intro}</p>}
+            {n.intro && <p className="mt-4 starta-lede text-[15px] leading-relaxed text-main">{n.intro}</p>}
             {n.top5.length >= 3 && (
                 <section className="mt-8" aria-label={ar ? 'أفضل 5 صناديق' : 'Best 5 funds'}>
                     <H>{ar ? 'أفضل 5 صناديق استثمار في مصر 2026' : 'Best 5 mutual funds in Egypt (2026)'}</H>
@@ -45,7 +45,7 @@ export default function FundsNarrativeSections({ lang, n, asOfIso = null }: { la
             {n.moneyMarket.length > 0 && (
                 <section className="mt-8" aria-label={ar ? 'أفضل صناديق العائد اليومي' : 'Best daily-yield funds'}>
                     <H>{ar ? 'أفضل صندوق عائد يومي في مصر (صناديق أسواق النقد)' : 'Best daily-yield funds in Egypt (money market)'}</H>
-                    <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+                    <p className="mt-2 starta-lede text-sm leading-relaxed text-muted">
                         {ar
                             ? 'صناديق أسواق النقد تستثمر في أذون الخزانة والودائع قصيرة الأجل، تُسعَّر يوميًا وتسمح بالاسترداد في أي يوم عمل، وهي الأقل تقلبًا.'
                             : 'Money-market funds hold treasury bills and short-term deposits, price daily, allow redemption on any business day, and are the least volatile category.'}
@@ -64,7 +64,7 @@ export default function FundsNarrativeSections({ lang, n, asOfIso = null }: { la
                 {n.usd.length ? (
                     <List items={n.usd} />
                 ) : (
-                    <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+                    <p className="mt-2 starta-lede text-sm leading-relaxed text-muted">
                         {ar ? 'لا تشمل بياناتنا حاليًا صناديق مقوّمة بالدولار ذات عائد منشور لآخر 12 شهرًا؛ تظهر هنا تلقائيًا عند توفرها.' : 'No USD-denominated fund with a published 12-month return is in our data today; they appear here automatically when available.'}
                     </p>
                 )}

@@ -106,7 +106,7 @@ export default async function Egx30ArPage() {
             )}
             {asOf && <p className="mt-1 text-xs text-muted">آخر تحديث {asOf} (بتوقيت القاهرة). التأخير حتى 15 دقيقة.</p>}
 
-            <p className="mt-5 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-5 starta-lede leading-relaxed text-muted">
                 <strong>مؤشر EGX30</strong> هو المؤشر الرئيسي لـ<strong>البورصة المصرية</strong>، ويتتبع أكبر 30 شركة وأكثرها تداولًا في بورصة القاهرة،
                 مرجحًا بالقيمة السوقية للأسهم الحرة ومقومًا بالجنيه المصري
                 {quote?.value != null && (
@@ -158,7 +158,7 @@ export default async function Egx30ArPage() {
                     {faq.map((f) => (
                         <div key={f.q} className="px-5 py-4">
                             <dt className="text-[15px] font-bold tracking-tight text-main">{f.q}</dt>
-                            <dd className="mt-1.5 max-w-3xl text-sm leading-6 text-muted">{f.a}</dd>
+                            <dd className="mt-1.5 starta-lede text-sm leading-6 text-muted">{f.a}</dd>
                         </div>
                     ))}
                 </dl>

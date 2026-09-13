@@ -113,7 +113,7 @@ export default async function DividendCalendarArPage() {
             <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/markets', label: 'بيانات السوق' }, { label: 'مواعيد التوزيعات' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">مواعيد توزيعات الأرباح في البورصة المصرية — القادمة والأخيرة</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 أحداث توزيعات الأرباح في البورصة المصرية في مكان واحد: {upcomingRows.length} توزيع مُعلن قادم و{recentRows.length} توزيع خلال آخر 90 يومًا، بتواريخ عدم الأحقية والمبالغ لكل سهم وتواريخ الصرف. اضغط على أي شركة لعرض سجل توزيعاتها الكامل.
             </p>
             <p className="mt-2 text-sm text-muted">آخر تحديث {asOfHuman} (بتوقيت القاهرة). يُحدَّث التقويم مع بيانات السوق عند الإفصاح عن إجراءات مؤسسية جديدة.</p>

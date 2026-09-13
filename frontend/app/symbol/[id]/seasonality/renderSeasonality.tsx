@@ -184,7 +184,7 @@ export async function renderSeasonality(id: string, lang: Lang) {
             <p className="mt-2 text-sm text-muted">{t(SEASONALITY.windowNote(years), lang)}</p>
 
             {best && worst && (
-                <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted">
+                <p className="mt-4 starta-lede text-sm leading-relaxed text-muted">
                     {t(
                         SEASONALITY.summary(
                             name,

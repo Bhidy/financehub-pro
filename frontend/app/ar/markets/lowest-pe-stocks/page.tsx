@@ -59,7 +59,7 @@ export default async function LowestPeStocksArPage() {
             <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/markets', label: 'بيانات السوق' }, { label: 'الأقل مكرر ربحية' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أرخص أسهم البورصة المصرية حسب مكرر الربحية</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {ranked.length} سهمًا في البورصة المصرية مرتبة حسب <strong>أقل مكرر ربحية (P/E)</strong> — فلترة قيمة آلية لأرخص الأسهم المصرية من حيث مضاعف الأرباح،
                 بأسعارها المباشرة{asOfHuman && <>، بتاريخ {asOfHuman}</>}. تُعرض الشركات الرابحة فقط. الترتيب آلي (تصاعديًا حسب المكرر) — معلوماتي وليس توصية.
             </p>

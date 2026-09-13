@@ -151,7 +151,7 @@ export async function renderFinancials(id: string, lang: Lang) {
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 {t(FINANCIALS.h1(name, symbol), lang)}
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">{t(FINANCIALS.lede(name, ledeRange), lang)}</p>
+            <p className="mt-3 starta-lede leading-relaxed text-muted">{t(FINANCIALS.lede(name, ledeRange), lang)}</p>
 
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[760px] text-sm">

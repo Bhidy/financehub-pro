@@ -116,7 +116,7 @@ export default async function Egx30Page() {
             )}
             {asOf && <p className="mt-1 text-xs text-muted">As of {asOf} (Cairo time). Delayed up to 15 minutes.</p>}
 
-            <p className="mt-5 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-5 starta-lede leading-relaxed text-muted">
                 The <strong>EGX 30</strong> is the benchmark index of the <strong>Egyptian Exchange (EGX)</strong>, tracking the 30 largest and
                 most actively traded companies listed in Cairo, weighted by free-float market capitalisation and quoted in Egyptian pounds.
                 {quote?.value != null && (
@@ -185,7 +185,7 @@ export default async function Egx30Page() {
                     {faq.map((f) => (
                         <div key={f.q} className="px-5 py-4">
                             <dt className="text-[15px] font-bold tracking-tight text-main">{f.q}</dt>
-                            <dd className="mt-1.5 max-w-3xl text-sm leading-6 text-muted">{f.a}</dd>
+                            <dd className="mt-1.5 starta-lede text-sm leading-6 text-muted">{f.a}</dd>
                         </div>
                     ))}
                 </dl>

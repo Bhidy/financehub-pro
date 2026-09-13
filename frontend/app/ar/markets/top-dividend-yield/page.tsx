@@ -54,7 +54,7 @@ export default async function TopDividendYieldArPage() {
             <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/markets', label: 'بيانات السوق' }, { label: 'أعلى توزيعات الأرباح' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أعلى الأسهم توزيعًا للأرباح في البورصة المصرية</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {ranked.length} سهمًا في البورصة المصرية مرتبة حسب <strong>عائد التوزيع</strong> — أعلى الأسهم المصرية توزيعًا للأرباح بأسعارها المباشرة{asOfHuman && <>، بتاريخ {asOfHuman}</>}. الترتيب آلي (تنازليًا حسب العائد) ويُحدَّث مع بيانات السوق. وهو معلوماتي وليس توصية.
             </p>
 

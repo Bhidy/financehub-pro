@@ -68,7 +68,7 @@ export default async function TopDividendYieldPage() {
             <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/markets', label: 'Market Data' }, { label: 'Top Dividend Yield' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Highest Dividend-Yield Stocks on the EGX</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {ranked.length} Egyptian Exchange stocks ranked by <strong>trailing dividend yield</strong> — the highest-yielding EGX shares with
                 live prices{asOfHuman && <>, as of {asOfHuman}</>}. The ranking is mechanical (yield descending) and updates with our market data. It is information, not a recommendation.
             </p>

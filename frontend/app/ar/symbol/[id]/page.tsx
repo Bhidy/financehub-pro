@@ -391,7 +391,7 @@ export default async function ArabicSymbolPage({ params }: Props) {
                     )}
                 </p>
                 {ticker.last_price !== null && (
-                    <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
+                    <p className="mt-3 starta-lede text-sm leading-relaxed text-muted">
                         <strong>ما هو سعر سهم {name} اليوم؟</strong> آخر سعر لسهم {symbol} هو {ltrNum(`${fmtNum(ticker.last_price) ?? ''}`)} {cur === 'EGP' ? 'جنيه' : cur}
                         {typeof ticker.change_percent === 'number' ? ` (${ltrNum(`${ticker.change_percent >= 0 ? '+' : ''}${ticker.change_percent.toFixed(2)}%`)} خلال الجلسة)` : ''}
                         {/* MARKET CAP IS ALWAYS EGP — see the English twin in SymbolSeoSection.tsx.
@@ -493,7 +493,7 @@ export default async function ArabicSymbolPage({ params }: Props) {
                         {faq.map((f) => (
                             <div key={f.q} className="px-5 py-4">
                                 <dt className="text-[15px] font-bold text-main">{f.q}</dt>
-                                <dd className="mt-1.5 max-w-3xl text-sm leading-7 text-muted">{f.a}</dd>
+                                <dd className="mt-1.5 starta-lede text-sm leading-7 text-muted">{f.a}</dd>
                             </div>
                         ))}
                     </dl>

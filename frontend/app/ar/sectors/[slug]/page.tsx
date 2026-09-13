@@ -96,12 +96,12 @@ export default async function SectorArPage({ params }: { params: Promise<{ slug:
             <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/sectors', label: 'القطاعات' }, { label: ar }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">قطاع {ar} — الشركات المدرجة في البورصة المصرية</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {tickers.length} شركة في قطاع {ar} مدرجة في البورصة المصرية، مرتبة حسب القيمة السوقية
                 {match.market_cap !== null && Number.isFinite(match.market_cap) && (<> — بإجمالي قيمة سوقية {fmtCap(match.market_cap)} ج.م</>)}.
                 اضغط على أي شركة لعرض ملفها الكامل. محدَّث يوميًا{asOfHuman && <>؛ الأسعار بتاريخ {asOfHuman}</>}.
             </p>
-            {sectorSummary && <p className="mt-3 max-w-3xl leading-relaxed text-muted">{sectorSummary}</p>}
+            {sectorSummary && <p className="mt-3 starta-lede leading-relaxed text-muted">{sectorSummary}</p>}
             {sectorDescription(match.sector_name, 'ar') && (
                 <section className="mt-5 max-w-3xl" aria-label="عن هذا القطاع">
                     <h2 className="text-lg font-bold text-main">ماذا يضم قطاع {ar}</h2>

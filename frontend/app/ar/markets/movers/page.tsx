@@ -76,7 +76,7 @@ export default async function MoversArPage() {
             <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/markets', label: 'بيانات السوق' }, { label: 'الأكثر نشاطًا' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">الأكثر ارتفاعًا وانخفاضًا في البورصة المصرية اليوم</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 أكبر التحركات في البورصة المصرية اليوم: الأسهم الأكثر ارتفاعًا وانخفاضًا حسب نسبة التغير، والأكثر تداولًا حسب الحجم. اضغط على أي شركة لعرض ملفها الكامل.
             </p>
             <p className="mt-2 text-sm text-muted">{asOfHuman && <>آخر تحديث {asOfHuman} (بتوقيت القاهرة). </>}تُحدَّث الأسعار كل 15 دقيقة خلال ساعات التداول (الأحد–الخميس).</p>

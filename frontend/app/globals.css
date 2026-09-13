@@ -1388,6 +1388,22 @@ body:has(.admin-light) iframe[title*="Hotjar" i] {
   max-width: none;
 }
 
+/* THE LEDE — the short intro or note that sits under a full-width H1 and above
+   a full-width table on a data page. Measured on production: these run 206-390
+   characters, one to four lines, and they were capped at max-w-3xl (691px) in
+   an 1109px column — a 439px ragged notch between two full-width blocks.
+   A long measure only punishes SUSTAINED reading; for three lines the cost is
+   small and the gain is one left-to-right edge shared with the heading and the
+   table, which is what makes a page read as set rather than assembled.
+   Sustained prose does NOT get this — it keeps .starta-doc's measure.
+   The extra leading is the standard remedy for a wide measure: it keeps the eye
+   from losing the line on the return sweep. */
+.starta-lede {
+  /* The content column. Bounded, so a `wide` shell cannot stretch it to 1536px. */
+  max-width: 72rem;
+  line-height: 1.85;
+}
+
 /* Repeating items — profile cards, FAQ entries, definition lists — genuinely
    use the width that prose should not. Two columns only once each column can
    still hold a sensible measure; one column below that. */

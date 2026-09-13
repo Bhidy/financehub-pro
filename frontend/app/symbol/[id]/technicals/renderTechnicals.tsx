@@ -239,7 +239,7 @@ export async function renderTechnicals(id: string, lang: Lang) {
                 {t(TECHNICALS.computedFrom, lang)}
             </p>
 
-            <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted">{t(TECHNICALS.explainer, lang)}</p>
+            <p className="mt-4 starta-lede text-sm leading-relaxed text-muted">{t(TECHNICALS.explainer, lang)}</p>
 
             <section className="mt-8">
                 <h2 className="text-lg font-extrabold tracking-tight text-main">

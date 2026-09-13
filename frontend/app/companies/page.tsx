@@ -76,7 +76,7 @@ export default async function CompaniesPage() {
             <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'EGX Listed Companies' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Egyptian Exchange (EGX) Listed Companies</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {tickers.length} companies listed on the Egyptian Exchange — main and SME markets, as confirmed against
                 EGX&rsquo;s own register of listed securities ({SECURITY_MASTER_SOURCES.egx_main_register?.captured_at}) —
                 with their latest prices, sorted by market capitalization. Click any company for its full profile: price

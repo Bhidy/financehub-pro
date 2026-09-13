@@ -112,7 +112,7 @@ export default async function MoversPage() {
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 EGX Movers Today — Top Gainers, Losers &amp; Most Active
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 Today&apos;s biggest moves on the Egyptian Exchange: the top gaining and losing stocks by change
                 percentage and the most actively traded companies by volume. Click any company for its full profile.
             </p>

@@ -73,7 +73,7 @@ export default function GlossaryIndexArabicPage() {
                 <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">
                     قاموس المصطلحات المالية
                 </h1>
-                <p className="mt-3 max-w-3xl text-lg leading-relaxed text-main">
+                <p className="mt-3 starta-lede text-lg leading-relaxed text-main">
                     تعريفات واضحة لأهم المصطلحات التي تقابلك عند متابعة البورصة المصرية — من أنواع
                     الأوامر وآلية المؤشرات إلى صافي قيمة أصول الصناديق — بالعربية والإنجليزية.
                 </p>

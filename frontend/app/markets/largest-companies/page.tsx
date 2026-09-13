@@ -68,7 +68,7 @@ export default async function LargestCompaniesPage() {
             <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/markets', label: 'Market Data' }, { label: 'Largest by Market Cap' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Largest Companies on the EGX by Market Cap</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 The {ranked.length} biggest companies listed on the <strong>Egyptian Exchange (EGX)</strong> ranked by <strong>market capitalisation</strong> —
                 the largest Egyptian stocks with live prices{asOfHuman && <>, as of {asOfHuman}</>}. The ranking is mechanical (market cap descending) and updates with our market data. It is information, not a recommendation.
             </p>

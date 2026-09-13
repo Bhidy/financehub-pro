@@ -230,7 +230,7 @@ export default async function DividendCalendarPage() {
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 EGX Dividend Calendar — Upcoming &amp; Recent Payouts
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 Dividend events across the Egyptian Exchange in one place: {upcomingRows.length} announced
                 upcoming {upcomingRows.length === 1 ? 'payout' : 'payouts'} and {recentRows.length} dividend{' '}
                 {recentRows.length === 1 ? 'payment' : 'payments'} from the last 90 days, with ex-dividend

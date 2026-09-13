@@ -147,7 +147,7 @@ export async function renderEgxSector(slug: string, lang: Lang) {
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 {isAr ? `قطاع ${sector.ar} في البورصة المصرية` : `${sector.en} Sector — EGX Listed Companies`}
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {isAr
                     ? `${tickers.length} شركة مقيدة في قطاع ${sector.ar} وفق التصنيف القطاعي الرسمي للبورصة المصرية (سجل الأوراق المقيدة بتاريخ ${registerDate})، مرتبة حسب القيمة السوقية${totalCap > 0 ? ` — بإجمالي قيمة سوقية ${fmtCap(totalCap, 'ar')} جنيه` : ''}.${big3.length ? ` أكبر شركاته: ${big3.map((t) => `${nameOf(t)} (${fmtCap(t.market_cap, 'ar')} جنيه)`).join('، ')}.` : ''}`
                     : `${tickers.length} companies in the ${sector.en} sector under the Egyptian Exchange’s own sector classification (register of listed securities, ${registerDate}), sorted by market capitalization${totalCap > 0 ? ` — combined market value EGP ${fmtCap(totalCap, 'en')}` : ''}.${big3.length ? ` The largest are ${big3.map((t) => `${nameOf(t)} (EGP ${fmtCap(t.market_cap, 'en')})`).join(', ')}.` : ''}`}

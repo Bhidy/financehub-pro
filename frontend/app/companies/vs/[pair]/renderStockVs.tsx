@@ -329,7 +329,7 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
                 {sideHead(B)}
             </div>
 
-            <p className="mt-5 max-w-3xl text-sm leading-relaxed text-muted">
+            <p className="mt-5 starta-lede text-sm leading-relaxed text-muted">
                 {t(STOCKVS.intro(A.name, B.name, sectorLabel, rowCount), lang)}
             </p>
 
@@ -348,7 +348,7 @@ export async function renderStockVs(pairParam: string, lang: Lang) {
                 return (
                     <section key={g.id} className="mt-8">
                         <h2 className="text-lg font-extrabold tracking-tight text-main">{t(g.title, lang)}</h2>
-                        <p className="mt-1.5 max-w-3xl text-sm leading-relaxed text-muted">{t(g.blurb, lang)}</p>
+                        <p className="mt-1.5 starta-lede text-sm leading-relaxed text-muted">{t(g.blurb, lang)}</p>
 
                         <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface">
                             <table className="w-full min-w-[620px] text-sm">

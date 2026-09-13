@@ -199,7 +199,7 @@ export async function renderNavHistory(id: string, lang: Lang) {
             <Breadcrumbs lang={lang} items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
 
             <h1 className="text-2xl font-extrabold tracking-tight text-main sm:text-3xl">{t(NAVHIST.h1(name), lang)}</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {t(NAVHIST.lede(name, points.length, humanDate(first.date, lang), humanDate(last.date, lang)), lang)}
             </p>
 
@@ -312,7 +312,7 @@ export async function renderNavHistory(id: string, lang: Lang) {
                 )}
             </section>
 
-            <p className="mt-4 max-w-3xl text-xs leading-relaxed text-muted">{t(NAVHIST.sourceNote, lang)}</p>
+            <p className="mt-4 starta-lede text-xs leading-relaxed text-muted">{t(NAVHIST.sourceNote, lang)}</p>
 
             <nav className="mt-8 border-t border-border pt-5">
                 <Link href={encodeURI(basePath(fund, lang))} prefetch={false} className="text-sm font-semibold text-starta-darkTeal hover:underline">

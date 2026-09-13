@@ -74,7 +74,7 @@ export default function GlossaryIndexPage() {
             <h1 className="text-2xl font-extrabold leading-snug text-main sm:text-3xl">
                 Financial Glossary — EGX &amp; Investing Terms
             </h1>
-            <p className="mt-3 max-w-3xl text-lg leading-relaxed text-main">
+            <p className="mt-3 starta-lede text-lg leading-relaxed text-main">
                 Clear definitions of the terms you meet when following the Egyptian Exchange — from
                 order types and index mechanics to fund NAVs — in English and Arabic.
             </p>

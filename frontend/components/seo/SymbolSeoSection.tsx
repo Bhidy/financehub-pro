@@ -276,7 +276,7 @@ export default function SymbolSeoSection({
                     {/* Answer-first: the sentence a searcher asked for, in the words
                         they used. Every figure is the page's own data. */}
                     {ticker.last_price !== null && (
-                        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                        <p className="mt-3 starta-lede text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                             <strong>What is {name}’s share price today?</strong> {symbol} last traded at {cur} {fmtNum(ticker.last_price)}
                             {typeof ticker.change_percent === 'number' ? ` (${ticker.change_percent >= 0 ? '+' : ''}${ticker.change_percent.toFixed(2)}% on the day)` : ''}
                             {/* MARKET CAP IS ALWAYS EGP — never the quote currency. market_cap is stored
@@ -326,7 +326,7 @@ export default function SymbolSeoSection({
                 {profile?.description && (
                     <div className="mb-8">
                         <h2 className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight"><span aria-hidden className="inline-block h-4 w-1 rounded-full bg-[#14B8A6]" />About {name}</h2>
-                        <p className="mt-3 max-w-3xl leading-relaxed text-slate-600 dark:text-slate-300">{profile.description}</p>
+                        <p className="mt-3 starta-lede leading-relaxed text-slate-600 dark:text-slate-300">{profile.description}</p>
                         <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-sm text-slate-600 dark:text-slate-300">
                             {profile.industry && (
                                 <div><dt className="inline font-semibold">Industry: </dt><dd className="inline">{profile.industry}</dd></div>
@@ -436,7 +436,7 @@ export default function SymbolSeoSection({
                         {faq.map((f) => (
                             <div key={f.q} className="px-5 py-4">
                                 <dt className="text-[15px] font-bold tracking-tight">{f.q}</dt>
-                                <dd className="mt-1.5 max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">{f.a}</dd>
+                                <dd className="mt-1.5 starta-lede text-sm leading-6 text-slate-500 dark:text-slate-400">{f.a}</dd>
                             </div>
                         ))}
                     </dl>

@@ -64,7 +64,7 @@ export default async function LowestPeStocksPage() {
             <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { href: '/markets', label: 'Market Data' }, { label: 'Lowest P/E' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Lowest P/E Stocks on the EGX</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {ranked.length} Egyptian Exchange stocks ranked by <strong>lowest trailing P/E ratio</strong> — a mechanical value screen of the cheapest EGX
                 shares by earnings multiple, with live prices{asOfHuman && <>, as of {asOfHuman}</>}. Only companies with positive earnings are shown. The ranking is mechanical (P/E ascending) — information, not a recommendation.
             </p>

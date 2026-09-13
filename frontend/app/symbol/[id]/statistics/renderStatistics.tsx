@@ -200,7 +200,7 @@ export async function renderStatistics(id: string, lang: Lang) {
             <h1 className="text-2xl font-extrabold tracking-tight text-main sm:text-3xl">
                 {t(STATISTICS.h1(name, symbol), lang)}
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">{t(STATISTICS.lede(name, fieldCount), lang)}</p>
+            <p className="mt-3 starta-lede leading-relaxed text-muted">{t(STATISTICS.lede(name, fieldCount), lang)}</p>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 {groups.map((g) => (

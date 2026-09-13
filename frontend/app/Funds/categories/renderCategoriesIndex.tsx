@@ -180,7 +180,7 @@ export async function renderCategoriesIndex(lang: 'en' | 'ar') {
             <Breadcrumbs lang={lang} items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
 
             <h1 className="text-2xl font-extrabold tracking-tight text-main sm:text-3xl">{title}</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {isAr
                     ? `${categorised} صندوق استثمار مصري في ${stats.length} فئات. لكل فئة: عدد الصناديق، ووسيط عائد آخر 12 شهراً ومنذ بداية العام، وأفضل وأسوأ صندوق بعائد السنة، ووسيط رسوم الإدارة — كلها محسوبة آلياً من إفصاحات مديري الصناديق`
                     : `${categorised} Egyptian mutual funds in ${stats.length} categories. For each: the number of funds, the median trailing 12-month and year-to-date return, the best and worst fund by 1-year return, and the median management fee — all computed mechanically from manager disclosures`}

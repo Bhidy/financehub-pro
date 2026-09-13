@@ -62,7 +62,7 @@ export default async function CompaniesArPage() {
             <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { label: 'أسهم البورصة المصرية' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أسهم البورصة المصرية (EGX)</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {tickers.length} شركة مقيدة في البورصة المصرية — السوق الرئيسي وسوق الشركات الصغيرة والمتوسطة — وفق سجل الأوراق المالية المقيدة
                 الصادر عن البورصة نفسها ({SECURITY_MASTER_SOURCES.egx_main_register?.captured_at})، بآخر أسعارها ومرتبة حسب القيمة السوقية. اضغط على أي شركة
                 لعرض ملفها الكامل: الرسم البياني للسعر، وأهم الإحصاءات، والقوائم المالية، والتوزيعات، والتحليل الفني، والأخبار — بالعربية والإنجليزية.

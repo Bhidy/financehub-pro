@@ -158,7 +158,7 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">
                 {match.sector_name} — EGX Listed Companies
             </h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {tickers.length} {match.sector_name} {tickers.length === 1 ? 'company' : 'companies'} listed on
                 the Egyptian Exchange, sorted by market capitalization
                 {match.market_cap !== null && Number.isFinite(match.market_cap) && (
@@ -167,7 +167,7 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
                 . Click any company for its full profile: price chart, key statistics, financial statements,
                 dividends, technicals and news. Updated daily{asOfHuman && <>; prices as of {asOfHuman}</>}.
             </p>
-            {sectorSummary && <p className="mt-3 max-w-3xl leading-relaxed text-muted">{sectorSummary}</p>}
+            {sectorSummary && <p className="mt-3 starta-lede leading-relaxed text-muted">{sectorSummary}</p>}
             {sectorDescription(match.sector_name, 'en') && (
                 <section className="mt-5 max-w-3xl" aria-label="About this sector">
                     <h2 className="text-lg font-bold text-main">What the {match.sector_name} sector covers</h2>

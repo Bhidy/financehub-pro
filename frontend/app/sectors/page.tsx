@@ -70,7 +70,7 @@ export default async function SectorsPage() {
             <Breadcrumbs lang="en" items={[{ href: '/', label: 'Home' }, { label: 'EGX Sectors' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">Egyptian Exchange (EGX) Sectors</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {sectors.length} sectors covering {totalCompanies} companies listed on the Egyptian Exchange,
                 ranked by aggregate market capitalization. Click any sector for its full list of companies with
                 live prices and market caps. Updated daily.
@@ -110,7 +110,7 @@ export default async function SectorsPage() {
             {official.length > 0 && (
                 <section className="mt-8" aria-labelledby="egx-official-sectors">
                     <h2 id="egx-official-sectors" className="text-lg font-bold text-main">The Egyptian Exchange’s own sector classification</h2>
-                    <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+                    <p className="mt-2 starta-lede text-sm leading-relaxed text-muted">
                         The table above groups companies by the data vendor’s global taxonomy. The exchange classifies each listed company into one of 18 sectors in its register of listed securities — the grouping Egyptian investors use. Each hub below lists the companies the register places in that sector.
                     </p>
                     <ul className="mt-3 flex flex-wrap gap-2 text-sm">

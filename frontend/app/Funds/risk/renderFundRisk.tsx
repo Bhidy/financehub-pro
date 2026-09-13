@@ -146,7 +146,7 @@ export async function renderFundRisk(lang: 'en' | 'ar') {
             <Breadcrumbs lang={lang} items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
 
             <h1 className="text-2xl font-extrabold tracking-tight text-main sm:text-3xl">{title}</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {isAr
                     ? `${lines.length} صندوق استثمار مصري لديه تاريخ كافٍ من صافي قيمة الأصول، مرتبة من الأقل تقلباً إلى الأعلى. لكل صندوق: التقلب السنوي، وأقصى انخفاض من قمة إلى قاع، والانحراف السلبي، ومعدل النمو السنوي المركّب منذ التأسيس، وعدد الملاحظات — كلها محسوبة من صافي قيمة أصول الصندوق نفسه كما نشره مديره`
                     : `${lines.length} Egyptian mutual funds with enough NAV history, ordered from least to most volatile. For each: annualized volatility, maximum peak-to-trough drawdown, downside deviation, compound annual growth since inception and the number of observations — all computed from the fund’s own NAVs as published by its manager`}

@@ -597,7 +597,7 @@ export default async function MetricPage({ params }: Props) {
                 {view.hero.note && <p className="mt-3 text-sm text-muted">{view.hero.note}</p>}
             </div>
 
-            <p className="mt-5 max-w-3xl leading-relaxed text-muted">{view.definition}</p>
+            <p className="mt-5 starta-lede leading-relaxed text-muted">{view.definition}</p>
 
             {view.history && (
                 <section className="mt-8">

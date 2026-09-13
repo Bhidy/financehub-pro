@@ -161,7 +161,7 @@ export async function renderProvidersIndex(lang: 'en' | 'ar') {
             <Breadcrumbs lang={lang} items={crumbs.map((c) => ({ href: c.href, label: c.label }))} />
 
             <h1 className="text-2xl font-extrabold tracking-tight text-main sm:text-3xl">{title}</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {isAr
                     ? `${stats.length} مؤسسة — منها ${owners} جهة مُصدِرة — تقدّم أو تدير ${covered} صندوق استثمار مصري. الترتيب آلي حسب عدد الصناديق، وكل رقم هو وسيط أو حد أدنى أو أقصى محسوب على صناديق المؤسسة نفسها من إفصاحات مديري الصناديق`
                     : `${stats.length} institutions — ${owners} of them sponsors — offer or manage ${covered} Egyptian mutual funds. Ordering is mechanical by fund count, and every figure is a median, minimum or maximum computed over the institution's own funds from manager disclosures`}

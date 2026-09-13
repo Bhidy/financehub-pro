@@ -203,7 +203,7 @@ export async function renderMarketsHub(lang: 'en' | 'ar') {
             <Breadcrumbs lang={lang} items={crumbs} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">{t.h1}</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 {isAr
                     ? `${ltrNum(String(allRows.length + 1))} صفحة بيانات للبورصة المصرية: قيمة المؤشر، وحركة الجلسة، وترتيب الشركات بالقيمة السوقية وعائد التوزيعات ومكرر الربحية، ومواعيد الأرباح. كل صفحة تُبنى آليًا من البيانات نفسها.`
                     : `${allRows.length + 1} data views of the Egyptian Exchange: the index level, today’s session, companies ranked by size, income and valuation, and the dividend calendar. Every page is built mechanically from the same market data.`}
@@ -293,7 +293,7 @@ export async function renderMarketsHub(lang: 'en' | 'ar') {
                 </ul>
             </section>
 
-            <p className="mt-10 max-w-3xl text-sm leading-relaxed text-muted">
+            <p className="mt-10 starta-lede text-sm leading-relaxed text-muted">
                 {t.methodology}
                 {asOfHuman ? ` ${t.asOf(asOfHuman)}` : ''}
             </p>

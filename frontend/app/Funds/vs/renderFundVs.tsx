@@ -336,7 +336,7 @@ export async function renderFundVs(pair: string, lang: Lang) {
             </h1>
             <p className="mt-2 text-lg text-muted">{t(FUNDVS.heading, lang)}</p>
 
-            {summary && <p className="mt-4 max-w-3xl leading-relaxed text-main">{summary}</p>}
+            {summary && <p className="mt-4 starta-lede leading-relaxed text-main">{summary}</p>}
 
             <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-surface">
                 <table className="w-full min-w-[560px] text-sm">

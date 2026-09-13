@@ -62,7 +62,7 @@ export default async function LargestCompaniesArPage() {
             <Breadcrumbs lang="ar" items={[{ href: '/', label: 'الرئيسية' }, { href: '/ar/markets', label: 'بيانات السوق' }, { label: 'الأكبر حسب القيمة السوقية' }]} />
 
             <h1 className="text-2xl font-extrabold text-main sm:text-3xl">أكبر الشركات في البورصة المصرية حسب القيمة السوقية</h1>
-            <p className="mt-3 max-w-3xl leading-relaxed text-muted">
+            <p className="mt-3 starta-lede leading-relaxed text-muted">
                 أكبر {ranked.length} شركة مدرجة في <strong>البورصة المصرية (EGX)</strong> مرتبة حسب <strong>القيمة السوقية</strong> —
                 أضخم الأسهم المصرية بأسعارها المباشرة{asOfHuman && <>، بتاريخ {asOfHuman}</>}. الترتيب آلي (تنازليًا حسب القيمة السوقية) ويُحدَّث مع بيانات السوق. وهو معلوماتي وليس توصية.
             </p>
